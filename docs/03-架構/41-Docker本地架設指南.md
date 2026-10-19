@@ -1,8 +1,9 @@
 # Docker 本地架設指南
 
-> AXIOM | 整合基線 v2.1 | 2026-10-19 | 文件 ID AX-41｜文件：`03-架構/41-Docker本地架設指南.md`
+> AXIOM | 整合基線 v2.2 | 2026-10-19 | 文件 ID AX-41｜文件：`03-架構/41-Docker本地架設指南.md`
 
 ## 文件目的
+
 規範以同一份 Docker Compose 定義，在 macOS（開發）與 Windows WSL2（架設）建立可重現環境，作為 P0 基準測試與各模組開發的統一入口。
 
 ## 適用範圍與環境矩陣
@@ -92,8 +93,8 @@ flowchart TB
 ## 啟動順序與健康檢查
 
 - 依賴以 `depends_on: condition: service_healthy` 表達，不以固定 `sleep` 取代。
-- 健康檢查端點：postgres `pg_isready`、redis `redis-cli ping`、minio `/minio/health/live`、web `/healthz`、nginx 反向探測 `/healthz`。
-- 首次啟動流程：`compose up -d` → 等待全數健康 → 資料庫遷移 → 建立 bucket → 建立管理員 → 載入基準種子資料。
+- 健康檢查端點：postgres `pg_isready`、redis `redis-cli ping`、minio `/minio/health/live`、web `/livez`（程序存活、不查 schema）及 `/readyz`（DB schema、必要服務與 init version 已就緒）、nginx 反向探測 `/readyz`。
+- 首次啟動先啟動 PostgreSQL／Redis／MinIO 並等待基礎服務健康，再執行一次性 init job（遷移、bucket／最小權限帳號、管理員與公開 fixture），最後啟動 web／worker／nginx。init 失敗即停止，不先等待依賴 schema 的 web 就緒。
 - 任一必要服務不健康時，web 不得對外提供服務；此為 Pre-flight 閘門，避免半啟動狀態產生不可信結果。
 
 ## macOS 開發環境注意事項
@@ -107,14 +108,14 @@ flowchart TB
 
 ## Windows WSL2 架設環境注意事項
 
-- WSL2 具備完整 Linux 核心，容器為原生 Linux 執行，不經虛擬化轉譯層；Docker 可採 Docker Desktop 的 WSL2 整合，或於發行版內直接安裝 Docker Engine（需於 `wsl.conf` 啟用 `systemd` 以管理服務）。
+- WSL2 提供 Linux 執行環境；實際架構與資源需納入環境紀錄。Docker 可採 Docker Desktop 的 WSL2 整合，或於發行版內直接安裝 Docker Engine（需於 `wsl.conf` 啟用 `systemd` 以管理服務）。
 - **路徑**：專案與具名卷必須置於 WSL2 的 Linux 檔案系統（`/home/<user>/...`），不得放在 `/mnt/c/...`；跨檔案系統 I/O 會使建置與資料讀取明顯變慢，且檔案變更通知常失效。
 - **換行與權限**：由 Windows 側編輯的檔案可能帶入 CRLF，導致容器內 shell 腳本執行失敗；需以 `.gitattributes` 或 `core.autocrlf` 統一為 LF，並確認掛載檔案的執行權限。
 - **資源上限**：WSL2 預設僅使用宿主部分記憶體與 CPU，需以 `%UserProfile%\.wslconfig` 調整 `memory`／`processors`／`swap` 後重啟 WSL；實際門檻依 P0 基準實測設定。
 - **埠存取**：WSL2 支援 localhost 轉發，Windows 端以 `localhost:8080` 存取服務；若需對外網段開放，須另行設定防火牆與連接埠轉發，且不符「宿主埠僅供本機除錯」原則。
 - **GPU**：若 Windows 宿主具備 NVIDIA GPU 並安裝對應 WSL 驅動，可直通供 Ollama 或訓練 worker 使用，此時可啟用 gpu 佇列；若無，則比照 macOS 走 CPU 並標示為慢速。**此項待確認**，未確認前不得宣稱 GPU 可用。
-- **映像架構**：WSL2 為 amd64。與 macOS 的 arm64 並存時，映像需為多架構（以 buildx 建置）或以 amd64 為基準，避免兩環境行為不一致。
-- **生命週期**：宿主休眠或 `wsl --shutdown` 會終止容器，重啟後須確認服務健康與任務租約回收；WSL2 時鐘漂移較 macOS 明顯，時間同步與租約過期回收為必要條件。
+- **映像架構**：本案 WSL2 架設基線暫定 amd64；啟動前須檢查宿主與映像架構。與 macOS 的 arm64 並存時，映像需為多架構（以 buildx 建置）或以 amd64 為基準，避免兩環境行為不一致。
+- **生命週期**：宿主休眠或 `wsl --shutdown` 會終止容器，重啟後須確認服務健康與任務租約回收；時間同步與租約過期回收需實測；租約判定以 DB 時間為準。
 - **備份**：資料卷位於 WSL2 虛擬磁碟內，需定期匯出至 Windows 側或外部儲存，並演練還原。
 
 ## 跨環境一致性
@@ -159,6 +160,7 @@ proof／sandbox 採無網路模式時，不可直接連接 PostgreSQL、Redis �
 - CI 執行環境與安全掃描管線（見 `03-架構/08`）。
 
 ## 驗收與交付準則
+
 - 文件內所有決策均有負責角色、驗證方法及可追溯的需求編號。
 - 未完成事項不得標示為已實作；未經獨立驗證的數學主張不得標示為已證明。
 - 重大設計變更應同步更新索引、架構決策與相關測試計畫。
@@ -166,3 +168,20 @@ proof／sandbox 採無網路模式時，不可直接連接 PostgreSQL、Redis �
 ## 延伸閱讀
 
 [AX-08 部署與運算資源規劃](<08-部署與運算資源規劃.md>)；[AX-26 安全隱私與可信執行](<../09-非功能/26-安全隱私與可信執行.md>)；[AX-37 決策待確認清單](<../12-附錄/37-決策待確認清單.md>)。
+
+## 共用規則
+
+版本、錯誤、證據與審查規則見 [AX-48 共用契約與文件治理](<../00-總覽/48-共用契約與文件治理.md>)；本章的專屬限制及驗收條件仍須同時滿足。
+
+## 初始化、秘密與契約驗收補充
+
+minio-init 可用 root 憑證建 bucket／service policy，但 web、worker 只拿各自最小權限帳號，不能共用 MINIO_ROOT_USER／PASSWORD。平台差異以覆寫檔與 capabilities 檢查表表達；資料層宿主埠綁 127.0.0.1，不能因省略 host IP 而意外對外監聽。CHATGPT_API_KEY 僅在已核准外部路由啟用時必填；MVP 外部路由關閉，不因缺該 key 而阻止本地規則啟動。
+
+目前沒有 compose.yaml、Dockerfile 或應用管理命令實作；前述命令為目標操作介面，不可宣稱能在空倉庫直接架設。實作交付時需提供相應檔案、.env.example（無秘密）、migration/init job、healthcheck、backup/restore 與 smoke 驗收記錄。
+
+| ID | 情境 | 預期 |
+|---|---|---|
+| AC-41-01 | 空 DB、web ready 依賴 schema | init 完成前 ready=false；初始化不等待 web ready，無啟動死結 |
+| AC-41-02 | migration 或 bucket policy 建立失敗 | init 非零退出，web 不就緒、worker 不領研究 |
+| AC-41-03 | 關閉外部模型且無 API key | 本地規則可啟動；web/worker 不持有 MinIO root 憑證 |
+| AC-41-04 | 同 fixture 在 macOS／WSL2 | 記錄實際 arch/digest，按同容差驗收，差異不暗中忽略 |

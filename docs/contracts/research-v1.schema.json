@@ -1,0 +1,1592 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://axiom.invalid/contracts/research-v1.schema.json",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Dataset"
+    },
+    {
+      "$ref": "#/$defs/DatasetVersion"
+    },
+    {
+      "$ref": "#/$defs/Research"
+    },
+    {
+      "$ref": "#/$defs/ResearchVersion"
+    },
+    {
+      "$ref": "#/$defs/Run"
+    },
+    {
+      "$ref": "#/$defs/Attempt"
+    },
+    {
+      "$ref": "#/$defs/EquationVersion"
+    },
+    {
+      "$ref": "#/$defs/Candidate"
+    },
+    {
+      "$ref": "#/$defs/FitRun"
+    },
+    {
+      "$ref": "#/$defs/ValidationRun"
+    },
+    {
+      "$ref": "#/$defs/EvidenceBundle"
+    },
+    {
+      "$ref": "#/$defs/ProofArtifact"
+    },
+    {
+      "$ref": "#/$defs/ReviewDecision"
+    },
+    {
+      "$ref": "#/$defs/PublishedArtifact"
+    },
+    {
+      "$ref": "#/$defs/EvidenceRevocation"
+    },
+    {
+      "$ref": "#/$defs/Artifact"
+    }
+  ],
+  "$defs": {
+    "SemanticProfile": {
+      "type": "object",
+      "properties": {
+        "inputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"
+              },
+              "unit": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -32,
+                  "maximum": 32
+                },
+                "minItems": 7,
+                "maxItems": 7
+              }
+            },
+            "required": [
+              "name",
+              "unit"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "target": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"
+            },
+            "unit": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": -32,
+                "maximum": 32
+              },
+              "minItems": 7,
+              "maxItems": 7
+            }
+          },
+          "required": [
+            "name",
+            "unit"
+          ],
+          "additionalProperties": false
+        },
+        "units_confirmed": {
+          "const": true
+        },
+        "time_ordered": {
+          "type": "boolean"
+        },
+        "measurement_resolution": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resolution_reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "inputs",
+        "target",
+        "units_confirmed",
+        "time_ordered",
+        "measurement_resolution",
+        "resolution_reason"
+      ],
+      "additionalProperties": false
+    },
+    "SplitPolicy": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "IID_GROUPED",
+            "TIME_ORDERED",
+            "EXPLICIT"
+          ]
+        },
+        "fit": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 1
+        },
+        "development": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 1
+        },
+        "final_test": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 1
+        },
+        "gap_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "policy_version": {
+          "const": "1.0"
+        },
+        "sealed_final_test": {
+          "const": true
+        }
+      },
+      "required": [
+        "kind",
+        "fit",
+        "development",
+        "final_test",
+        "gap_rows",
+        "policy_version",
+        "sealed_final_test"
+      ],
+      "additionalProperties": false
+    },
+    "Budget": {
+      "type": "object",
+      "properties": {
+        "cpu_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "gpu_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "memory_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "wall_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "candidate_limit": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "cpu_seconds",
+        "gpu_seconds",
+        "tokens",
+        "memory_bytes",
+        "wall_seconds",
+        "candidate_limit"
+      ],
+      "additionalProperties": false
+    },
+    "Dataset": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Dataset"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "name",
+        "owner_id"
+      ],
+      "additionalProperties": false
+    },
+    "DatasetVersion": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "DatasetVersion"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "dataset_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "artifact_uri": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "CSV",
+            "JSON",
+            "PARQUET"
+          ]
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "UNAVAILABLE",
+            "REVOKED"
+          ]
+        },
+        "artifact_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "dataset_id",
+        "artifact_uri",
+        "sha256",
+        "format",
+        "row_count",
+        "status",
+        "artifact_id"
+      ],
+      "additionalProperties": false
+    },
+    "Research": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Research"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "name",
+        "owner_id"
+      ],
+      "additionalProperties": false
+    },
+    "ResearchVersion": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "ResearchVersion"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "research_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "dataset_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "semantic_profile": {
+          "$ref": "#/$defs/SemanticProfile"
+        },
+        "split_policy": {
+          "$ref": "#/$defs/SplitPolicy"
+        },
+        "budget": {
+          "$ref": "#/$defs/Budget"
+        },
+        "purpose": {
+          "type": "string",
+          "enum": [
+            "DESCRIPTION",
+            "PREDICTION",
+            "MECHANISM"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "DRAFT",
+            "VALIDATING",
+            "READY",
+            "QUEUED",
+            "RUNNING",
+            "REVIEW",
+            "PUBLISHED",
+            "FAILED",
+            "CANCELLED"
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "research_id",
+        "dataset_version_id",
+        "semantic_profile",
+        "split_policy",
+        "budget",
+        "purpose",
+        "status",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "Run": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Run"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "research_version_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dataset_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "INGEST",
+            "PROFILE",
+            "SEARCH",
+            "FIT",
+            "VALIDATE",
+            "REVOKE"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "CANCEL_REQUESTED",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED"
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "environment_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "active_attempt_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lease_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "current_event_cursor": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "budget_usage": {
+          "$ref": "#/$defs/Budget"
+        },
+        "equation_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "phase": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "PROFILING",
+                "FEASIBILITY",
+                "RETRIEVING",
+                "PLANNING",
+                "SEARCHING",
+                "FITTING",
+                "VALIDATING",
+                "FINALIZING"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stop_reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "BUDGET_EXHAUSTED",
+                "NO_IMPROVEMENT",
+                "NUMERICAL_FAILURE",
+                "AMBIGUOUS",
+                "USER_CANCELLED",
+                "COMPLETED",
+                "DEPENDENCY_FAILURE"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_bundle_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "child_run_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "research_version_id",
+        "dataset_id",
+        "type",
+        "status",
+        "revision",
+        "seed",
+        "environment_digest",
+        "active_attempt_id",
+        "lease_generation",
+        "current_event_cursor",
+        "budget_usage",
+        "phase",
+        "stop_reason",
+        "evidence_bundle_ids",
+        "child_run_ids"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "FIT",
+                  "VALIDATE"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "equation_version_id"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "INGEST"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "research_version_id": {
+                "type": "null"
+              },
+              "dataset_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "research_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "dataset_id": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Attempt": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Attempt"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "worker_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lease_expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "checkpoint_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "RUNNING",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED",
+            "EXPIRED"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "run_id",
+        "generation",
+        "worker_id",
+        "lease_expires_at",
+        "checkpoint_id",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "EquationVersion": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "EquationVersion"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "dsl": {
+          "$ref": "dsl-v1.schema.json"
+        },
+        "identity_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "dsl",
+        "identity_hash"
+      ],
+      "additionalProperties": false
+    },
+    "Candidate": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Candidate"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "search_run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "equation_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "development_rank": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validation_status": {
+          "type": "string",
+          "enum": [
+            "NOT_RUN",
+            "PENDING",
+            "FINISHED",
+            "INVALID"
+          ]
+        },
+        "fit_run_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "validation_run_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "search_run_id",
+        "equation_version_id",
+        "source",
+        "development_rank",
+        "validation_status",
+        "fit_run_ids",
+        "validation_run_ids"
+      ],
+      "additionalProperties": false
+    },
+    "FitRun": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "FitRun"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "equation_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "dataset_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "split_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          }
+        },
+        "optimizer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "precision": {
+          "type": "integer",
+          "minimum": 16
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "run_id",
+        "equation_version_id",
+        "dataset_version_id",
+        "split_id",
+        "parameters",
+        "optimizer",
+        "precision"
+      ],
+      "additionalProperties": false
+    },
+    "ValidationRun": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "ValidationRun"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fit_run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "split_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metric_version": {
+          "const": "1.0"
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "mae": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "rmse": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            }
+          },
+          "required": [
+            "mae",
+            "rmse"
+          ],
+          "additionalProperties": false
+        },
+        "valid_coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "empirical_level": {
+          "type": "string",
+          "enum": [
+            "E0",
+            "E1",
+            "E2",
+            "E3"
+          ]
+        },
+        "proof_level": {
+          "type": "string",
+          "enum": [
+            "P0",
+            "P1",
+            "P2"
+          ]
+        },
+        "outcome_status": {
+          "type": "string",
+          "enum": [
+            "SUPPORTED",
+            "AMBIGUOUS",
+            "INSUFFICIENT_EVIDENCE",
+            "FALSIFIED"
+          ]
+        },
+        "artifact_uri": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "metric_reasons": {
+          "type": "object",
+          "properties": {
+            "mae": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rmse": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "artifact_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "run_id",
+        "fit_run_id",
+        "split_id",
+        "metric_version",
+        "metrics",
+        "valid_coverage",
+        "empirical_level",
+        "proof_level",
+        "outcome_status",
+        "artifact_uri",
+        "sha256",
+        "metric_reasons",
+        "artifact_id"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "metrics": {
+                "properties": {
+                  "mae": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "metric_reasons": {
+                "required": [
+                  "mae"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metrics": {
+                "properties": {
+                  "rmse": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "metric_reasons": {
+                "required": [
+                  "rmse"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "EvidenceBundle": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "EvidenceBundle"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "research_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "validation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "proof_artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ACTIVE",
+            "REVOKED",
+            "QUARANTINED"
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "research_version_id",
+        "validation_ids",
+        "proof_artifact_ids",
+        "status",
+        "revision"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "properties": {
+            "validation_ids": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "proof_artifact_ids": {
+              "minItems": 1
+            }
+          }
+        }
+      ]
+    },
+    "ProofArtifact": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "ProofArtifact"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "equation_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "theorem": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "checker": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checker_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checker_status": {
+          "type": "string",
+          "enum": [
+            "NOT_RUN",
+            "CHECKED",
+            "FAILED",
+            "UNKNOWN"
+          ]
+        },
+        "artifact_uri": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "artifact_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "equation_version_id",
+        "theorem",
+        "assumptions",
+        "checker",
+        "checker_version",
+        "checker_status",
+        "artifact_uri",
+        "sha256",
+        "artifact_id"
+      ],
+      "additionalProperties": false
+    },
+    "ReviewDecision": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "ReviewDecision"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "research_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "evidence_bundle_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reviewer_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "APPROVE",
+            "REJECT"
+          ]
+        },
+        "comment": {
+          "type": "string"
+        },
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "research_version_id",
+        "evidence_bundle_id",
+        "reviewer_id",
+        "decision",
+        "comment",
+        "expected_revision"
+      ],
+      "additionalProperties": false
+    },
+    "PublishedArtifact": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "PublishedArtifact"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "research_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "review_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "evidence_bundle_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "artifact_uri": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "artifact_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "research_version_id",
+        "review_id",
+        "evidence_bundle_id",
+        "artifact_uri",
+        "sha256",
+        "artifact_id"
+      ],
+      "additionalProperties": false
+    },
+    "EvidenceRevocation": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "EvidenceRevocation"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence_bundle_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "counterexample_artifact_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "REQUESTED",
+            "BLOCKED",
+            "PROPAGATING",
+            "COMPLETED",
+            "FAILED"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "evidence_bundle_id",
+        "actor_id",
+        "reason",
+        "counterexample_artifact_id",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Artifact": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "Artifact"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "artifact_uri": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "QUARANTINED",
+            "DELETED"
+          ]
+        },
+        "owner_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "media_type": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "artifact_uri",
+        "sha256",
+        "status",
+        "owner_id",
+        "size_bytes",
+        "media_type"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

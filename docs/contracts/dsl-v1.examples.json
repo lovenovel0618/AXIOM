@@ -1,0 +1,299 @@
+{
+  "valid": [
+    {
+      "dsl_version": "1.0",
+      "variables": [
+        {
+          "name": "x",
+          "unit": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "parameters": [],
+      "domain": [
+        {
+          "name": "x",
+          "lower": {
+            "numerator": "-10",
+            "denominator": "1"
+          },
+          "upper": {
+            "numerator": "10",
+            "denominator": "1"
+          },
+          "lower_closed": true,
+          "upper_closed": true
+        }
+      ],
+      "root": {
+        "op": "add",
+        "args": [
+          {
+            "op": "var",
+            "name": "x"
+          },
+          {
+            "op": "const",
+            "value": {
+              "numerator": "1",
+              "denominator": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "dsl_version": "1.0",
+      "variables": [
+        {
+          "name": "x",
+          "unit": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "parameters": [],
+      "domain": [
+        {
+          "name": "x",
+          "lower": {
+            "numerator": "-10",
+            "denominator": "1"
+          },
+          "upper": {
+            "numerator": "10",
+            "denominator": "1"
+          },
+          "lower_closed": true,
+          "upper_closed": true
+        }
+      ],
+      "root": {
+        "op": "piecewise",
+        "branches": [
+          {
+            "when": {
+              "var": "x",
+              "comparator": "lt",
+              "value": {
+                "numerator": "0",
+                "denominator": "1"
+              }
+            },
+            "then": {
+              "op": "abs",
+              "args": [
+                {
+                  "op": "var",
+                  "name": "x"
+                }
+              ]
+            }
+          }
+        ],
+        "otherwise": {
+          "op": "var",
+          "name": "x"
+        }
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "document": {
+        "dsl_version": "1.0",
+        "variables": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "parameters": [],
+        "domain": [
+          {
+            "name": "x",
+            "lower": {
+              "numerator": "-10",
+              "denominator": "1"
+            },
+            "upper": {
+              "numerator": "10",
+              "denominator": "1"
+            },
+            "lower_closed": true,
+            "upper_closed": true
+          }
+        ],
+        "root": {
+          "op": "exec",
+          "args": []
+        }
+      },
+      "reason": "unknown operator"
+    },
+    {
+      "document": {
+        "dsl_version": "1.0",
+        "variables": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "parameters": [],
+        "domain": [
+          {
+            "name": "x",
+            "lower": {
+              "numerator": "-10",
+              "denominator": "1"
+            },
+            "upper": {
+              "numerator": "10",
+              "denominator": "1"
+            },
+            "lower_closed": true,
+            "upper_closed": true
+          }
+        ],
+        "root": {
+          "op": "sin",
+          "args": [
+            {
+              "op": "var",
+              "name": "x"
+            },
+            {
+              "op": "var",
+              "name": "x"
+            }
+          ]
+        }
+      },
+      "reason": "arity"
+    }
+  ],
+  "semantic_invalid": [
+    {
+      "document": {
+        "dsl_version": "1.0",
+        "variables": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "parameters": [],
+        "domain": [
+          {
+            "name": "x",
+            "lower": {
+              "numerator": "-10",
+              "denominator": "1"
+            },
+            "upper": {
+              "numerator": "10",
+              "denominator": "1"
+            },
+            "lower_closed": true,
+            "upper_closed": true
+          }
+        ],
+        "root": {
+          "op": "pow",
+          "args": [
+            {
+              "op": "var",
+              "name": "x"
+            },
+            {
+              "op": "const",
+              "value": {
+                "numerator": "9",
+                "denominator": "1"
+              }
+            }
+          ]
+        }
+      },
+      "reason": "AST_LIMIT_EXCEEDED"
+    },
+    {
+      "document": {
+        "dsl_version": "1.0",
+        "variables": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "parameters": [],
+        "domain": [
+          {
+            "name": "x",
+            "lower": {
+              "numerator": "-10",
+              "denominator": "1"
+            },
+            "upper": {
+              "numerator": "10",
+              "denominator": "1"
+            },
+            "lower_closed": true,
+            "upper_closed": true
+          }
+        ],
+        "root": {
+          "op": "var",
+          "name": "unknown"
+        }
+      },
+      "reason": "UNKNOWN_SYMBOL"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # 文件整合紀錄
 
-> 2026-10-19｜整合基線 v2.1｜文件整合完成；產品仍處於設計階段
+> 2026-10-19｜原始整合基線 v2.1｜文件整合完成；產品仍處於設計階段
 
 ## 來源與結果
 
@@ -34,4 +34,25 @@
 
 ## 維護與校驗
 
-最終有 48 篇編號章節，以及 README 和本紀錄，共 50 份 Markdown。MANIFEST 的 documents 等於 files 筆數；每筆 bytes 與 sha256 以對應檔案的原始位元組計算。後續變更應檢查連結存在、章節編號唯一、所有文件可由 README 到達、JSON 範例可解析及程式區塊成對，再重建 MANIFEST。
+原始 v2.1 整合有 48 篇編號章節，以及 README 和本紀錄，原始合併時共 50 份 Markdown。原始清單僅含 Markdown，因此 documents 當時等於 files 筆數；每筆 bytes 與 sha256 以對應檔案的原始位元組計算。後續變更應檢查連結存在、章節編號唯一、所有文件可由 README 到達、JSON 範例可解析及程式區塊成對，再重建 MANIFEST。
+
+## v2.2 嚴謹性修訂（2026-10-19）
+
+本輪重新審查原整合留下的語意衝突，取代不夠具體的模板，不宣稱產品已實作。
+
+| 審查問題 | 已完成的規格修訂／驗證入口 | 尚待實作或決策 |
+|---|---|---|
+| 真值流入求解器 | AX-05／28 改三角色與雙資料流，補拒絕存取案例 | 實際 bucket／帳號與隔離測試 |
+| 搜尋適應驗證集 | 固定 fit/development/final_test、一次凍結評估與污染退役規則 | 真實 evaluator／blind generator；D-03 |
+| DSL 只有描述 | AX-10 語法／arity／域／單位／hash、schema 正反例 | parser、求值器、資源隔離與容差測試 |
+| 數學判定模糊 | AX-28／13 指標公式、coverage、等效與拒答方法、公開 fixture | 領域量測模型與正式盲測門檻 |
+| API／事件不完整 | AX-21 逐端點、冪等／ETag、錯誤碼、SSE 與離線 OpenAPI | 服務實作與產品契約測試 |
+| 租約／取消競態 | AX-38 generation／row-lock／預算與 checkpoint 協定 | crash、重領、競態與成本測試 |
+| 範圍與階段衝突 | AX-02／30 統一 M0～M7；M3 是互動 MVP | 具名人力、工期與 D-08 |
+| 物件／ERD 不一致 | AX-47 逐物件必要欄位與 schema；AX-43 版本、複合 FK 與約束 | DB migrations 與跨租戶測試 |
+| 驗收只有模板 | AX-46 全部 REQ 連到 AC；各章補專屬判定 | 案例皆 NOT_RUN；產品執行證據 |
+| 部署／恢復不可照做 | AX-41 init/live/ready；AX-27 BackupSet、還原順序與撤銷重播 | Compose／管理命令與實際演練；D-06 |
+| 權限／外送／撤銷模糊 | AX-26 身分、操作矩陣、分級、快取與模型隔離 | 真實政策批准與 D-04／05 |
+| 重複模板掩蓋細節 | 共用規則集中 AX-48，移除重複泛用能力／流程／驗收段 | 後續變更依權威表持續維護 |
+
+新增 contracts 與 docs/tools/check_docs.py，供 schema、OpenAPI、範例、公開 oracle、追溯及檔案校驗。v2.2 為 49 篇編號章節、51 份 Markdown；manifest 現涵蓋 contracts 與工具，documents 不再等於 files 筆數，全部檔案數使用 file_count。文件通過不代表產品通過，G2／G7 的正式門檻未核准時保持 BLOCKED。

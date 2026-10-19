@@ -1,0 +1,487 @@
+{
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "DatasetVersionAvailable",
+        "ResearchVersionReady",
+        "RunQueued",
+        "RunStarted",
+        "CandidateFound",
+        "ValidationFinished",
+        "RunCancelRequested",
+        "RunCancelled",
+        "RunFinished",
+        "ReviewRecorded",
+        "EvidenceRevoked"
+      ]
+    },
+    "tenant_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "research_version_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "producer_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "event_id",
+    "schema_version",
+    "event_type",
+    "tenant_id",
+    "research_version_id",
+    "run_id",
+    "sequence",
+    "occurred_at",
+    "trace_id",
+    "producer_version",
+    "payload"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://axiom.invalid/contracts/event-v1.schema.json",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "DatasetVersionAvailable"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "dataset_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "artifact_hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "dataset_version_id",
+              "artifact_hash"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "ResearchVersionReady"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "research_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "quality_report_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "research_version_id",
+              "quality_report_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "RunQueued"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "const": "QUEUED"
+              },
+              "attempt_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "status",
+              "attempt_id",
+              "generation"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "RunStarted"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "const": "RUNNING"
+              },
+              "attempt_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "status",
+              "attempt_id",
+              "generation"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "CandidateFound"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "candidate_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "equation_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "validation_status": {
+                "type": "string",
+                "enum": [
+                  "NOT_RUN",
+                  "PENDING",
+                  "FINISHED",
+                  "INVALID"
+                ]
+              }
+            },
+            "required": [
+              "candidate_id",
+              "equation_version_id",
+              "validation_status"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "ValidationFinished"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "validation_run_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "evidence_bundle_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "outcome_status": {
+                "type": "string",
+                "enum": [
+                  "SUPPORTED",
+                  "AMBIGUOUS",
+                  "INSUFFICIENT_EVIDENCE",
+                  "FALSIFIED"
+                ]
+              }
+            },
+            "required": [
+              "validation_run_id",
+              "evidence_bundle_id",
+              "outcome_status"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "RunCancelRequested"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "const": "CANCEL_REQUESTED"
+              },
+              "stop_reason": {
+                "const": "USER_CANCELLED"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "status",
+              "stop_reason",
+              "revision"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "RunCancelled"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "const": "CANCELLED"
+              },
+              "stop_reason": {
+                "const": "USER_CANCELLED"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "status",
+              "stop_reason",
+              "revision"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "RunFinished"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "SUCCEEDED",
+                  "FAILED"
+                ]
+              },
+              "stop_reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "status",
+              "stop_reason",
+              "revision"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "ReviewRecorded"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "review_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "decision": {
+                "type": "string",
+                "enum": [
+                  "APPROVE",
+                  "REJECT"
+                ]
+              },
+              "evidence_bundle_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "review_id",
+              "decision",
+              "evidence_bundle_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "EvidenceRevoked"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "evidence_bundle_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "revocation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "reason_code": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "evidence_bundle_id",
+              "revocation_id",
+              "reason_code"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  ]
+}

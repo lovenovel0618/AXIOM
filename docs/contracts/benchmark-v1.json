@@ -1,0 +1,159 @@
+{
+  "version": "1.0",
+  "visibility": "PUBLIC_SMOKE_ONLY",
+  "atol": 1e-10,
+  "rtol": 1e-10,
+  "cases": [
+    {
+      "id": "B-LINE",
+      "x": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "y": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19
+      ],
+      "fit": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "development": [
+        6,
+        7
+      ],
+      "final_test": [
+        8,
+        9
+      ],
+      "candidate": "2*x+1",
+      "expected": {
+        "coverage": 1,
+        "mae": 0,
+        "rmse": 0
+      }
+    },
+    {
+      "id": "B-DOMAIN",
+      "x": [
+        -1,
+        0,
+        1
+      ],
+      "y": [
+        1,
+        1,
+        1
+      ],
+      "candidate": "x/x",
+      "expected": {
+        "valid_mask": [
+          true,
+          false,
+          true
+        ],
+        "coverage": 0.6666666666666666,
+        "error": "DOMAIN_VIOLATION"
+      }
+    },
+    {
+      "id": "B-AMBIG",
+      "x": [
+        -0.1,
+        -0.05,
+        0,
+        0.05,
+        0.1
+      ],
+      "y": [
+        -0.09983341664682815,
+        -0.04997916927067833,
+        0.0,
+        0.04997916927067833,
+        0.09983341664682815
+      ],
+      "absolute_measurement_bound": 0.001,
+      "candidates": [
+        "sin(x)",
+        "x"
+      ],
+      "expected": {
+        "outcome_status": "AMBIGUOUS",
+        "max_prediction_difference_upper_bound": 0.001,
+        "suggested_x": 1
+      }
+    },
+    {
+      "id": "B-NOISE",
+      "x": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "y": [
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "fit": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "development": [
+        6,
+        7
+      ],
+      "final_test": [
+        8,
+        9
+      ],
+      "candidate": "10",
+      "baseline": "0",
+      "expected": {
+        "candidate_mae": 10,
+        "candidate_rmse": 10.04987562112089,
+        "baseline_mae": 1,
+        "baseline_rmse": 1,
+        "outcome_status": "INSUFFICIENT_EVIDENCE"
+      }
+    }
+  ]
+}
