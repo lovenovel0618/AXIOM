@@ -22,37 +22,133 @@ class Scenario:
     case: JsonObject
 
 
+CANONICAL_MAX_DEPTH = 32
+CANONICAL_MAX_BYTES = 2 * 1024 * 1024
+SAFE_JSON_INTEGER = 2**53 - 1
+
+
+def reject_json_constant(value: str) -> Any:
+    raise ValueError("Non-finite JSON literal: " + value)
+
+
+def finite_json_float(value: str) -> float:
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError("Non-finite JSON number")
+    return number
+
+
+def unique_json_object(pairs: list[tuple[str, Any]]) -> JsonObject:
+    result: JsonObject = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("Duplicate JSON member: " + key)
+        result[key] = value
+    return result
+
+
+def strict_json_loads(raw: str) -> Any:
+    return json.loads(raw, object_pairs_hook=unique_json_object,
+                      parse_constant=reject_json_constant, parse_float=finite_json_float)
+
+
+def validate_canonical_value(value: object, depth: int = 0) -> None:
+    if depth > CANONICAL_MAX_DEPTH:
+        raise ValueError("Canonical JSON depth exceeded")
+    if value is None or isinstance(value, (str, bool)):
+        return
+    if isinstance(value, int) and abs(value) <= SAFE_JSON_INTEGER:
+        return
+    if isinstance(value, list):
+        for item in cast(list[object], value):
+            validate_canonical_value(item, depth + 1)
+        return
+    if isinstance(value, dict):
+        validate_canonical_object(cast(dict[object, object], value), depth)
+        return
+    raise ValueError("Canonical JSON accepts safe integers, not floating-point values")
+
+
+def validate_canonical_object(value: dict[object, object], depth: int) -> None:
+    for key, item in value.items():
+        if not isinstance(key, str):
+            raise ValueError("Canonical JSON object keys must be strings")
+        validate_canonical_value(item, depth + 1)
+
+
+def canonical_json_bytes(value: object) -> bytes:
+    validate_canonical_value(value)
+    raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+    if len(raw) > CANONICAL_MAX_BYTES:
+        raise ValueError("Canonical JSON size exceeded")
+    return raw
+
+
+def canonical_decimal(value: str) -> str:
+    # Decimal schema excludes exponent notation; do not normalize arbitrary text fields.
+    negative = value.startswith("-")
+    integer, separator, fraction = value.removeprefix("-").partition(".")
+    fraction = fraction.rstrip("0")
+    magnitude = integer + (separator + fraction if fraction else "")
+    return "-" + magnitude if negative and magnitude != "0" else magnitude
+
+
 def canonical_hash(value: object) -> str:
-    raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
-    return hashlib.sha256(raw).hexdigest()
+    return hashlib.sha256(canonical_json_bytes(value)).hexdigest()
 
 
 def freeze_decision(c: JsonObject) -> str:
     policy_result = freeze_policy_decision(c)
     if policy_result != "ACCEPT":
         return policy_result
+    recipe_result = freeze_recipe_decision(c)
+    if recipe_result != "ACCEPT":
+        return recipe_result
     f, fit, eq = c["frozen_candidate"], c["fit"], c["equation"]
     candidate, sub = c["candidate"], c["submission"]
     if f["candidate_id"] != candidate["id"] or f["fit_run_id"] != fit["id"] or fit["id"] not in candidate["fit_run_ids"]:
         return "FIT_REFERENCE_MISMATCH"
-    for key in ["equation_version_id", "dataset_version_id", "observation_split_id"]:
+    for key in ["equation_version_id", "dataset_version_id", "observation_split_id", "representation_artifact_id"]:
         if f[key] != fit[key]:
             return "FIT_REFERENCE_MISMATCH"
     if f["equation_version_id"] != eq["id"] or f["dsl_identity_hash"] != eq["identity_hash"]:
         return "EQUATION_MISMATCH"
-    if f["parameters"] != fit["parameters"]:
-        return "BINDING_MISMATCH"
-    if f["parameter_binding_hash"] != canonical_hash(f["parameters"]):
-        return "BINDING_HASH_MISMATCH"
-    if set(f["parameters"]) != {p["name"] for p in eq["dsl"]["parameters"]}:
-        return "BINDING_MISMATCH"
+    binding_result = frozen_binding_decision(f, fit, eq)
+    if binding_result != "ACCEPT":
+        return binding_result
     payload = {"research_version_id": c["research_version"]["id"], "sealed_test_id": sub["sealed_test_id"],
                "metric_version": sub["metric_version"], "evaluation_policy_hash": sub["evaluation_policy_hash"],
+               "verification_plan_artifact_id": sub["verification_plan_artifact_id"],
+               "verification_plan_hash": sub["verification_plan_hash"],
                "frozen_candidates": [f]}
     if sub["snapshot_hash"] != canonical_hash(payload):
         return "SNAPSHOT_MISMATCH"
     if sub["frozen_candidate_ids"] != [f["id"]] or f["development_rank"] != candidate["development_rank"]:
         return "RANK_MISMATCH"
+    return "ACCEPT"
+
+
+def freeze_recipe_decision(context: JsonObject) -> str:
+    recipe, fit, version = context["representation"], context["fit"], context["research_version"]
+    if recipe["id"] != fit["representation_artifact_id"]:
+        return "REPRESENTATION_MISMATCH"
+    if recipe["tenant_id"] != version["tenant_id"] or recipe["research_version_id"] != version["id"]:
+        return "REPRESENTATION_MISMATCH"
+    for key in ["dataset_version_id", "observation_split_id", "fit_rows_hash"]:
+        if recipe[key] != fit[key]:
+            return "REPRESENTATION_MISMATCH"
+    return "ACCEPT"
+
+
+def frozen_binding_decision(f: JsonObject, fit: JsonObject, eq: JsonObject) -> str:
+    if f["parameters"] != fit["parameters"]:
+        return "BINDING_MISMATCH"
+    if any(value != canonical_decimal(value) for value in f["parameters"].values()):
+        return "PARAMETER_NOT_CANONICAL"
+    if f["parameter_binding_hash"] != canonical_hash(f["parameters"]):
+        return "BINDING_HASH_MISMATCH"
+    if set(f["parameters"]) != {p["name"] for p in eq["dsl"]["parameters"]}:
+        return "BINDING_MISMATCH"
     return "ACCEPT"
 
 
@@ -425,6 +521,13 @@ def freeze_policy_decision(context: JsonObject) -> str:
         return "EVALUATION_POLICY_MISMATCH"
     if context["submission"]["evaluation_policy_hash"] != policy_hash:
         return "EVALUATION_POLICY_MISMATCH"
+    plan = context["verification_plan"]
+    if (plan["tenant_id"] != version["tenant_id"] or plan["research_version_id"] != version["id"]
+            or plan["purpose"] != version["purpose"]):
+        return "VERIFICATION_PLAN_MISMATCH"
+    if (context["submission"]["verification_plan_artifact_id"] != plan["id"]
+            or context["submission"]["verification_plan_hash"] != canonical_hash(plan)):
+        return "VERIFICATION_PLAN_MISMATCH"
     return "ACCEPT"
 
 
@@ -664,17 +767,36 @@ def representation_guard_decision(scenario: Scenario) -> str:
     return "ACCEPT"
 
 
+def trace_node_decision(node: JsonObject, seen: set[str], fingerprints: dict[str, str], case: JsonObject, parent_visibility: dict[str, str]) -> str:
+    identifier = node["id"]
+    if identifier in seen:
+        return "EXISTING_NODE" if fingerprints.get(identifier) == canonical_hash(node) else "TRACE_NODE_CONFLICT"
+    if node["tenant"] != case["tenant"]:
+        return "TRACE_TENANT_MISMATCH"
+    if not set(node["parents"]) <= seen:
+        return "TRACE_DEPENDENCY_INVALID"
+    visibility = node.get("visibility", "PROJECT")
+    private_parent = any(parent_visibility.get(parent) == "SEALED_DETAIL"
+                         for parent in node["parents"])
+    if visibility == "PROJECT" and private_parent:
+        return "TRACE_VISIBILITY_LEAK"
+    return "ACCEPT"
+
+
 def trace_graph_decision(scenario: Scenario) -> str:
     case = scenario.case
     seen = set(case["committed_parent_ids"])
+    fingerprints: dict[str, str] = dict(case.get("committed_fingerprints", {}))
+    parent_visibility: dict[str, str] = dict(case.get("parent_visibility", {}))
     for node in case["nodes"]:
-        if node["id"] in seen:
-            return "TRACE_NODE_CONFLICT"
-        if node["tenant"] != case["tenant"]:
-            return "TRACE_TENANT_MISMATCH"
-        if not set(node["parents"]) <= seen:
-            return "TRACE_DEPENDENCY_INVALID"
+        result = trace_node_decision(node, seen, fingerprints, case, parent_visibility)
+        if result == "EXISTING_NODE":
+            continue
+        if result != "ACCEPT":
+            return result
         seen.add(node["id"])
+        fingerprints[node["id"]] = canonical_hash(node)
+        parent_visibility[node["id"]] = node.get("visibility", "PROJECT")
     if case["late_attempt"] and case["promote_evidence"]:
         return "STALE_ATTEMPT"
     return "ACCEPT"
@@ -733,7 +855,7 @@ def square_inverse_decision(scenario: Scenario) -> str:
     case = scenario.case
     target = case["target"]
     if target < 0:
-        return "NONE_REAL"
+        return "INVERSE_SOLUTION_SET_INVALID" if case["claimed_solutions"] else "NONE_REAL"
     root = math.isqrt(target)
     if root * root != target:
         return "UNKNOWN_IN_THIS_FIXTURE"
@@ -803,7 +925,121 @@ def learning_release_decision(scenario: Scenario) -> str:
     return "ACCEPT"
 
 
+def trace_chain_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if case["sequence"] == 1:
+        return "ACCEPT" if case["previous_hash"] is None else "TRACE_CHAIN_INVALID"
+    if case["previous_hash"] is None or case["previous_hash"] != case["expected_previous_hash"]:
+        return "TRACE_CHAIN_INVALID"
+    if case["stream_id"] != case["previous_stream_id"] or case["visibility"] != case["previous_visibility"]:
+        return "TRACE_VISIBILITY_LEAK"
+    return "ACCEPT"
+
+
+def structure_preview_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if case["scope"] == "METADATA_ONLY":
+        if case["reads_labels"] or case["estimates_periodicity"] or case["has_research_version"]:
+            return "PREVIEW_SCOPE_VIOLATION"
+        return "ACCEPT"
+    if not case["has_research_version"] or not case["fixed_split"] or not case["only_fit_rows"]:
+        return "STRUCTURE_SCOPE_VIOLATION"
+    return "ACCEPT"
+
+
+def required_axes_satisfied(case: JsonObject) -> bool:
+    for axis in case["required_axes"]:
+        status = case["axes"][axis]
+        permitted_na = status == "NOT_APPLICABLE" and axis in case["approved_na_axes"]
+        if status != "SUPPORTED" and not permitted_na:
+            return False
+    return True
+
+
+def evidence_sufficiency_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if not case["plan_hash_matches"]:
+        return "VERIFICATION_PLAN_MISMATCH"
+    available = case["sources_active"] and case["criteria_verified"] and not case["unmet_criteria"]
+    supported = "SUPPORTED" in case["axes"].values()
+    actual = bool(available and supported and required_axes_satisfied(case))
+    return "ACCEPT" if actual == case["claimed_sufficient"] else "EVIDENCE_SUFFICIENCY_CONFLICT"
+
+
+def inverse_result_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if case["causal_identified"] and not case["causal_evidence_verified"]:
+        return "CAUSAL_IDENTIFICATION_MISSING"
+    status, count = case["status"], case["solution_count"]
+    if status == "NONE":
+        return "ACCEPT" if count == 0 and case["no_solution_verified"] else "INVERSE_RESULT_INVALID"
+    if status == "UNKNOWN":
+        return "ACCEPT"
+    if not case["forward_verified"]:
+        return "INVERSE_RESULT_INVALID"
+    if status == "UNIQUE" and (count != 1 or not case["uniqueness_verified"]):
+        return "INVERSE_RESULT_INVALID"
+    if status == "MULTIPLE" and count < 2:
+        return "INVERSE_RESULT_INVALID"
+    return "ACCEPT"
+
+
+def training_partition_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if not case["authority_verified"]:
+        return "TRAINING_PARTITION_AUTHORITY_INVALID"
+    groups: dict[tuple[str, str], str] = {}
+    for row in case["assignments"]:
+        if row["source_artifact_id"] not in case["source_artifact_ids"]:
+            return "TRAINING_SOURCE_MISMATCH"
+        for field in ["case_id", "family_id", "source_group_id", "observation_group_id"]:
+            key = field, row[field]
+            if key in groups and groups[key] != row["partition"]:
+                return "TRAINING_OBSERVATION_LEAK"
+            groups[key] = row["partition"]
+    return "ACCEPT"
+
+
+def rollback_eligibility_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if case["candidate_active"] and case["candidate_passed"]:
+        return "KEEP_CANDIDATE"
+    if case["baseline_active"] and case["baseline_passed"]:
+        return "ROLLBACK_TO_VALID_BASELINE"
+    if case["alternative_active"] and case["alternative_passed"]:
+        return "USE_VALID_ALTERNATIVE"
+    return "DISABLE_AI"
+
+
+def strict_json_decision(scenario: Scenario) -> str:
+    try:
+        strict_json_loads(scenario.case["raw"])
+    except ValueError:
+        return "JSON_REJECTED"
+    return "ACCEPT"
+
+
+def canonical_profile_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    try:
+        raw = canonical_json_bytes(strict_json_loads(case["raw"]))
+    except ValueError:
+        return "CANONICAL_JSON_REJECTED"
+    if raw.decode() != case["expected_bytes"]:
+        raise AssertionError("Canonical byte vector drift")
+    return "ACCEPT"
+
+
 CASE_HANDLERS: dict[str, Callable[[Scenario], str]] = {
+    "trace_chain": trace_chain_decision,
+    "structure_preview": structure_preview_decision,
+    "evidence_sufficiency": evidence_sufficiency_decision,
+    "inverse_result": inverse_result_decision,
+    "training_partition": training_partition_decision,
+    "rollback_eligibility": rollback_eligibility_decision,
+    "strict_json": strict_json_decision,
+    "canonical_profile": canonical_profile_decision,
+
     "representation_guard": representation_guard_decision,
     "trace_graph": trace_graph_decision,
     "failure_judgment": failure_judgment_decision,

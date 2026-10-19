@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "document_revision": "2.8",
+  "document_revision": "2.9",
   "scope": "DOCUMENT_REFERENCE_ONLY",
   "product_status": "NOT_RUN",
   "findings": [
@@ -878,6 +878,274 @@
         "CF-269"
       ],
       "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-29",
+      "finding": "建立前結構預覽與PROFILE存在循環依賴",
+      "status": "SPECIFIED",
+      "chapters": [
+        9,
+        21,
+        43,
+        49
+      ],
+      "evidence_paths": [
+        "04-數學核心/09-數據語意與前處理.md",
+        "07-資料與API/21-API與任務契約.md",
+        "13-專題深化/43-資料庫ERD與關係約束.md",
+        "14-自主研究/49-數據結構與自主表徵探索.md"
+      ],
+      "acceptance_ids": [
+        "AC-49-09",
+        "AC-49-10"
+      ],
+      "reference_case_ids": [
+        "CF-270",
+        "CF-271",
+        "CF-272",
+        "CF-273",
+        "CF-274",
+        "CF-275"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-30",
+      "finding": "公開與封存共用trace鏈、重送裁決矛盾",
+      "status": "SPECIFIED",
+      "chapters": [
+        7,
+        26,
+        43,
+        50
+      ],
+      "evidence_paths": [
+        "03-架構/07-模組邊界與事件契約.md",
+        "09-非功能/26-安全隱私與可信執行.md",
+        "13-專題深化/43-資料庫ERD與關係約束.md",
+        "14-自主研究/50-研究決策軌跡與錯誤恢復.md"
+      ],
+      "acceptance_ids": [
+        "AC-50-09",
+        "AC-50-10"
+      ],
+      "reference_case_ids": [
+        "CF-276",
+        "CF-277",
+        "CF-278",
+        "CF-279",
+        "CF-280",
+        "CF-281",
+        "CF-282",
+        "CF-283",
+        "CF-284",
+        "CF-285",
+        "CF-329",
+        "CF-330"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-31",
+      "finding": "canonical格式／數值字串與跨語言身分不明確",
+      "status": "SPECIFIED",
+      "chapters": [
+        10,
+        12,
+        47,
+        48
+      ],
+      "evidence_paths": [
+        "04-數學核心/10-公式DSL與等價正規化.md",
+        "04-數學核心/12-參數最佳化與數值精度.md",
+        "13-專題深化/47-完整研究物件契約.md",
+        "00-總覽/48-共用契約與文件治理.md"
+      ],
+      "acceptance_ids": [
+        "AC-48-05",
+        "AC-48-06"
+      ],
+      "reference_case_ids": [
+        "CF-292",
+        "CF-293",
+        "CF-294",
+        "CF-295",
+        "CF-296",
+        "CF-297",
+        "CF-298"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-32",
+      "finding": "凍結未強制綁定表徵與完整驗證計畫",
+      "status": "SPECIFIED",
+      "chapters": [
+        16,
+        21,
+        38,
+        47,
+        49,
+        51
+      ],
+      "evidence_paths": [
+        "05-記憶/16-經驗記憶與檢索架構.md",
+        "07-資料與API/21-API與任務契約.md",
+        "03-架構/38-演算法插件與研究協調.md",
+        "13-專題深化/47-完整研究物件契約.md",
+        "14-自主研究/49-數據結構與自主表徵探索.md",
+        "14-自主研究/51-正確性證據與正逆向驗證.md"
+      ],
+      "acceptance_ids": [
+        "AC-47-09",
+        "AC-47-10"
+      ],
+      "reference_case_ids": [
+        "CF-299",
+        "CF-300",
+        "CF-301",
+        "CF-302",
+        "CF-326",
+        "CF-327",
+        "CF-328"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-33",
+      "finding": "證據充分性可自填且與未滿足條件矛盾",
+      "status": "SPECIFIED",
+      "chapters": [
+        28,
+        34,
+        51
+      ],
+      "evidence_paths": [
+        "10-測試/28-數學基準測試規格.md",
+        "12-附錄/34-術語表與證據等級.md",
+        "14-自主研究/51-正確性證據與正逆向驗證.md"
+      ],
+      "acceptance_ids": [
+        "AC-51-09",
+        "AC-51-10"
+      ],
+      "reference_case_ids": [
+        "CF-303",
+        "CF-304",
+        "CF-305",
+        "CF-306",
+        "CF-307",
+        "CF-308",
+        "CF-309"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-34",
+      "finding": "逆解的多解／唯一性與因果欄位缺基本約束",
+      "status": "SPECIFIED",
+      "chapters": [
+        13,
+        51
+      ],
+      "evidence_paths": [
+        "04-數學核心/13-可識別性不確定性與主動採樣.md",
+        "14-自主研究/51-正確性證據與正逆向驗證.md"
+      ],
+      "acceptance_ids": [
+        "AC-51-11"
+      ],
+      "reference_case_ids": [
+        "CF-310",
+        "CF-311",
+        "CF-312",
+        "CF-313",
+        "CF-314",
+        "CF-315",
+        "CF-316"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-35",
+      "finding": "訓練分區只比family名稱、可洗白原觀測",
+      "status": "SPECIFIED",
+      "chapters": [
+        5,
+        19,
+        43,
+        52
+      ],
+      "evidence_paths": [
+        "02-流程/05-基準測試與持續學習流程.md",
+        "06-AI/19-策略學習微調與蒸餾.md",
+        "13-專題深化/43-資料庫ERD與關係約束.md",
+        "14-自主研究/52-AI紀錄封存與經驗演化.md"
+      ],
+      "acceptance_ids": [
+        "AC-52-09",
+        "AC-52-10"
+      ],
+      "reference_case_ids": [
+        "CF-317",
+        "CF-318",
+        "CF-319",
+        "CF-320",
+        "CF-321"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-36",
+      "finding": "回退版本本身也可能繼承受污染來源",
+      "status": "SPECIFIED",
+      "chapters": [
+        19,
+        26,
+        27,
+        52
+      ],
+      "evidence_paths": [
+        "06-AI/19-策略學習微調與蒸餾.md",
+        "09-非功能/26-安全隱私與可信執行.md",
+        "09-非功能/27-可觀測性備份與故障復原.md",
+        "14-自主研究/52-AI紀錄封存與經驗演化.md"
+      ],
+      "acceptance_ids": [
+        "AC-52-11"
+      ],
+      "reference_case_ids": [
+        "CF-322",
+        "CF-323",
+        "CF-324",
+        "CF-325"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-37",
+      "finding": "JSON解碼悄悄接受重複鍵及非有限數",
+      "status": "SPECIFIED",
+      "chapters": [
+        21,
+        48
+      ],
+      "evidence_paths": [
+        "07-資料與API/21-API與任務契約.md",
+        "00-總覽/48-共用契約與文件治理.md"
+      ],
+      "acceptance_ids": [
+        "AC-48-07"
+      ],
+      "reference_case_ids": [
+        "CF-286",
+        "CF-287",
+        "CF-288",
+        "CF-289",
+        "CF-290",
+        "CF-291"
+      ],
+      "product_status": "NOT_RUN"
     }
   ],
   "chapters": [
@@ -941,7 +1209,8 @@
       "review_focus": "隔離、曝光資格與基準更新",
       "finding_ids": [
         "RG-02",
-        "RG-25"
+        "RG-25",
+        "RG-35"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -963,7 +1232,8 @@
       "finding_ids": [
         "RG-08",
         "RG-16",
-        "RG-26"
+        "RG-26",
+        "RG-30"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -989,7 +1259,8 @@
         "RG-03",
         "RG-04",
         "RG-05",
-        "RG-25"
+        "RG-25",
+        "RG-29"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -999,7 +1270,8 @@
       "path": "04-數學核心/10-公式DSL與等價正規化.md",
       "review_focus": "DSL／量綱／域／部分函數",
       "finding_ids": [
-        "RG-01"
+        "RG-01",
+        "RG-31"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1020,7 +1292,8 @@
       "review_focus": "參數、轉換與環境重現",
       "finding_ids": [
         "RG-01",
-        "RG-11"
+        "RG-11",
+        "RG-31"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1031,7 +1304,8 @@
       "review_focus": "歧義、不確定性與主動採樣",
       "finding_ids": [
         "RG-12",
-        "RG-27"
+        "RG-27",
+        "RG-34"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1065,7 +1339,8 @@
       "path": "05-記憶/16-經驗記憶與檢索架構.md",
       "review_focus": "記憶／快取身分及安全投影",
       "finding_ids": [
-        "RG-17"
+        "RG-17",
+        "RG-32"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1100,7 +1375,9 @@
       "finding_ids": [
         "RG-17",
         "RG-24",
-        "RG-28"
+        "RG-28",
+        "RG-35",
+        "RG-36"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1126,7 +1403,10 @@
         "RG-04",
         "RG-06",
         "RG-15",
-        "RG-16"
+        "RG-16",
+        "RG-29",
+        "RG-32",
+        "RG-37"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1187,7 +1467,9 @@
         "RG-16",
         "RG-17",
         "RG-19",
-        "RG-28"
+        "RG-28",
+        "RG-30",
+        "RG-36"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1201,7 +1483,8 @@
         "RG-09",
         "RG-16",
         "RG-19",
-        "RG-28"
+        "RG-28",
+        "RG-36"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1214,7 +1497,8 @@
         "RG-02",
         "RG-03",
         "RG-12",
-        "RG-27"
+        "RG-27",
+        "RG-33"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1282,7 +1566,8 @@
         "RG-12",
         "RG-14",
         "RG-15",
-        "RG-27"
+        "RG-27",
+        "RG-33"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1328,7 +1613,8 @@
         "RG-09",
         "RG-10",
         "RG-11",
-        "RG-26"
+        "RG-26",
+        "RG-32"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1385,7 +1671,10 @@
         "RG-13",
         "RG-15",
         "RG-19",
-        "RG-26"
+        "RG-26",
+        "RG-29",
+        "RG-30",
+        "RG-35"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1437,7 +1726,9 @@
         "RG-12",
         "RG-13",
         "RG-14",
-        "RG-15"
+        "RG-15",
+        "RG-31",
+        "RG-32"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1447,7 +1738,9 @@
       "path": "00-總覽/48-共用契約與文件治理.md",
       "review_focus": "契約權威、修訂與全面審查",
       "finding_ids": [
-        "RG-22"
+        "RG-22",
+        "RG-31",
+        "RG-37"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1457,7 +1750,9 @@
       "path": "14-自主研究/49-數據結構與自主表徵探索.md",
       "review_focus": "一至n維、週期、多序列與表徵選擇／洩漏",
       "finding_ids": [
-        "RG-25"
+        "RG-25",
+        "RG-29",
+        "RG-32"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1467,7 +1762,8 @@
       "path": "14-自主研究/50-研究決策軌跡與錯誤恢復.md",
       "review_focus": "決策DAG、失敗歸因、恢復及反誤殺",
       "finding_ids": [
-        "RG-26"
+        "RG-26",
+        "RG-30"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1477,7 +1773,10 @@
       "path": "14-自主研究/51-正確性證據與正逆向驗證.md",
       "review_focus": "多軸正確性、機率、逆推與證據充分性",
       "finding_ids": [
-        "RG-27"
+        "RG-27",
+        "RG-32",
+        "RG-33",
+        "RG-34"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1487,7 +1786,9 @@
       "path": "14-自主研究/52-AI紀錄封存與經驗演化.md",
       "review_focus": "AI捕捉、封存／整理、反例與本地模型選型",
       "finding_ids": [
-        "RG-28"
+        "RG-28",
+        "RG-35",
+        "RG-36"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"

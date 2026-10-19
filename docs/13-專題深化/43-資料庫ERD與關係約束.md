@@ -1,6 +1,6 @@
 # 43｜資料庫ERD與關係約束
 
-> AXIOM v2.8 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.9 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-20
 
 ## 權威關係圖
 
@@ -144,3 +144,7 @@ MVP不提供資料硬刪除API。D-05未定保留及刪除政策前只允許受�
 Run.research_trace_artifact_ids為授權投影，內部以(run_id,chunk_sequence)及node_id唯一、payload hash不可變，前chunk及parent需已存在／同tenant並保證DAG；遲到診斷不寫合法證據關聯。新payload中evidence、row依賴、case family、模型與訓練來源均為同租戶受控FK／registry引用，不能因都是UUID就放行。
 
 批次以(tenant,policy_hash,input_high_watermark)唯一、提交結果後才CAS前移水位；壓縮manifest切換不改Artifact內容身分，原bytes／hash仍可還原。ExperienceVersion append-only、supersedes不成環；模型／規則release與來源撤銷有持久影響索引，不能只靠向量庫刪embedding。M4／M7實作需實際DB遷移與併發驗收，payload schema不代替關係約束。
+
+## v2.9 完成狀態及分級鏈約束
+
+AVAILABLE DatasetVersion必有metadata preview，READY以上研究版本必有fit結構評估；這是內部完成交易的不變條件；公開DTO因授權過濾可回null，不能把公開null當內部未完成或遺失的證據，也不回傳洩漏資源存在性的私有原因。內部缺引用需完整性告警／修復，不以安全投影掩蓋。trace唯一鍵為(tenant,trace_stream_id,sequence)，stream固定run／class／audience；跨私有前提的公開節點拒絕。plan／recipe、訓練分區authority及source group引用需同租戶FK／registry驗證；UUID形狀不證引用有效。

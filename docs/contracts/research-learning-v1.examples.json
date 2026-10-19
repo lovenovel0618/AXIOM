@@ -23,7 +23,8 @@
       "periodicity": "UNKNOWN",
       "method_manifest_id": "00000000-0000-4000-8000-000000000004",
       "fit_rows_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "uncertainty_reason": "缺乏時間與生成系統資訊"
+      "uncertainty_reason": "缺乏時間與生成系統資訊",
+      "analysis_scope": "FIT_ONLY"
     },
     {
       "kind": "RepresentationSpec",
@@ -84,7 +85,8 @@
           "execution_state": "STARTED",
           "late_invalid": false
         }
-      ]
+      ],
+      "trace_stream_id": "00000000-0000-4000-8000-000000000803"
     },
     {
       "kind": "FailureAssessment",
@@ -168,7 +170,9 @@
       "unmet_criteria": [
         "獨立預測評估尚未執行"
       ],
-      "stop_reason": "BUDGET_EXHAUSTED"
+      "stop_reason": "BUDGET_EXHAUSTED",
+      "verification_plan_hash": "bb0015be0e38ca69a7bad73a866534ab41f98b6a91cab43fac9c84a4d56f6a3d",
+      "evaluated_criteria_artifact_id": "00000000-0000-4000-8000-000000000804"
     },
     {
       "kind": "InverseProblemResult",
@@ -189,7 +193,8 @@
       "causal_status": "NOT_APPLICABLE",
       "limitations": [
         "實數域x²=4有兩解，無額外分支約束"
-      ]
+      ],
+      "causal_identification_artifact_id": null
     },
     {
       "kind": "AIRuntimeRecord",
@@ -337,7 +342,34 @@
       "negative_case_ids": [
         "00000000-0000-4000-8000-000000000041"
       ],
-      "partition_check_artifact_id": "00000000-0000-4000-8000-000000000046"
+      "partition_check_artifact_id": "00000000-0000-4000-8000-000000000046",
+      "partition_authority_artifact_id": "00000000-0000-4000-8000-000000000805",
+      "partition_assignments": [
+        {
+          "source_artifact_id": "00000000-0000-4000-8000-000000000040",
+          "case_id": "00000000-0000-4000-8000-000000000810",
+          "family_id": "train-family-A",
+          "source_group_id": "00000000-0000-4000-8000-000000000811",
+          "observation_group_id": "00000000-0000-4000-8000-000000000812",
+          "partition": "TRAIN"
+        },
+        {
+          "source_artifact_id": "00000000-0000-4000-8000-000000000041",
+          "case_id": "00000000-0000-4000-8000-000000000813",
+          "family_id": "development-family-B",
+          "source_group_id": "00000000-0000-4000-8000-000000000814",
+          "observation_group_id": "00000000-0000-4000-8000-000000000815",
+          "partition": "DEVELOPMENT"
+        },
+        {
+          "source_artifact_id": "00000000-0000-4000-8000-000000000041",
+          "case_id": "00000000-0000-4000-8000-000000000816",
+          "family_id": "test-family-C",
+          "source_group_id": "00000000-0000-4000-8000-000000000817",
+          "observation_group_id": "00000000-0000-4000-8000-000000000818",
+          "partition": "TEST"
+        }
+      ]
     },
     {
       "kind": "LearningRelease",
@@ -392,6 +424,30 @@
       "minimum_change_rule_artifact_id": "00000000-0000-4000-8000-000000000608",
       "max_revisits": 2,
       "budget_policy_artifact_id": "00000000-0000-4000-8000-000000000605"
+    },
+    {
+      "kind": "StructureAssessment",
+      "id": "00000000-0000-4000-8000-000000000820",
+      "tenant_id": "00000000-0000-4000-8000-000000000001",
+      "research_version_id": null,
+      "schema_version": "1.0",
+      "created_at": "2026-10-20T00:00:00Z",
+      "artifact_access_class": "PROJECT",
+      "dataset_version_id": "00000000-0000-4000-8000-000000000003",
+      "observation_dimension": 1,
+      "coordinate_dimension": null,
+      "representation_dimension": 1,
+      "intrinsic_dimension_estimate": null,
+      "structure_candidates": [
+        "INDEX_SEQUENCE",
+        "TIME_SERIES"
+      ],
+      "time_basis": "UNKNOWN",
+      "periodicity": "UNKNOWN",
+      "method_manifest_id": "00000000-0000-4000-8000-000000000004",
+      "fit_rows_hash": null,
+      "uncertainty_reason": "只看欄名／型別／shape；不能讀labels或估週期",
+      "analysis_scope": "METADATA_ONLY"
     }
   ],
   "invalid": [
@@ -566,7 +622,9 @@
           "獨立預測評估尚未執行"
         ],
         "stop_reason": "BUDGET_EXHAUSTED",
-        "correctness_probability": 0.999
+        "correctness_probability": 0.999,
+        "verification_plan_hash": "bb0015be0e38ca69a7bad73a866534ab41f98b6a91cab43fac9c84a4d56f6a3d",
+        "evaluated_criteria_artifact_id": "00000000-0000-4000-8000-000000000804"
       }
     },
     {
@@ -688,6 +746,251 @@
         "minimum_change_rule_artifact_id": "00000000-0000-4000-8000-000000000608",
         "max_revisits": 2,
         "budget_policy_artifact_id": "00000000-0000-4000-8000-000000000605"
+      }
+    },
+    {
+      "reason": "非首chunk不得缺前序hash",
+      "document": {
+        "kind": "TraceChunk",
+        "id": "00000000-0000-4000-8000-000000000502",
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "research_version_id": "00000000-0000-4000-8000-000000000002",
+        "schema_version": "1.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "artifact_access_class": "PROJECT",
+        "run_id": "00000000-0000-4000-8000-000000000010",
+        "attempt_id": "00000000-0000-4000-8000-000000000011",
+        "generation": 1,
+        "sequence": 2,
+        "previous_chunk_hash": null,
+        "nodes": [
+          {
+            "node_id": "00000000-0000-4000-8000-000000000020",
+            "event_kind": "TOOL_REQUEST",
+            "parent_node_ids": [],
+            "source_artifact_ids": [
+              "00000000-0000-4000-8000-000000000003"
+            ],
+            "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "output_hash": null,
+            "actor_id": "00000000-0000-4000-8000-000000000021",
+            "occurred_at": "2026-10-20T00:00:00Z",
+            "method_manifest_id": "00000000-0000-4000-8000-000000000004",
+            "assumptions": [],
+            "rationale_summary": "以固定fit資料檢查基線；尚無結果",
+            "evidence_artifact_ids": [],
+            "branch_id": "00000000-0000-4000-8000-000000000022",
+            "action": "RECORD",
+            "execution_state": "STARTED",
+            "late_invalid": false
+          }
+        ],
+        "trace_stream_id": "00000000-0000-4000-8000-000000000803"
+      }
+    },
+    {
+      "reason": "未滿足條件不得標充分",
+      "document": {
+        "kind": "EvidenceAssessment",
+        "id": "00000000-0000-4000-8000-000000000504",
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "research_version_id": "00000000-0000-4000-8000-000000000002",
+        "schema_version": "1.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "artifact_access_class": "PROJECT",
+        "claim_artifact_id": "00000000-0000-4000-8000-000000000012",
+        "verification_plan_artifact_id": "00000000-0000-4000-8000-000000000015",
+        "axes": {
+          "math": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "numeric": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "statistical": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "predictive": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "structure": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "causal": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "generalization": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "reproducibility": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          }
+        },
+        "probability_statements": [],
+        "dependence_groups_artifact_id": "00000000-0000-4000-8000-000000000016",
+        "evidence_sufficient": true,
+        "unmet_criteria": [
+          "獨立預測評估尚未執行"
+        ],
+        "stop_reason": "BUDGET_EXHAUSTED",
+        "verification_plan_hash": "bb0015be0e38ca69a7bad73a866534ab41f98b6a91cab43fac9c84a4d56f6a3d",
+        "evaluated_criteria_artifact_id": "00000000-0000-4000-8000-000000000804"
+      }
+    },
+    {
+      "reason": "多解必保存完整解集合",
+      "document": {
+        "kind": "InverseProblemResult",
+        "id": "00000000-0000-4000-8000-000000000505",
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "research_version_id": "00000000-0000-4000-8000-000000000002",
+        "schema_version": "1.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "artifact_access_class": "PROJECT",
+        "question_kind": "FUNCTION_INVERSE",
+        "input_artifact_id": "00000000-0000-4000-8000-000000000017",
+        "constraints_artifact_id": "00000000-0000-4000-8000-000000000018",
+        "solution_status": "MULTIPLE",
+        "solution_set_artifact_id": null,
+        "identifiability": "UNIDENTIFIABLE",
+        "forward_check_artifact_id": "00000000-0000-4000-8000-000000000023",
+        "verification_artifact_id": null,
+        "causal_status": "NOT_APPLICABLE",
+        "limitations": [
+          "實數域x²=4有兩解，無額外分支約束"
+        ],
+        "causal_identification_artifact_id": null
+      }
+    },
+    {
+      "reason": "因果識別必有獨立識別證據",
+      "document": {
+        "kind": "InverseProblemResult",
+        "id": "00000000-0000-4000-8000-000000000505",
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "research_version_id": "00000000-0000-4000-8000-000000000002",
+        "schema_version": "1.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "artifact_access_class": "PROJECT",
+        "question_kind": "FUNCTION_INVERSE",
+        "input_artifact_id": "00000000-0000-4000-8000-000000000017",
+        "constraints_artifact_id": "00000000-0000-4000-8000-000000000018",
+        "solution_status": "MULTIPLE",
+        "solution_set_artifact_id": "00000000-0000-4000-8000-000000000019",
+        "identifiability": "UNIDENTIFIABLE",
+        "forward_check_artifact_id": "00000000-0000-4000-8000-000000000023",
+        "verification_artifact_id": null,
+        "causal_status": "IDENTIFIED",
+        "limitations": [
+          "實數域x²=4有兩解，無額外分支約束"
+        ],
+        "causal_identification_artifact_id": null
+      }
+    },
+    {
+      "reason": "metadata預覽不得讀fit統計或捏造已確認研究",
+      "document": {
+        "kind": "StructureAssessment",
+        "id": "00000000-0000-4000-8000-000000000500",
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "research_version_id": "00000000-0000-4000-8000-000000000002",
+        "schema_version": "1.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "artifact_access_class": "PROJECT",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000003",
+        "observation_dimension": 1,
+        "coordinate_dimension": null,
+        "representation_dimension": 1,
+        "intrinsic_dimension_estimate": null,
+        "structure_candidates": [
+          "INDEX_SEQUENCE",
+          "TIME_SERIES"
+        ],
+        "time_basis": "UNKNOWN",
+        "periodicity": "UNKNOWN",
+        "method_manifest_id": "00000000-0000-4000-8000-000000000004",
+        "fit_rows_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "uncertainty_reason": "缺乏時間與生成系統資訊",
+        "analysis_scope": "METADATA_ONLY"
+      }
+    },
+    {
+      "reason": "所有軸未執行時不得清空unmet後自稱充分",
+      "document": {
+        "kind": "EvidenceAssessment",
+        "id": "00000000-0000-4000-8000-000000000504",
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "research_version_id": "00000000-0000-4000-8000-000000000002",
+        "schema_version": "1.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "artifact_access_class": "PROJECT",
+        "claim_artifact_id": "00000000-0000-4000-8000-000000000012",
+        "verification_plan_artifact_id": "00000000-0000-4000-8000-000000000015",
+        "axes": {
+          "math": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "numeric": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "statistical": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "predictive": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "structure": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "causal": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "generalization": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          },
+          "reproducibility": {
+            "status": "NOT_RUN",
+            "evidence_artifact_ids": [],
+            "reason": "尚未執行，不能從其他軸推定"
+          }
+        },
+        "probability_statements": [],
+        "dependence_groups_artifact_id": "00000000-0000-4000-8000-000000000016",
+        "evidence_sufficient": true,
+        "unmet_criteria": [],
+        "stop_reason": "BUDGET_EXHAUSTED",
+        "verification_plan_hash": "bb0015be0e38ca69a7bad73a866534ab41f98b6a91cab43fac9c84a4d56f6a3d",
+        "evaluated_criteria_artifact_id": "00000000-0000-4000-8000-000000000804"
       }
     }
   ]

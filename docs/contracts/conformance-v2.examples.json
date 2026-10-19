@@ -150,7 +150,8 @@
         "candidates_generated": 0,
         "candidates_accepted": 0
       },
-      "released_summary_ids": []
+      "released_summary_ids": [],
+      "structure_assessment_artifact_id": "00000000-0000-4000-8000-000000000821"
     },
     "equation": {
       "kind": "EquationVersion",
@@ -272,7 +273,8 @@
       "fit_rows_hash": "4e098021cf9ec15699efd082b803811ec67394af4b3ea324e86edbccc3cbeac3",
       "refit_policy_artifact_id": null,
       "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
-      "preprocessor_artifact_id": null
+      "preprocessor_artifact_id": null,
+      "representation_artifact_id": "00000000-0000-4000-8000-000000000801"
     },
     "candidate": {
       "kind": "Candidate",
@@ -308,7 +310,8 @@
       },
       "parameter_binding_hash": "f7a837dc9b605d08d450f14bb4927ae8ab268b757d17b579b4e8e61500d87c4a",
       "development_rank": 1,
-      "environment_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+      "environment_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "representation_artifact_id": "00000000-0000-4000-8000-000000000801"
     },
     "submission": {
       "kind": "FrozenSubmission",
@@ -322,9 +325,11 @@
         "00000000-0000-4000-8000-000000000061"
       ],
       "metric_version": "2.0",
-      "snapshot_hash": "bad4f5756e8c6bae5a61a5aa8f2fc035e99daac9c37f6545a9bfa5aadc3fe5a2",
+      "snapshot_hash": "a4f7ab5a41adb66d0a38ab189a56c295fe6743ab8090ed8d4153440ff9a3cae5",
       "status": "FROZEN",
-      "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9"
+      "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9",
+      "verification_plan_artifact_id": "00000000-0000-4000-8000-000000000802",
+      "verification_plan_hash": "bb0015be0e38ca69a7bad73a866534ab41f98b6a91cab43fac9c84a4d56f6a3d"
     },
     "benchmark_partition": {
       "kind": "BenchmarkPartition",
@@ -550,6 +555,54 @@
         "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
       ],
       "exposure_fingerprint_version": "1.0"
+    },
+    "verification_plan": {
+      "kind": "VerificationPlan",
+      "id": "00000000-0000-4000-8000-000000000802",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "schema_version": "1.0",
+      "created_at": "2026-10-20T00:00:00Z",
+      "artifact_access_class": "PROJECT",
+      "purpose": "DESCRIPTION",
+      "required_axes": [
+        "numeric",
+        "predictive",
+        "reproducibility"
+      ],
+      "criteria_artifact_id": "00000000-0000-4000-8000-000000000601",
+      "comparison_set_artifact_id": "00000000-0000-4000-8000-000000000602",
+      "evaluation_policy_artifact_id": "00000000-0000-4000-8000-000000000603",
+      "independence_policy_artifact_id": "00000000-0000-4000-8000-000000000604",
+      "budget_policy_artifact_id": "00000000-0000-4000-8000-000000000605",
+      "selection_data_role": "DEVELOPMENT",
+      "stopping_policy": "FIXED_PLAN",
+      "frozen_before_final": true
+    },
+    "representation": {
+      "kind": "RepresentationSpec",
+      "id": "00000000-0000-4000-8000-000000000801",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "schema_version": "1.0",
+      "created_at": "2026-10-20T00:00:00Z",
+      "artifact_access_class": "PROJECT",
+      "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "method": "IDENTITY",
+      "config_artifact_id": "00000000-0000-4000-8000-000000000006",
+      "config_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "fit_rows_hash": "4e098021cf9ec15699efd082b803811ec67394af4b3ea324e86edbccc3cbeac3",
+      "input_dimension": 1,
+      "output_dimension": 1,
+      "max_output_dimension": 3,
+      "inverse_kind": "EXACT",
+      "information_loss": false,
+      "forward_map_artifact_id": "00000000-0000-4000-8000-000000000007",
+      "inverse_map_artifact_id": "00000000-0000-4000-8000-000000000007",
+      "row_dependencies_artifact_id": "00000000-0000-4000-8000-000000000008",
+      "unit_domain_artifact_id": "00000000-0000-4000-8000-000000000009",
+      "selection_data_role": "DEVELOPMENT"
     }
   },
   "cases": [
@@ -1173,7 +1226,8 @@
         "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
         "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080",
         "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
-        "preprocessor_artifact_id": null
+        "preprocessor_artifact_id": null,
+        "representation_artifact_id": "00000000-0000-4000-8000-000000000801"
       },
       "preregistered": true,
       "mutations": [
@@ -1218,7 +1272,8 @@
         "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
         "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080",
         "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
-        "preprocessor_artifact_id": null
+        "preprocessor_artifact_id": null,
+        "representation_artifact_id": "00000000-0000-4000-8000-000000000801"
       },
       "preregistered": true,
       "mutations": [
@@ -1262,7 +1317,8 @@
         "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
         "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080",
         "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
-        "preprocessor_artifact_id": null
+        "preprocessor_artifact_id": null,
+        "representation_artifact_id": "00000000-0000-4000-8000-000000000801"
       },
       "preregistered": false,
       "mutations": [
@@ -1306,7 +1362,8 @@
         "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
         "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080",
         "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
-        "preprocessor_artifact_id": null
+        "preprocessor_artifact_id": null,
+        "representation_artifact_id": "00000000-0000-4000-8000-000000000801"
       },
       "preregistered": true,
       "mutations": [
@@ -5163,7 +5220,7 @@
       "late_attempt": false,
       "promote_evidence": false,
       "check": "trace_graph",
-      "expected": "TRACE_NODE_CONFLICT",
+      "expected": "ACCEPT",
       "id": "CF-210"
     },
     {
@@ -6044,6 +6101,865 @@
       "check": "learning_release",
       "expected": "INDEPENDENT_REVIEW_REQUIRED",
       "id": "CF-269"
+    },
+    {
+      "scope": "METADATA_ONLY",
+      "reads_labels": false,
+      "estimates_periodicity": false,
+      "has_research_version": false,
+      "fixed_split": false,
+      "only_fit_rows": false,
+      "check": "structure_preview",
+      "expected": "ACCEPT",
+      "id": "CF-270"
+    },
+    {
+      "scope": "METADATA_ONLY",
+      "reads_labels": true,
+      "estimates_periodicity": false,
+      "has_research_version": false,
+      "fixed_split": false,
+      "only_fit_rows": false,
+      "check": "structure_preview",
+      "expected": "PREVIEW_SCOPE_VIOLATION",
+      "id": "CF-271"
+    },
+    {
+      "scope": "METADATA_ONLY",
+      "reads_labels": false,
+      "estimates_periodicity": true,
+      "has_research_version": false,
+      "fixed_split": false,
+      "only_fit_rows": false,
+      "check": "structure_preview",
+      "expected": "PREVIEW_SCOPE_VIOLATION",
+      "id": "CF-272"
+    },
+    {
+      "scope": "METADATA_ONLY",
+      "reads_labels": false,
+      "estimates_periodicity": false,
+      "has_research_version": true,
+      "fixed_split": false,
+      "only_fit_rows": false,
+      "check": "structure_preview",
+      "expected": "PREVIEW_SCOPE_VIOLATION",
+      "id": "CF-273"
+    },
+    {
+      "scope": "FIT_ONLY",
+      "reads_labels": false,
+      "estimates_periodicity": false,
+      "has_research_version": true,
+      "fixed_split": true,
+      "only_fit_rows": true,
+      "check": "structure_preview",
+      "expected": "ACCEPT",
+      "id": "CF-274"
+    },
+    {
+      "scope": "FIT_ONLY",
+      "reads_labels": false,
+      "estimates_periodicity": false,
+      "has_research_version": true,
+      "fixed_split": true,
+      "only_fit_rows": false,
+      "check": "structure_preview",
+      "expected": "STRUCTURE_SCOPE_VIOLATION",
+      "id": "CF-275"
+    },
+    {
+      "sequence": 2,
+      "previous_hash": "aaa",
+      "expected_previous_hash": "aaa",
+      "stream_id": "public",
+      "previous_stream_id": "public",
+      "visibility": "PROJECT",
+      "previous_visibility": "PROJECT",
+      "check": "trace_chain",
+      "expected": "ACCEPT",
+      "id": "CF-276"
+    },
+    {
+      "sequence": 2,
+      "previous_hash": null,
+      "expected_previous_hash": "aaa",
+      "stream_id": "public",
+      "previous_stream_id": "public",
+      "visibility": "PROJECT",
+      "previous_visibility": "PROJECT",
+      "check": "trace_chain",
+      "expected": "TRACE_CHAIN_INVALID",
+      "id": "CF-277"
+    },
+    {
+      "sequence": 2,
+      "previous_hash": "aaa",
+      "expected_previous_hash": "aaa",
+      "stream_id": "public",
+      "previous_stream_id": "private",
+      "visibility": "PROJECT",
+      "previous_visibility": "PROJECT",
+      "check": "trace_chain",
+      "expected": "TRACE_VISIBILITY_LEAK",
+      "id": "CF-278"
+    },
+    {
+      "sequence": 2,
+      "previous_hash": "aaa",
+      "expected_previous_hash": "aaa",
+      "stream_id": "public",
+      "previous_stream_id": "public",
+      "visibility": "PROJECT",
+      "previous_visibility": "SEALED_DETAIL",
+      "check": "trace_chain",
+      "expected": "TRACE_VISIBILITY_LEAK",
+      "id": "CF-279"
+    },
+    {
+      "sequence": 1,
+      "previous_hash": null,
+      "expected_previous_hash": "aaa",
+      "stream_id": "public",
+      "previous_stream_id": "public",
+      "visibility": "PROJECT",
+      "previous_visibility": "PROJECT",
+      "check": "trace_chain",
+      "expected": "ACCEPT",
+      "id": "CF-280"
+    },
+    {
+      "sequence": 1,
+      "previous_hash": "aaa",
+      "expected_previous_hash": "aaa",
+      "stream_id": "public",
+      "previous_stream_id": "public",
+      "visibility": "PROJECT",
+      "previous_visibility": "PROJECT",
+      "check": "trace_chain",
+      "expected": "TRACE_CHAIN_INVALID",
+      "id": "CF-281"
+    },
+    {
+      "tenant": "A",
+      "committed_parent_ids": [
+        "root"
+      ],
+      "nodes": [
+        {
+          "id": "n1",
+          "parents": [
+            "root"
+          ],
+          "tenant": "A"
+        },
+        {
+          "id": "n1",
+          "parents": [
+            "root"
+          ],
+          "tenant": "A"
+        }
+      ],
+      "late_attempt": false,
+      "promote_evidence": false,
+      "check": "trace_graph",
+      "expected": "ACCEPT",
+      "id": "CF-282"
+    },
+    {
+      "tenant": "A",
+      "committed_parent_ids": [
+        "root"
+      ],
+      "nodes": [
+        {
+          "id": "n1",
+          "parents": [
+            "root"
+          ],
+          "tenant": "A"
+        },
+        {
+          "id": "n1",
+          "parents": [
+            "root"
+          ],
+          "tenant": "A",
+          "changed": true
+        }
+      ],
+      "late_attempt": false,
+      "promote_evidence": false,
+      "check": "trace_graph",
+      "expected": "TRACE_NODE_CONFLICT",
+      "id": "CF-283"
+    },
+    {
+      "tenant": "A",
+      "committed_parent_ids": [
+        "private"
+      ],
+      "nodes": [
+        {
+          "id": "p",
+          "parents": [
+            "private"
+          ],
+          "tenant": "A"
+        }
+      ],
+      "late_attempt": false,
+      "promote_evidence": false,
+      "parent_visibility": {
+        "private": "SEALED_DETAIL"
+      },
+      "check": "trace_graph",
+      "expected": "TRACE_VISIBILITY_LEAK",
+      "id": "CF-284"
+    },
+    {
+      "tenant": "A",
+      "committed_parent_ids": [
+        "root"
+      ],
+      "nodes": [
+        {
+          "id": "secret",
+          "parents": [
+            "root"
+          ],
+          "tenant": "A",
+          "visibility": "SEALED_DETAIL"
+        },
+        {
+          "id": "public",
+          "parents": [
+            "secret"
+          ],
+          "tenant": "A"
+        }
+      ],
+      "late_attempt": false,
+      "promote_evidence": false,
+      "check": "trace_graph",
+      "expected": "TRACE_VISIBILITY_LEAK",
+      "id": "CF-285"
+    },
+    {
+      "raw": "{\"a\":1,\"a\":2}",
+      "check": "strict_json",
+      "expected": "JSON_REJECTED",
+      "id": "CF-286"
+    },
+    {
+      "raw": "{\"a\":1,\"\\u0061\":2}",
+      "check": "strict_json",
+      "expected": "JSON_REJECTED",
+      "id": "CF-287"
+    },
+    {
+      "raw": "{\"x\":NaN}",
+      "check": "strict_json",
+      "expected": "JSON_REJECTED",
+      "id": "CF-288"
+    },
+    {
+      "raw": "{\"x\":Infinity}",
+      "check": "strict_json",
+      "expected": "JSON_REJECTED",
+      "id": "CF-289"
+    },
+    {
+      "raw": "{\"x\":1e400}",
+      "check": "strict_json",
+      "expected": "JSON_REJECTED",
+      "id": "CF-290"
+    },
+    {
+      "raw": "{\"x\":0.1}",
+      "check": "strict_json",
+      "expected": "ACCEPT",
+      "id": "CF-291"
+    },
+    {
+      "raw": "{\"z\":[true,null],\"a\":1}",
+      "expected_bytes": "{\"a\":1,\"z\":[true,null]}",
+      "check": "canonical_profile",
+      "expected": "ACCEPT",
+      "id": "CF-292"
+    },
+    {
+      "raw": "{\"😀\":2,\"\":1}",
+      "expected_bytes": "{\"\":1,\"😀\":2}",
+      "check": "canonical_profile",
+      "expected": "ACCEPT",
+      "id": "CF-293"
+    },
+    {
+      "raw": "{\"source_column\":\"2.00\",\"alias\":\"-0.0\"}",
+      "expected_bytes": "{\"alias\":\"-0.0\",\"source_column\":\"2.00\"}",
+      "check": "canonical_profile",
+      "expected": "ACCEPT",
+      "id": "CF-294"
+    },
+    {
+      "raw": "{\"x\":0.1}",
+      "check": "canonical_profile",
+      "expected": "CANONICAL_JSON_REJECTED",
+      "id": "CF-295"
+    },
+    {
+      "raw": "{\"x\":9007199254740992}",
+      "check": "canonical_profile",
+      "expected": "CANONICAL_JSON_REJECTED",
+      "id": "CF-296"
+    },
+    {
+      "raw": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[0]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]",
+      "check": "canonical_profile",
+      "expected": "CANONICAL_JSON_REJECTED",
+      "id": "CF-297"
+    },
+    {
+      "raw": "{\"x\":\"\\ud800\"}",
+      "check": "canonical_profile",
+      "expected": "CANONICAL_JSON_REJECTED",
+      "id": "CF-298"
+    },
+    {
+      "mutations": [
+        [
+          "frozen_candidate.representation_artifact_id",
+          "00000000-0000-4000-8000-000000009999"
+        ]
+      ],
+      "check": "freeze",
+      "expected": "FIT_REFERENCE_MISMATCH",
+      "id": "CF-299"
+    },
+    {
+      "mutations": [
+        [
+          "submission.verification_plan_hash",
+          "0000000000000000000000000000000000000000000000000000000000000000"
+        ]
+      ],
+      "check": "freeze",
+      "expected": "VERIFICATION_PLAN_MISMATCH",
+      "id": "CF-300"
+    },
+    {
+      "mutations": [
+        [
+          "verification_plan.stopping_policy",
+          "PREAPPROVED_SEQUENTIAL"
+        ]
+      ],
+      "check": "freeze",
+      "expected": "VERIFICATION_PLAN_MISMATCH",
+      "id": "CF-301"
+    },
+    {
+      "mutations": [
+        [
+          "frozen_candidate.parameters.a",
+          "2.00"
+        ],
+        [
+          "fit.parameters.a",
+          "2.00"
+        ]
+      ],
+      "check": "freeze",
+      "expected": "PARAMETER_NOT_CANONICAL",
+      "id": "CF-302"
+    },
+    {
+      "required_axes": [
+        "numeric",
+        "predictive"
+      ],
+      "axes": {
+        "numeric": "SUPPORTED",
+        "predictive": "NOT_RUN"
+      },
+      "approved_na_axes": [],
+      "unmet_criteria": [],
+      "plan_hash_matches": true,
+      "sources_active": true,
+      "criteria_verified": true,
+      "claimed_sufficient": false,
+      "check": "evidence_sufficiency",
+      "expected": "ACCEPT",
+      "id": "CF-303"
+    },
+    {
+      "required_axes": [
+        "numeric",
+        "predictive"
+      ],
+      "axes": {
+        "numeric": "SUPPORTED",
+        "predictive": "NOT_RUN"
+      },
+      "approved_na_axes": [],
+      "unmet_criteria": [],
+      "plan_hash_matches": true,
+      "sources_active": true,
+      "criteria_verified": true,
+      "claimed_sufficient": true,
+      "check": "evidence_sufficiency",
+      "expected": "EVIDENCE_SUFFICIENCY_CONFLICT",
+      "id": "CF-304"
+    },
+    {
+      "required_axes": [
+        "numeric",
+        "predictive"
+      ],
+      "axes": {
+        "numeric": "SUPPORTED",
+        "predictive": "SUPPORTED"
+      },
+      "approved_na_axes": [],
+      "unmet_criteria": [],
+      "plan_hash_matches": true,
+      "sources_active": true,
+      "criteria_verified": true,
+      "claimed_sufficient": true,
+      "check": "evidence_sufficiency",
+      "expected": "ACCEPT",
+      "id": "CF-305"
+    },
+    {
+      "required_axes": [
+        "numeric",
+        "predictive"
+      ],
+      "axes": {
+        "numeric": "SUPPORTED",
+        "predictive": "NOT_APPLICABLE"
+      },
+      "approved_na_axes": [],
+      "unmet_criteria": [],
+      "plan_hash_matches": true,
+      "sources_active": true,
+      "criteria_verified": true,
+      "claimed_sufficient": true,
+      "check": "evidence_sufficiency",
+      "expected": "EVIDENCE_SUFFICIENCY_CONFLICT",
+      "id": "CF-306"
+    },
+    {
+      "required_axes": [
+        "numeric",
+        "predictive"
+      ],
+      "axes": {
+        "numeric": "SUPPORTED",
+        "predictive": "NOT_APPLICABLE"
+      },
+      "approved_na_axes": [
+        "predictive"
+      ],
+      "unmet_criteria": [],
+      "plan_hash_matches": true,
+      "sources_active": true,
+      "criteria_verified": true,
+      "claimed_sufficient": true,
+      "check": "evidence_sufficiency",
+      "expected": "ACCEPT",
+      "id": "CF-307"
+    },
+    {
+      "required_axes": [
+        "numeric",
+        "predictive"
+      ],
+      "axes": {
+        "numeric": "SUPPORTED",
+        "predictive": "NOT_RUN"
+      },
+      "approved_na_axes": [],
+      "unmet_criteria": [],
+      "plan_hash_matches": false,
+      "sources_active": true,
+      "criteria_verified": true,
+      "claimed_sufficient": false,
+      "check": "evidence_sufficiency",
+      "expected": "VERIFICATION_PLAN_MISMATCH",
+      "id": "CF-308"
+    },
+    {
+      "required_axes": [
+        "numeric",
+        "predictive"
+      ],
+      "axes": {
+        "numeric": "SUPPORTED",
+        "predictive": "SUPPORTED"
+      },
+      "approved_na_axes": [],
+      "unmet_criteria": [
+        "coverage不足"
+      ],
+      "plan_hash_matches": true,
+      "sources_active": true,
+      "criteria_verified": true,
+      "claimed_sufficient": true,
+      "check": "evidence_sufficiency",
+      "expected": "EVIDENCE_SUFFICIENCY_CONFLICT",
+      "id": "CF-309"
+    },
+    {
+      "status": "MULTIPLE",
+      "solution_count": 2,
+      "forward_verified": true,
+      "uniqueness_verified": false,
+      "no_solution_verified": false,
+      "causal_identified": false,
+      "causal_evidence_verified": false,
+      "check": "inverse_result",
+      "expected": "ACCEPT",
+      "id": "CF-310"
+    },
+    {
+      "status": "MULTIPLE",
+      "solution_count": 0,
+      "forward_verified": true,
+      "uniqueness_verified": false,
+      "no_solution_verified": false,
+      "causal_identified": false,
+      "causal_evidence_verified": false,
+      "check": "inverse_result",
+      "expected": "INVERSE_RESULT_INVALID",
+      "id": "CF-311"
+    },
+    {
+      "status": "UNIQUE",
+      "solution_count": 1,
+      "forward_verified": true,
+      "uniqueness_verified": false,
+      "no_solution_verified": false,
+      "causal_identified": false,
+      "causal_evidence_verified": false,
+      "check": "inverse_result",
+      "expected": "INVERSE_RESULT_INVALID",
+      "id": "CF-312"
+    },
+    {
+      "status": "UNIQUE",
+      "solution_count": 1,
+      "forward_verified": true,
+      "uniqueness_verified": true,
+      "no_solution_verified": false,
+      "causal_identified": false,
+      "causal_evidence_verified": false,
+      "check": "inverse_result",
+      "expected": "ACCEPT",
+      "id": "CF-313"
+    },
+    {
+      "status": "NONE",
+      "solution_count": 2,
+      "forward_verified": true,
+      "uniqueness_verified": false,
+      "no_solution_verified": true,
+      "causal_identified": false,
+      "causal_evidence_verified": false,
+      "check": "inverse_result",
+      "expected": "INVERSE_RESULT_INVALID",
+      "id": "CF-314"
+    },
+    {
+      "status": "NONE",
+      "solution_count": 0,
+      "forward_verified": true,
+      "uniqueness_verified": false,
+      "no_solution_verified": true,
+      "causal_identified": false,
+      "causal_evidence_verified": false,
+      "check": "inverse_result",
+      "expected": "ACCEPT",
+      "id": "CF-315"
+    },
+    {
+      "status": "MULTIPLE",
+      "solution_count": 2,
+      "forward_verified": true,
+      "uniqueness_verified": false,
+      "no_solution_verified": false,
+      "causal_identified": true,
+      "causal_evidence_verified": false,
+      "check": "inverse_result",
+      "expected": "CAUSAL_IDENTIFICATION_MISSING",
+      "id": "CF-316"
+    },
+    {
+      "authority_verified": true,
+      "source_artifact_ids": [
+        "a",
+        "b"
+      ],
+      "assignments": [
+        {
+          "source_artifact_id": "a",
+          "case_id": "c1",
+          "family_id": "f1",
+          "source_group_id": "s1",
+          "observation_group_id": "o1",
+          "partition": "TRAIN"
+        },
+        {
+          "source_artifact_id": "b",
+          "case_id": "c2",
+          "family_id": "f2",
+          "source_group_id": "s2",
+          "observation_group_id": "o2",
+          "partition": "TEST"
+        }
+      ],
+      "check": "training_partition",
+      "expected": "ACCEPT",
+      "id": "CF-317"
+    },
+    {
+      "authority_verified": false,
+      "source_artifact_ids": [
+        "a",
+        "b"
+      ],
+      "assignments": [
+        {
+          "source_artifact_id": "a",
+          "case_id": "c1",
+          "family_id": "f1",
+          "source_group_id": "s1",
+          "observation_group_id": "o1",
+          "partition": "TRAIN"
+        },
+        {
+          "source_artifact_id": "b",
+          "case_id": "c2",
+          "family_id": "f2",
+          "source_group_id": "s2",
+          "observation_group_id": "o2",
+          "partition": "TEST"
+        }
+      ],
+      "check": "training_partition",
+      "expected": "TRAINING_PARTITION_AUTHORITY_INVALID",
+      "id": "CF-318"
+    },
+    {
+      "authority_verified": true,
+      "source_artifact_ids": [
+        "a",
+        "b"
+      ],
+      "assignments": [
+        {
+          "source_artifact_id": "a",
+          "case_id": "c1",
+          "family_id": "f1",
+          "source_group_id": "s1",
+          "observation_group_id": "o1",
+          "partition": "TRAIN"
+        },
+        {
+          "source_artifact_id": "b",
+          "case_id": "c2",
+          "family_id": "f2",
+          "source_group_id": "s2",
+          "observation_group_id": "o1",
+          "partition": "TEST"
+        }
+      ],
+      "check": "training_partition",
+      "expected": "TRAINING_OBSERVATION_LEAK",
+      "id": "CF-319"
+    },
+    {
+      "authority_verified": true,
+      "source_artifact_ids": [
+        "a",
+        "b"
+      ],
+      "assignments": [
+        {
+          "source_artifact_id": "a",
+          "case_id": "c1",
+          "family_id": "f1",
+          "source_group_id": "s1",
+          "observation_group_id": "o1",
+          "partition": "TRAIN"
+        },
+        {
+          "source_artifact_id": "b",
+          "case_id": "c2",
+          "family_id": "f2",
+          "source_group_id": "s1",
+          "observation_group_id": "o2",
+          "partition": "TEST"
+        }
+      ],
+      "check": "training_partition",
+      "expected": "TRAINING_OBSERVATION_LEAK",
+      "id": "CF-320"
+    },
+    {
+      "authority_verified": true,
+      "source_artifact_ids": [
+        "a"
+      ],
+      "assignments": [
+        {
+          "source_artifact_id": "a",
+          "case_id": "c1",
+          "family_id": "f1",
+          "source_group_id": "s1",
+          "observation_group_id": "o1",
+          "partition": "TRAIN"
+        },
+        {
+          "source_artifact_id": "b",
+          "case_id": "c2",
+          "family_id": "f2",
+          "source_group_id": "s2",
+          "observation_group_id": "o2",
+          "partition": "TEST"
+        }
+      ],
+      "check": "training_partition",
+      "expected": "TRAINING_SOURCE_MISMATCH",
+      "id": "CF-321"
+    },
+    {
+      "candidate_active": false,
+      "candidate_passed": true,
+      "baseline_active": false,
+      "baseline_passed": true,
+      "alternative_active": false,
+      "alternative_passed": false,
+      "check": "rollback_eligibility",
+      "expected": "DISABLE_AI",
+      "id": "CF-322"
+    },
+    {
+      "candidate_active": false,
+      "candidate_passed": true,
+      "baseline_active": true,
+      "baseline_passed": true,
+      "alternative_active": false,
+      "alternative_passed": false,
+      "check": "rollback_eligibility",
+      "expected": "ROLLBACK_TO_VALID_BASELINE",
+      "id": "CF-323"
+    },
+    {
+      "candidate_active": false,
+      "candidate_passed": true,
+      "baseline_active": true,
+      "baseline_passed": false,
+      "alternative_active": false,
+      "alternative_passed": false,
+      "check": "rollback_eligibility",
+      "expected": "DISABLE_AI",
+      "id": "CF-324"
+    },
+    {
+      "candidate_active": false,
+      "candidate_passed": true,
+      "baseline_active": false,
+      "baseline_passed": true,
+      "alternative_active": true,
+      "alternative_passed": true,
+      "check": "rollback_eligibility",
+      "expected": "USE_VALID_ALTERNATIVE",
+      "id": "CF-325"
+    },
+    {
+      "id": "CF-326",
+      "check": "freeze",
+      "mutations": [
+        [
+          "representation.fit_rows_hash",
+          "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        ]
+      ],
+      "expected": "REPRESENTATION_MISMATCH"
+    },
+    {
+      "id": "CF-327",
+      "check": "freeze",
+      "mutations": [
+        [
+          "representation.tenant_id",
+          "00000000-0000-4000-8000-000000009999"
+        ]
+      ],
+      "expected": "REPRESENTATION_MISMATCH"
+    },
+    {
+      "id": "CF-328",
+      "check": "freeze",
+      "mutations": [
+        [
+          "verification_plan.purpose",
+          "MECHANISM"
+        ]
+      ],
+      "expected": "VERIFICATION_PLAN_MISMATCH"
+    },
+    {
+      "id": "CF-329",
+      "check": "trace_graph",
+      "tenant": "A",
+      "committed_parent_ids": [
+        "root",
+        "n1"
+      ],
+      "committed_fingerprints": {
+        "n1": "d3d36aaee2ae7bae1e32d5359d0f592a4804739d3b8224a2f10d89beacb4d4f8"
+      },
+      "nodes": [
+        {
+          "id": "n1",
+          "parents": [
+            "root"
+          ],
+          "tenant": "A"
+        }
+      ],
+      "late_attempt": false,
+      "promote_evidence": false,
+      "expected": "ACCEPT"
+    },
+    {
+      "id": "CF-330",
+      "check": "trace_graph",
+      "tenant": "A",
+      "committed_parent_ids": [
+        "root",
+        "n1"
+      ],
+      "committed_fingerprints": {
+        "n1": "d3d36aaee2ae7bae1e32d5359d0f592a4804739d3b8224a2f10d89beacb4d4f8"
+      },
+      "nodes": [
+        {
+          "id": "n1",
+          "parents": [
+            "root"
+          ],
+          "tenant": "A",
+          "changed": true
+        }
+      ],
+      "late_attempt": false,
+      "promote_evidence": false,
+      "expected": "TRACE_NODE_CONFLICT"
     }
   ]
 }

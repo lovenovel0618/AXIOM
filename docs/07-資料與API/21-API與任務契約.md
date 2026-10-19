@@ -1,6 +1,6 @@
 # 21｜API與任務契約
 
-> AXIOM v2.8 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.9 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-20
 
 ## 契約範圍與認證
 
@@ -182,3 +182,7 @@ ReleasedSummary只回研究ID、安全Artifact ID、disclosure policy ID/hash及
 Run必填research_trace_artifact_ids，透過既有GET run、研究runs列表及GET Artifact metadata/content找回TraceChunk；列表逐項做AX-26授權，SEALED_DETAIL chunk不向Solver／一般reader回傳。trace追加不改control revision；snapshot與Artifact registry一致讀出，尚未產生chunk時為空。chunk payload使用research-learning-v1，API Run仍為2.0未部署草案修訂2.8，內部payload不是新增HTTP資源。
 
 目前不新增高階job或多維HTTP端點；M4／M6／M7實作前須另交付匹配任務、預算／取消／恢復及新major契約。現行OpenAPI及六類TaskInput只描述已凍結首期介面，不允許將新kind塞進Run.type猜測執行。
+
+## v2.9 結構報告導航
+
+DatasetVersion.structure_preview_artifact_id及ResearchVersion.structure_assessment_artifact_id為可null的Artifact引用，分別由既有dataset版本列表／研究snapshot恢復；依AX-49，AVAILABLE／READY等完成狀態必有對應引用，無權時按既有ACL過濾。沒有新增preflight或高階job端點。公開Run及Artifact仍是現行導航邊界，trace鏈按獨立可見stream驗證，不返回隱藏stream ID或hash。

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://axiom.invalid/contracts/research-learning-v1.schema.json",
-  "x-axiom-draft-revision": "2.8",
+  "x-axiom-draft-revision": "2.9",
   "description": "Internal immutable Artifact payloads. Phase-specific features remain disabled until their product gates pass. Not public HTTP resource DTOs.",
   "oneOf": [
     {
@@ -325,12 +325,26 @@
           "format": "uuid"
         },
         "fit_rows_hash": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$"
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "uncertainty_reason": {
           "type": "string",
           "minLength": 1
+        },
+        "analysis_scope": {
+          "type": "string",
+          "enum": [
+            "METADATA_ONLY",
+            "FIT_ONLY"
+          ]
         }
       },
       "required": [
@@ -351,9 +365,58 @@
         "periodicity",
         "method_manifest_id",
         "fit_rows_hash",
-        "uncertainty_reason"
+        "uncertainty_reason",
+        "analysis_scope"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "analysis_scope": {
+                "const": "METADATA_ONLY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "fit_rows_hash": {
+                "type": "null"
+              },
+              "research_version_id": {
+                "type": "null"
+              },
+              "intrinsic_dimension_estimate": {
+                "type": "null"
+              },
+              "periodicity": {
+                "const": "UNKNOWN"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "analysis_scope": {
+                "const": "FIT_ONLY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "fit_rows_hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "research_version_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        }
+      ]
     },
     "RepresentationSpec": {
       "type": "object",
@@ -724,6 +787,10 @@
           },
           "minItems": 1,
           "maxItems": 10000
+        },
+        "trace_stream_id": {
+          "type": "string",
+          "format": "uuid"
         }
       },
       "required": [
@@ -739,9 +806,45 @@
         "generation",
         "sequence",
         "previous_chunk_hash",
-        "nodes"
+        "nodes",
+        "trace_stream_id"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "sequence": {
+                "const": 1
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "previous_chunk_hash": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "sequence": {
+                "minimum": 2
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "previous_chunk_hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        }
+      ]
     },
     "FailureAssessment": {
       "type": "object",
@@ -1027,6 +1130,14 @@
         "stop_reason": {
           "type": "string",
           "minLength": 1
+        },
+        "verification_plan_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "evaluated_criteria_artifact_id": {
+          "type": "string",
+          "format": "uuid"
         }
       },
       "required": [
@@ -1044,9 +1155,121 @@
         "dependence_groups_artifact_id",
         "evidence_sufficient",
         "unmet_criteria",
-        "stop_reason"
+        "stop_reason",
+        "verification_plan_hash",
+        "evaluated_criteria_artifact_id"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "evidence_sufficient": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "unmet_criteria": {
+                "maxItems": 0
+              },
+              "axes": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "math": {
+                        "properties": {
+                          "status": {
+                            "const": "SUPPORTED"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "numeric": {
+                        "properties": {
+                          "status": {
+                            "const": "SUPPORTED"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "statistical": {
+                        "properties": {
+                          "status": {
+                            "const": "SUPPORTED"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "predictive": {
+                        "properties": {
+                          "status": {
+                            "const": "SUPPORTED"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "structure": {
+                        "properties": {
+                          "status": {
+                            "const": "SUPPORTED"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "causal": {
+                        "properties": {
+                          "status": {
+                            "const": "SUPPORTED"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "generalization": {
+                        "properties": {
+                          "status": {
+                            "const": "SUPPORTED"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "reproducibility": {
+                        "properties": {
+                          "status": {
+                            "const": "SUPPORTED"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
     },
     "InverseProblemResult": {
       "type": "object",
@@ -1172,6 +1395,17 @@
           },
           "minItems": 1,
           "maxItems": 10000
+        },
+        "causal_identification_artifact_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -1191,7 +1425,8 @@
         "forward_check_artifact_id",
         "verification_artifact_id",
         "causal_status",
-        "limitations"
+        "limitations",
+        "causal_identification_artifact_id"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -1242,6 +1477,116 @@
               "verification_artifact_id": {
                 "type": "string",
                 "format": "uuid"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "solution_status": {
+                "const": "MULTIPLE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "solution_set_artifact_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "forward_check_artifact_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "solution_status": {
+                "const": "UNIDENTIFIABLE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "solution_set_artifact_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "forward_check_artifact_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "solution_status": {
+                "const": "UNIQUE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "identifiability": {
+                "const": "IDENTIFIED"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "solution_status": {
+                "const": "NONE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "solution_set_artifact_id": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "causal_status": {
+                "const": "IDENTIFIED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "causal_identification_artifact_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "question_kind": {
+                "const": "COUNTERFACTUAL"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "causal_status": {
+                "enum": [
+                  "SCENARIO_ONLY",
+                  "IDENTIFIED"
+                ]
               }
             }
           }
@@ -2115,6 +2460,57 @@
         "partition_check_artifact_id": {
           "type": "string",
           "format": "uuid"
+        },
+        "partition_assignments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source_artifact_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "case_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "family_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_group_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "observation_group_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "partition": {
+                "type": "string",
+                "enum": [
+                  "TRAIN",
+                  "DEVELOPMENT",
+                  "TEST"
+                ]
+              }
+            },
+            "required": [
+              "source_artifact_id",
+              "case_id",
+              "family_id",
+              "source_group_id",
+              "observation_group_id",
+              "partition"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        },
+        "partition_authority_artifact_id": {
+          "type": "string",
+          "format": "uuid"
         }
       },
       "required": [
@@ -2135,7 +2531,9 @@
         "extraction_manifest_id",
         "labeling_manifest_id",
         "negative_case_ids",
-        "partition_check_artifact_id"
+        "partition_check_artifact_id",
+        "partition_assignments",
+        "partition_authority_artifact_id"
       ],
       "additionalProperties": false
     },

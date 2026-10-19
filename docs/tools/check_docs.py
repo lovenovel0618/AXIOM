@@ -19,7 +19,7 @@ from openapi_spec_validator.schemas.types import AnySchema
 from referencing import Registry, Resource
 from referencing.jsonschema import Schema, SchemaRegistry
 sys.dont_write_bytecode = True
-from contract_scenarios import check_scenarios
+from contract_scenarios import canonical_hash, check_scenarios, strict_json_loads
 
 # JSON documents have schema-defined dynamic keys; keep Any at this data boundary.
 JsonObject: TypeAlias = dict[str, Any]
@@ -29,7 +29,7 @@ DEFINITIONS_KEY = "$defs"
 DSL_SCHEMA_NAME = "dsl-v1.schema.json"
 RUNTIME_SCHEMA_NAME = "runtime-v2.schema.json"
 RESEARCH_SCHEMA_NAME = "research-v2.schema.json"
-DOC_VERSION = "v2.8"
+DOC_VERSION = "v2.9"
 CHAPTER_COUNT = 53
 RELEASE_MATRIX_GLOB = "46-*.md"
 DECISION_LIST_GLOB = "37-*.md"
@@ -45,7 +45,7 @@ def check(condition: bool, message: str) -> None:
 
 
 def read_json(path: Path) -> JsonObject:
-    value: object = json.loads(path.read_text(encoding="utf-8"))
+    value: object = strict_json_loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
         raise ValueError(f"Expected a JSON object: {path}")
     return cast(JsonObject, value)
@@ -94,7 +94,7 @@ def markdown_prose(content: str, path: Path) -> str:
     check(not in_code, f"Unclosed fence: {path}")
     for index, language in enumerate(languages):
         if language == "json":
-            json.loads("".join(chunks[index * 2 + 1]))
+            strict_json_loads("".join(chunks[index * 2 + 1]))
     return "".join("".join(chunk) for chunk in chunks[::2])
 
 
@@ -285,8 +285,7 @@ def check_equation_hashes(folder: Path) -> None:
     equation_examples = read_json(folder / "research-v2.examples.json")["valid"]
     for example in equation_examples:
         if example["kind"] == "EquationVersion":
-            canonical = json.dumps(example["dsl"], ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
-            check(hashlib.sha256(canonical).hexdigest() == example["identity_hash"], "Public canonical hash drift")
+            check(canonical_hash(example["dsl"]) == example["identity_hash"], "Public canonical hash drift")
 
 
 def check_api_examples(folder: Path, api: JsonObject) -> int:
@@ -339,10 +338,18 @@ def check_public_projection(definitions: JsonObject, runtime: JsonObject, api: J
         check(private_name not in api["components"]["schemas"], "Private control record leaked into OpenAPI")
 
 
+def scenario_schema_profile(kind: str, schemas: dict[str, JsonObject]) -> str:
+    if kind in {"RunRecord", "AttemptRecord"}:
+        return "runtime-v2"
+    if kind in schemas["research-learning-v1.schema.json"][DEFINITIONS_KEY]:
+        return "research-learning-v1"
+    return "research-v2"
+
+
 def check_scenario_context(suite: JsonObject, schemas: dict[str, JsonObject], registry: SchemaRegistry) -> None:
     for value in suite["context"].values():
         if isinstance(value, dict) and "kind" in value:
-            profile = "runtime-v2" if value["kind"] in {"RunRecord", "AttemptRecord"} else "research-v2"
+            profile = scenario_schema_profile(cast(str, value["kind"]), schemas)
             schema_validator(schemas[profile + ".schema.json"], registry=registry).validate(cast(JsonObject, value))
 
 

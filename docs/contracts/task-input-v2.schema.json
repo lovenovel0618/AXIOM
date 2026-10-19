@@ -304,6 +304,10 @@
                     "type": "null"
                   }
                 ]
+              },
+              "representation_artifact_id": {
+                "type": "string",
+                "format": "uuid"
               }
             },
             "required": [
@@ -315,7 +319,8 @@
               "split_role",
               "fit_row_ids",
               "fit_rows_hash",
-              "refit_policy_artifact_id"
+              "refit_policy_artifact_id",
+              "representation_artifact_id"
             ],
             "additionalProperties": false,
             "allOf": [
@@ -410,6 +415,14 @@
               "evaluation_policy_hash": {
                 "type": "string",
                 "pattern": "^[0-9a-f]{64}$"
+              },
+              "verification_plan_artifact_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "verification_plan_hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
               }
             },
             "required": [
@@ -418,7 +431,9 @@
               "observation_split_id",
               "frozen_candidate_id",
               "submission_id",
-              "evaluation_policy_hash"
+              "evaluation_policy_hash",
+              "verification_plan_artifact_id",
+              "verification_plan_hash"
             ],
             "additionalProperties": false,
             "allOf": [
@@ -500,5 +515,5 @@
       }
     }
   ],
-  "x-axiom-draft-revision": "2.8"
+  "x-axiom-draft-revision": "2.9"
 }

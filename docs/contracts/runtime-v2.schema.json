@@ -258,6 +258,17 @@
         "artifact_id": {
           "type": "string",
           "format": "uuid"
+        },
+        "structure_preview_artifact_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -272,7 +283,8 @@
         "format",
         "row_count",
         "status",
-        "artifact_id"
+        "artifact_id",
+        "structure_preview_artifact_id"
       ],
       "additionalProperties": false
     },
@@ -459,6 +471,17 @@
             "format": "uuid"
           },
           "uniqueItems": true
+        },
+        "structure_assessment_artifact_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -486,7 +509,8 @@
         "evaluation_policy",
         "evaluation_policy_hash",
         "research_budget_usage",
-        "released_summary_ids"
+        "released_summary_ids",
+        "structure_assessment_artifact_id"
       ],
       "additionalProperties": false
     },
@@ -1099,6 +1123,10 @@
               "type": "null"
             }
           ]
+        },
+        "representation_artifact_id": {
+          "type": "string",
+          "format": "uuid"
         }
       },
       "required": [
@@ -1119,7 +1147,8 @@
         "fit_rows_hash",
         "refit_policy_artifact_id",
         "execution_manifest_id",
-        "preprocessor_artifact_id"
+        "preprocessor_artifact_id",
+        "representation_artifact_id"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -1311,6 +1340,14 @@
         "failed_count": {
           "type": "integer",
           "minimum": 0
+        },
+        "verification_plan_artifact_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "verification_plan_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         }
       },
       "required": [
@@ -1338,7 +1375,9 @@
         "evaluation_policy_hash",
         "selected_count",
         "valid_count",
-        "failed_count"
+        "failed_count",
+        "verification_plan_artifact_id",
+        "verification_plan_hash"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -2567,6 +2606,10 @@
         "environment_digest": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
+        },
+        "representation_artifact_id": {
+          "type": "string",
+          "format": "uuid"
         }
       },
       "required": [
@@ -2584,7 +2627,8 @@
         "parameters",
         "parameter_binding_hash",
         "development_rank",
-        "environment_digest"
+        "environment_digest",
+        "representation_artifact_id"
       ],
       "additionalProperties": false
     },
@@ -2645,6 +2689,14 @@
         "evaluation_policy_hash": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
+        },
+        "verification_plan_artifact_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "verification_plan_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         }
       },
       "required": [
@@ -2659,7 +2711,9 @@
         "metric_version",
         "snapshot_hash",
         "status",
-        "evaluation_policy_hash"
+        "evaluation_policy_hash",
+        "verification_plan_artifact_id",
+        "verification_plan_hash"
       ],
       "additionalProperties": false
     },
@@ -4487,5 +4541,5 @@
       "additionalProperties": false
     }
   },
-  "x-axiom-draft-revision": "2.8"
+  "x-axiom-draft-revision": "2.9"
 }
