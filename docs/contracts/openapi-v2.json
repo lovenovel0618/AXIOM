@@ -4,7 +4,7 @@
     "title": "AXIOM MVP API",
     "version": "2.0.0",
     "description": "Design contract; not an implemented service. Business validation and RBAC are normative in AX-21/26.",
-    "x-axiom-draft-revision": "2.6"
+    "x-axiom-draft-revision": "2.7"
   },
   "servers": [
     {
@@ -3932,6 +3932,422 @@
           }
         }
       }
+    },
+    "/datasets/{id}/runs": {
+      "get": {
+        "operationId": "get_datasets_by_id_runs",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AX-21 resource/ACL semantics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "AX-21 error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/research-versions/{id}/released-summaries": {
+      "get": {
+        "operationId": "get_research_versions_by_id_released_summaries",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AX-21 resource/ACL semantics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleasedSummaryPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "AX-21 error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_research_versions_by_id_released_summaries",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[ -~]+$"
+            }
+          },
+          {
+            "name": "X-CSRFToken",
+            "in": "header",
+            "required": false,
+            "description": "Required for session-cookie authentication; not for service bearer.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "If-Control-Revision",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "See AX-21 for transactional semantics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleasedSummary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "AX-21 stable error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReleasedSummary"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/released-summaries/{id}": {
+      "get": {
+        "operationId": "get_released_summary",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant/ACL/evidence validity checked before reading",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleasedSummary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "AX-21 error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or unauthorized, including sealed detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "AX-26 artifact-class-and-lineage-v1 applies. ReleasedSummary uses private SummaryLineage for current source validity; it never exposes sealed source IDs. PublicationClaim inherits source sealing.",
+        "x-axiom-access-policy": "artifact-class-and-lineage-v1"
+      }
+    },
+    "/publication-claims/{id}": {
+      "get": {
+        "operationId": "get_publication_claim",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant/ACL/evidence validity checked before reading",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationClaim"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "AX-21 error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or unauthorized, including sealed detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "AX-26 artifact-class-and-lineage-v1 applies. ReleasedSummary uses private SummaryLineage for current source validity; it never exposes sealed source IDs. PublicationClaim inherits source sealing.",
+        "x-axiom-access-policy": "artifact-class-and-lineage-v1"
+      }
     }
   },
   "components": {
@@ -4208,12 +4624,16 @@
           },
           "comment": {
             "type": "string"
+          },
+          "claim": {
+            "$ref": "#/components/schemas/PublicationClaimDraft"
           }
         },
         "required": [
           "decision",
           "evidence_bundle_id",
-          "comment"
+          "comment",
+          "claim"
         ],
         "additionalProperties": false
       },
@@ -4336,7 +4756,8 @@
               "ResearchVersionStateChanged",
               "SubmissionFrozen",
               "ReviewRecorded",
-              "EvidenceRevoked"
+              "EvidenceRevoked",
+              "SummaryReleased"
             ]
           },
           "tenant_id": {
@@ -4723,7 +5144,10 @@
                       ]
                     },
                     "stop_reason": {
-                      "type": "string",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "minLength": 1
                     },
                     "revision": {
@@ -4939,8 +5363,40 @@
                     "ResearchVersionStateChanged",
                     "SubmissionFrozen",
                     "ReviewRecorded",
-                    "EvidenceRevoked"
+                    "EvidenceRevoked",
+                    "SummaryReleased"
                   ]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "event_type": {
+                  "const": "SummaryReleased"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "payload": {
+                  "type": "object",
+                  "properties": {
+                    "released_summary_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "revision": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "released_summary_id",
+                    "revision"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
@@ -5335,12 +5791,16 @@
                   "type": "string",
                   "minLength": 1,
                   "maxLength": 256
+                },
+                "conversion": {
+                  "$ref": "#/components/schemas/UnitConversion"
                 }
               },
               "required": [
                 "name",
                 "unit",
-                "source_column"
+                "source_column",
+                "conversion"
               ],
               "additionalProperties": false
             },
@@ -5368,12 +5828,16 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 256
+              },
+              "conversion": {
+                "$ref": "#/components/schemas/UnitConversion"
               }
             },
             "required": [
               "name",
               "unit",
-              "source_column"
+              "source_column",
+              "conversion"
             ],
             "additionalProperties": false
           },
@@ -5387,7 +5851,10 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+                "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                "not": {
+                  "pattern": "^0(\\.0+)?$"
+                }
               },
               {
                 "type": "null"
@@ -5397,6 +5864,18 @@
           "resolution_reason": {
             "type": "string",
             "minLength": 1
+          },
+          "group_column": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -5405,7 +5884,8 @@
           "units_confirmed",
           "time_ordered",
           "measurement_resolution",
-          "resolution_reason"
+          "resolution_reason",
+          "group_column"
         ],
         "additionalProperties": false
       },
@@ -5699,6 +6179,14 @@
           },
           "research_budget_usage": {
             "$ref": "#/components/schemas/BudgetUsage"
+          },
+          "released_summary_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "uniqueItems": true
           }
         },
         "required": [
@@ -5725,7 +6213,8 @@
           "domain",
           "evaluation_policy",
           "evaluation_policy_hash",
-          "research_budget_usage"
+          "research_budget_usage",
+          "released_summary_ids"
         ],
         "additionalProperties": false
       },
@@ -6314,6 +6803,21 @@
                 "type": "null"
               }
             ]
+          },
+          "execution_manifest_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "preprocessor_artifact_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -6332,7 +6836,9 @@
           "precision_bits",
           "fit_row_ids",
           "fit_rows_hash",
-          "refit_policy_artifact_id"
+          "refit_policy_artifact_id",
+          "execution_manifest_id",
+          "preprocessor_artifact_id"
         ],
         "additionalProperties": false,
         "allOf": [
@@ -6512,6 +7018,18 @@
           "evaluation_policy_hash": {
             "type": "string",
             "pattern": "^[0-9a-f]{64}$"
+          },
+          "selected_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "valid_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failed_count": {
+            "type": "integer",
+            "minimum": 0
           }
         },
         "required": [
@@ -6536,7 +7054,10 @@
           "split_role",
           "frozen_candidate_id",
           "submission_id",
-          "evaluation_policy_hash"
+          "evaluation_policy_hash",
+          "selected_count",
+          "valid_count",
+          "failed_count"
         ],
         "additionalProperties": false,
         "allOf": [
@@ -6832,6 +7353,9 @@
           "expected_revision": {
             "type": "integer",
             "minimum": 0
+          },
+          "claim": {
+            "$ref": "#/components/schemas/PublicationClaimDraft"
           }
         },
         "required": [
@@ -6845,7 +7369,8 @@
           "reviewer_id",
           "decision",
           "comment",
-          "expected_revision"
+          "expected_revision",
+          "claim"
         ],
         "additionalProperties": false
       },
@@ -6893,6 +7418,10 @@
           "artifact_id": {
             "type": "string",
             "format": "uuid"
+          },
+          "publication_claim_id": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [
@@ -6906,7 +7435,8 @@
           "evidence_bundle_id",
           "artifact_uri",
           "sha256",
-          "artifact_id"
+          "artifact_id",
+          "publication_claim_id"
         ],
         "additionalProperties": false
       },
@@ -8202,6 +8732,323 @@
             "$ref": "#/components/schemas/BudgetLimit"
           }
         },
+        "additionalProperties": false
+      },
+      "CreateReleasedSummary": {
+        "type": "object",
+        "properties": {
+          "published_artifact_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "artifact_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "disclosure_policy_artifact_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "published_artifact_id",
+          "artifact_id",
+          "disclosure_policy_artifact_id"
+        ],
+        "additionalProperties": false
+      },
+      "ReleasedSummaryPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReleasedSummary"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "UnitConversion": {
+        "type": "object",
+        "properties": {
+          "source_unit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scale": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+            "not": {
+              "pattern": "^0(\\.0+)?$"
+            }
+          },
+          "offset": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          }
+        },
+        "required": [
+          "source_unit",
+          "scale",
+          "offset"
+        ],
+        "additionalProperties": false
+      },
+      "PublicationClaimDraft": {
+        "type": "object",
+        "properties": {
+          "claim_kind": {
+            "type": "string",
+            "enum": [
+              "DESCRIPTIVE",
+              "PREDICTIVE",
+              "REFUTATION",
+              "DIAGNOSTIC"
+            ]
+          },
+          "frozen_candidate_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "validation_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "empirical_level": {
+            "type": "string",
+            "enum": [
+              "E0",
+              "E1",
+              "E2",
+              "E3"
+            ]
+          },
+          "proof_level": {
+            "type": "string",
+            "enum": [
+              "P0",
+              "P1",
+              "P2"
+            ]
+          },
+          "outcome_status": {
+            "type": "string",
+            "enum": [
+              "SUPPORTED",
+              "AMBIGUOUS",
+              "INSUFFICIENT_EVIDENCE",
+              "FALSIFIED"
+            ]
+          },
+          "scope_text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "assumptions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "publication_policy_artifact_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publication_policy_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "claim_kind",
+          "frozen_candidate_id",
+          "validation_run_id",
+          "empirical_level",
+          "proof_level",
+          "outcome_status",
+          "scope_text",
+          "assumptions",
+          "publication_policy_artifact_id",
+          "publication_policy_hash"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "claim_kind": {
+                  "const": "DIAGNOSTIC"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "frozen_candidate_id": {
+                  "type": "null"
+                },
+                "validation_run_id": {
+                  "type": "null"
+                },
+                "outcome_status": {
+                  "const": "INSUFFICIENT_EVIDENCE"
+                },
+                "empirical_level": {
+                  "const": "E0"
+                },
+                "proof_level": {
+                  "const": "P0"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "frozen_candidate_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "validation_run_id": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "PublicationClaim": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "const": "PublicationClaim"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "schema_version": {
+            "const": "2.0"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "research_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "review_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "evidence_bundle_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claim": {
+            "$ref": "#/components/schemas/PublicationClaimDraft"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "tenant_id",
+          "schema_version",
+          "created_at",
+          "research_version_id",
+          "review_id",
+          "evidence_bundle_id",
+          "claim"
+        ],
+        "additionalProperties": false
+      },
+      "ReleasedSummary": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "const": "ReleasedSummary"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "schema_version": {
+            "const": "2.0"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "research_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "artifact_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "disclosure_policy_artifact_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "disclosure_policy_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "validity": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "REVOKED",
+              "QUARANTINED"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "tenant_id",
+          "schema_version",
+          "created_at",
+          "research_version_id",
+          "artifact_id",
+          "disclosure_policy_artifact_id",
+          "disclosure_policy_hash",
+          "validity"
+        ],
         "additionalProperties": false
       }
     },

@@ -23,7 +23,12 @@
               0,
               0
             ],
-            "source_column": "x"
+            "source_column": "x",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           }
         ],
         "target": {
@@ -37,12 +42,18 @@
             0,
             0
           ],
-          "source_column": "y"
+          "source_column": "y",
+          "conversion": {
+            "source_unit": "SI",
+            "scale": "1",
+            "offset": "0"
+          }
         },
         "units_confirmed": true,
         "time_ordered": false,
         "measurement_resolution": "0.001",
-        "resolution_reason": "公開測試設定"
+        "resolution_reason": "公開測試設定",
+        "group_column": null
       },
       "budget": {
         "cpu_seconds": 60,
@@ -138,7 +149,8 @@
         "elapsed_wall_seconds": 0,
         "candidates_generated": 0,
         "candidates_accepted": 0
-      }
+      },
+      "released_summary_ids": []
     },
     "equation": {
       "kind": "EquationVersion",
@@ -258,7 +270,9 @@
         5
       ],
       "fit_rows_hash": "4e098021cf9ec15699efd082b803811ec67394af4b3ea324e86edbccc3cbeac3",
-      "refit_policy_artifact_id": null
+      "refit_policy_artifact_id": null,
+      "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
+      "preprocessor_artifact_id": null
     },
     "candidate": {
       "kind": "Candidate",
@@ -380,7 +394,9 @@
       "skipped_phases": [],
       "dispatch_stage": "SEARCH_OPEN",
       "diagnostic_artifact_ids": [],
-      "research_budget_account_id": "00000000-0000-4000-8000-000000000110"
+      "research_budget_account_id": "00000000-0000-4000-8000-000000000110",
+      "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
+      "provenance_id": "00000000-0000-4000-8000-000000000702"
     },
     "child_record": {
       "kind": "RunRecord",
@@ -425,7 +441,9 @@
       "skipped_phases": [],
       "dispatch_stage": "SEARCH_OPEN",
       "diagnostic_artifact_ids": [],
-      "research_budget_account_id": "00000000-0000-4000-8000-000000000110"
+      "research_budget_account_id": "00000000-0000-4000-8000-000000000110",
+      "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
+      "provenance_id": "00000000-0000-4000-8000-000000000702"
     },
     "attempt_record": {
       "kind": "AttemptRecord",
@@ -1151,7 +1169,9 @@
           7
         ],
         "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
-        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080"
+        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080",
+        "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
+        "preprocessor_artifact_id": null
       },
       "preregistered": true,
       "mutations": [
@@ -1194,7 +1214,9 @@
           8
         ],
         "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
-        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080"
+        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080",
+        "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
+        "preprocessor_artifact_id": null
       },
       "preregistered": true,
       "mutations": [
@@ -1236,7 +1258,9 @@
           7
         ],
         "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
-        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080"
+        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080",
+        "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
+        "preprocessor_artifact_id": null
       },
       "preregistered": false,
       "mutations": [
@@ -1278,7 +1302,9 @@
           7
         ],
         "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
-        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080"
+        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080",
+        "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
+        "preprocessor_artifact_id": null
       },
       "preregistered": true,
       "mutations": [
@@ -3179,7 +3205,12 @@
               0,
               0
             ],
-            "source_column": "時間（秒）"
+            "source_column": "時間（秒）",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           }
         ],
         "target": {
@@ -3193,12 +3224,18 @@
             0,
             0
           ],
-          "source_column": "位移（公分）"
+          "source_column": "位移（公分）",
+          "conversion": {
+            "source_unit": "SI",
+            "scale": "1",
+            "offset": "0"
+          }
         },
         "units_confirmed": true,
         "time_ordered": false,
         "measurement_resolution": "0.001",
-        "resolution_reason": "公開測試設定"
+        "resolution_reason": "公開測試設定",
+        "group_column": null
       },
       "dataset_columns": [
         "時間（秒）",
@@ -3222,7 +3259,12 @@
               0,
               0
             ],
-            "source_column": "時間（秒）"
+            "source_column": "時間（秒）",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           }
         ],
         "target": {
@@ -3236,12 +3278,18 @@
             0,
             0
           ],
-          "source_column": "位移（公分）"
+          "source_column": "位移（公分）",
+          "conversion": {
+            "source_unit": "SI",
+            "scale": "1",
+            "offset": "0"
+          }
         },
         "units_confirmed": true,
         "time_ordered": false,
         "measurement_resolution": "0.001",
-        "resolution_reason": "公開測試設定"
+        "resolution_reason": "公開測試設定",
+        "group_column": null
       },
       "dataset_columns": [
         "時間（秒）"
@@ -3264,7 +3312,12 @@
               0,
               0
             ],
-            "source_column": "時間（秒）"
+            "source_column": "時間（秒）",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           }
         ],
         "target": {
@@ -3278,12 +3331,18 @@
             0,
             0
           ],
-          "source_column": "時間（秒）"
+          "source_column": "時間（秒）",
+          "conversion": {
+            "source_unit": "SI",
+            "scale": "1",
+            "offset": "0"
+          }
         },
         "units_confirmed": true,
         "time_ordered": false,
         "measurement_resolution": "0.001",
-        "resolution_reason": "公開測試設定"
+        "resolution_reason": "公開測試設定",
+        "group_column": null
       },
       "dataset_columns": [
         "時間（秒）",
@@ -3452,7 +3511,12 @@
               0,
               0
             ],
-            "source_column": "時間（秒）"
+            "source_column": "時間（秒）",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           }
         ],
         "target": {
@@ -3466,17 +3530,1330 @@
             0,
             0
           ],
-          "source_column": "位移（公分）"
+          "source_column": "位移（公分）",
+          "conversion": {
+            "source_unit": "SI",
+            "scale": "1",
+            "offset": "0"
+          }
         },
         "units_confirmed": true,
         "time_ordered": false,
         "measurement_resolution": "0.001",
-        "resolution_reason": "公開測試設定"
+        "resolution_reason": "公開測試設定",
+        "group_column": null
       },
       "dataset_columns": [
         "時間（秒）",
         "位移（公分）"
       ]
+    },
+    {
+      "scale": "0.01",
+      "offset": "0",
+      "source": "150",
+      "canonical": "1.5",
+      "source_error": "2",
+      "canonical_error": "0.02",
+      "id": "CF-127",
+      "check": "unit_conversion",
+      "expected": "ACCEPT"
+    },
+    {
+      "scale": "0",
+      "offset": "0",
+      "source": "150",
+      "canonical": "1.5",
+      "source_error": "2",
+      "canonical_error": "0.02",
+      "id": "CF-128",
+      "check": "unit_conversion",
+      "expected": "UNIT_CONVERSION_INVALID"
+    },
+    {
+      "scale": "-1",
+      "offset": "0",
+      "source": "150",
+      "canonical": "1.5",
+      "source_error": "2",
+      "canonical_error": "0.02",
+      "id": "CF-129",
+      "check": "unit_conversion",
+      "expected": "UNIT_CONVERSION_INVALID"
+    },
+    {
+      "scale": "1",
+      "offset": "273.15",
+      "source": "-40",
+      "canonical": "233.15",
+      "source_error": "0.5",
+      "canonical_error": "0.5",
+      "id": "CF-130",
+      "check": "unit_conversion",
+      "expected": "ACCEPT"
+    },
+    {
+      "responsible_human_ids": [
+        "author",
+        "initiator"
+      ],
+      "reviewer_id": "reviewer",
+      "provenance_complete": true,
+      "service_actor": false,
+      "reviewer_grant": true,
+      "id": "CF-131",
+      "check": "independent_review",
+      "expected": "ACCEPT"
+    },
+    {
+      "responsible_human_ids": [
+        "author",
+        "initiator"
+      ],
+      "reviewer_id": "author",
+      "provenance_complete": true,
+      "service_actor": false,
+      "reviewer_grant": true,
+      "id": "CF-132",
+      "check": "independent_review",
+      "expected": "INDEPENDENT_REVIEW_REQUIRED"
+    },
+    {
+      "responsible_human_ids": [
+        "author",
+        "initiator"
+      ],
+      "reviewer_id": "initiator",
+      "provenance_complete": true,
+      "service_actor": false,
+      "reviewer_grant": true,
+      "id": "CF-133",
+      "check": "independent_review",
+      "expected": "INDEPENDENT_REVIEW_REQUIRED"
+    },
+    {
+      "responsible_human_ids": [
+        "author",
+        "initiator"
+      ],
+      "reviewer_id": "reviewer",
+      "provenance_complete": true,
+      "service_actor": true,
+      "reviewer_grant": true,
+      "id": "CF-134",
+      "check": "independent_review",
+      "expected": "INDEPENDENT_REVIEW_REQUIRED"
+    },
+    {
+      "responsible_human_ids": [
+        "author",
+        "initiator"
+      ],
+      "reviewer_id": "reviewer",
+      "provenance_complete": false,
+      "service_actor": false,
+      "reviewer_grant": true,
+      "id": "CF-135",
+      "check": "independent_review",
+      "expected": "INDEPENDENT_REVIEW_REQUIRED"
+    },
+    {
+      "responsible_human_ids": [],
+      "reviewer_id": "reviewer",
+      "provenance_complete": true,
+      "service_actor": false,
+      "reviewer_grant": true,
+      "id": "CF-136",
+      "check": "independent_review",
+      "expected": "INDEPENDENT_REVIEW_REQUIRED"
+    },
+    {
+      "responsible_human_ids": [
+        "author",
+        "initiator"
+      ],
+      "reviewer_id": "reviewer",
+      "provenance_complete": true,
+      "service_actor": false,
+      "reviewer_grant": false,
+      "id": "CF-137",
+      "check": "independent_review",
+      "expected": "NOT_FOUND"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-138",
+      "check": "publication_claim",
+      "expected": "ACCEPT"
+    },
+    {
+      "policy_approved": false,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-139",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_POLICY_BLOCKED"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": false,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-140",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": false,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-141",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": false,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-142",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "DEVELOPMENT",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-143",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": false,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-144",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 9,
+        "selected_count": 10
+      },
+      "id": "CF-145",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E1",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-146",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "different-candidate",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-147",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "CAUSAL",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10,
+        "claim_kind": "CAUSAL"
+      },
+      "id": "CF-148",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P1",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P1",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-149",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E3",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E3",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-150",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "REFUTATION",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "FALSIFIED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "FALSIFIED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-151",
+      "check": "publication_claim",
+      "expected": "ACCEPT"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "PREDICTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "FALSIFIED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "FALSIFIED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-152",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "DIAGNOSTIC",
+        "frozen_candidate_id": null,
+        "validation_run_id": null,
+        "empirical_level": "E0",
+        "proof_level": "P0",
+        "outcome_status": "INSUFFICIENT_EVIDENCE",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E2",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "FINAL_TEST",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10
+      },
+      "id": "CF-153",
+      "check": "publication_claim",
+      "expected": "ACCEPT"
+    },
+    {
+      "acl_read": true,
+      "policy_approved": true,
+      "safe_projection_checked": true,
+      "source_status": "ACTIVE",
+      "sealed_detail_grant": false,
+      "id": "CF-154",
+      "check": "summary_release",
+      "expected": "ACCEPT"
+    },
+    {
+      "acl_read": false,
+      "policy_approved": true,
+      "safe_projection_checked": true,
+      "source_status": "ACTIVE",
+      "sealed_detail_grant": false,
+      "id": "CF-155",
+      "check": "summary_release",
+      "expected": "NOT_FOUND"
+    },
+    {
+      "acl_read": true,
+      "policy_approved": false,
+      "safe_projection_checked": true,
+      "source_status": "ACTIVE",
+      "sealed_detail_grant": false,
+      "id": "CF-156",
+      "check": "summary_release",
+      "expected": "DISCLOSURE_POLICY_BLOCKED"
+    },
+    {
+      "acl_read": true,
+      "policy_approved": true,
+      "safe_projection_checked": false,
+      "source_status": "ACTIVE",
+      "sealed_detail_grant": false,
+      "id": "CF-157",
+      "check": "summary_release",
+      "expected": "DISCLOSURE_POLICY_BLOCKED"
+    },
+    {
+      "acl_read": true,
+      "policy_approved": true,
+      "safe_projection_checked": true,
+      "source_status": "REVOKED",
+      "sealed_detail_grant": false,
+      "id": "CF-158",
+      "check": "summary_release",
+      "expected": "REVOKED_HISTORY_WITH_WARNING"
+    },
+    {
+      "acl_read": true,
+      "policy_approved": true,
+      "safe_projection_checked": true,
+      "source_status": "QUARANTINED",
+      "sealed_detail_grant": false,
+      "id": "CF-159",
+      "check": "summary_release",
+      "expected": "ARTIFACT_UNAVAILABLE"
+    },
+    {
+      "same_tenant": true,
+      "status": "OPEN",
+      "expired": false,
+      "version_matches": true,
+      "checksum_matches": true,
+      "id": "CF-160",
+      "check": "upload_completion",
+      "expected": "PIN_VERSION_AND_CREATE_INGEST"
+    },
+    {
+      "same_tenant": false,
+      "status": "OPEN",
+      "expired": false,
+      "version_matches": true,
+      "checksum_matches": true,
+      "id": "CF-161",
+      "check": "upload_completion",
+      "expected": "NOT_FOUND"
+    },
+    {
+      "same_tenant": true,
+      "status": "OPEN",
+      "expired": true,
+      "version_matches": true,
+      "checksum_matches": true,
+      "id": "CF-162",
+      "check": "upload_completion",
+      "expected": "UPLOAD_EXPIRED"
+    },
+    {
+      "same_tenant": true,
+      "status": "OPEN",
+      "expired": false,
+      "version_matches": false,
+      "checksum_matches": true,
+      "id": "CF-163",
+      "check": "upload_completion",
+      "expected": "UPLOAD_OBJECT_CHANGED"
+    },
+    {
+      "same_tenant": true,
+      "status": "OPEN",
+      "expired": false,
+      "version_matches": true,
+      "checksum_matches": false,
+      "id": "CF-164",
+      "check": "upload_completion",
+      "expected": "UPLOAD_OBJECT_CHANGED"
+    },
+    {
+      "same_tenant": true,
+      "status": "COMPLETED",
+      "expired": true,
+      "version_matches": false,
+      "checksum_matches": true,
+      "id": "CF-165",
+      "check": "upload_completion",
+      "expected": "EXISTING_INGEST"
+    },
+    {
+      "same_tenant": true,
+      "status": "ABORTED",
+      "expired": false,
+      "version_matches": true,
+      "checksum_matches": true,
+      "id": "CF-166",
+      "check": "upload_completion",
+      "expected": "UPLOAD_EXPIRED"
+    },
+    {
+      "cancelled": false,
+      "queue_expired": false,
+      "claimed": false,
+      "attempts": 1,
+      "max_attempts": 3,
+      "deadline_expired": false,
+      "retryable": true,
+      "id": "CF-167",
+      "check": "retry",
+      "expected": "RETRY_SAME_RUN"
+    },
+    {
+      "cancelled": true,
+      "queue_expired": false,
+      "claimed": false,
+      "attempts": 1,
+      "max_attempts": 3,
+      "deadline_expired": false,
+      "retryable": true,
+      "id": "CF-168",
+      "check": "retry",
+      "expected": "CANCEL_AND_DRAIN"
+    },
+    {
+      "cancelled": false,
+      "queue_expired": true,
+      "claimed": false,
+      "attempts": 1,
+      "max_attempts": 3,
+      "deadline_expired": false,
+      "retryable": true,
+      "id": "CF-169",
+      "check": "retry",
+      "expected": "FAILED:DEPENDENCY_FAILURE"
+    },
+    {
+      "cancelled": false,
+      "queue_expired": true,
+      "claimed": true,
+      "attempts": 1,
+      "max_attempts": 3,
+      "deadline_expired": false,
+      "retryable": true,
+      "id": "CF-170",
+      "check": "retry",
+      "expected": "RETRY_SAME_RUN"
+    },
+    {
+      "cancelled": false,
+      "queue_expired": false,
+      "claimed": false,
+      "attempts": 3,
+      "max_attempts": 3,
+      "deadline_expired": false,
+      "retryable": true,
+      "id": "CF-171",
+      "check": "retry",
+      "expected": "CLOSE_AND_DRAIN_THEN_FAIL"
+    },
+    {
+      "cancelled": false,
+      "queue_expired": false,
+      "claimed": false,
+      "attempts": 1,
+      "max_attempts": 3,
+      "deadline_expired": true,
+      "retryable": true,
+      "id": "CF-172",
+      "check": "retry",
+      "expected": "CLOSE_AND_DRAIN_THEN_FAIL"
+    },
+    {
+      "cancelled": false,
+      "queue_expired": false,
+      "claimed": false,
+      "attempts": 1,
+      "max_attempts": 3,
+      "deadline_expired": false,
+      "retryable": false,
+      "id": "CF-173",
+      "check": "retry",
+      "expected": "CLOSE_AND_DRAIN_THEN_FAIL"
+    },
+    {
+      "existing_key": true,
+      "same_payload": true,
+      "dispatch_allowed": true,
+      "id": "CF-174",
+      "check": "dispatch_recovery",
+      "expected": "EXISTING_CHILD"
+    },
+    {
+      "existing_key": true,
+      "same_payload": false,
+      "dispatch_allowed": true,
+      "id": "CF-175",
+      "check": "dispatch_recovery",
+      "expected": "DISPATCH_KEY_CONFLICT"
+    },
+    {
+      "existing_key": false,
+      "same_payload": true,
+      "dispatch_allowed": true,
+      "id": "CF-176",
+      "check": "dispatch_recovery",
+      "expected": "CREATE_CHILD"
+    },
+    {
+      "existing_key": false,
+      "same_payload": true,
+      "dispatch_allowed": false,
+      "id": "CF-177",
+      "check": "dispatch_recovery",
+      "expected": "DISPATCH_STAGE_VIOLATION"
+    },
+    {
+      "selected": 10,
+      "valid": 10,
+      "failed": 0,
+      "coverage": 1,
+      "mae": 0.1,
+      "reason": null,
+      "outcome": "SUPPORTED",
+      "id": "CF-178",
+      "check": "evaluation_counts",
+      "expected": "ACCEPT"
+    },
+    {
+      "selected": 10,
+      "valid": 10,
+      "failed": 1,
+      "coverage": 1,
+      "mae": 0.1,
+      "reason": null,
+      "outcome": "SUPPORTED",
+      "id": "CF-179",
+      "check": "evaluation_counts",
+      "expected": "EVALUATION_COUNTS_INVALID"
+    },
+    {
+      "selected": 10,
+      "valid": 9,
+      "failed": 1,
+      "coverage": 1,
+      "mae": 0.1,
+      "reason": null,
+      "outcome": "SUPPORTED",
+      "id": "CF-180",
+      "check": "evaluation_counts",
+      "expected": "EVALUATION_COUNTS_INVALID"
+    },
+    {
+      "selected": 10,
+      "valid": 9,
+      "failed": 1,
+      "coverage": 0.9,
+      "mae": 0.1,
+      "reason": null,
+      "outcome": "SUPPORTED",
+      "id": "CF-181",
+      "check": "evaluation_counts",
+      "expected": "EVALUATION_COUNTS_INVALID"
+    },
+    {
+      "selected": 10,
+      "valid": 9,
+      "failed": 1,
+      "coverage": 0.9,
+      "mae": 0.1,
+      "reason": null,
+      "outcome": "INSUFFICIENT_EVIDENCE",
+      "id": "CF-182",
+      "check": "evaluation_counts",
+      "expected": "ACCEPT"
+    },
+    {
+      "selected": 0,
+      "valid": 0,
+      "failed": 0,
+      "coverage": 0,
+      "mae": null,
+      "reason": "NO_EVALUABLE_ROWS",
+      "outcome": "INSUFFICIENT_EVIDENCE",
+      "id": "CF-183",
+      "check": "evaluation_counts",
+      "expected": "ACCEPT"
+    },
+    {
+      "selected": 10,
+      "valid": 0,
+      "failed": 10,
+      "coverage": 0,
+      "mae": 0,
+      "reason": null,
+      "outcome": "INSUFFICIENT_EVIDENCE",
+      "id": "CF-184",
+      "check": "evaluation_counts",
+      "expected": "EVALUATION_COUNTS_INVALID"
+    },
+    {
+      "time_ordered": false,
+      "grouped": false,
+      "kind": "EXPLICIT",
+      "id": "CF-185",
+      "check": "split_dependence",
+      "expected": "ACCEPT"
+    },
+    {
+      "time_ordered": true,
+      "grouped": false,
+      "kind": "EXPLICIT",
+      "id": "CF-186",
+      "check": "split_dependence",
+      "expected": "SPLIT_DEPENDENCE_CONFLICT"
+    },
+    {
+      "time_ordered": true,
+      "grouped": false,
+      "kind": "TIME_ORDERED",
+      "id": "CF-187",
+      "check": "split_dependence",
+      "expected": "ACCEPT"
+    },
+    {
+      "time_ordered": false,
+      "grouped": true,
+      "kind": "EXPLICIT",
+      "id": "CF-188",
+      "check": "split_dependence",
+      "expected": "SPLIT_DEPENDENCE_CONFLICT"
+    },
+    {
+      "time_ordered": false,
+      "grouped": true,
+      "kind": "GROUPED_ROWS",
+      "id": "CF-189",
+      "check": "split_dependence",
+      "expected": "ACCEPT"
+    },
+    {
+      "time_ordered": true,
+      "grouped": true,
+      "kind": "TIME_ORDERED",
+      "id": "CF-190",
+      "check": "split_dependence",
+      "expected": "SPLIT_DEPENDENCE_CONFLICT"
+    },
+    {
+      "id": "CF-191",
+      "check": "exposure_tokens",
+      "original": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "rows": [
+          {
+            "input": "0",
+            "target": "1",
+            "input_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "target_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_namespace": "trusted-fixture-source",
+            "observation_id": "training-A"
+          },
+          {
+            "input": "8",
+            "target": "17",
+            "input_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "target_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_namespace": "trusted-fixture-source",
+            "observation_id": "observation-A"
+          }
+        ],
+        "final_ids": [
+          1
+        ]
+      },
+      "proposed": {
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "rows": [
+          {
+            "input": "800",
+            "target": "1700",
+            "input_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "target_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_namespace": "repacked-wrapper",
+            "observation_id": "new-wrapper-ID",
+            "input_conversion": {
+              "scale": "0.01",
+              "offset": "0"
+            },
+            "target_conversion": {
+              "scale": "0.01",
+              "offset": "0"
+            }
+          },
+          {
+            "input": "0",
+            "target": "999",
+            "input_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "target_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_namespace": "trusted-fixture-source",
+            "observation_id": "training-A"
+          }
+        ],
+        "final_ids": [
+          0
+        ]
+      },
+      "expected": "BLIND_ELIGIBILITY_DENIED"
+    },
+    {
+      "acl_read": true,
+      "policy_approved": true,
+      "safe_projection_checked": true,
+      "source_status": "REVOKED",
+      "sealed_detail_grant": false,
+      "id": "CF-192",
+      "check": "summary_release",
+      "expected": "ARTIFACT_UNAVAILABLE",
+      "operation": "CONTENT"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "DESCRIPTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E1",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E1",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": null,
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "DEVELOPMENT",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10,
+        "fit_run_id": "fit-1",
+        "frozen_fit_run_id": "fit-1"
+      },
+      "id": "CF-193",
+      "check": "publication_claim",
+      "expected": "ACCEPT"
+    },
+    {
+      "policy_approved": true,
+      "bundle_active": true,
+      "same_lineage": true,
+      "domain_matches": true,
+      "claim": {
+        "claim_kind": "DESCRIPTIVE",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+        "validation_run_id": "00000000-0000-4000-8000-000000000008",
+        "empirical_level": "E1",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+        "assumptions": [
+          "觀測相互獨立"
+        ],
+        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "result": {
+        "empirical_level": "E1",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "frozen_candidate_id": null,
+        "id": "00000000-0000-4000-8000-000000000008",
+        "split_role": "DEVELOPMENT",
+        "submission_matches": true,
+        "valid_count": 10,
+        "selected_count": 10,
+        "fit_run_id": "different-fit",
+        "frozen_fit_run_id": "fit-1"
+      },
+      "id": "CF-194",
+      "check": "publication_claim",
+      "expected": "PUBLICATION_CLAIM_INVALID"
+    },
+    {
+      "check": "submit",
+      "mutations": [
+        [
+          "root_record.dispatch_stage",
+          "CLOSED"
+        ]
+      ],
+      "expected": "DISPATCH_STAGE_VIOLATION",
+      "id": "CF-195"
+    },
+    {
+      "check": "access",
+      "acl_read": true,
+      "actor": "reader",
+      "access_class": "RELEASED_AGGREGATE",
+      "inherited_sealed": true,
+      "release_checked": true,
+      "registered_summary_lineage": true,
+      "expected": "ACCEPT",
+      "id": "CF-196"
+    },
+    {
+      "check": "access",
+      "acl_read": true,
+      "actor": "reader",
+      "access_class": "RELEASED_AGGREGATE",
+      "inherited_sealed": true,
+      "release_checked": true,
+      "registered_summary_lineage": false,
+      "expected": "NOT_FOUND",
+      "id": "CF-197"
+    },
+    {
+      "acl_read": true,
+      "policy_approved": true,
+      "safe_projection_checked": true,
+      "source_status": "ACTIVE",
+      "sealed_detail_grant": false,
+      "id": "CF-198",
+      "check": "summary_release",
+      "expected": "NOT_FOUND",
+      "actor": "solver"
     }
   ]
 }

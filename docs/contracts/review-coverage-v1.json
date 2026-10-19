@@ -1,0 +1,1231 @@
+{
+  "schema_version": "1.0",
+  "document_revision": "2.7",
+  "scope": "DOCUMENT_REFERENCE_ONLY",
+  "product_status": "NOT_RUN",
+  "findings": [
+    {
+      "id": "RG-01",
+      "finding": "單位比例與原點未進入契約",
+      "status": "SPECIFIED",
+      "chapters": [
+        9,
+        10,
+        12,
+        47
+      ],
+      "evidence_paths": [
+        "04-數學核心/09-數據語意與前處理.md",
+        "04-數學核心/10-公式DSL與等價正規化.md",
+        "04-數學核心/12-參數最佳化與數值精度.md",
+        "13-專題深化/47-完整研究物件契約.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-05",
+        "AC-29-06"
+      ],
+      "reference_case_ids": [
+        "CF-127",
+        "CF-128",
+        "CF-129",
+        "CF-130",
+        "CF-191"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-02",
+      "finding": "前處理與品質報告可洩漏final",
+      "status": "SPECIFIED",
+      "chapters": [
+        5,
+        9,
+        26,
+        28
+      ],
+      "evidence_paths": [
+        "02-流程/05-基準測試與持續學習流程.md",
+        "04-數學核心/09-數據語意與前處理.md",
+        "09-非功能/26-安全隱私與可信執行.md",
+        "10-測試/28-數學基準測試規格.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-07"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-03",
+      "finding": "顯式切分可繞過依賴聲明",
+      "status": "SPECIFIED",
+      "chapters": [
+        9,
+        15,
+        28
+      ],
+      "evidence_paths": [
+        "04-數學核心/09-數據語意與前處理.md",
+        "04-數學核心/15-雙序列與多序列研究.md",
+        "10-測試/28-數學基準測試規格.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-07"
+      ],
+      "reference_case_ids": [
+        "CF-185",
+        "CF-186",
+        "CF-187",
+        "CF-188",
+        "CF-189",
+        "CF-190"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-04",
+      "finding": "上傳完成與檔案版本的競態",
+      "status": "SPECIFIED",
+      "chapters": [
+        9,
+        20,
+        21,
+        43
+      ],
+      "evidence_paths": [
+        "04-數學核心/09-數據語意與前處理.md",
+        "07-資料與API/20-資料模型與儲存規劃.md",
+        "07-資料與API/21-API與任務契約.md",
+        "13-專題深化/43-資料庫ERD與關係約束.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-08"
+      ],
+      "reference_case_ids": [
+        "CF-160",
+        "CF-161",
+        "CF-162",
+        "CF-163",
+        "CF-164",
+        "CF-165",
+        "CF-166"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-05",
+      "finding": "傳輸限制未涵蓋解壓與解析資源",
+      "status": "SPECIFIED",
+      "chapters": [
+        8,
+        9,
+        25
+      ],
+      "evidence_paths": [
+        "03-架構/08-部署與運算資源規劃.md",
+        "04-數學核心/09-數據語意與前處理.md",
+        "09-非功能/25-效能與成本治理.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-09"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-06",
+      "finding": "重新登入找不到INGEST",
+      "status": "SPECIFIED",
+      "chapters": [
+        21,
+        23,
+        24,
+        44
+      ],
+      "evidence_paths": [
+        "07-資料與API/21-API與任務契約.md",
+        "08-前端UX/23-頁面清單與資訊架構.md",
+        "08-前端UX/24-畫面線框與互動流程.md",
+        "13-專題深化/44-研究工作台畫面詳細規格.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-08"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-07",
+      "finding": "租約恢復缺有界重試／排隊期限",
+      "status": "SPECIFIED",
+      "chapters": [
+        27,
+        38
+      ],
+      "evidence_paths": [
+        "09-非功能/27-可觀測性備份與故障復原.md",
+        "03-架構/38-演算法插件與研究協調.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-11"
+      ],
+      "reference_case_ids": [
+        "CF-167",
+        "CF-168",
+        "CF-169",
+        "CF-170",
+        "CF-171",
+        "CF-172",
+        "CF-173"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-08",
+      "finding": "協調器恢復可能重派邏輯工作",
+      "status": "SPECIFIED",
+      "chapters": [
+        7,
+        38,
+        43
+      ],
+      "evidence_paths": [
+        "03-架構/07-模組邊界與事件契約.md",
+        "03-架構/38-演算法插件與研究協調.md",
+        "13-專題深化/43-資料庫ERD與關係約束.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-10"
+      ],
+      "reference_case_ids": [
+        "CF-174",
+        "CF-175",
+        "CF-176",
+        "CF-177"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-09",
+      "finding": "根失敗缺子樹停止收斂",
+      "status": "SPECIFIED",
+      "chapters": [
+        4,
+        27,
+        38
+      ],
+      "evidence_paths": [
+        "02-流程/04-端到端研究流程.md",
+        "09-非功能/27-可觀測性備份與故障復原.md",
+        "03-架構/38-演算法插件與研究協調.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-11"
+      ],
+      "reference_case_ids": [
+        "CF-05",
+        "CF-06",
+        "CF-07",
+        "CF-23",
+        "CF-24",
+        "CF-195"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-10",
+      "finding": "研究額度之外缺租戶准入／定點結算",
+      "status": "SPECIFIED",
+      "chapters": [
+        25,
+        38,
+        43
+      ],
+      "evidence_paths": [
+        "09-非功能/25-效能與成本治理.md",
+        "03-架構/38-演算法插件與研究協調.md",
+        "13-專題深化/43-資料庫ERD與關係約束.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-12"
+      ],
+      "reference_case_ids": [
+        "CF-117",
+        "CF-118",
+        "CF-119",
+        "CF-120",
+        "CF-121"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-11",
+      "finding": "執行環境、轉換及同分排名不完整",
+      "status": "SPECIFIED",
+      "chapters": [
+        11,
+        12,
+        33,
+        38,
+        47
+      ],
+      "evidence_paths": [
+        "04-數學核心/11-搜尋策略與公式組合.md",
+        "04-數學核心/12-參數最佳化與數值精度.md",
+        "12-附錄/33-語言框架與套件選型.md",
+        "03-架構/38-演算法插件與研究協調.md",
+        "13-專題深化/47-完整研究物件契約.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-18"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-12",
+      "finding": "評估缺分母與失敗列契約",
+      "status": "SPECIFIED",
+      "chapters": [
+        3,
+        13,
+        28,
+        34,
+        47
+      ],
+      "evidence_paths": [
+        "01-需求/03-成功指標與研究品質.md",
+        "04-數學核心/13-可識別性不確定性與主動採樣.md",
+        "10-測試/28-數學基準測試規格.md",
+        "12-附錄/34-術語表與證據等級.md",
+        "13-專題深化/47-完整研究物件契約.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-17"
+      ],
+      "reference_case_ids": [
+        "CF-178",
+        "CF-179",
+        "CF-180",
+        "CF-181",
+        "CF-182",
+        "CF-183",
+        "CF-184"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-13",
+      "finding": "作者與發起人未永久保存",
+      "status": "SPECIFIED",
+      "chapters": [
+        20,
+        26,
+        43,
+        47
+      ],
+      "evidence_paths": [
+        "07-資料與API/20-資料模型與儲存規劃.md",
+        "09-非功能/26-安全隱私與可信執行.md",
+        "13-專題深化/43-資料庫ERD與關係約束.md",
+        "13-專題深化/47-完整研究物件契約.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-13"
+      ],
+      "reference_case_ids": [
+        "CF-131",
+        "CF-132",
+        "CF-133",
+        "CF-134",
+        "CF-135",
+        "CF-136",
+        "CF-137"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-14",
+      "finding": "發布未固定主張及證據資格",
+      "status": "SPECIFIED",
+      "chapters": [
+        4,
+        14,
+        17,
+        26,
+        34,
+        47
+      ],
+      "evidence_paths": [
+        "02-流程/04-端到端研究流程.md",
+        "04-數學核心/14-推演一般化與形式化證明.md",
+        "05-記憶/17-知識圖譜與理論演化.md",
+        "09-非功能/26-安全隱私與可信執行.md",
+        "12-附錄/34-術語表與證據等級.md",
+        "13-專題深化/47-完整研究物件契約.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-14"
+      ],
+      "reference_case_ids": [
+        "CF-138",
+        "CF-139",
+        "CF-140",
+        "CF-141",
+        "CF-142",
+        "CF-143",
+        "CF-144",
+        "CF-145",
+        "CF-146",
+        "CF-147",
+        "CF-148",
+        "CF-149",
+        "CF-150",
+        "CF-151",
+        "CF-152",
+        "CF-153",
+        "CF-193",
+        "CF-194"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-15",
+      "finding": "獨立安全摘要無導航／釋出鏈",
+      "status": "SPECIFIED",
+      "chapters": [
+        21,
+        23,
+        26,
+        34,
+        43,
+        44,
+        47
+      ],
+      "evidence_paths": [
+        "07-資料與API/21-API與任務契約.md",
+        "08-前端UX/23-頁面清單與資訊架構.md",
+        "09-非功能/26-安全隱私與可信執行.md",
+        "12-附錄/34-術語表與證據等級.md",
+        "13-專題深化/43-資料庫ERD與關係約束.md",
+        "13-專題深化/44-研究工作台畫面詳細規格.md",
+        "13-專題深化/47-完整研究物件契約.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-15",
+        "AC-29-16"
+      ],
+      "reference_case_ids": [
+        "CF-154",
+        "CF-155",
+        "CF-156",
+        "CF-157",
+        "CF-158",
+        "CF-159",
+        "CF-192",
+        "CF-198"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-16",
+      "finding": "長連線及終態事件缺動態授權",
+      "status": "SPECIFIED",
+      "chapters": [
+        7,
+        21,
+        26,
+        27,
+        44
+      ],
+      "evidence_paths": [
+        "03-架構/07-模組邊界與事件契約.md",
+        "07-資料與API/21-API與任務契約.md",
+        "09-非功能/26-安全隱私與可信執行.md",
+        "09-非功能/27-可觀測性備份與故障復原.md",
+        "13-專題深化/44-研究工作台畫面詳細規格.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-20"
+      ],
+      "reference_case_ids": [
+        "CF-70",
+        "CF-71",
+        "CF-72",
+        "CF-73",
+        "CF-74",
+        "CF-75",
+        "CF-76",
+        "CF-77",
+        "CF-78",
+        "CF-79",
+        "CF-80",
+        "CF-81",
+        "CF-82",
+        "CF-83",
+        "CF-196",
+        "CF-197"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-17",
+      "finding": "快取與記憶缺完整身分及撤銷傳遞",
+      "status": "SPECIFIED",
+      "chapters": [
+        16,
+        17,
+        19,
+        26
+      ],
+      "evidence_paths": [
+        "05-記憶/16-經驗記憶與檢索架構.md",
+        "05-記憶/17-知識圖譜與理論演化.md",
+        "06-AI/19-策略學習微調與蒸餾.md",
+        "09-非功能/26-安全隱私與可信執行.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-19"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-18",
+      "finding": "不可信渲染及CSV匯出未閉合",
+      "status": "SPECIFIED",
+      "chapters": [
+        22,
+        24,
+        35,
+        44
+      ],
+      "evidence_paths": [
+        "08-前端UX/22-設計系統與視覺規範.md",
+        "08-前端UX/24-畫面線框與互動流程.md",
+        "12-附錄/35-畫面驗收清單.md",
+        "13-專題深化/44-研究工作台畫面詳細規格.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-21"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-19",
+      "finding": "刪除／暫存GC與責任鏈界線",
+      "status": "SPECIFIED",
+      "chapters": [
+        20,
+        26,
+        27,
+        40,
+        43
+      ],
+      "evidence_paths": [
+        "07-資料與API/20-資料模型與儲存規劃.md",
+        "09-非功能/26-安全隱私與可信執行.md",
+        "09-非功能/27-可觀測性備份與故障復原.md",
+        "09-非功能/40-資料治理倫理與領域適用性.md",
+        "13-專題深化/43-資料庫ERD與關係約束.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-22"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-20",
+      "finding": "NFR優先級與首期交付規則矛盾",
+      "status": "SPECIFIED",
+      "chapters": [
+        2,
+        30,
+        31,
+        46
+      ],
+      "evidence_paths": [
+        "01-需求/02-需求規格與使用情境.md",
+        "11-交付/30-里程碑與分階段開發計畫.md",
+        "11-交付/31-工作拆解WBS與依賴.md",
+        "13-專題深化/46-發布驗收矩陣與交付證據.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-22"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-21",
+      "finding": "部署範本與實際可重建證據混淆",
+      "status": "SPECIFIED",
+      "chapters": [
+        6,
+        8,
+        33,
+        41,
+        45
+      ],
+      "evidence_paths": [
+        "03-架構/06-總體技術架構.md",
+        "03-架構/08-部署與運算資源規劃.md",
+        "12-附錄/33-語言框架與套件選型.md",
+        "03-架構/41-Docker本地架設指南.md",
+        "13-專題深化/45-非功能SLO與壓測方案.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-18",
+        "AC-29-22"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-22",
+      "finding": "逐章修補沒有全量覆蓋及停止條件",
+      "status": "SPECIFIED",
+      "chapters": [
+        0,
+        1,
+        29,
+        32,
+        36,
+        46,
+        48
+      ],
+      "evidence_paths": [
+        "00-總覽/00-專案憲章.md",
+        "00-總覽/01-閱讀導航與文件地圖.md",
+        "10-測試/29-驗收測試與品質閘門.md",
+        "11-交付/32-風險登錄與決策紀錄.md",
+        "12-附錄/36-研究案例與情境測試.md",
+        "13-專題深化/46-發布驗收矩陣與交付證據.md",
+        "00-總覽/48-共用契約與文件治理.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-22"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-23",
+      "finding": "正式門檻與資料政策仍待具名決策",
+      "status": "PENDING_DECISION",
+      "chapters": [
+        32,
+        37,
+        40,
+        45,
+        46
+      ],
+      "evidence_paths": [
+        "11-交付/32-風險登錄與決策紀錄.md",
+        "12-附錄/37-決策待確認清單.md",
+        "09-非功能/40-資料治理倫理與領域適用性.md",
+        "13-專題深化/45-非功能SLO與壓測方案.md",
+        "13-專題深化/46-發布驗收矩陣與交付證據.md"
+      ],
+      "acceptance_ids": [
+        "AC-37-01",
+        "AC-37-02"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-24",
+      "finding": "後續AI／多序列／證明能力的啟用界線",
+      "status": "SPECIFIED",
+      "chapters": [
+        14,
+        15,
+        18,
+        19,
+        30,
+        31,
+        39,
+        42
+      ],
+      "evidence_paths": [
+        "04-數學核心/14-推演一般化與形式化證明.md",
+        "04-數學核心/15-雙序列與多序列研究.md",
+        "06-AI/18-ChatGPT與Ollama協作.md",
+        "06-AI/19-策略學習微調與蒸餾.md",
+        "11-交付/30-里程碑與分階段開發計畫.md",
+        "11-交付/31-工作拆解WBS與依賴.md",
+        "10-測試/39-推導證明與理論演化測試.md",
+        "13-專題深化/42-公式搜尋與推演決策樹.md"
+      ],
+      "acceptance_ids": [
+        "AC-29-22"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
+    }
+  ],
+  "chapters": [
+    {
+      "chapter_id": "AX-00",
+      "path": "00-總覽/00-專案憲章.md",
+      "review_focus": "定位與範圍；不把草案當成果",
+      "finding_ids": [
+        "RG-22"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-01",
+      "path": "00-總覽/01-閱讀導航與文件地圖.md",
+      "review_focus": "閱讀順序與權威導航",
+      "finding_ids": [
+        "RG-22"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-02",
+      "path": "01-需求/02-需求規格與使用情境.md",
+      "review_focus": "功能需求、NFR及MVP邊界",
+      "finding_ids": [
+        "RG-20"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-03",
+      "path": "01-需求/03-成功指標與研究品質.md",
+      "review_focus": "成功指標、分母與正式門檻",
+      "finding_ids": [
+        "RG-12"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-04",
+      "path": "02-流程/04-端到端研究流程.md",
+      "review_focus": "版本狀態、零候選、取消與失敗",
+      "finding_ids": [
+        "RG-09",
+        "RG-14"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-05",
+      "path": "02-流程/05-基準測試與持續學習流程.md",
+      "review_focus": "隔離、曝光資格與基準更新",
+      "finding_ids": [
+        "RG-02"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-06",
+      "path": "03-架構/06-總體技術架構.md",
+      "review_focus": "服務邊界、可信求值與儲存",
+      "finding_ids": [
+        "RG-21"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-07",
+      "path": "03-架構/07-模組邊界與事件契約.md",
+      "review_focus": "雙stream、outbox與重送",
+      "finding_ids": [
+        "RG-08",
+        "RG-16"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-08",
+      "path": "03-架構/08-部署與運算資源規劃.md",
+      "review_focus": "解析、配額及隔離能力",
+      "finding_ids": [
+        "RG-05",
+        "RG-21"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-09",
+      "path": "04-數學核心/09-數據語意與前處理.md",
+      "review_focus": "來源、換算、切分與匯入",
+      "finding_ids": [
+        "RG-01",
+        "RG-02",
+        "RG-03",
+        "RG-04",
+        "RG-05"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-10",
+      "path": "04-數學核心/10-公式DSL與等價正規化.md",
+      "review_focus": "DSL／量綱／域／部分函數",
+      "finding_ids": [
+        "RG-01"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-11",
+      "path": "04-數學核心/11-搜尋策略與公式組合.md",
+      "review_focus": "搜尋適用性與候選去重",
+      "finding_ids": [
+        "RG-11"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-12",
+      "path": "04-數學核心/12-參數最佳化與數值精度.md",
+      "review_focus": "參數、轉換與環境重現",
+      "finding_ids": [
+        "RG-01",
+        "RG-11"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-13",
+      "path": "04-數學核心/13-可識別性不確定性與主動採樣.md",
+      "review_focus": "歧義、不確定性與主動採樣",
+      "finding_ids": [
+        "RG-12"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-14",
+      "path": "04-數學核心/14-推演一般化與形式化證明.md",
+      "review_focus": "證明軸與後續推演界線",
+      "finding_ids": [
+        "RG-14",
+        "RG-24"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-15",
+      "path": "04-數學核心/15-雙序列與多序列研究.md",
+      "review_focus": "群組／時間及多序列延後",
+      "finding_ids": [
+        "RG-03",
+        "RG-24"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-16",
+      "path": "05-記憶/16-經驗記憶與檢索架構.md",
+      "review_focus": "記憶／快取身分及安全投影",
+      "finding_ids": [
+        "RG-17"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-17",
+      "path": "05-記憶/17-知識圖譜與理論演化.md",
+      "review_focus": "主張與圖譜撤銷傳播",
+      "finding_ids": [
+        "RG-14",
+        "RG-17"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-18",
+      "path": "06-AI/18-ChatGPT與Ollama協作.md",
+      "review_focus": "外部AI權限及未核准外送",
+      "finding_ids": [
+        "RG-24"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-19",
+      "path": "06-AI/19-策略學習微調與蒸餾.md",
+      "review_focus": "負面樣本、污染與模型回退",
+      "finding_ids": [
+        "RG-17",
+        "RG-24"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-20",
+      "path": "07-資料與API/20-資料模型與儲存規劃.md",
+      "review_focus": "不可變版本、存取及責任關係",
+      "finding_ids": [
+        "RG-04",
+        "RG-13",
+        "RG-19"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-21",
+      "path": "07-資料與API/21-API與任務契約.md",
+      "review_focus": "導航、冪等、控制版本及DTO",
+      "finding_ids": [
+        "RG-04",
+        "RG-06",
+        "RG-15",
+        "RG-16"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-22",
+      "path": "08-前端UX/22-設計系統與視覺規範.md",
+      "review_focus": "渲染、匯出與可及性",
+      "finding_ids": [
+        "RG-18"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-23",
+      "path": "08-前端UX/23-頁面清單與資訊架構.md",
+      "review_focus": "跨頁發現與可見性",
+      "finding_ids": [
+        "RG-06",
+        "RG-15"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-24",
+      "path": "08-前端UX/24-畫面線框與互動流程.md",
+      "review_focus": "重開、失敗與操作界線",
+      "finding_ids": [
+        "RG-06",
+        "RG-18"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-25",
+      "path": "09-非功能/25-效能與成本治理.md",
+      "review_focus": "根／研究／租戶成本與計量",
+      "finding_ids": [
+        "RG-05",
+        "RG-10"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-26",
+      "path": "09-非功能/26-安全隱私與可信執行.md",
+      "review_focus": "永久作者、政策及封存授權",
+      "finding_ids": [
+        "RG-02",
+        "RG-13",
+        "RG-14",
+        "RG-15",
+        "RG-16",
+        "RG-17",
+        "RG-19"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-27",
+      "path": "09-非功能/27-可觀測性備份與故障復原.md",
+      "review_focus": "故障、動態授權及曝光復原",
+      "finding_ids": [
+        "RG-07",
+        "RG-09",
+        "RG-16",
+        "RG-19"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-28",
+      "path": "10-測試/28-數學基準測試規格.md",
+      "review_focus": "split、coverage與評估協定",
+      "finding_ids": [
+        "RG-02",
+        "RG-03",
+        "RG-12"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-29",
+      "path": "10-測試/29-驗收測試與品質閘門.md",
+      "review_focus": "端到端正反例與故障注入",
+      "finding_ids": [
+        "RG-22"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-30",
+      "path": "11-交付/30-里程碑與分階段開發計畫.md",
+      "review_focus": "首期與後續里程碑",
+      "finding_ids": [
+        "RG-20",
+        "RG-24"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-31",
+      "path": "11-交付/31-工作拆解WBS與依賴.md",
+      "review_focus": "WBS跨層依賴與交付主責",
+      "finding_ids": [
+        "RG-20",
+        "RG-24"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-32",
+      "path": "11-交付/32-風險登錄與決策紀錄.md",
+      "review_focus": "風險及決策可追溯",
+      "finding_ids": [
+        "RG-22",
+        "RG-23"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-33",
+      "path": "12-附錄/33-語言框架與套件選型.md",
+      "review_focus": "工具選型與實際環境證據",
+      "finding_ids": [
+        "RG-11",
+        "RG-21"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-34",
+      "path": "12-附錄/34-術語表與證據等級.md",
+      "review_focus": "E/P、outcome與發布主張",
+      "finding_ids": [
+        "RG-12",
+        "RG-14",
+        "RG-15"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-35",
+      "path": "12-附錄/35-畫面驗收清單.md",
+      "review_focus": "操作、視覺及可及性驗收",
+      "finding_ids": [
+        "RG-18"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-36",
+      "path": "12-附錄/36-研究案例與情境測試.md",
+      "review_focus": "完整案例與不足／反駁分支",
+      "finding_ids": [
+        "RG-22"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-37",
+      "path": "12-附錄/37-決策待確認清單.md",
+      "review_focus": "九項未決條件及阻擋點",
+      "finding_ids": [
+        "RG-23"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-38",
+      "path": "03-架構/38-演算法插件與研究協調.md",
+      "review_focus": "租約、dispatch、budget及恢復",
+      "finding_ids": [
+        "RG-07",
+        "RG-08",
+        "RG-09",
+        "RG-10",
+        "RG-11"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-39",
+      "path": "10-測試/39-推導證明與理論演化測試.md",
+      "review_focus": "後續理論／證明測試閘門",
+      "finding_ids": [
+        "RG-24"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-40",
+      "path": "09-非功能/40-資料治理倫理與領域適用性.md",
+      "review_focus": "資料政策、適用性及刪除",
+      "finding_ids": [
+        "RG-19",
+        "RG-23"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-41",
+      "path": "03-架構/41-Docker本地架設指南.md",
+      "review_focus": "部署範本與可重建界線",
+      "finding_ids": [
+        "RG-21"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-42",
+      "path": "13-專題深化/42-公式搜尋與推演決策樹.md",
+      "review_focus": "演算法決策及啟用先決條件",
+      "finding_ids": [
+        "RG-24"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-43",
+      "path": "13-專題深化/43-資料庫ERD與關係約束.md",
+      "review_focus": "唯一鍵／FK及跨物件不變式",
+      "finding_ids": [
+        "RG-04",
+        "RG-08",
+        "RG-10",
+        "RG-13",
+        "RG-15",
+        "RG-19"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-44",
+      "path": "13-專題深化/44-研究工作台畫面詳細規格.md",
+      "review_focus": "表單、還原、審核與摘要",
+      "finding_ids": [
+        "RG-06",
+        "RG-15",
+        "RG-16",
+        "RG-18"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-45",
+      "path": "13-專題深化/45-非功能SLO與壓測方案.md",
+      "review_focus": "容量及復原SLO的證據需求",
+      "finding_ids": [
+        "RG-21",
+        "RG-23"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-46",
+      "path": "13-專題深化/46-發布驗收矩陣與交付證據.md",
+      "review_focus": "需求／AC／gate與NOT_RUN",
+      "finding_ids": [
+        "RG-20",
+        "RG-22",
+        "RG-23"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-47",
+      "path": "13-專題深化/47-完整研究物件契約.md",
+      "review_focus": "公開／私有物件及hash依賴",
+      "finding_ids": [
+        "RG-01",
+        "RG-11",
+        "RG-12",
+        "RG-13",
+        "RG-14",
+        "RG-15"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-48",
+      "path": "00-總覽/48-共用契約與文件治理.md",
+      "review_focus": "契約權威、修訂與全面審查",
+      "finding_ids": [
+        "RG-22"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    }
+  ],
+  "decision_gate_ids": [
+    "D-01",
+    "D-02",
+    "D-03",
+    "D-04",
+    "D-05",
+    "D-06",
+    "D-07",
+    "D-08",
+    "D-09"
+  ]
+}

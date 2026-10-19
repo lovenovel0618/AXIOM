@@ -23,7 +23,8 @@
         "ResearchVersionStateChanged",
         "SubmissionFrozen",
         "ReviewRecorded",
-        "EvidenceRevoked"
+        "EvidenceRevoked",
+        "SummaryReleased"
       ]
     },
     "tenant_id": {
@@ -412,7 +413,10 @@
                 ]
               },
               "stop_reason": {
-                "type": "string",
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "minLength": 1
               },
               "revision": {
@@ -628,8 +632,40 @@
               "ResearchVersionStateChanged",
               "SubmissionFrozen",
               "ReviewRecorded",
-              "EvidenceRevoked"
+              "EvidenceRevoked",
+              "SummaryReleased"
             ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "SummaryReleased"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "released_summary_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "released_summary_id",
+              "revision"
+            ],
+            "additionalProperties": false
           }
         }
       }

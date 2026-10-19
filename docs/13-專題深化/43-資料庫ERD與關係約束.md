@@ -1,6 +1,6 @@
 # 43｜資料庫ERD與關係約束
 
-> AXIOM v2.6 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.7 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-20
 
 ## 權威關係圖
 
@@ -130,3 +130,11 @@ SealedObservationMembership保存每個SealedTest的final_observation_tokens／f
 ResearchBudgetAccount以unique(tenant_id,research_version_id)一對一連ResearchVersion；root BudgetAccount／RunRecord的research_budget_account_id為同租戶FK，PROFILE／SEARCH／FIT／VALIDATE必非null且對應同研究版本，INGEST／REVOKE必null。預留及用量明細唯一鍵同時保護兩層投影，根額度與研究額度不能各自在獨立交易扣帳。先root／ancestor等控制鎖、再研究帳本、最後root帳本；舊「最後BudgetAccount」敘述均以此細化順序為準。
 
 ResearchVersion的evaluation_policy、hash及SemanticProfile.source_column不可變。ValidationRun／FrozenSubmission的evaluation_policy_hash必與研究相同；最終結果槽位仍以submission／frozen candidate／metric唯一，因submission已固定policy hash，不以新policy繞過舊槽位。ExposureJournal與應用DB不是共同交易，保守先記intent後更新DB的復原條件依AX-27，不只備份ExposureLedger資料表。
+
+## v2.7 持久約束與資料生命週期
+
+新增私有ResourceProvenance、ExecutionManifest、UploadRecord、SummaryLineage，對應runtime schema；公開新增PublicationClaim／ReleasedSummary。PublicationClaim.review_id與PublishedArtifact.publication_claim_id為同tenant FK；SummaryLineage.released_summary_id唯一且所有來源FK同tenant。資源建立與provenance／registry同交易，provenance append-only且resource_type/resource_id唯一；作者集合按AX-26保存不可變責任閉包，刪帳號不cascade刪歷史。
+
+UploadRecord COMPLETED必非null object_version／ingest_run_id；一session一INGEST，以business unique保證超過冪等TTL仍重用。dispatch key按AX-38設唯一鍵並保存payload hash，不能讓不同payload使用相同key。Evaluation計數、單位比例、publication claim資格與政策來源屬跨物件語意約束，DB CHECK／FK、可信服務與故障注入需共同驗收，JSON shape通過不代表這些不變條件已實作。
+
+MVP不提供資料硬刪除API。D-05未定保留及刪除政策前只允許受審查的隔離／tombstone；操作需先dry-run計算原始檔、projection、report、memory、cache及備份的lineage影響，不能讓失去來源的摘要仍有效。GC只處理確定無引用的暫存，資料庫刪除成功不代表備份／下載副本已消失。私有內容刪除與最少必要audit／曝光ledger保留必分開裁決，無政策就阻擋，不悄悄選擇永久保留或全部刪光。

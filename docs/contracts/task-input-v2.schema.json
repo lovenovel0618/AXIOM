@@ -46,6 +46,10 @@
     },
     "payload": {
       "type": "object"
+    },
+    "execution_manifest_id": {
+      "type": "string",
+      "format": "uuid"
     }
   },
   "required": [
@@ -55,7 +59,8 @@
     "type",
     "research_version_id",
     "observation_split_id",
-    "payload"
+    "payload",
+    "execution_manifest_id"
   ],
   "additionalProperties": false,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -85,12 +90,46 @@
               "expected_sha256": {
                 "type": "string",
                 "pattern": "^[0-9a-f]{64}$"
+              },
+              "import_limits": {
+                "type": "object",
+                "properties": {
+                  "max_rows": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "max_columns": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "max_cell_utf8_bytes": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "max_decoded_bytes": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "max_parse_seconds": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "max_rows",
+                  "max_columns",
+                  "max_cell_utf8_bytes",
+                  "max_decoded_bytes",
+                  "max_parse_seconds"
+                ]
               }
             },
             "required": [
               "upload_session_id",
               "object_version",
-              "expected_sha256"
+              "expected_sha256",
+              "import_limits"
             ],
             "additionalProperties": false
           },
@@ -461,5 +500,5 @@
       }
     }
   ],
-  "x-axiom-draft-revision": "2.6"
+  "x-axiom-draft-revision": "2.7"
 }

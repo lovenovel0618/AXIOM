@@ -29,7 +29,7 @@ DEFINITIONS_KEY = "$defs"
 DSL_SCHEMA_NAME = "dsl-v1.schema.json"
 RUNTIME_SCHEMA_NAME = "runtime-v2.schema.json"
 RESEARCH_SCHEMA_NAME = "research-v2.schema.json"
-DOC_VERSION = "v2.6"
+DOC_VERSION = "v2.7"
 RELEASE_MATRIX_GLOB = "46-*.md"
 DECISION_LIST_GLOB = "37-*.md"
 MATRIX_ONLY_CHAPTER = "AC-46-"
@@ -303,7 +303,7 @@ def check_api_examples(folder: Path, api: JsonObject) -> int:
 def check_operation_headers(path: str, method: str, operation: JsonObject) -> None:
     headers = {p["name"] for p in operation.get("parameters", []) if p.get("in") == "header"}
     check("If-Match" not in headers, "Business control revision must not masquerade as representation ETag")
-    if method == "post" and any(path.endswith(suffix) for suffix in ["/validate", "/runs", "/cancel", "/reviews", "/revoke"]):
+    if method == "post" and any(path.endswith(suffix) for suffix in ["/validate", "/runs", "/cancel", "/reviews", "/revoke", "/released-summaries"]):
         check("If-Control-Revision" in headers, "Control precondition missing")
 
 
@@ -414,6 +414,77 @@ def check_research_completion_contracts(schemas: dict[str, JsonObject], api: Jso
         check(name not in api["components"]["schemas"], "Internal control record leaked into HTTP")
 
 
+def check_review_finding(finding: JsonObject, case_ids: set[str], reference_ids: set[str]) -> None:
+    check(finding["status"] in {"SPECIFIED", "PENDING_DECISION"}, "Invalid review finding status")
+    check(finding["product_status"] == "NOT_RUN", "Review cannot claim product PASS")
+    check(bool(finding["evidence_paths"]) and bool(finding["acceptance_ids"]), "Review closure evidence missing")
+    for path in finding["evidence_paths"]:
+        check((ROOT / path).is_file(), "Missing review authority: " + path)
+    check(set(finding["acceptance_ids"]) <= case_ids, "Review references undefined product acceptance")
+    check(set(finding["reference_case_ids"]) <= reference_ids, "Review references undefined fixture")
+
+
+def check_review_coverage(suite: JsonObject) -> int:
+    review = read_json(ROOT / "contracts/review-coverage-v1.json")
+    check(review["document_revision"] == DOC_VERSION.removeprefix("v"), "Review revision stale")
+    check(review["scope"] == "DOCUMENT_REFERENCE_ONLY" and review["product_status"] == "NOT_RUN",
+          "Review scope must distinguish specification from product validation")
+    paths = {str(p.relative_to(ROOT)) for p in ROOT.rglob("*.md") if p.name[:2].isdigit()}
+    rows = review["chapters"]
+    check(len(rows) == 49 and {row["path"] for row in rows} == paths, "Incomplete review coverage")
+    check({row["chapter_id"] for row in rows} == {f"AX-{n:02d}" for n in range(49)}, "Review chapter ID drift")
+    findings = review["findings"]
+    identifiers = {finding["id"] for finding in findings}
+    check(len(identifiers) == len(findings), "Duplicate review finding")
+    case_ids = {identifier for path in ROOT.rglob("*.md") for identifier in acceptance_ids(path.read_text())}
+    reference_ids = {case["id"] for case in suite["cases"]}
+    for finding in findings:
+        check_review_finding(finding, case_ids, reference_ids)
+    check_review_rows(rows, findings, identifiers)
+    check(set(review["decision_gate_ids"]) == {f"D-{n:02d}" for n in range(1, 10)}, "Decision gate coverage missing")
+    return len(findings)
+
+
+def check_review_rows(rows: list[JsonObject], findings: list[JsonObject], identifiers: set[str]) -> None:
+    report = (ROOT / "REVIEW.md").read_text()
+    for row in rows:
+        check(row["review_status"] == "REVIEWED" and row["product_status"] == "NOT_RUN", "Unreviewed chapter")
+        check(bool(row["review_focus"]) and bool(row["finding_ids"]), "Empty chapter review")
+        check(set(row["finding_ids"]) <= identifiers, "Undefined review finding")
+        expected = {finding["id"] for finding in findings if row["path"] in finding["evidence_paths"]}
+        check(expected == set(row["finding_ids"]), "Bidirectional review trace drift")
+        check(row["path"] in report, "Chapter absent from readable review")
+    for identifier in identifiers:
+        check(identifier in report, "Finding absent from readable review")
+
+
+def check_reference_ranges(suite: JsonObject) -> None:
+    identifiers = {int(case["id"].removeprefix("CF-")) for case in suite["cases"]}
+    for path in ROOT.rglob("*.md"):
+        for match in re.finditer(r"CF-(\d+)(?:～(\d+))?", path.read_text()):
+            first, last = int(match[1]), int(match[2] or match[1])
+            check(first <= last, f"Reversed reference range: {path}: {match[0]}")
+            check(set(range(first, last + 1)) <= identifiers, "Undefined reference fixture: " + match[0])
+
+
+def check_lifecycle_contracts(definitions: JsonObject, runtime: JsonObject, api: JsonObject) -> None:
+    for column in [definitions["SemanticProfile"]["properties"]["inputs"]["items"],
+                   definitions["SemanticProfile"]["properties"]["target"]]:
+        check("conversion" in column["required"], "Canonical conversion missing")
+    for name in ["PublicationClaim", "ReleasedSummary"]:
+        check(name in api["components"]["schemas"], "Missing publication projection: " + name)
+    for name in ["ResourceProvenance", "ExecutionManifest", "UploadRecord", "SummaryLineage"]:
+        check(name in runtime and name not in api["components"]["schemas"], "Private record missing or leaked: " + name)
+    for field in ["selected_count", "valid_count", "failed_count"]:
+        check(field in definitions["ValidationRun"]["required"], "Evaluation denominator missing: " + field)
+    check("released_summary_ids" in definitions["ResearchVersion"]["required"], "Summary recovery missing")
+    check("claim" in api["components"]["schemas"]["CreateReview"]["required"], "Review claim missing")
+    check("publication_claim_id" in definitions["PublishedArtifact"]["required"], "Publication snapshot missing")
+    summary_fields = set(definitions["ReleasedSummary"]["properties"])
+    check(not summary_fields & {"evidence_bundle_id", "publication_claim_id", "published_artifact_id"},
+          "Sealed source reference leaked into summary")
+
+
 def check_contracts() -> dict[str, int]:
     folder = ROOT / "contracts"
     schemas, registry = load_schemas(folder)
@@ -433,11 +504,15 @@ def check_contracts() -> dict[str, int]:
     check_scenario_context(suite, schemas, registry)
     check_recovery_contracts(definitions, runtime, api, schemas[DSL_SCHEMA_NAME])
     check_research_completion_contracts(schemas, api)
+    check_lifecycle_contracts(definitions, runtime, api)
+    check_reference_ranges(suite)
+    finding_count = check_review_coverage(suite)
     scenario_count = check_scenarios(suite)
     check_topology()
     check_local_schema_refs(folder)
     return {"schemas": len(schemas), "contract_examples": example_count,
-            "api_operations": sum(len(v) for v in api["paths"].values()), "contract_scenarios": scenario_count}
+            "api_operations": sum(len(v) for v in api["paths"].values()), "contract_scenarios": scenario_count,
+            "review_findings": finding_count}
 
 
 def check_public_oracles() -> dict[str, int]:

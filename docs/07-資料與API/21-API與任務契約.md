@@ -1,6 +1,6 @@
 # 21｜API與任務契約
 
-> AXIOM v2.6 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.7 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-20
 
 ## 契約範圍與認證
 
@@ -14,7 +14,7 @@ MVP API 前綴 /api/v2，JSON 使用 UTF-8，傳輸使用 HTTPS（本機開發�
 |---|---|---|
 | POST /datasets | name；researcher | 201 Dataset，尚無可用版本 |
 | GET /datasets | cursor、limit；具讀取權 | 200 DatasetPage，不能枚舉其他租戶 |
-| POST /datasets/{id}/uploads | filename、format、size_bytes、sha256；owner/editor | 201 UploadSession，回單次 signed PUT URL，15 分鐘有效 |
+| POST /datasets/{id}/uploads | filename、format、size_bytes、sha256；owner/editor | 201 UploadSession，回15分鐘有效的signed PUT URL，條件式建立／版本固定依AX-09 |
 | POST /uploads/{id}/complete | checksum；owner/editor | 202 INGEST run；掃描、schema、hash 全過後才建立 DatasetVersion |
 | GET /datasets/{id}/versions | cursor、limit；具讀取權 | 200 VersionPage，僅可引用 AVAILABLE 版本 |
 | GET /researches | reader；cursor/limit | 200 ResearchPage，僅授權研究 |
@@ -41,7 +41,7 @@ MVP API 前綴 /api/v2，JSON 使用 UTF-8，傳輸使用 HTTPS（本機開發�
 | GET /artifacts/{id} | reader＋access_class／lineage政策 | 200 Artifact metadata，資料來源與 hash |
 | GET /artifacts/{id}/content | reader＋access_class／lineage政策 | 200 受控串流內容，禁止跳轉未授權物件 URI |
 | GET /review-decisions/{id} | reader；依所屬研究ACL | 200 ReviewDecision，還原歷史審核意見與決定 |
-| POST /research-versions/{id}/reviews | decision、evidence_bundle_id、comment；獨立 reviewer | 201 ReviewDecision；核准且證據有效才發布 |
+| POST /research-versions/{id}/reviews | decision、evidence_bundle_id、comment、claim；獨立 reviewer | 201 ReviewDecision；核准且證據有效才發布 |
 | POST /evidence-bundles/{id}/revoke | reason、counterexample_artifact_id；reviewer | 202 撤銷工作，權威讀取立刻排除，清理傳播見 AX-26 |
 
 Upload URL 只可 PUT 指定暫存 key，不可讀／列 bucket；大小超限 413，格式不允許 415，checksum 不符 422 CHECKSUM_MISMATCH。v2 單檔暫定 50 MiB，容量正式門檻見 D-01。complete 重送不重建版本；未完成暫存 24 小時過期清理。CSV／JSON／Parquet 的支援與品質規則見 AX-09。
@@ -109,7 +109,7 @@ SEARCH 根協調器派送內部 FIT／VALIDATE run，皆引用同研究版本及
 
 帳號由管理員預先建立；瀏覽器認證介面在同源 /auth/login（GET 表單／CSRF；POST 驗證帳密並輪替 session）、/auth/logout（POST＋CSRF，撤銷 session），不屬 /api/v2 研究資源。禁止 GET 登出與透過 API URL 傳帳密；登入失敗回通用訊息並限流。正式 SSO／邀請／公網分享屬後續獨立契約，MVP 不暗示已支援。
 
-Run 回 evidence_bundle_ids／child_run_ids，Candidate 回 fit_run_ids／validation_run_ids，讓前端可沿唯讀端點取得公式、參數、誤差與證據。Artifact registry 供報告／原始資料下載，artifact_uri 僅內部儲存位置，非公開可分享 URL；content endpoint 每次驗證 ACL、敏感政策與撤銷，QUARANTINED／DELETED 回 409 ARTIFACT_UNAVAILABLE。已撤銷但允許保留的歷史報告只提供帶撤銷標記版本，不以舊有效報告繞過檢查。
+Run 回 evidence_bundle_ids／child_run_ids，Candidate 回 fit_run_ids／validation_run_ids，讓前端可沿唯讀端點取得公式、參數、誤差與證據。Artifact registry 供報告／原始資料下載，artifact_uri 僅內部儲存位置，非公開可分享 URL；content endpoint 每次驗證 ACL、敏感政策與撤銷，QUARANTINED／DELETED 回 409 ARTIFACT_UNAVAILABLE。已撤銷的歷史報告在UI保留metadata及撤銷警示；MVP原內容下載回409 ARTIFACT_UNAVAILABLE，不能以舊有效報告繞過檢查。
 
 ## 新增流程驗收
 
@@ -158,3 +158,21 @@ Run的diagnostic_artifact_ids供零候選／預算不足報告讀取，沿既有
 |---|---|---|
 | AC-21-13 | 建立UTF-8欄位映射與完整evaluation_policy | 正確保存並可重開；修改需新版本 |
 | AC-21-14 | 無證據不足報告嘗試核准；或新root超研究預算 | 前者409，後者429；無發布或新預留副作用 |
+
+## v2.7 完整導航與發布契約
+
+以下端點列入OpenAPI；路徑相對/api/v2，全部重新檢查tenant與資源ACL，列表沿既有cursor／limit契約。
+
+| 方法與路徑 | 輸入／輸出 | 控制及授權 |
+|---|---|---|
+| GET /datasets/{id}/runs | RunPage，僅該dataset的INGEST | 支援重新登入後尋回匯入工作；不可經此查研究任務 |
+| GET /research-versions/{id}/released-summaries | ReleasedSummaryPage | 只列已釋出且可讀的摘要；無封存權限仍可讀獨立核准的摘要 |
+| POST /research-versions/{id}/released-summaries | CreateReleasedSummary→201 ReleasedSummary | Idempotency-Key及If-Control-Revision；reviewer且獨立於所有來源作者，核對D-05已核准的disclosure policy |
+| GET /released-summaries/{id} | ReleasedSummary | 查私有SummaryLineage及目前有效性，不回傳密封來源ID |
+| GET /publication-claims/{id} | PublicationClaim | 繼承bundle封存權限；一般reader不可讀final claim |
+
+CreateReview.claim必填PublicationClaimDraft：claim_kind、frozen_candidate_id、validation_run_id、E/P、outcome、scope_text、assumptions、publication_policy_artifact_id／hash。APPROVE依AX-34政策產生不可變PublicationClaim，PublishedArtifact.publication_claim_id指向此快照；REJECT保存被拒絕的claim草稿但不建立發布物。不得由客戶端指定reviewer、作者或放行狀態。ResearchVersion.released_summary_ids與其他引用一樣按目前權限過濾；SummaryReleased是RESEARCH事件，payload只含released_summary_id及revision，與summary／lineage／快照／outbox同交易提交，重開可從列表恢復。未釋出顯示「尚無可公開摘要」，不能顯示不存在與無權來源的差別或數量。
+
+ReleasedSummary只回研究ID、安全Artifact ID、disclosure policy ID/hash及目前validity；不回bundle、claim、final ValidationRun或原PublishedArtifact ID。私有SummaryLineage保存完整關聯。metadata／content均依私有關係即時查有效性；REVOKED摘要保留可讀metadata及撤銷警示，原內容端點一律409 ARTIFACT_UNAVAILABLE；QUARANTINED內容同樣409。不可在下載時改原檔內容而沿用舊sha256。來源不可見不會讓已核准的獨立摘要自動404，來源撤銷／隔離則不能被摘要繞過。各GET仍需摘要本身ACL，RELEASED_AGGREGATE不代表匿名公開。
+
+新增穩定錯誤：422 UNIT_CONVERSION_INVALID、SPLIT_DEPENDENCE_CONFLICT、PUBLICATION_CLAIM_INVALID；403 INDEPENDENT_REVIEW_REQUIRED；409 PUBLICATION_POLICY_BLOCKED、DISCLOSURE_POLICY_BLOCKED、UPLOAD_OBJECT_CHANGED；429 TENANT_ADMISSION_DENIED。上述皆retryable=false，修正設定／權限或新版本後才重新操作，不能自動重試。曝光復原未通過仍沿原503閘門，不能混成新研究輸入錯誤。

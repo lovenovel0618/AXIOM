@@ -1,6 +1,6 @@
 # Docker 本地架設指南
 
-> AXIOM v2.6 設計規格｜文件 ID AX-41｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.7 設計規格｜文件 ID AX-41｜狀態：待實作、待驗收｜2026-10-20
 
 ## 文件目的
 
@@ -191,3 +191,7 @@ minio-init 可用 root 憑證建 bucket／service policy，但 web、worker 只�
 可信supervisor可連DB／MinIO；搜尋、擬合與proof sandbox一律無網路及憑證，不把可信worker與sandbox畫成同一節點。根取消須追蹤遠端派送與停止確認，不能只停止本機容器後標已完成。公開API僅回Run/Attempt DTO，內部RunRecord／AttemptRecord不作前端下載內容。
 
 封存Evaluator另有曝光恢復能力閘門：ExposureRecoveryState未VERIFIED、獨立journal不可用或金鑰缺失時，不領final任務、不開labels權限；一般fit/development的可用性依既定服務健康檢查，不以禁止final代表整套本地規則皆不可用。正式blind的恢復演練依AX-27。
+
+## 可重建環境的證據界線
+
+本指南的compose片段、映像標籤與env清單是待實作範本，目前沒有可啟動的產品compose或服務，不應把照抄指令當部署成功。M0交付需保存實際compose及驗證結果、平台能力探測、不可變image digest、套件lock、SBOM及最小權限secret注入；浮動latest／major tag不能作研究environment_digest依據。Python3.14的docs工具通過不代表預定產品Python版本及所有原生數值依賴相容，產品環境需獨立lock與數學回歸。macOS／Linux的sandbox隔離差異需實測，不支援硬隔離時拒絕執行不可信策略，不能退化成宿主直接exec。

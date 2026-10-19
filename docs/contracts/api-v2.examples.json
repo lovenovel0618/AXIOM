@@ -23,7 +23,12 @@
                 0,
                 0
               ],
-              "source_column": "x"
+              "source_column": "x",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
             }
           ],
           "target": {
@@ -37,12 +42,18 @@
               0,
               0
             ],
-            "source_column": "y"
+            "source_column": "y",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           },
           "units_confirmed": true,
           "time_ordered": false,
           "measurement_resolution": "0.001",
-          "resolution_reason": "公開測試設定"
+          "resolution_reason": "公開測試設定",
+          "group_column": null
         },
         "budget": {
           "cpu_seconds": 60,
@@ -127,7 +138,21 @@
       "document": {
         "decision": "APPROVE",
         "evidence_bundle_id": "00000000-0000-4000-8000-000000000010",
-        "comment": "待實作後覆核"
+        "comment": "待實作後覆核",
+        "claim": {
+          "claim_kind": "PREDICTIVE",
+          "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
+          "validation_run_id": "00000000-0000-4000-8000-000000000008",
+          "empirical_level": "E2",
+          "proof_level": "P0",
+          "outcome_status": "SUPPORTED",
+          "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
+          "assumptions": [
+            "觀測相互獨立"
+          ],
+          "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
+          "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
       }
     },
     {
@@ -147,7 +172,12 @@
                 0,
                 0
               ],
-              "source_column": "x"
+              "source_column": "x",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
             }
           ],
           "target": {
@@ -161,12 +191,18 @@
               0,
               0
             ],
-            "source_column": "y"
+            "source_column": "y",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           },
           "units_confirmed": true,
           "time_ordered": false,
           "measurement_resolution": "0.001",
-          "resolution_reason": "公開測試設定"
+          "resolution_reason": "公開測試設定",
+          "group_column": null
         },
         "budget": {
           "cpu_seconds": 60,
@@ -262,7 +298,12 @@
                 0,
                 0
               ],
-              "source_column": "x"
+              "source_column": "x",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
             }
           ],
           "target": {
@@ -276,12 +317,18 @@
               0,
               0
             ],
-            "source_column": "y"
+            "source_column": "y",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           },
           "units_confirmed": true,
           "time_ordered": false,
           "measurement_resolution": "0.001",
-          "resolution_reason": "公開測試設定"
+          "resolution_reason": "公開測試設定",
+          "group_column": null
         },
         "budget": {
           "cpu_seconds": 60,
@@ -371,7 +418,12 @@
                 0,
                 0
               ],
-              "source_column": "時間（秒）"
+              "source_column": "時間（秒）",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
             }
           ],
           "target": {
@@ -385,12 +437,18 @@
               0,
               0
             ],
-            "source_column": "位移（公分）"
+            "source_column": "位移（公分）",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           },
           "units_confirmed": true,
           "time_ordered": false,
           "measurement_resolution": "0.001",
-          "resolution_reason": "公開測試設定"
+          "resolution_reason": "公開測試設定",
+          "group_column": null
         },
         "budget": {
           "cpu_seconds": 60,
@@ -480,7 +538,12 @@
                 0,
                 0
               ],
-              "source_column": "時間（秒）"
+              "source_column": "時間（秒）",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
             }
           ],
           "target": {
@@ -494,12 +557,18 @@
               0,
               0
             ],
-            "source_column": "位移（公分）"
+            "source_column": "位移（公分）",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           },
           "units_confirmed": true,
           "time_ordered": true,
           "measurement_resolution": "0.001",
-          "resolution_reason": "公開測試設定"
+          "resolution_reason": "公開測試設定",
+          "group_column": null
         },
         "budget": {
           "cpu_seconds": 60,
@@ -611,7 +680,12 @@
                 0,
                 0
               ],
-              "source_column": "x"
+              "source_column": "x",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
             }
           ],
           "target": {
@@ -625,12 +699,18 @@
               0,
               0
             ],
-            "source_column": "y"
+            "source_column": "y",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           },
           "units_confirmed": true,
           "time_ordered": false,
           "measurement_resolution": "0.001",
-          "resolution_reason": "公開測試設定"
+          "resolution_reason": "公開測試設定",
+          "group_column": null
         },
         "budget": {
           "cpu_seconds": 60,
@@ -722,7 +802,12 @@
                 0,
                 0
               ],
-              "source_column": "x"
+              "source_column": "x",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
             }
           ],
           "target": {
@@ -736,12 +821,18 @@
               0,
               0
             ],
-            "source_column": "y"
+            "source_column": "y",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           },
           "units_confirmed": true,
           "time_ordered": false,
           "measurement_resolution": "0.001",
-          "resolution_reason": "公開測試設定"
+          "resolution_reason": "公開測試設定",
+          "group_column": null
         },
         "budget": {
           "cpu_seconds": 60,
@@ -838,7 +929,12 @@
                 0,
                 0
               ],
-              "source_column": "x"
+              "source_column": "x",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
             }
           ],
           "target": {
@@ -852,12 +948,18 @@
               0,
               0
             ],
-            "source_column": "y"
+            "source_column": "y",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           },
           "units_confirmed": true,
           "time_ordered": false,
           "measurement_resolution": "0.001",
-          "resolution_reason": "公開測試設定"
+          "resolution_reason": "公開測試設定",
+          "group_column": null
         },
         "budget": {
           "cpu_seconds": 60,
@@ -933,7 +1035,12 @@
                 0,
                 0
               ],
-              "source_column": "x"
+              "source_column": "x",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
             }
           ],
           "target": {
@@ -947,12 +1054,18 @@
               0,
               0
             ],
-            "source_column": "y"
+            "source_column": "y",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           },
           "units_confirmed": true,
           "time_ordered": false,
           "measurement_resolution": "0.001",
-          "resolution_reason": "公開測試設定"
+          "resolution_reason": "公開測試設定",
+          "group_column": null
         },
         "budget": {
           "cpu_seconds": 60,
@@ -1042,7 +1155,12 @@
                 0,
                 0
               ],
-              "source_column": "時間（秒）"
+              "source_column": "時間（秒）",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
             }
           ],
           "target": {
@@ -1056,12 +1174,18 @@
               0,
               0
             ],
-            "source_column": "位移（公分）"
+            "source_column": "位移（公分）",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           },
           "units_confirmed": true,
           "time_ordered": false,
           "measurement_resolution": "0.001",
-          "resolution_reason": "公開測試設定"
+          "resolution_reason": "公開測試設定",
+          "group_column": null
         },
         "budget": {
           "cpu_seconds": 60,
@@ -1136,7 +1260,12 @@
                 0,
                 0,
                 0
-              ]
+              ],
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
             }
           ],
           "target": {
@@ -1150,12 +1279,18 @@
               0,
               0
             ],
-            "source_column": "位移（公分）"
+            "source_column": "位移（公分）",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           },
           "units_confirmed": true,
           "time_ordered": false,
           "measurement_resolution": "0.001",
-          "resolution_reason": "公開測試設定"
+          "resolution_reason": "公開測試設定",
+          "group_column": null
         },
         "budget": {
           "cpu_seconds": 60,
@@ -1246,7 +1381,12 @@
                 0,
                 0
               ],
-              "source_column": "時間（秒）"
+              "source_column": "時間（秒）",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
             }
           ],
           "target": {
@@ -1260,12 +1400,18 @@
               0,
               0
             ],
-            "source_column": "位移（公分）"
+            "source_column": "位移（公分）",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
           },
           "units_confirmed": true,
           "time_ordered": true,
           "measurement_resolution": "0.001",
-          "resolution_reason": "公開測試設定"
+          "resolution_reason": "公開測試設定",
+          "group_column": null
         },
         "budget": {
           "cpu_seconds": 60,
@@ -1338,6 +1484,369 @@
         }
       },
       "reason": "Block bootstrap requires block length"
+    },
+    {
+      "schema": "CreateResearchVersion",
+      "document": {
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "semantic_profile": {
+          "inputs": [
+            {
+              "name": "x",
+              "unit": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "source_column": "x",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
+            }
+          ],
+          "target": {
+            "name": "y",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_column": "y",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "0",
+              "offset": "0"
+            }
+          },
+          "units_confirmed": true,
+          "time_ordered": false,
+          "measurement_resolution": "0.001",
+          "resolution_reason": "公開測試設定",
+          "group_column": null
+        },
+        "budget": {
+          "cpu_seconds": 60,
+          "gpu_seconds": 0,
+          "tokens": 0,
+          "memory_bytes": 268435456,
+          "wall_seconds": 120,
+          "candidate_limit": 100
+        },
+        "purpose": "DESCRIPTION",
+        "observation_split": {
+          "kind": "EXPLICIT",
+          "fit": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "development": [
+            6,
+            7
+          ],
+          "final_test": [
+            8,
+            9
+          ],
+          "gap_rows": 0,
+          "policy_version": "2.0",
+          "sealed_final_test": true,
+          "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+          "lookback_rows": 0,
+          "horizon_rows": 0,
+          "seed": 42,
+          "time_column": null,
+          "group_column": null,
+          "group_assignment_digest": null,
+          "splitter_version": "2.0.0"
+        },
+        "domain": [
+          {
+            "name": "x",
+            "lower": {
+              "numerator": "-10",
+              "denominator": "1"
+            },
+            "upper": {
+              "numerator": "10",
+              "denominator": "1"
+            },
+            "lower_closed": true,
+            "upper_closed": true
+          }
+        ],
+        "evaluation_policy": {
+          "policy_version": "1.0",
+          "metric_version": "2.0",
+          "error_model": "ABSOLUTE_BOUND",
+          "absolute_error_bound": "0.001",
+          "comparison_method": "IID_PAIRED_BOOTSTRAP",
+          "bootstrap_replicates": 2000,
+          "bootstrap_seed": 42,
+          "block_method": null,
+          "block_length": null,
+          "practical_scale_override": null,
+          "practical_margin_ratio": "0.01",
+          "baseline": "ZERO",
+          "practical_scale_reason": null
+        }
+      },
+      "reason": "零比例不可逆"
+    },
+    {
+      "schema": "CreateResearchVersion",
+      "document": {
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "semantic_profile": {
+          "inputs": [
+            {
+              "name": "x",
+              "unit": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "source_column": "x",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
+            }
+          ],
+          "target": {
+            "name": "y",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_column": "y",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "-1",
+              "offset": "0"
+            }
+          },
+          "units_confirmed": true,
+          "time_ordered": false,
+          "measurement_resolution": "0.001",
+          "resolution_reason": "公開測試設定",
+          "group_column": null
+        },
+        "budget": {
+          "cpu_seconds": 60,
+          "gpu_seconds": 0,
+          "tokens": 0,
+          "memory_bytes": 268435456,
+          "wall_seconds": 120,
+          "candidate_limit": 100
+        },
+        "purpose": "DESCRIPTION",
+        "observation_split": {
+          "kind": "EXPLICIT",
+          "fit": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "development": [
+            6,
+            7
+          ],
+          "final_test": [
+            8,
+            9
+          ],
+          "gap_rows": 0,
+          "policy_version": "2.0",
+          "sealed_final_test": true,
+          "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+          "lookback_rows": 0,
+          "horizon_rows": 0,
+          "seed": 42,
+          "time_column": null,
+          "group_column": null,
+          "group_assignment_digest": null,
+          "splitter_version": "2.0.0"
+        },
+        "domain": [
+          {
+            "name": "x",
+            "lower": {
+              "numerator": "-10",
+              "denominator": "1"
+            },
+            "upper": {
+              "numerator": "10",
+              "denominator": "1"
+            },
+            "lower_closed": true,
+            "upper_closed": true
+          }
+        ],
+        "evaluation_policy": {
+          "policy_version": "1.0",
+          "metric_version": "2.0",
+          "error_model": "ABSOLUTE_BOUND",
+          "absolute_error_bound": "0.001",
+          "comparison_method": "IID_PAIRED_BOOTSTRAP",
+          "bootstrap_replicates": 2000,
+          "bootstrap_seed": 42,
+          "block_method": null,
+          "block_length": null,
+          "practical_scale_override": null,
+          "practical_margin_ratio": "0.01",
+          "baseline": "ZERO",
+          "practical_scale_reason": null
+        }
+      },
+      "reason": "負比例非MVP單位轉換"
+    },
+    {
+      "schema": "CreateResearchVersion",
+      "document": {
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "semantic_profile": {
+          "inputs": [
+            {
+              "name": "x",
+              "unit": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "source_column": "x",
+              "conversion": {
+                "source_unit": "SI",
+                "scale": "1",
+                "offset": "0"
+              }
+            }
+          ],
+          "target": {
+            "name": "y",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_column": "y",
+            "conversion": {
+              "source_unit": "SI",
+              "scale": "1",
+              "offset": "0"
+            }
+          },
+          "units_confirmed": true,
+          "time_ordered": false,
+          "measurement_resolution": "0",
+          "resolution_reason": "公開測試設定",
+          "group_column": null
+        },
+        "budget": {
+          "cpu_seconds": 60,
+          "gpu_seconds": 0,
+          "tokens": 0,
+          "memory_bytes": 268435456,
+          "wall_seconds": 120,
+          "candidate_limit": 100
+        },
+        "purpose": "DESCRIPTION",
+        "observation_split": {
+          "kind": "EXPLICIT",
+          "fit": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "development": [
+            6,
+            7
+          ],
+          "final_test": [
+            8,
+            9
+          ],
+          "gap_rows": 0,
+          "policy_version": "2.0",
+          "sealed_final_test": true,
+          "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+          "lookback_rows": 0,
+          "horizon_rows": 0,
+          "seed": 42,
+          "time_column": null,
+          "group_column": null,
+          "group_assignment_digest": null,
+          "splitter_version": "2.0.0"
+        },
+        "domain": [
+          {
+            "name": "x",
+            "lower": {
+              "numerator": "-10",
+              "denominator": "1"
+            },
+            "upper": {
+              "numerator": "10",
+              "denominator": "1"
+            },
+            "lower_closed": true,
+            "upper_closed": true
+          }
+        ],
+        "evaluation_policy": {
+          "policy_version": "1.0",
+          "metric_version": "2.0",
+          "error_model": "ABSOLUTE_BOUND",
+          "absolute_error_bound": "0.001",
+          "comparison_method": "IID_PAIRED_BOOTSTRAP",
+          "bootstrap_replicates": 2000,
+          "bootstrap_seed": 42,
+          "block_method": null,
+          "block_length": null,
+          "practical_scale_override": null,
+          "practical_margin_ratio": "0.01",
+          "baseline": "ZERO",
+          "practical_scale_reason": null
+        }
+      },
+      "reason": "量測解析度不可為零"
     }
   ]
 }
