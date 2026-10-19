@@ -45,8 +45,8 @@
     },
     {
       "path": "03-架構/08-部署與運算資源規劃.md",
-      "bytes": 1903,
-      "sha256": "c7cbd12d270b48954b4efafc624c228ea2c4a7aeaae222256bc80683529efa9d"
+      "bytes": 2186,
+      "sha256": "07311b62e96618b815844e65c220ab3bee287d8f7090789ce2aa0a4419675920"
     },
     {
       "path": "03-架構/38-演算法插件與研究協調.md",
@@ -55,8 +55,8 @@
     },
     {
       "path": "03-架構/41-Docker本地架設指南.md",
-      "bytes": 6972,
-      "sha256": "9548e6bf336ba4fe7b40acc354a23ff01e7c93c87b3d1164b03c35e70c7ee565"
+      "bytes": 10279,
+      "sha256": "5afc153495ccebc14d177ef380cc895dc4da569573d64c80dcedb1153d04f76a"
     },
     {
       "path": "04-數學核心/09-數據語意與前處理.md",
@@ -185,8 +185,8 @@
     },
     {
       "path": "11-交付/32-風險登錄與決策紀錄.md",
-      "bytes": 1932,
-      "sha256": "bd148554bae2b080ec0154a8d2e1fb002284b95d26a438e16cb635720529c438"
+      "bytes": 2199,
+      "sha256": "c39d4fed714a757f4b316c6f0288c8788cb566c3c63dfe97525b69a4b368775c"
     },
     {
       "path": "12-附錄/33-語言框架與套件選型.md",
@@ -210,13 +210,13 @@
     },
     {
       "path": "12-附錄/37-決策待確認清單.md",
-      "bytes": 1307,
-      "sha256": "e9eeb527f4fd7d62747e260f1a7d2db575d2777e50015219f6587d50ffa3a4d8"
+      "bytes": 1528,
+      "sha256": "1c76cd67779ac6c5f96915210806cd0b06d7217b461b37db61a5bd12c8a8a31d"
     },
     {
       "path": "README.md",
-      "bytes": 5316,
-      "sha256": "25c7911a08d0918cbc3eb19aba939dd4940d7f0a0fd9e88bcbc305346afc3d53"
+      "bytes": 5322,
+      "sha256": "c76c2732a6aa72ac89db41d4bc2a0f7254e8b18d0361b146754d19b6f713d4d7"
     }
   ]
 }

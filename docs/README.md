@@ -62,7 +62,7 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics）是一套�
 - Django + Django REST Framework、Python 數學工作池；Vue 3 + TypeScript + Vite 研究工作台。
 - PostgreSQL + pgvector、Redis、MinIO；ChatGPT API 與 Ollama 以可替換模型路由介接。
 - 公式 DSL/AST、獨立驗證、基準盲測、證據與演化圖為平台核心契約。
-- 本地開發以 Docker Compose 統一環境（Mac 本地、CPU 執行、Ollama 以宿主原生服務路由）。
+- 本地環境以 Docker Compose 統一：macOS 供開發、Windows 11 + WSL2 供架設，差異僅以覆寫檔表達。
 - 不承諾任意數據唯一反推公式；區分數值相符、實證支持、符號推導與形式化證明。
 
 ## 文件清單與校驗
