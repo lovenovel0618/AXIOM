@@ -1,10 +1,10 @@
 # 43｜資料庫ERD與關係約束
 
-> AXIOM v2.2 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-19
+> AXIOM v2.3 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-19
 
 ## 權威關係圖
 
-所有受保護表以 (tenant_id,id) 複合唯一鍵供外鍵引用，id 為 UUID。下圖與 AX-47 同名，DOMAIN 欄位形狀見 research-v1 schema；圖表示關係，不省略版本層。Dataset、Research 容器可改名；版本內容與證據不可原地修改。
+所有受保護表以 (tenant_id,id) 複合唯一鍵供外鍵引用，id 為 UUID。下圖與 AX-47 同名，DOMAIN 欄位形狀見 research-v2 schema；圖表示關係，不省略版本層。Dataset、Research 容器可改名；版本內容與證據不可原地修改。
 
 ```mermaid
 erDiagram
@@ -15,15 +15,28 @@ erDiagram
  DATASET ||--o{ DATASET_VERSION : versions
  RESEARCH ||--o{ RESEARCH_VERSION : versions
  DATASET_VERSION ||--o{ RESEARCH_VERSION : uses
+ BENCHMARK_PARTITION ||--o{ SEALED_TEST : registers
+ DATASET_VERSION ||--o{ OBSERVATION_SPLIT : split
+ OBSERVATION_SPLIT ||--o{ RESEARCH_VERSION : used_by
+ OBSERVATION_SPLIT ||--o{ SEALED_TEST : seals
  RESEARCH_VERSION ||--o{ RUN : executes
+ RUN ||--o{ RUN : parent_of
+ ROOT_RUN ||--|| BUDGET_ACCOUNT : root_account
+ BUDGET_ACCOUNT ||--o{ BUDGET_RESERVATION : holds
+ BUDGET_ACCOUNT ||--o{ USAGE_REPORT : counts
  RUN ||--o{ ATTEMPT : retries
  RUN ||--o{ CANDIDATE : produces
  EQUATION_VERSION ||--o{ CANDIDATE : references
  RUN ||--o| FIT_RUN : fit_detail
  EQUATION_VERSION ||--o{ FIT_RUN : fitted
  DATASET_VERSION ||--o{ FIT_RUN : fitted_on
- RUN ||--o| VALIDATION_RUN : validation_detail
+ RUN ||--o{ VALIDATION_RUN : validation_detail
+ FIT_RUN ||--o{ FROZEN_CANDIDATE : selected
+ FROZEN_SUBMISSION ||--o{ SUBMISSION_CANDIDATE_LINK : freezes
+ FROZEN_CANDIDATE ||--o{ SUBMISSION_CANDIDATE_LINK : ordered
+ SEALED_TEST ||--o| FROZEN_SUBMISSION : consumes
  FIT_RUN ||--o{ VALIDATION_RUN : evaluated
+ FROZEN_CANDIDATE ||--o{ VALIDATION_RUN : final_evaluated
  RESEARCH_VERSION ||--o{ EVIDENCE_BUNDLE : collects
  EVIDENCE_BUNDLE ||--o{ EVIDENCE_VALIDATION_LINK : contains
  VALIDATION_RUN ||--o{ EVIDENCE_VALIDATION_LINK : referenced
@@ -35,7 +48,8 @@ erDiagram
  EVIDENCE_BUNDLE ||--o{ EVIDENCE_REVOCATION : revoked
  EVIDENCE_BUNDLE ||--o{ EXPERIENCE_LINK : supports
  TRAINING_RUN ||--o{ MODEL_VERSION : produces
- RUN ||--o{ OUTBOX : events
+ RUN |o--o{ OUTBOX : run_or_source
+ RESEARCH_VERSION |o--o{ OUTBOX : research_stream
 ```
 
 Derived feature、memory、training snapshot 是 M4/M7 的擴充表，所有引用必須具來源版本與授權，不能讓 pgvector 成為權威有效性來源。
@@ -49,11 +63,11 @@ Derived feature、memory、training snapshot 是 M4/M7 的擴充表，所有引�
 | EquationVersion | unique(tenant_id,identity_hash,dsl_version) | hash 按 AX-10 包括域與宣告，非全域跨租戶去重 |
 | Run / Attempt | unique(run_id,generation)，(tenant_id,status,created_at) 索引 | 租約世代及排隊查詢 |
 | Candidate | unique(search_run_id,equation_version_id)，rank 索引 | 同搜尋結構候選去重；擬合另表 |
-| FitRun | PK/FK run_id；資料／公式版本 FK | 不混合不同參數估計 |
-| ValidationRun | unique(run_id,split_id,metric_version) | 重送不重複評分；所有必評點計 coverage |
+| FitRun | unique(run_id)、同租戶FK；id為FitRun識別，資料／公式版本FK | 不混合不同參數估計 |
+| ValidationRun | unique(run_id,observation_split_id,split_role,metric_version) | 重送不重複評分；所有必評點計 coverage |
 | Evidence links | unique(bundle_id,validation_id/proof_id)；tenant 複合 FK | 防止外租戶或重複證據 |
 | ReviewDecision | unique(research_version_id,expected_revision) | 同 revision 僅一個審核決定 |
-| Outbox | event_id 唯一、unique(run_id,sequence) | 至少一次投遞＋消費去重 |
+| Outbox | event_id 唯一、unique(stream_scope,stream_id,sequence) | 至少一次投遞＋消費去重 |
 | IdempotencyRecord | unique(tenant_id,actor_id,method,path,key) | request_hash、HTTP 結果與資源引用原子保存 |
 
 歷史版本與證據 FK 預設 RESTRICT，不級聯刪掉已發布來源。可重建暫存才可 TTL 清理。敏感刪除依 AX-26 專用流程，對保留稽核只留政策允許欄位。owner/admin 權限不靠外鍵自動取得，API ACL 與 DB 租戶約束均須驗證。
@@ -80,3 +94,11 @@ Derived feature、memory、training snapshot 是 M4/M7 的擴充表，所有引�
 | AC-43-04 | 升級後讀舊 DSL 產物並模擬回滾 | 內容 hash 不變、相容 parser 可讀，否則阻擋部署 |
 
 Artifact registry 以 (tenant_id,id) 供外鍵，uri/hash/size 不可改寫；檔案變更需新 Artifact。連到 registry 的版本物件不得引用外租戶或不存在物件，下載先查 registry 與證據有效性，不直接暴露物件服務帳號。
+
+## v2 執行與評估關係補充
+
+ROOT_RUN 是 RunRecord 中 parent_run_id IS NULL 的子集合，不是另建可分歧的資料表。RunRecord的parent/root複合外鍵同租戶，服務在root鎖內驗證無循環、同研究、同BudgetAccount；公開Run投影不含這些私有控制欄位。AttemptRecord獨立保存heartbeat/start/finish與累計Usage。
+
+ObservationSplit、BenchmarkPartition、SealedTest各有獨立id及版本；SealedTest的來源內容／case／final rows／protocol指紋唯一，不依Dataset容器id。FrozenSubmission透過link表固定有序FrozenCandidate；一個FrozenCandidate精確引用一個FitRun，不能只引用Candidate的fit陣列。最終ValidationRun必須同FrozenCandidate資料／split與binding。
+
+BudgetReservation.id與UsageReport.usage_event_id唯一；另unique(attempt_id,sequence)，相同序號不同內容拒絕。Public DTO的budget_usage由帳本投影，不與limit共用型別。Outbox的sequence按stream_scope/stream_id分配，RESEARCH流不因任一Run終態關閉。

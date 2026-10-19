@@ -1,0 +1,573 @@
+{
+  "valid": [
+    {
+      "kind": "ResearchVersion",
+      "id": "00000000-0000-4000-8000-000000000003",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "research_id": "00000000-0000-4000-8000-000000000002",
+      "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+      "semantic_profile": {
+        "inputs": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "target": {
+          "name": "y",
+          "unit": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "units_confirmed": true,
+        "time_ordered": false,
+        "measurement_resolution": "0.001",
+        "resolution_reason": "公開測試設定"
+      },
+      "budget": {
+        "cpu_seconds": 60,
+        "gpu_seconds": 0,
+        "tokens": 0,
+        "memory_bytes": 268435456,
+        "wall_seconds": 120,
+        "candidate_limit": 100
+      },
+      "purpose": "DESCRIPTION",
+      "status": "READY",
+      "revision": 2,
+      "observation_split": {
+        "kind": "EXPLICIT",
+        "fit": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "development": [
+          6,
+          7
+        ],
+        "final_test": [
+          8,
+          9
+        ],
+        "gap_rows": 0,
+        "policy_version": "2.0",
+        "sealed_final_test": true,
+        "id": "00000000-0000-4000-8000-000000000040",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "lookback_rows": 0,
+        "horizon_rows": 0,
+        "seed": 42,
+        "time_column": null,
+        "group_column": null,
+        "group_assignment_digest": null,
+        "row_ids_hash": "7cb6e015489351b88226540c1e337000b21a282e03e7ba3b2c37365f68f4a270",
+        "splitter_version": "2.0.0",
+        "sealed_test_id": "00000000-0000-4000-8000-000000000041",
+        "benchmark_partition_id": null,
+        "benchmark_case_id": null
+      },
+      "current_event_cursor": "RESEARCH:00000000-0000-4000-8000-000000000003:0",
+      "frozen_submission_ids": [],
+      "review_ids": [],
+      "published_artifact_ids": []
+    },
+    {
+      "kind": "Run",
+      "id": "00000000-0000-4000-8000-000000000004",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "dataset_id": null,
+      "type": "SEARCH",
+      "status": "QUEUED",
+      "revision": 1,
+      "seed": 42,
+      "environment_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "active_attempt_id": null,
+      "lease_generation": 0,
+      "current_event_cursor": "RUN:00000000-0000-4000-8000-000000000004:0",
+      "budget_usage": {
+        "cpu_seconds": 0,
+        "gpu_seconds": 0,
+        "tokens": 0,
+        "peak_memory_bytes": 0,
+        "elapsed_wall_seconds": 0,
+        "candidates_generated": 0,
+        "candidates_accepted": 0
+      },
+      "phase": null,
+      "stop_reason": null,
+      "evidence_bundle_ids": [],
+      "child_run_ids": [],
+      "budget_reservations": [],
+      "is_root": true
+    },
+    {
+      "kind": "ValidationRun",
+      "id": "00000000-0000-4000-8000-000000000006",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "run_id": "00000000-0000-4000-8000-000000000005",
+      "fit_run_id": "00000000-0000-4000-8000-000000000004",
+      "metric_version": "2.0",
+      "metrics": {
+        "mae": 0,
+        "rmse": 0
+      },
+      "valid_coverage": 1,
+      "empirical_level": "E1",
+      "proof_level": "P0",
+      "outcome_status": "SUPPORTED",
+      "artifact_uri": "objects/public/example.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "metric_reasons": {},
+      "artifact_id": "00000000-0000-4000-8000-000000000030",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "split_role": "FINAL_TEST",
+      "frozen_candidate_id": "00000000-0000-4000-8000-000000000061"
+    },
+    {
+      "kind": "EquationVersion",
+      "id": "00000000-0000-4000-8000-000000000007",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "dsl": {
+        "dsl_version": "1.0",
+        "variables": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "parameters": [],
+        "domain": [
+          {
+            "name": "x",
+            "lower": {
+              "numerator": "-10",
+              "denominator": "1"
+            },
+            "upper": {
+              "numerator": "10",
+              "denominator": "1"
+            },
+            "lower_closed": true,
+            "upper_closed": true
+          }
+        ],
+        "root": {
+          "op": "add",
+          "args": [
+            {
+              "op": "var",
+              "name": "x"
+            },
+            {
+              "op": "const",
+              "value": {
+                "numerator": "1",
+                "denominator": "1"
+              }
+            }
+          ]
+        }
+      },
+      "identity_hash": "71ed62b70b3411ef6d50a8b3daa296e621d4c3d0fbd1c3759f4af1df554ac4c0"
+    },
+    {
+      "kind": "EquationVersion",
+      "id": "00000000-0000-4000-8000-000000000060",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "dsl": {
+        "dsl_version": "1.0",
+        "variables": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "a",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "lower": "-100",
+            "upper": "100"
+          },
+          {
+            "name": "b",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "lower": "-100",
+            "upper": "100"
+          }
+        ],
+        "domain": [
+          {
+            "name": "x",
+            "lower": {
+              "numerator": "-10",
+              "denominator": "1"
+            },
+            "upper": {
+              "numerator": "10",
+              "denominator": "1"
+            },
+            "lower_closed": true,
+            "upper_closed": true
+          }
+        ],
+        "root": {
+          "op": "add",
+          "args": [
+            {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "param",
+                  "name": "a"
+                },
+                {
+                  "op": "var",
+                  "name": "x"
+                }
+              ]
+            },
+            {
+              "op": "param",
+              "name": "b"
+            }
+          ]
+        }
+      },
+      "identity_hash": "22365573232a0ec9e5eff6aaf63fbbe785594e7e7024e93cb9bf5a2d5ad64c31"
+    },
+    {
+      "kind": "FitRun",
+      "id": "00000000-0000-4000-8000-000000000062",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "run_id": "00000000-0000-4000-8000-000000000063",
+      "equation_version_id": "00000000-0000-4000-8000-000000000060",
+      "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "split_role": "FIT",
+      "parameters": {
+        "a": "2",
+        "b": "1"
+      },
+      "optimizer": "public-linear-oracle",
+      "precision_bits": 53
+    },
+    {
+      "kind": "FrozenCandidate",
+      "id": "00000000-0000-4000-8000-000000000061",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "candidate_id": "00000000-0000-4000-8000-000000000064",
+      "equation_version_id": "00000000-0000-4000-8000-000000000060",
+      "fit_run_id": "00000000-0000-4000-8000-000000000062",
+      "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "dsl_identity_hash": "22365573232a0ec9e5eff6aaf63fbbe785594e7e7024e93cb9bf5a2d5ad64c31",
+      "parameters": {
+        "a": "2",
+        "b": "1"
+      },
+      "parameter_binding_hash": "f7a837dc9b605d08d450f14bb4927ae8ab268b757d17b579b4e8e61500d87c4a",
+      "development_rank": 1,
+      "environment_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "kind": "FrozenSubmission",
+      "id": "00000000-0000-4000-8000-000000000065",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "sealed_test_id": "00000000-0000-4000-8000-000000000041",
+      "frozen_candidate_ids": [
+        "00000000-0000-4000-8000-000000000061"
+      ],
+      "metric_version": "2.0",
+      "snapshot_hash": "b90aa7071f074b292c76a2416d28a985aad45ccc95a45c29d6007414f22e7449",
+      "status": "FROZEN"
+    },
+    {
+      "kind": "SealedTest",
+      "id": "00000000-0000-4000-8000-000000000041",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "benchmark_partition_id": null,
+      "benchmark_case_id": null,
+      "final_rows_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+      "protocol_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+      "state": "RESERVED",
+      "submission_id": "00000000-0000-4000-8000-000000000065",
+      "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+    },
+    {
+      "kind": "BenchmarkPartition",
+      "id": "00000000-0000-4000-8000-000000000070",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "policy_version": "2.0",
+      "generator_version": "public-oracle-1",
+      "seed_manifest_hash": "5555555555555555555555555555555555555555555555555555555555555555",
+      "assignments": [
+        {
+          "case_id": "train-case",
+          "family_id": "family-A",
+          "source_group": "source-A",
+          "partition": "TRAIN"
+        },
+        {
+          "case_id": "blind-case",
+          "family_id": "family-B",
+          "source_group": "source-B",
+          "partition": "SEALED_TEST"
+        }
+      ]
+    }
+  ],
+  "invalid": [
+    {
+      "document": {
+        "kind": "Run",
+        "id": "00000000-0000-4000-8000-000000000004",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "research_version_id": "00000000-0000-4000-8000-000000000003",
+        "dataset_id": null,
+        "type": "VALIDATE",
+        "status": "QUEUED",
+        "revision": 1,
+        "seed": 42,
+        "environment_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+        "active_attempt_id": null,
+        "lease_generation": 0,
+        "current_event_cursor": "RUN:00000000-0000-4000-8000-000000000004:0",
+        "budget_usage": {
+          "cpu_seconds": 0,
+          "gpu_seconds": 0,
+          "tokens": 0,
+          "peak_memory_bytes": 0,
+          "elapsed_wall_seconds": 0,
+          "candidates_generated": 0,
+          "candidates_accepted": 0
+        },
+        "phase": null,
+        "stop_reason": null,
+        "evidence_bundle_ids": [],
+        "child_run_ids": [],
+        "budget_reservations": [],
+        "is_root": true
+      },
+      "reason": "VALIDATE requires equation_version_id"
+    },
+    {
+      "document": {
+        "kind": "Run",
+        "id": "00000000-0000-4000-8000-000000000004",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "research_version_id": null,
+        "dataset_id": null,
+        "type": "SEARCH",
+        "status": "QUEUED",
+        "revision": 1,
+        "seed": 42,
+        "environment_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+        "active_attempt_id": null,
+        "lease_generation": 0,
+        "current_event_cursor": "RUN:00000000-0000-4000-8000-000000000004:0",
+        "budget_usage": {
+          "cpu_seconds": 0,
+          "gpu_seconds": 0,
+          "tokens": 0,
+          "peak_memory_bytes": 0,
+          "elapsed_wall_seconds": 0,
+          "candidates_generated": 0,
+          "candidates_accepted": 0
+        },
+        "phase": null,
+        "stop_reason": null,
+        "evidence_bundle_ids": [],
+        "child_run_ids": [],
+        "budget_reservations": [],
+        "is_root": true
+      },
+      "reason": "SEARCH requires research version"
+    },
+    {
+      "document": {
+        "kind": "EvidenceBundle",
+        "id": "00000000-0000-4000-8000-000000000008",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "research_version_id": "00000000-0000-4000-8000-000000000003",
+        "validation_ids": [],
+        "proof_artifact_ids": [],
+        "status": "ACTIVE",
+        "revision": 1
+      },
+      "reason": "bundle must contain evidence"
+    },
+    {
+      "document": {
+        "kind": "ValidationRun",
+        "id": "00000000-0000-4000-8000-000000000006",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "run_id": "00000000-0000-4000-8000-000000000005",
+        "fit_run_id": "00000000-0000-4000-8000-000000000004",
+        "metric_version": "2.0",
+        "metrics": {
+          "mae": 0,
+          "rmse": null
+        },
+        "valid_coverage": 1,
+        "empirical_level": "E1",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "artifact_uri": "objects/public/example.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "metric_reasons": {},
+        "artifact_id": "00000000-0000-4000-8000-000000000030",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "split_role": "FINAL_TEST",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061"
+      },
+      "reason": "null metric requires named reason"
+    },
+    {
+      "document": {
+        "kind": "Run",
+        "id": "00000000-0000-4000-8000-000000000004",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "research_version_id": "00000000-0000-4000-8000-000000000003",
+        "dataset_id": null,
+        "type": "SEARCH",
+        "status": "QUEUED",
+        "revision": 1,
+        "seed": 42,
+        "environment_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+        "active_attempt_id": null,
+        "lease_generation": 0,
+        "current_event_cursor": "RUN:00000000-0000-4000-8000-000000000004:0",
+        "budget_usage": {
+          "cpu_seconds": 0,
+          "gpu_seconds": 0,
+          "tokens": 0,
+          "peak_memory_bytes": 0,
+          "elapsed_wall_seconds": 0,
+          "candidates_generated": 0,
+          "candidates_accepted": 0
+        },
+        "phase": null,
+        "stop_reason": null,
+        "evidence_bundle_ids": [],
+        "child_run_ids": [],
+        "budget_reservations": [],
+        "is_root": true,
+        "cancel_requested_at": null
+      },
+      "reason": "private runtime fields forbidden in public DTO"
+    },
+    {
+      "document": {
+        "kind": "ValidationRun",
+        "id": "00000000-0000-4000-8000-000000000006",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "run_id": "00000000-0000-4000-8000-000000000005",
+        "fit_run_id": "00000000-0000-4000-8000-000000000004",
+        "metric_version": "2.0",
+        "metrics": {
+          "mae": 0,
+          "rmse": 0
+        },
+        "valid_coverage": 1,
+        "empirical_level": "E1",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "artifact_uri": "objects/public/example.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "metric_reasons": {},
+        "artifact_id": "00000000-0000-4000-8000-000000000030",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "split_role": "FINAL_TEST",
+        "frozen_candidate_id": null
+      },
+      "reason": "FINAL_TEST requires FrozenCandidate"
+    }
+  ]
+}

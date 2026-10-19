@@ -1,0 +1,196 @@
+{
+  "valid": [
+    {
+      "kind": "TaskInput",
+      "schema_version": "2.0",
+      "run_id": "00000000-0000-4000-8000-000000000004",
+      "type": "SEARCH",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "payload": {
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "projection_artifact_id": "00000000-0000-4000-8000-000000000190",
+        "strategies": [
+          "linear@1",
+          "polynomial@1",
+          "harmonic@1"
+        ]
+      }
+    },
+    {
+      "kind": "TaskInput",
+      "schema_version": "2.0",
+      "run_id": "00000000-0000-4000-8000-000000000063",
+      "type": "FIT",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "payload": {
+        "candidate_id": "00000000-0000-4000-8000-000000000064",
+        "equation_version_id": "00000000-0000-4000-8000-000000000060",
+        "fit_projection_artifact_id": "00000000-0000-4000-8000-000000000191",
+        "optimizer": "qr@1",
+        "seed": 42
+      }
+    },
+    {
+      "kind": "TaskInput",
+      "schema_version": "2.0",
+      "run_id": "00000000-0000-4000-8000-000000000095",
+      "type": "VALIDATE",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "payload": {
+        "fit_run_id": "00000000-0000-4000-8000-000000000062",
+        "split_role": "FINAL_TEST",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+        "submission_id": "00000000-0000-4000-8000-000000000065"
+      }
+    },
+    {
+      "kind": "TaskInput",
+      "schema_version": "2.0",
+      "run_id": "00000000-0000-4000-8000-000000000096",
+      "type": "INGEST",
+      "research_version_id": null,
+      "observation_split_id": null,
+      "payload": {
+        "upload_session_id": "00000000-0000-4000-8000-000000000097",
+        "object_version": "public-fixture-object-v1",
+        "expected_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "kind": "TaskInput",
+      "schema_version": "2.0",
+      "run_id": "00000000-0000-4000-8000-000000000098",
+      "type": "PROFILE",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "payload": {
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "semantic_profile": {
+          "inputs": [
+            {
+              "name": "x",
+              "unit": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "target": {
+            "name": "y",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "units_confirmed": true,
+          "time_ordered": false,
+          "measurement_resolution": "0.001",
+          "resolution_reason": "公開測試設定"
+        },
+        "observation_split": {
+          "kind": "EXPLICIT",
+          "fit": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "development": [
+            6,
+            7
+          ],
+          "final_test": [
+            8,
+            9
+          ],
+          "gap_rows": 0,
+          "policy_version": "2.0",
+          "sealed_final_test": true,
+          "id": "00000000-0000-4000-8000-000000000040",
+          "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+          "lookback_rows": 0,
+          "horizon_rows": 0,
+          "seed": 42,
+          "time_column": null,
+          "group_column": null,
+          "group_assignment_digest": null,
+          "row_ids_hash": "7cb6e015489351b88226540c1e337000b21a282e03e7ba3b2c37365f68f4a270",
+          "splitter_version": "2.0.0",
+          "sealed_test_id": "00000000-0000-4000-8000-000000000041",
+          "benchmark_partition_id": null,
+          "benchmark_case_id": null
+        }
+      }
+    },
+    {
+      "kind": "TaskInput",
+      "schema_version": "2.0",
+      "run_id": "00000000-0000-4000-8000-000000000099",
+      "type": "REVOKE",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "observation_split_id": null,
+      "payload": {
+        "evidence_bundle_id": "00000000-0000-4000-8000-000000000010",
+        "revocation_id": "00000000-0000-4000-8000-000000000101",
+        "policy_version": "2.0"
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "document": {
+        "kind": "TaskInput",
+        "schema_version": "2.0",
+        "run_id": "00000000-0000-4000-8000-000000000095",
+        "type": "VALIDATE",
+        "research_version_id": "00000000-0000-4000-8000-000000000003",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "payload": {
+          "fit_run_id": "00000000-0000-4000-8000-000000000062",
+          "split_role": "FINAL_TEST",
+          "observation_split_id": "00000000-0000-4000-8000-000000000040",
+          "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+          "submission_id": null
+        }
+      },
+      "reason": "final evaluation requires frozen submission"
+    },
+    {
+      "document": {
+        "kind": "TaskInput",
+        "schema_version": "2.0",
+        "run_id": "00000000-0000-4000-8000-000000000004",
+        "type": "SEARCH",
+        "research_version_id": "00000000-0000-4000-8000-000000000003",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "payload": {
+          "observation_split_id": "00000000-0000-4000-8000-000000000040",
+          "projection_artifact_id": "00000000-0000-4000-8000-000000000190",
+          "strategies": [
+            "linear@1",
+            "polynomial@1",
+            "harmonic@1"
+          ]
+        },
+        "raw_database_url": "postgres://not-allowed"
+      },
+      "reason": "manifest cannot carry database credentials"
+    }
+  ]
+}

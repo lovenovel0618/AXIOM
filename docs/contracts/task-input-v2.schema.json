@@ -1,0 +1,390 @@
+{
+  "type": "object",
+  "properties": {
+    "kind": {
+      "const": "TaskInput"
+    },
+    "schema_version": {
+      "const": "2.0"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "INGEST",
+        "PROFILE",
+        "SEARCH",
+        "FIT",
+        "VALIDATE",
+        "REVOKE"
+      ]
+    },
+    "research_version_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observation_split_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "kind",
+    "schema_version",
+    "run_id",
+    "type",
+    "research_version_id",
+    "observation_split_id",
+    "payload"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://axiom.invalid/contracts/task-input-v2.schema.json",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "INGEST"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "upload_session_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "object_version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "expected_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "upload_session_id",
+              "object_version",
+              "expected_sha256"
+            ],
+            "additionalProperties": false
+          },
+          "research_version_id": {
+            "type": "null"
+          },
+          "observation_split_id": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "PROFILE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "dataset_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "semantic_profile": {
+                "$ref": "research-v2.schema.json#/$defs/SemanticProfile"
+              },
+              "observation_split": {
+                "$ref": "research-v2.schema.json#/$defs/ObservationSplit"
+              }
+            },
+            "required": [
+              "dataset_version_id",
+              "semantic_profile",
+              "observation_split"
+            ],
+            "additionalProperties": false
+          },
+          "research_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "observation_split_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "SEARCH"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "observation_split_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "projection_artifact_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "strategies": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "observation_split_id",
+              "projection_artifact_id",
+              "strategies"
+            ],
+            "additionalProperties": false
+          },
+          "research_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "observation_split_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "FIT"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "candidate_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "equation_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "fit_projection_artifact_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "optimizer": {
+                "type": "string",
+                "minLength": 1
+              },
+              "seed": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "candidate_id",
+              "equation_version_id",
+              "fit_projection_artifact_id",
+              "optimizer",
+              "seed"
+            ],
+            "additionalProperties": false
+          },
+          "research_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "observation_split_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "VALIDATE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "fit_run_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "split_role": {
+                "type": "string",
+                "enum": [
+                  "FIT",
+                  "DEVELOPMENT",
+                  "FINAL_TEST"
+                ]
+              },
+              "observation_split_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "frozen_candidate_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "submission_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "fit_run_id",
+              "split_role",
+              "observation_split_id",
+              "frozen_candidate_id",
+              "submission_id"
+            ],
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "split_role": {
+                      "const": "FINAL_TEST"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "frozen_candidate_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "submission_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "research_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "observation_split_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "REVOKE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "evidence_bundle_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "revocation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "policy_version": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "evidence_bundle_id",
+              "revocation_id",
+              "policy_version"
+            ],
+            "additionalProperties": false
+          },
+          "research_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "observation_split_id": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

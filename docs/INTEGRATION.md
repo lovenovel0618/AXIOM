@@ -56,3 +56,20 @@
 | 重複模板掩蓋細節 | 共用規則集中 AX-48，移除重複泛用能力／流程／驗收段 | 後續變更依權威表持續維護 |
 
 新增 contracts 與 docs/tools/check_docs.py，供 schema、OpenAPI、範例、公開 oracle、追溯及檔案校驗。v2.2 為 49 篇編號章節、51 份 Markdown；manifest 現涵蓋 contracts 與工具，documents 不再等於 files 筆數，全部檔案數使用 file_count。文件通過不代表產品通過，G2／G7 的正式門檻未核准時保持 BLOCKED。
+
+## v2.3 跨契約一致性修訂（2026-10-19）
+
+| 本輪審查缺口 | 規格修正 | 可重現檢查 |
+|---|---|---|
+| AX-06仍畫proof直連DB | 區分可信supervisor與無網路sandbox；移除直接儲存邊 | 拓樸邊檢查＋AC-06-04 |
+| Run／Attempt schema拒絕內部欄位 | public DTO與runtime Record分檔，明確allowlist投影 | 內外部正反例、共享欄位比對 |
+| 父取消後子租約仍可提交 | root epoch、固定鎖順序、提交祖先檢查、遠端停止確認 | CF-05～08、CF-23～24與AC-38-05～10 |
+| 家族與擬合公式評分混淆 | FrozenCandidate固定唯一FitRun/binding；FrozenSubmission hash | CF-01～04、CF-15～16／25 |
+| 題目／觀測切分混用 | BenchmarkPartition、ObservationSplit、SealedTest獨立物件 | CF-09～12／21～22／26 |
+| limit與usage混用且不允許零記憶體 | Limit、Reservation、Usage分型；累計／峰值及遲到計量定義 | 零Usage範例、CF-13～14／19 |
+| 重新登入找不到研究 | 研究→版本→run導覽與凍結物件唯讀API | 文檔／OpenAPI雙向端點覆蓋，AC-21-05 |
+| run關閉後收不到審核 | RUN與RESEARCH分scope/cursor，終態後只研究流續寫 | CF-17～18／20，AC-21-06～07 |
+
+研究／內部schema及事件採2.0，HTTP為/api/v2，metric與觀測政策為2.0；DSL仍1.0。未部署v1草案以Git保留，本次沒有宣稱相容服務或資料遷移已執行。控制版本改用X-Control-Revision／If-Control-Revision，不把業務revision當整份動態回應的ETag；可變snapshot不作HTTP快取。冪等回放先重新授權，原操作結果與目前資源狀態分開讀取。
+
+共49篇章節／51份Markdown，新增runtime契約與27組conformance參考情境，原AC編號保留並補充跨契約驗收。manifest涵蓋全部現行文件、契約與工具。參考情境通過不代表真實交易、worker、符號引擎、瀏覽器或正式發布已通過，產品狀態仍NOT_RUN，未決D-03／D-06等發布阻擋不變。

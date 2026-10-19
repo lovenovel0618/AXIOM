@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://axiom.invalid/contracts/research-v1.schema.json",
+  "$id": "https://axiom.invalid/contracts/research-v2.schema.json",
   "oneOf": [
     {
       "$ref": "#/$defs/Dataset"
@@ -49,6 +49,18 @@
     },
     {
       "$ref": "#/$defs/Artifact"
+    },
+    {
+      "$ref": "#/$defs/BenchmarkPartition"
+    },
+    {
+      "$ref": "#/$defs/SealedTest"
+    },
+    {
+      "$ref": "#/$defs/FrozenCandidate"
+    },
+    {
+      "$ref": "#/$defs/FrozenSubmission"
     }
   ],
   "$defs": {
@@ -140,101 +152,6 @@
       ],
       "additionalProperties": false
     },
-    "SplitPolicy": {
-      "type": "object",
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": [
-            "IID_GROUPED",
-            "TIME_ORDERED",
-            "EXPLICIT"
-          ]
-        },
-        "fit": {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "minItems": 1
-        },
-        "development": {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "minItems": 1
-        },
-        "final_test": {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "minItems": 1
-        },
-        "gap_rows": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "policy_version": {
-          "const": "1.0"
-        },
-        "sealed_final_test": {
-          "const": true
-        }
-      },
-      "required": [
-        "kind",
-        "fit",
-        "development",
-        "final_test",
-        "gap_rows",
-        "policy_version",
-        "sealed_final_test"
-      ],
-      "additionalProperties": false
-    },
-    "Budget": {
-      "type": "object",
-      "properties": {
-        "cpu_seconds": {
-          "type": "number",
-          "minimum": 0
-        },
-        "gpu_seconds": {
-          "type": "number",
-          "minimum": 0
-        },
-        "tokens": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "memory_bytes": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "wall_seconds": {
-          "type": "number",
-          "minimum": 0
-        },
-        "candidate_limit": {
-          "type": "integer",
-          "minimum": 0
-        }
-      },
-      "required": [
-        "cpu_seconds",
-        "gpu_seconds",
-        "tokens",
-        "memory_bytes",
-        "wall_seconds",
-        "candidate_limit"
-      ],
-      "additionalProperties": false
-    },
     "Dataset": {
       "type": "object",
       "properties": {
@@ -250,7 +167,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -291,7 +208,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -365,7 +282,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -406,7 +323,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -423,11 +340,8 @@
         "semantic_profile": {
           "$ref": "#/$defs/SemanticProfile"
         },
-        "split_policy": {
-          "$ref": "#/$defs/SplitPolicy"
-        },
         "budget": {
-          "$ref": "#/$defs/Budget"
+          "$ref": "#/$defs/BudgetLimit"
         },
         "purpose": {
           "type": "string",
@@ -454,6 +368,37 @@
         "revision": {
           "type": "integer",
           "minimum": 0
+        },
+        "observation_split": {
+          "$ref": "#/$defs/ObservationSplit"
+        },
+        "current_event_cursor": {
+          "type": "string",
+          "pattern": "^(RUN|RESEARCH):[0-9a-f-]{36}:[0-9]+$"
+        },
+        "frozen_submission_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
+        },
+        "review_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
+        },
+        "published_artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
         }
       },
       "required": [
@@ -465,11 +410,15 @@
         "research_id",
         "dataset_version_id",
         "semantic_profile",
-        "split_policy",
         "budget",
         "purpose",
         "status",
-        "revision"
+        "revision",
+        "observation_split",
+        "current_event_cursor",
+        "frozen_submission_ids",
+        "review_ids",
+        "published_artifact_ids"
       ],
       "additionalProperties": false
     },
@@ -488,7 +437,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -567,10 +516,10 @@
         },
         "current_event_cursor": {
           "type": "string",
-          "pattern": "^[0-9]+$"
+          "pattern": "^(RUN|RESEARCH):[0-9a-f-]{36}:[0-9]+$"
         },
         "budget_usage": {
-          "$ref": "#/$defs/Budget"
+          "$ref": "#/$defs/BudgetUsage"
         },
         "equation_version_id": {
           "type": "string",
@@ -630,6 +579,16 @@
             "format": "uuid"
           },
           "minItems": 0
+        },
+        "is_root": {
+          "type": "boolean"
+        },
+        "budget_reservations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BudgetReservation"
+          },
+          "uniqueItems": true
         }
       },
       "required": [
@@ -652,7 +611,9 @@
         "phase",
         "stop_reason",
         "evidence_bundle_ids",
-        "child_run_ids"
+        "child_run_ids",
+        "is_root",
+        "budget_reservations"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -721,7 +682,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -795,7 +756,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -835,7 +796,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -921,7 +882,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -939,10 +900,6 @@
           "type": "string",
           "format": "uuid"
         },
-        "split_id": {
-          "type": "string",
-          "minLength": 1
-        },
         "parameters": {
           "type": "object",
           "additionalProperties": {
@@ -954,9 +911,21 @@
           "type": "string",
           "minLength": 1
         },
-        "precision": {
+        "observation_split_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "split_role": {
+          "type": "string",
+          "enum": [
+            "FIT",
+            "DEVELOPMENT",
+            "FINAL_TEST"
+          ]
+        },
+        "precision_bits": {
           "type": "integer",
-          "minimum": 16
+          "minimum": 53
         }
       },
       "required": [
@@ -968,10 +937,11 @@
         "run_id",
         "equation_version_id",
         "dataset_version_id",
-        "split_id",
         "parameters",
         "optimizer",
-        "precision"
+        "observation_split_id",
+        "split_role",
+        "precision_bits"
       ],
       "additionalProperties": false
     },
@@ -990,7 +960,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -1004,12 +974,8 @@
           "type": "string",
           "format": "uuid"
         },
-        "split_id": {
-          "type": "string",
-          "minLength": 1
-        },
         "metric_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "metrics": {
           "type": "object",
@@ -1091,6 +1057,29 @@
         "artifact_id": {
           "type": "string",
           "format": "uuid"
+        },
+        "observation_split_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "split_role": {
+          "type": "string",
+          "enum": [
+            "FIT",
+            "DEVELOPMENT",
+            "FINAL_TEST"
+          ]
+        },
+        "frozen_candidate_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -1101,7 +1090,6 @@
         "created_at",
         "run_id",
         "fit_run_id",
-        "split_id",
         "metric_version",
         "metrics",
         "valid_coverage",
@@ -1111,7 +1099,10 @@
         "artifact_uri",
         "sha256",
         "metric_reasons",
-        "artifact_id"
+        "artifact_id",
+        "observation_split_id",
+        "split_role",
+        "frozen_candidate_id"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -1158,6 +1149,23 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "split_role": {
+                "const": "FINAL_TEST"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "frozen_candidate_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
         }
       ]
     },
@@ -1176,7 +1184,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -1260,7 +1268,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -1345,7 +1353,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -1408,7 +1416,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -1469,7 +1477,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -1538,7 +1546,7 @@
           "format": "uuid"
         },
         "schema_version": {
-          "const": "1.0"
+          "const": "2.0"
         },
         "created_at": {
           "type": "string",
@@ -1585,6 +1593,776 @@
         "owner_id",
         "size_bytes",
         "media_type"
+      ],
+      "additionalProperties": false
+    },
+    "BudgetLimit": {
+      "type": "object",
+      "properties": {
+        "cpu_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "gpu_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "memory_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "wall_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "candidate_limit": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "cpu_seconds",
+        "gpu_seconds",
+        "tokens",
+        "memory_bytes",
+        "wall_seconds",
+        "candidate_limit"
+      ],
+      "additionalProperties": false
+    },
+    "BudgetUsage": {
+      "type": "object",
+      "properties": {
+        "cpu_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "gpu_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "peak_memory_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "elapsed_wall_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "candidates_generated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "candidates_accepted": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "cpu_seconds",
+        "gpu_seconds",
+        "tokens",
+        "peak_memory_bytes",
+        "elapsed_wall_seconds",
+        "candidates_generated",
+        "candidates_accepted"
+      ],
+      "additionalProperties": false
+    },
+    "BudgetReservation": {
+      "type": "object",
+      "properties": {
+        "reservation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "cpu_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "gpu_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "memory_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "candidate_slots": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "HELD",
+            "RELEASED"
+          ]
+        }
+      },
+      "required": [
+        "reservation_id",
+        "run_id",
+        "cpu_seconds",
+        "gpu_seconds",
+        "tokens",
+        "memory_bytes",
+        "candidate_slots",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "ObservationSplit": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "IID_ROWS",
+            "GROUPED_ROWS",
+            "TIME_ORDERED",
+            "EXPLICIT"
+          ]
+        },
+        "dataset_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fit": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "development": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "final_test": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "gap_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lookback_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "horizon_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "time_column": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "group_column": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "group_assignment_digest": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "row_ids_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "splitter_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_version": {
+          "const": "2.0"
+        },
+        "sealed_final_test": {
+          "const": true
+        },
+        "sealed_test_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "benchmark_partition_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "benchmark_case_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "dataset_version_id",
+        "fit",
+        "development",
+        "final_test",
+        "gap_rows",
+        "lookback_rows",
+        "horizon_rows",
+        "seed",
+        "time_column",
+        "group_column",
+        "group_assignment_digest",
+        "row_ids_hash",
+        "splitter_version",
+        "policy_version",
+        "sealed_final_test",
+        "sealed_test_id",
+        "benchmark_partition_id",
+        "benchmark_case_id"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "TIME_ORDERED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "time_column": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "GROUPED_ROWS"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "group_column": {
+                "type": "string",
+                "minLength": 1
+              },
+              "group_assignment_digest": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ObservationSplitRequest": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "IID_ROWS",
+            "GROUPED_ROWS",
+            "TIME_ORDERED",
+            "EXPLICIT"
+          ]
+        },
+        "dataset_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fit": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "development": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "final_test": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "gap_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lookback_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "horizon_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "time_column": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "group_column": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "group_assignment_digest": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "splitter_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_version": {
+          "const": "2.0"
+        },
+        "sealed_final_test": {
+          "const": true
+        }
+      },
+      "required": [
+        "kind",
+        "dataset_version_id",
+        "fit",
+        "development",
+        "final_test",
+        "gap_rows",
+        "lookback_rows",
+        "horizon_rows",
+        "seed",
+        "time_column",
+        "group_column",
+        "group_assignment_digest",
+        "splitter_version",
+        "policy_version",
+        "sealed_final_test"
+      ],
+      "additionalProperties": false
+    },
+    "BenchmarkPartition": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "BenchmarkPartition"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "2.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "policy_version": {
+          "const": "2.0"
+        },
+        "generator_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "seed_manifest_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "assignments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "case_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "family_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_group": {
+                "type": "string",
+                "minLength": 1
+              },
+              "partition": {
+                "type": "string",
+                "enum": [
+                  "TRAIN",
+                  "DEVELOPMENT",
+                  "SEALED_TEST"
+                ]
+              }
+            },
+            "required": [
+              "case_id",
+              "family_id",
+              "source_group",
+              "partition"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "policy_version",
+        "generator_version",
+        "seed_manifest_hash",
+        "assignments"
+      ],
+      "additionalProperties": false
+    },
+    "SealedTest": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "SealedTest"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "2.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "dataset_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "observation_split_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "benchmark_partition_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "benchmark_case_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "final_rows_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "protocol_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "RESERVED",
+            "CONSUMED",
+            "RETIRED"
+          ]
+        },
+        "submission_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_content_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "dataset_version_id",
+        "observation_split_id",
+        "benchmark_partition_id",
+        "benchmark_case_id",
+        "final_rows_hash",
+        "protocol_hash",
+        "state",
+        "submission_id",
+        "source_content_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "FrozenCandidate": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "FrozenCandidate"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "2.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "candidate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "equation_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fit_run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "dataset_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "observation_split_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "dsl_identity_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          }
+        },
+        "parameter_binding_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "development_rank": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "environment_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "candidate_id",
+        "equation_version_id",
+        "fit_run_id",
+        "dataset_version_id",
+        "observation_split_id",
+        "dsl_identity_hash",
+        "parameters",
+        "parameter_binding_hash",
+        "development_rank",
+        "environment_digest"
+      ],
+      "additionalProperties": false
+    },
+    "FrozenSubmission": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "FrozenSubmission"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "2.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "research_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "sealed_test_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "frozen_candidate_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "metric_version": {
+          "const": "2.0"
+        },
+        "snapshot_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "FROZEN",
+            "EVALUATING",
+            "EVALUATED",
+            "FAILED"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "research_version_id",
+        "sealed_test_id",
+        "frozen_candidate_ids",
+        "metric_version",
+        "snapshot_hash",
+        "status"
       ],
       "additionalProperties": false
     }

@@ -7,11 +7,14 @@ import json
 import math
 from pathlib import Path
 import re
+import sys
 from urllib.parse import unquote
 
 from jsonschema import Draft202012Validator, FormatChecker
 from openapi_spec_validator import OpenAPIV31SpecValidator
 from referencing import Registry, Resource
+sys.dont_write_bytecode = True
+from contract_scenarios import check_scenarios
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -36,7 +39,7 @@ def tracked_files():
 def manifest_data():
     files = tracked_files()
     return {
-        "project": "AXIOM", "version": "2.2", "created": "2026-10-19",
+        "project": "AXIOM", "version": "2.3", "created": "2026-10-19",
         "date": "2026-10-19", "documents": sum(p.suffix == ".md" for p in files),
         "file_count": len(files),
         "files": [{"path": str(p.relative_to(ROOT)), "bytes": p.stat().st_size,
@@ -95,12 +98,14 @@ def check_contracts():
         registry = registry.with_resource(schema["$id"], resource)
         registry = registry.with_resource((folder / name).as_uri(), resource)
     count = 0
-    for prefix in ["dsl-v1", "research-v1", "event-v1"]:
+    for prefix in ["dsl-v1", "research-v2", "runtime-v2", "event-v2", "task-input-v2"]:
         validator = Draft202012Validator(schemas[prefix + ".schema.json"],
                                          registry=registry, format_checker=FormatChecker())
         examples = read_json(folder / (prefix + ".examples.json"))
         for value in examples["valid"]:
             validator.validate(value)
+            if prefix == "research-v2" and value.get("kind") == "Run" and value["status"] == "QUEUED":
+                check(all(amount == 0 for amount in value["budget_usage"].values()), "Queued run usage must be zero")
             count += 1
         for value in examples["invalid"]:
             check(not validator.is_valid(value["document"]), f"Invalid example accepted: {prefix}: {value['reason']}")
@@ -109,7 +114,7 @@ def check_contracts():
         for value in examples.get("semantic_invalid", []):
             validator.validate(value["document"])
             count += 1
-    api = read_json(folder / "openapi-v1.json")
+    api = read_json(folder / "openapi-v2.json")
     OpenAPIV31SpecValidator(api).validate()
     def bundled(value, mapping):
         if isinstance(value, dict):
@@ -118,7 +123,7 @@ def check_contracts():
         if isinstance(value, list):
             return [bundled(item, mapping) for item in value]
         return value
-    definitions = schemas["research-v1.schema.json"]["$defs"]
+    definitions = schemas["research-v2.schema.json"]["$defs"]
     mapping = {"#/$defs/" + name: "#/components/schemas/" + name for name in definitions}
     mapping["dsl-v1.schema.json"] = "#/components/schemas/DSL"
     for name, schema in definitions.items():
@@ -130,14 +135,14 @@ def check_contracts():
           "OpenAPI DSL envelope drift")
     for name, schema in dsl["$defs"].items():
         check(api["components"]["schemas"]["DSL" + name] == bundled(schema, dsl_mapping), "OpenAPI DSL node drift")
-    check(api["components"]["schemas"]["Event"] == bundled(schemas["event-v1.schema.json"], {}),
+    check(api["components"]["schemas"]["Event"] == bundled(schemas["event-v2.schema.json"], {}),
           "OpenAPI event schema drift")
-    equation_examples = read_json(folder / "research-v1.examples.json")["valid"]
+    equation_examples = read_json(folder / "research-v2.examples.json")["valid"]
     for example in equation_examples:
         if example["kind"] == "EquationVersion":
             canonical = json.dumps(example["dsl"], ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
             check(hashlib.sha256(canonical).hexdigest() == example["identity_hash"], "Public canonical hash drift")
-    api_examples = read_json(folder / "api-v1.examples.json")
+    api_examples = read_json(folder / "api-v2.examples.json")
     for polarity in ["valid", "invalid"]:
         for case in api_examples[polarity]:
             schema = {"$ref": "#/components/schemas/" + case["schema"], "components": api["components"]}
@@ -148,9 +153,39 @@ def check_contracts():
     for path, item in api["paths"].items():
         for method in item:
             check(f"{method.upper()} {path}" in doc, f"Endpoint missing from AX-21: {method} {path}")
-    event = schemas["event-v1.schema.json"]
+    for path, item in api["paths"].items():
+        for method, operation in item.items():
+            headers = {p["name"] for p in operation.get("parameters", []) if p.get("in") == "header"}
+            check("If-Match" not in headers, "Business control revision must not masquerade as representation ETag")
+            if method == "post" and any(path.endswith(suffix) for suffix in ["/validate", "/runs", "/cancel", "/reviews", "/revoke"]):
+                check("If-Control-Revision" in headers, "Control precondition missing")
+    event = schemas["event-v2.schema.json"]
     for event_type in event["properties"]["event_type"]["enum"]:
         check(event_type in doc, f"Undocumented event: {event_type}")
+    # Reverse coverage catches navigation endpoints described in prose but missing in OpenAPI.
+    documented = {(method.lower(), path) for method, path in re.findall(r"^\| (GET|POST|PUT|DELETE|PATCH) (/[^ |]+)", doc, re.M)}
+    declared = {(method, path) for path, item in api["paths"].items() for method in item}
+    check(documented == declared, f"Bidirectional endpoint drift: {documented ^ declared}")
+    check(api["servers"] == [{"url": "/api/v2"}], "HTTP major version drift")
+    runtime = schemas["runtime-v2.schema.json"]["$defs"]
+    for public_name, private_name in [("Run", "RunRecord"), ("Attempt", "AttemptRecord")]:
+        public, private = definitions[public_name], runtime[private_name]
+        check(set(public["required"]) <= set(private["required"]), "Internal DTO projection lost required fields")
+        for key, value in public["properties"].items():
+            if key != "kind":
+                check(private["properties"].get(key) == value, f"Private/public shared field drift: {key}")
+        check(private_name not in api["components"]["schemas"], "Private control record leaked into OpenAPI")
+    suite = read_json(folder / "conformance-v2.examples.json")
+    for value in suite["context"].values():
+        if isinstance(value, dict) and "kind" in value:
+            profile = "runtime-v2" if value["kind"] in {"RunRecord", "AttemptRecord"} else "research-v2"
+            Draft202012Validator(schemas[profile + ".schema.json"], registry=registry, format_checker=FormatChecker()).validate(value)
+    conformance_count = check_scenarios(suite)
+    topology = next(ROOT.rglob("06-*.md")).read_text()
+    edges = re.findall(r"\b([A-Z][A-Z0-9]*)\s*-->\s*([A-Z][A-Z0-9]*)", topology)
+    check(("SB", "OUT") in edges and ("ESB", "EV") in edges, "Controlled sandbox egress missing")
+    check(all(dst not in {"DB", "PG", "OBJ"} for src, dst in edges if src in {"SB", "ESB", "W4"}),
+          "Untrusted sandbox directly linked to storage")
     # Every external schema ref in standalone JSON resolves within local contracts.
     def refs(value):
         if isinstance(value, dict):
@@ -168,7 +203,7 @@ def check_contracts():
                 check("://" not in reference, f"Unexpected network ref: {reference}")
                 check((folder / reference.split("#")[0]).is_file(), f"Missing schema ref: {reference}")
     return {"schemas": len(schemas), "contract_examples": count,
-            "api_operations": sum(len(v) for v in api["paths"].values())}
+            "api_operations": sum(len(v) for v in api["paths"].values()), "contract_scenarios": conformance_count}
 
 
 def check_public_oracles():

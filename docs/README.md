@@ -1,6 +1,6 @@
 # AXIOM｜專案企劃與工程設計規格
 
-> 文件版本 v2.2｜2026-10-19｜設計已修訂；產品實作、基準與發布簽核尚未執行
+> 文件版本 v2.3｜2026-10-19｜設計已修訂；產品實作、基準與發布簽核尚未執行
 
 AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探索）是數據驅動的公式發現、獨立驗證、推演與經驗學習平台。MVP 僅單變量實數顯式函數：匯入、DSL v1、三基線策略、拒答、版本與工作台；記憶與 AI 在 M4，推演及雙／多序列在後續階段。
 
@@ -15,12 +15,12 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 - 維運：[AX-08 部署與運算資源規劃](<03-架構/08-部署與運算資源規劃.md>) → [AX-41 Docker本地架設指南](<03-架構/41-Docker本地架設指南.md>) → [AX-27 可觀測性備份與故障復原](<09-非功能/27-可觀測性備份與故障復原.md>) → [AX-45 非功能SLO與壓測方案](<13-專題深化/45-非功能SLO與壓測方案.md>) → [AX-37 決策待確認清單](<12-附錄/37-決策待確認清單.md>) → [AX-46 發布驗收矩陣與交付證據](<13-專題深化/46-發布驗收矩陣與交付證據.md>)。
 - 記憶／AI：[AX-16 經驗記憶與檢索架構](<05-記憶/16-經驗記憶與檢索架構.md>) → [AX-17 知識圖譜與理論演化](<05-記憶/17-知識圖譜與理論演化.md>) → [AX-18 ChatGPT與Ollama協作](<06-AI/18-ChatGPT與Ollama協作.md>) → [AX-19 策略學習微調與蒸餾](<06-AI/19-策略學習微調與蒸餾.md>) → [AX-26 安全隱私與可信執行](<09-非功能/26-安全隱私與可信執行.md>)。
 
-## v2.2 的核心規則
+## v2.3 的核心規則
 
 - 本地平台維持 ADR-006：macOS 開發、Windows 11 + WSL2 架設。
 - 里程碑唯一依 AX-30；當期 MUST 以 AX-02／46 為準，不將全部未來能力當 MVP 前置。
 - 搜尋只讀 fit/development；final_test 由隔離 Evaluator 在候選凍結後一次評估。
-- DSL v1、研究物件、API、事件有明確欄位與合法範例；跨物件、租戶與數學語意仍由實作驗證。
+- DSL v1、研究／內部物件 v2、API v2、事件 v2 有明確欄位與合法範例；跨物件、租戶與數學語意仍由實作驗證。
 - 舊 worker 提交、取消／完成競態及預算預留以權威交易裁決。
 - E/P 證據分軸；UNKNOWN、超時與數值近似都不能假標形式化證明。
 - 外部 LLM 預設停用；正式基準、容量、保留與 RPO/RTO 等未決項有負責角色、階段期限與阻擋 gate。
@@ -120,15 +120,20 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 
 ## 機器可讀契約與公開 fixture
 
-- [api-v1.examples.json](<contracts/api-v1.examples.json>)
+- [api-v2.examples.json](<contracts/api-v2.examples.json>)
 - [benchmark-v1.json](<contracts/benchmark-v1.json>)
+- [conformance-v2.examples.json](<contracts/conformance-v2.examples.json>)
 - [dsl-v1.examples.json](<contracts/dsl-v1.examples.json>)
 - [dsl-v1.schema.json](<contracts/dsl-v1.schema.json>)
-- [event-v1.examples.json](<contracts/event-v1.examples.json>)
-- [event-v1.schema.json](<contracts/event-v1.schema.json>)
-- [openapi-v1.json](<contracts/openapi-v1.json>)
-- [research-v1.examples.json](<contracts/research-v1.examples.json>)
-- [research-v1.schema.json](<contracts/research-v1.schema.json>)
+- [event-v2.examples.json](<contracts/event-v2.examples.json>)
+- [event-v2.schema.json](<contracts/event-v2.schema.json>)
+- [openapi-v2.json](<contracts/openapi-v2.json>)
+- [research-v2.examples.json](<contracts/research-v2.examples.json>)
+- [research-v2.schema.json](<contracts/research-v2.schema.json>)
+- [runtime-v2.examples.json](<contracts/runtime-v2.examples.json>)
+- [runtime-v2.schema.json](<contracts/runtime-v2.schema.json>)
+- [task-input-v2.examples.json](<contracts/task-input-v2.examples.json>)
+- [task-input-v2.schema.json](<contracts/task-input-v2.schema.json>)
 
 ## 文件檢查方式
 
@@ -140,10 +145,16 @@ python3 -m venv /tmp/axiom-docs-venv
 /tmp/axiom-docs-venv/bin/python docs/tools/check_docs.py
 ```
 
-編輯後經審查再以 `--write-manifest` 重建清單，接著無參數重跑確認。工具檢查本地連結、編號、AC 追溯、schema 正反例、OpenAPI、公開資料 oracle 與 manifest；不執行搜尋引擎、安全隔離、備份恢復或瀏覽器驗收。
+編輯後經審查再以 `--write-manifest` 重建清單，接著無參數重跑確認。工具檢查本地連結、編號、AC 追溯、公開／內部 schema 正反例及投影一致、OpenAPI 雙向端點覆蓋、27 組跨契約參考情境、公開資料 oracle 與 manifest；不執行搜尋引擎、安全隔離、備份恢復或瀏覽器驗收。
 
 ## 整合與維護
 
 [整合紀錄](<INTEGRATION.md>) 保存來源合併與本輪審查修訂；來源 `AXIOM_Project` 已在整合校驗後依使用者指示刪除。原 41 研究物件契約改為 AX-47，AX-41 保留 Docker。共用規則集中 AX-48，其餘章節保留各自的專屬案例。
 
 [MANIFEST.json](<MANIFEST.json>) 包含 Markdown、contracts 及工具的 bytes／SHA-256，排除自身、.DS_Store 與 Python cache。documents 是 Markdown 數，file_count 是全部受控檔案數，files 筆數等於 file_count。
+
+## v2.3 這輪修訂
+
+修正八類跨文件缺口：sandbox拓樸、內外部DTO、父子任務取消、凍結FitRun／參數、雙層資料切分、Limit／Reservation／Usage、研究導覽與長期事件流。研究／事件schema升2.0、HTTP為/api/v2，DSL保持1.0；草案v1可從Git歷史取得，沒有既有部署或已遷移資料聲明。
+
+[contract_scenarios.py](<tools/contract_scenarios.py>)僅實作公開fixture的參考裁決；不是真正的排程器、符號引擎或權限服務。正式產品的發布阻擋項仍依AX-37／46。

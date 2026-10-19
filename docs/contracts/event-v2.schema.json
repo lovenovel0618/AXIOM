@@ -6,13 +6,12 @@
       "format": "uuid"
     },
     "schema_version": {
-      "const": "1.0"
+      "const": "2.0"
     },
     "event_type": {
       "type": "string",
       "enum": [
         "DatasetVersionAvailable",
-        "ResearchVersionReady",
         "RunQueued",
         "RunStarted",
         "CandidateFound",
@@ -20,6 +19,9 @@
         "RunCancelRequested",
         "RunCancelled",
         "RunFinished",
+        "ResearchVersionReady",
+        "ResearchVersionStateChanged",
+        "SubmissionFrozen",
         "ReviewRecorded",
         "EvidenceRevoked"
       ]
@@ -40,8 +42,15 @@
       ]
     },
     "run_id": {
-      "type": "string",
-      "format": "uuid"
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "sequence": {
       "type": "integer",
@@ -61,6 +70,17 @@
     },
     "payload": {
       "type": "object"
+    },
+    "stream_scope": {
+      "type": "string",
+      "enum": [
+        "RUN",
+        "RESEARCH"
+      ]
+    },
+    "stream_id": {
+      "type": "string",
+      "format": "uuid"
     }
   },
   "required": [
@@ -74,11 +94,13 @@
     "occurred_at",
     "trace_id",
     "producer_version",
-    "payload"
+    "payload",
+    "stream_scope",
+    "stream_id"
   ],
   "additionalProperties": false,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://axiom.invalid/contracts/event-v1.schema.json",
+  "$id": "https://axiom.invalid/contracts/event-v2.schema.json",
   "allOf": [
     {
       "if": {
@@ -479,6 +501,135 @@
               "reason_code"
             ],
             "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "ResearchVersionStateChanged"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "DRAFT",
+                  "VALIDATING",
+                  "READY",
+                  "QUEUED",
+                  "RUNNING",
+                  "REVIEW",
+                  "PUBLISHED",
+                  "FAILED",
+                  "CANCELLED"
+                ]
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "status",
+              "revision"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "SubmissionFrozen"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "submission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "snapshot_hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "submission_id",
+              "snapshot_hash"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stream_scope": {
+            "const": "RUN"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "event_type": {
+            "type": "string",
+            "enum": [
+              "DatasetVersionAvailable",
+              "RunQueued",
+              "RunStarted",
+              "CandidateFound",
+              "ValidationFinished",
+              "RunCancelRequested",
+              "RunCancelled",
+              "RunFinished"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "stream_scope": {
+            "const": "RESEARCH"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "research_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "event_type": {
+            "type": "string",
+            "enum": [
+              "ResearchVersionReady",
+              "ResearchVersionStateChanged",
+              "SubmissionFrozen",
+              "ReviewRecorded",
+              "EvidenceRevoked"
+            ]
           }
         }
       }

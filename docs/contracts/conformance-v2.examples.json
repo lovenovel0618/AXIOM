@@ -1,0 +1,872 @@
+{
+  "scope": "DOCUMENT_REFERENCE_ONLY",
+  "product_status": "NOT_RUN",
+  "context": {
+    "research_version": {
+      "kind": "ResearchVersion",
+      "id": "00000000-0000-4000-8000-000000000003",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "research_id": "00000000-0000-4000-8000-000000000002",
+      "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+      "semantic_profile": {
+        "inputs": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "target": {
+          "name": "y",
+          "unit": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "units_confirmed": true,
+        "time_ordered": false,
+        "measurement_resolution": "0.001",
+        "resolution_reason": "公開測試設定"
+      },
+      "budget": {
+        "cpu_seconds": 60,
+        "gpu_seconds": 0,
+        "tokens": 0,
+        "memory_bytes": 268435456,
+        "wall_seconds": 120,
+        "candidate_limit": 100
+      },
+      "purpose": "DESCRIPTION",
+      "status": "READY",
+      "revision": 2,
+      "observation_split": {
+        "kind": "EXPLICIT",
+        "fit": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "development": [
+          6,
+          7
+        ],
+        "final_test": [
+          8,
+          9
+        ],
+        "gap_rows": 0,
+        "policy_version": "2.0",
+        "sealed_final_test": true,
+        "id": "00000000-0000-4000-8000-000000000040",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "lookback_rows": 0,
+        "horizon_rows": 0,
+        "seed": 42,
+        "time_column": null,
+        "group_column": null,
+        "group_assignment_digest": null,
+        "row_ids_hash": "7cb6e015489351b88226540c1e337000b21a282e03e7ba3b2c37365f68f4a270",
+        "splitter_version": "2.0.0",
+        "sealed_test_id": "00000000-0000-4000-8000-000000000041",
+        "benchmark_partition_id": null,
+        "benchmark_case_id": null
+      },
+      "current_event_cursor": "RESEARCH:00000000-0000-4000-8000-000000000003:1",
+      "frozen_submission_ids": [
+        "00000000-0000-4000-8000-000000000065"
+      ],
+      "review_ids": [],
+      "published_artifact_ids": []
+    },
+    "equation": {
+      "kind": "EquationVersion",
+      "id": "00000000-0000-4000-8000-000000000060",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "dsl": {
+        "dsl_version": "1.0",
+        "variables": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "a",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "lower": "-100",
+            "upper": "100"
+          },
+          {
+            "name": "b",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "lower": "-100",
+            "upper": "100"
+          }
+        ],
+        "domain": [
+          {
+            "name": "x",
+            "lower": {
+              "numerator": "-10",
+              "denominator": "1"
+            },
+            "upper": {
+              "numerator": "10",
+              "denominator": "1"
+            },
+            "lower_closed": true,
+            "upper_closed": true
+          }
+        ],
+        "root": {
+          "op": "add",
+          "args": [
+            {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "param",
+                  "name": "a"
+                },
+                {
+                  "op": "var",
+                  "name": "x"
+                }
+              ]
+            },
+            {
+              "op": "param",
+              "name": "b"
+            }
+          ]
+        }
+      },
+      "identity_hash": "22365573232a0ec9e5eff6aaf63fbbe785594e7e7024e93cb9bf5a2d5ad64c31"
+    },
+    "fit": {
+      "kind": "FitRun",
+      "id": "00000000-0000-4000-8000-000000000062",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "run_id": "00000000-0000-4000-8000-000000000063",
+      "equation_version_id": "00000000-0000-4000-8000-000000000060",
+      "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "split_role": "FIT",
+      "parameters": {
+        "a": "2",
+        "b": "1"
+      },
+      "optimizer": "public-linear-oracle",
+      "precision_bits": 53
+    },
+    "candidate": {
+      "kind": "Candidate",
+      "id": "00000000-0000-4000-8000-000000000064",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "search_run_id": "00000000-0000-4000-8000-000000000004",
+      "equation_version_id": "00000000-0000-4000-8000-000000000060",
+      "source": "linear",
+      "development_rank": 1,
+      "validation_status": "FINISHED",
+      "fit_run_ids": [
+        "00000000-0000-4000-8000-000000000062"
+      ],
+      "validation_run_ids": []
+    },
+    "frozen_candidate": {
+      "kind": "FrozenCandidate",
+      "id": "00000000-0000-4000-8000-000000000061",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "candidate_id": "00000000-0000-4000-8000-000000000064",
+      "equation_version_id": "00000000-0000-4000-8000-000000000060",
+      "fit_run_id": "00000000-0000-4000-8000-000000000062",
+      "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "dsl_identity_hash": "22365573232a0ec9e5eff6aaf63fbbe785594e7e7024e93cb9bf5a2d5ad64c31",
+      "parameters": {
+        "a": "2",
+        "b": "1"
+      },
+      "parameter_binding_hash": "f7a837dc9b605d08d450f14bb4927ae8ab268b757d17b579b4e8e61500d87c4a",
+      "development_rank": 1,
+      "environment_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "submission": {
+      "kind": "FrozenSubmission",
+      "id": "00000000-0000-4000-8000-000000000065",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "sealed_test_id": "00000000-0000-4000-8000-000000000041",
+      "frozen_candidate_ids": [
+        "00000000-0000-4000-8000-000000000061"
+      ],
+      "metric_version": "2.0",
+      "snapshot_hash": "b90aa7071f074b292c76a2416d28a985aad45ccc95a45c29d6007414f22e7449",
+      "status": "FROZEN"
+    },
+    "benchmark_partition": {
+      "kind": "BenchmarkPartition",
+      "id": "00000000-0000-4000-8000-000000000070",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "policy_version": "2.0",
+      "generator_version": "public-oracle-1",
+      "seed_manifest_hash": "5555555555555555555555555555555555555555555555555555555555555555",
+      "assignments": [
+        {
+          "case_id": "train-case",
+          "family_id": "family-A",
+          "source_group": "source-A",
+          "partition": "TRAIN"
+        },
+        {
+          "case_id": "blind-case",
+          "family_id": "family-B",
+          "source_group": "source-B",
+          "partition": "SEALED_TEST"
+        }
+      ]
+    },
+    "root_record": {
+      "kind": "RunRecord",
+      "id": "00000000-0000-4000-8000-000000000004",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "dataset_id": null,
+      "type": "SEARCH",
+      "status": "RUNNING",
+      "revision": 1,
+      "seed": 42,
+      "environment_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "active_attempt_id": "00000000-0000-4000-8000-000000000084",
+      "lease_generation": 1,
+      "current_event_cursor": "RUN:00000000-0000-4000-8000-000000000004:0",
+      "budget_usage": {
+        "cpu_seconds": 0,
+        "gpu_seconds": 0,
+        "tokens": 0,
+        "peak_memory_bytes": 0,
+        "elapsed_wall_seconds": 0,
+        "candidates_generated": 0,
+        "candidates_accepted": 0
+      },
+      "phase": null,
+      "stop_reason": null,
+      "evidence_bundle_ids": [],
+      "child_run_ids": [
+        "00000000-0000-4000-8000-000000000063"
+      ],
+      "budget_reservations": [],
+      "is_root": true,
+      "parent_run_id": null,
+      "root_run_id": "00000000-0000-4000-8000-000000000004",
+      "budget_account_id": "00000000-0000-4000-8000-000000000080",
+      "cancel_requested_at": null,
+      "cancellation_epoch": 0,
+      "root_epoch_at_dispatch": 0,
+      "input_artifact_id": "00000000-0000-4000-8000-000000000090"
+    },
+    "child_record": {
+      "kind": "RunRecord",
+      "id": "00000000-0000-4000-8000-000000000063",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "dataset_id": null,
+      "type": "FIT",
+      "status": "RUNNING",
+      "revision": 1,
+      "seed": 42,
+      "environment_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "active_attempt_id": "00000000-0000-4000-8000-000000000081",
+      "lease_generation": 1,
+      "current_event_cursor": "RUN:00000000-0000-4000-8000-000000000063:0",
+      "budget_usage": {
+        "cpu_seconds": 0,
+        "gpu_seconds": 0,
+        "tokens": 0,
+        "peak_memory_bytes": 0,
+        "elapsed_wall_seconds": 0,
+        "candidates_generated": 0,
+        "candidates_accepted": 0
+      },
+      "phase": null,
+      "stop_reason": null,
+      "evidence_bundle_ids": [],
+      "child_run_ids": [],
+      "budget_reservations": [],
+      "is_root": false,
+      "parent_run_id": "00000000-0000-4000-8000-000000000004",
+      "root_run_id": "00000000-0000-4000-8000-000000000004",
+      "budget_account_id": "00000000-0000-4000-8000-000000000080",
+      "cancel_requested_at": null,
+      "cancellation_epoch": 0,
+      "root_epoch_at_dispatch": 0,
+      "equation_version_id": "00000000-0000-4000-8000-000000000060",
+      "input_artifact_id": "00000000-0000-4000-8000-000000000091"
+    },
+    "attempt_record": {
+      "kind": "AttemptRecord",
+      "id": "00000000-0000-4000-8000-000000000081",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "run_id": "00000000-0000-4000-8000-000000000063",
+      "generation": 1,
+      "worker_id": "worker-public-fixture",
+      "lease_expires_at": "2026-10-19T00:01:00Z",
+      "checkpoint_id": null,
+      "status": "RUNNING",
+      "heartbeat_at": "2026-10-19T00:00:15Z",
+      "started_at": "2026-10-19T00:00:00Z",
+      "finished_at": null,
+      "root_epoch_at_dispatch": 0,
+      "usage_sequence": 0,
+      "actual_usage": {
+        "cpu_seconds": 0,
+        "gpu_seconds": 0,
+        "tokens": 0,
+        "peak_memory_bytes": 0,
+        "elapsed_wall_seconds": 0,
+        "candidates_generated": 0,
+        "candidates_accepted": 0
+      }
+    },
+    "observation_rows": [
+      {
+        "row_id": 0,
+        "time": 0,
+        "group": 0
+      },
+      {
+        "row_id": 1,
+        "time": 1,
+        "group": 0
+      },
+      {
+        "row_id": 2,
+        "time": 2,
+        "group": 1
+      },
+      {
+        "row_id": 3,
+        "time": 3,
+        "group": 1
+      },
+      {
+        "row_id": 4,
+        "time": 4,
+        "group": 2
+      },
+      {
+        "row_id": 5,
+        "time": 5,
+        "group": 2
+      },
+      {
+        "row_id": 6,
+        "time": 6,
+        "group": 3
+      },
+      {
+        "row_id": 7,
+        "time": 7,
+        "group": 3
+      },
+      {
+        "row_id": 8,
+        "time": 8,
+        "group": 4
+      },
+      {
+        "row_id": 9,
+        "time": 9,
+        "group": 4
+      }
+    ],
+    "sealed_test": {
+      "kind": "SealedTest",
+      "id": "00000000-0000-4000-8000-000000000041",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "benchmark_partition_id": null,
+      "benchmark_case_id": null,
+      "final_rows_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+      "protocol_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+      "state": "RESERVED",
+      "submission_id": "00000000-0000-4000-8000-000000000065",
+      "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+    }
+  },
+  "cases": [
+    {
+      "id": "CF-01",
+      "check": "freeze",
+      "mutations": [],
+      "expected": "ACCEPT"
+    },
+    {
+      "id": "CF-02",
+      "check": "freeze",
+      "mutations": [
+        [
+          "frozen_candidate.parameters.a",
+          "3"
+        ]
+      ],
+      "expected": "BINDING_MISMATCH"
+    },
+    {
+      "id": "CF-03",
+      "check": "freeze",
+      "mutations": [
+        [
+          "frozen_candidate.fit_run_id",
+          "00000000-0000-4000-8000-000000000999"
+        ]
+      ],
+      "expected": "FIT_REFERENCE_MISMATCH"
+    },
+    {
+      "id": "CF-04",
+      "check": "freeze",
+      "mutations": [
+        [
+          "frozen_candidate.development_rank",
+          2
+        ]
+      ],
+      "expected": "SNAPSHOT_MISMATCH"
+    },
+    {
+      "id": "CF-05",
+      "check": "submit",
+      "mutations": [],
+      "expected": "ACCEPT"
+    },
+    {
+      "id": "CF-06",
+      "check": "submit",
+      "mutations": [
+        [
+          "root_record.status",
+          "CANCEL_REQUESTED"
+        ],
+        [
+          "root_record.cancellation_epoch",
+          1
+        ]
+      ],
+      "expected": "ROOT_CANCELLED"
+    },
+    {
+      "id": "CF-07",
+      "check": "submit",
+      "mutations": [
+        [
+          "child_record.lease_generation",
+          2
+        ]
+      ],
+      "expected": "STALE_ATTEMPT"
+    },
+    {
+      "id": "CF-08",
+      "check": "dispatch",
+      "mutations": [
+        [
+          "root_record.status",
+          "CANCEL_REQUESTED"
+        ]
+      ],
+      "expected": "ROOT_CANCELLED"
+    },
+    {
+      "id": "CF-09",
+      "check": "split",
+      "mutations": [],
+      "expected": "ACCEPT"
+    },
+    {
+      "id": "CF-10",
+      "check": "split",
+      "mutations": [
+        [
+          "research_version.observation_split.development",
+          [
+            0,
+            7
+          ]
+        ]
+      ],
+      "expected": "SPLIT_OVERLAP"
+    },
+    {
+      "id": "CF-11",
+      "check": "partition",
+      "mutations": [
+        [
+          "benchmark_partition.assignments.1.family_id",
+          "family-A"
+        ]
+      ],
+      "expected": "FAMILY_LEAK"
+    },
+    {
+      "id": "CF-12",
+      "check": "split",
+      "mutations": [
+        [
+          "research_version.observation_split.kind",
+          "TIME_ORDERED"
+        ],
+        [
+          "research_version.observation_split.time_column",
+          "time"
+        ],
+        [
+          "research_version.observation_split.lookback_rows",
+          2
+        ]
+      ],
+      "expected": "GAP_TOO_SMALL"
+    },
+    {
+      "id": "CF-13",
+      "check": "usage",
+      "reports": [
+        {
+          "event": "u1",
+          "sequence": 1,
+          "cpu": 3
+        },
+        {
+          "event": "u1",
+          "sequence": 1,
+          "cpu": 3
+        },
+        {
+          "event": "u2",
+          "sequence": 2,
+          "cpu": 5
+        }
+      ],
+      "expected_cpu": 5,
+      "expected": "ACCEPT",
+      "mutations": [
+        [
+          "root_record.status",
+          "CANCELLED"
+        ],
+        [
+          "root_record.cancellation_epoch",
+          1
+        ]
+      ]
+    },
+    {
+      "id": "CF-14",
+      "check": "usage",
+      "reports": [
+        {
+          "event": "u1",
+          "sequence": 1,
+          "cpu": 3
+        },
+        {
+          "event": "u1",
+          "sequence": 1,
+          "cpu": 4
+        }
+      ],
+      "expected": "USAGE_CONFLICT"
+    },
+    {
+      "id": "CF-15",
+      "check": "score",
+      "binding": {
+        "a": "2",
+        "b": "1"
+      },
+      "expected_family_match": true,
+      "expected_exact_match": true,
+      "expected": "ACCEPT"
+    },
+    {
+      "id": "CF-16",
+      "check": "score",
+      "binding": {
+        "a": "2.0000000001",
+        "b": "1"
+      },
+      "expected_family_match": true,
+      "expected_exact_match": false,
+      "expected": "ACCEPT"
+    },
+    {
+      "id": "CF-17",
+      "check": "streams",
+      "events": [
+        [
+          "RUN",
+          "RunFinished",
+          1
+        ],
+        [
+          "RESEARCH",
+          "ReviewRecorded",
+          1
+        ],
+        [
+          "RESEARCH",
+          "EvidenceRevoked",
+          2
+        ]
+      ],
+      "expected": "ACCEPT"
+    },
+    {
+      "id": "CF-18",
+      "check": "streams",
+      "events": [
+        [
+          "RUN",
+          "RunFinished",
+          1
+        ],
+        [
+          "RUN",
+          "ReviewRecorded",
+          2
+        ]
+      ],
+      "expected": "RUN_STREAM_CLOSED"
+    },
+    {
+      "id": "CF-19",
+      "check": "memory",
+      "samples": [
+        [
+          100,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ],
+      "expected_peak": 100,
+      "expected": "ACCEPT"
+    },
+    {
+      "id": "CF-20",
+      "check": "cursor",
+      "cursor": "RUN:00000000-0000-4000-8000-000000000004:1",
+      "scope": "RESEARCH",
+      "stream_id": "00000000-0000-4000-8000-000000000003",
+      "expected": "INVALID_CURSOR"
+    },
+    {
+      "id": "CF-21",
+      "check": "split",
+      "mutations": [
+        [
+          "research_version.observation_split.kind",
+          "GROUPED_ROWS"
+        ],
+        [
+          "research_version.observation_split.group_column",
+          "group"
+        ],
+        [
+          "research_version.observation_split.group_assignment_digest",
+          "6666666666666666666666666666666666666666666666666666666666666666"
+        ],
+        [
+          "research_version.observation_split.fit",
+          [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        ],
+        [
+          "research_version.observation_split.development",
+          [
+            5,
+            6,
+            7
+          ]
+        ]
+      ],
+      "expected": "GROUP_LEAK"
+    },
+    {
+      "id": "CF-22",
+      "check": "partition",
+      "mutations": [
+        [
+          "benchmark_partition.assignments.1.source_group",
+          "source-A"
+        ]
+      ],
+      "expected": "SOURCE_LEAK"
+    },
+    {
+      "id": "CF-23",
+      "check": "submit",
+      "mutations": [
+        [
+          "child_record.root_run_id",
+          "00000000-0000-4000-8000-000000000999"
+        ]
+      ],
+      "expected": "TASK_TREE_MISMATCH"
+    },
+    {
+      "id": "CF-24",
+      "check": "submit",
+      "mutations": [
+        [
+          "child_record.budget_account_id",
+          "00000000-0000-4000-8000-000000000999"
+        ]
+      ],
+      "expected": "TASK_TREE_MISMATCH"
+    },
+    {
+      "id": "CF-25",
+      "check": "freeze",
+      "mutations": [
+        [
+          "frozen_candidate.candidate_id",
+          "00000000-0000-4000-8000-000000000999"
+        ]
+      ],
+      "expected": "FIT_REFERENCE_MISMATCH"
+    },
+    {
+      "id": "CF-26",
+      "check": "sealed_identity",
+      "new_dataset_version_id": "00000000-0000-4000-8000-000000000999",
+      "expected": "TEST_ALREADY_CONSUMED",
+      "mutations": [
+        [
+          "sealed_test.state",
+          "CONSUMED"
+        ]
+      ]
+    },
+    {
+      "id": "CF-27",
+      "check": "score",
+      "mutations": [
+        [
+          "equation.dsl.root",
+          {
+            "op": "add",
+            "args": [
+              {
+                "op": "mul",
+                "args": [
+                  {
+                    "op": "param",
+                    "name": "a"
+                  },
+                  {
+                    "op": "pow",
+                    "args": [
+                      {
+                        "op": "var",
+                        "name": "x"
+                      },
+                      {
+                        "op": "const",
+                        "value": {
+                          "numerator": "2",
+                          "denominator": "1"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "op": "param",
+                "name": "b"
+              }
+            ]
+          }
+        ]
+      ],
+      "binding": {
+        "a": "2",
+        "b": "1"
+      },
+      "expected_family_match": false,
+      "expected_exact_match": false,
+      "expected": "ACCEPT"
+    }
+  ]
+}

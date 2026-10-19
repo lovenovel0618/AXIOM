@@ -1,6 +1,6 @@
 # Docker 本地架設指南
 
-> AXIOM | 整合基線 v2.2 | 2026-10-19 | 文件 ID AX-41｜文件：`03-架構/41-Docker本地架設指南.md`
+> AXIOM | 整合基線 v2.3 | 2026-10-19 | 文件 ID AX-41｜文件：`03-架構/41-Docker本地架設指南.md`
 
 ## 文件目的
 
@@ -185,3 +185,7 @@ minio-init 可用 root 憑證建 bucket／service policy，但 web、worker 只�
 | AC-41-02 | migration 或 bucket policy 建立失敗 | init 非零退出，web 不就緒、worker 不領研究 |
 | AC-41-03 | 關閉外部模型且無 API key | 本地規則可啟動；web/worker 不持有 MinIO root 憑證 |
 | AC-41-04 | 同 fixture 在 macOS／WSL2 | 記錄實際 arch/digest，按同容差驗收，差異不暗中忽略 |
+
+## v2.3 控制面一致性
+
+可信supervisor可連DB／MinIO；搜尋、擬合與proof sandbox一律無網路及憑證，不把可信worker與sandbox畫成同一節點。根取消須追蹤遠端派送與停止確認，不能只停止本機容器後標已完成。公開API僅回Run/Attempt DTO，內部RunRecord／AttemptRecord不作前端下載內容。

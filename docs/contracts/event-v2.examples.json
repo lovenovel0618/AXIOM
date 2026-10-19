@@ -1,0 +1,109 @@
+{
+  "valid": [
+    {
+      "event_id": "00000000-0000-4000-8000-000000000020",
+      "schema_version": "2.0",
+      "event_type": "RunStarted",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "run_id": "00000000-0000-4000-8000-000000000004",
+      "sequence": 2,
+      "occurred_at": "2026-10-19T00:00:00Z",
+      "trace_id": "trace-public",
+      "producer_version": "1.0",
+      "payload": {
+        "status": "RUNNING",
+        "attempt_id": "00000000-0000-4000-8000-000000000021",
+        "generation": 1
+      },
+      "stream_scope": "RUN",
+      "stream_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "event_id": "00000000-0000-4000-8000-000000000091",
+      "schema_version": "2.0",
+      "event_type": "ReviewRecorded",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "run_id": "00000000-0000-4000-8000-000000000004",
+      "sequence": 3,
+      "occurred_at": "2026-10-19T00:00:00Z",
+      "trace_id": "trace-public",
+      "producer_version": "1.0",
+      "payload": {
+        "review_id": "00000000-0000-4000-8000-000000000092",
+        "decision": "APPROVE",
+        "evidence_bundle_id": "00000000-0000-4000-8000-000000000010"
+      },
+      "stream_scope": "RESEARCH",
+      "stream_id": "00000000-0000-4000-8000-000000000003"
+    }
+  ],
+  "invalid": [
+    {
+      "document": {
+        "event_id": "00000000-0000-4000-8000-000000000020",
+        "schema_version": "2.0",
+        "event_type": "ValidationCompleted",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "research_version_id": "00000000-0000-4000-8000-000000000003",
+        "run_id": "00000000-0000-4000-8000-000000000004",
+        "sequence": 2,
+        "occurred_at": "2026-10-19T00:00:00Z",
+        "trace_id": "trace-public",
+        "producer_version": "1.0",
+        "payload": {
+          "status": "RUNNING",
+          "attempt_id": "00000000-0000-4000-8000-000000000021",
+          "generation": 1
+        },
+        "stream_scope": "RUN",
+        "stream_id": "00000000-0000-4000-8000-000000000004"
+      },
+      "reason": "obsolete event name"
+    },
+    {
+      "document": {
+        "event_id": "00000000-0000-4000-8000-000000000020",
+        "schema_version": "2.0",
+        "event_type": "RunStarted",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "research_version_id": "00000000-0000-4000-8000-000000000003",
+        "run_id": "00000000-0000-4000-8000-000000000004",
+        "sequence": 2,
+        "occurred_at": "2026-10-19T00:00:00Z",
+        "trace_id": "trace-public",
+        "producer_version": "1.0",
+        "payload": {
+          "status": "RUNNING",
+          "generation": 1
+        },
+        "stream_scope": "RUN",
+        "stream_id": "00000000-0000-4000-8000-000000000004"
+      },
+      "reason": "missing attempt_id"
+    },
+    {
+      "document": {
+        "event_id": "00000000-0000-4000-8000-000000000091",
+        "schema_version": "2.0",
+        "event_type": "ReviewRecorded",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "research_version_id": "00000000-0000-4000-8000-000000000003",
+        "run_id": "00000000-0000-4000-8000-000000000004",
+        "sequence": 3,
+        "occurred_at": "2026-10-19T00:00:00Z",
+        "trace_id": "trace-public",
+        "producer_version": "1.0",
+        "payload": {
+          "review_id": "00000000-0000-4000-8000-000000000092",
+          "decision": "APPROVE",
+          "evidence_bundle_id": "00000000-0000-4000-8000-000000000010"
+        },
+        "stream_scope": "RUN",
+        "stream_id": "00000000-0000-4000-8000-000000000004"
+      },
+      "reason": "review cannot append to closed run stream"
+    }
+  ]
+}
