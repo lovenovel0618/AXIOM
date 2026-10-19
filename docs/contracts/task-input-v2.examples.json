@@ -55,7 +55,8 @@
         "split_role": "FINAL_TEST",
         "observation_split_id": "00000000-0000-4000-8000-000000000040",
         "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
-        "submission_id": "00000000-0000-4000-8000-000000000065"
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9"
       }
     },
     {
@@ -92,7 +93,8 @@
                 0,
                 0,
                 0
-              ]
+              ],
+              "source_column": "x"
             }
           ],
           "target": {
@@ -105,7 +107,8 @@
               0,
               0,
               0
-            ]
+            ],
+            "source_column": "y"
           },
           "units_confirmed": true,
           "time_ordered": false,
@@ -161,7 +164,22 @@
             "lower_closed": true,
             "upper_closed": true
           }
-        ]
+        ],
+        "evaluation_policy": {
+          "policy_version": "1.0",
+          "metric_version": "2.0",
+          "error_model": "ABSOLUTE_BOUND",
+          "absolute_error_bound": "0.001",
+          "comparison_method": "IID_PAIRED_BOOTSTRAP",
+          "bootstrap_replicates": 2000,
+          "bootstrap_seed": 42,
+          "block_method": null,
+          "block_length": null,
+          "practical_scale_override": null,
+          "practical_margin_ratio": "0.01",
+          "baseline": "ZERO",
+          "practical_scale_reason": null
+        }
       }
     },
     {
@@ -220,7 +238,8 @@
           "split_role": "FINAL_TEST",
           "observation_split_id": "00000000-0000-4000-8000-000000000040",
           "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
-          "submission_id": null
+          "submission_id": null,
+          "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9"
         }
       },
       "reason": "final evaluation requires frozen submission"

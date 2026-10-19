@@ -1,6 +1,6 @@
 # 43｜資料庫ERD與關係約束
 
-> AXIOM v2.5 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.6 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-20
 
 ## 權威關係圖
 
@@ -123,4 +123,10 @@ SealedObservationMembership保存每個SealedTest的final_observation_tokens／f
 | AC-43-06 | 不同run_id寫同一final結果或引用非包成員 | 最終partial unique／複合FK拒絕，無第二份有效結果 |
 | AC-43-07 | 改訓練列／重排原檔／換容器後預留相同或部分final觀測 | 觀測ledger命中；不同提交不可重新取得盲測資格 |
 
-全域鎖順序統一為root→既有ancestor／run（深度序）→SealedTest→ExposureLedger（token_kind/token排序）→FinalEvaluationSlot→BudgetAccount；沒有該資源時略過，不能持帳本鎖再回頭取曝光／槽位鎖。原AX-38的root→ancestor/run→budget順序在此細化，取消與純計量不反向取其他鎖。
+全域鎖順序統一為root→既有ancestor／run（深度序）→SealedTest→ExposureLedger（token_kind/token排序）→FinalEvaluationSlot→ResearchBudgetAccount→root BudgetAccount；沒有該資源時略過，不能持帳本鎖再回頭取曝光／槽位鎖。原AX-38的root→ancestor/run→budget順序在此細化，取消與純計量不反向取其他鎖。
+
+## v2.6 累計預算與政策關係
+
+ResearchBudgetAccount以unique(tenant_id,research_version_id)一對一連ResearchVersion；root BudgetAccount／RunRecord的research_budget_account_id為同租戶FK，PROFILE／SEARCH／FIT／VALIDATE必非null且對應同研究版本，INGEST／REVOKE必null。預留及用量明細唯一鍵同時保護兩層投影，根額度與研究額度不能各自在獨立交易扣帳。先root／ancestor等控制鎖、再研究帳本、最後root帳本；舊「最後BudgetAccount」敘述均以此細化順序為準。
+
+ResearchVersion的evaluation_policy、hash及SemanticProfile.source_column不可變。ValidationRun／FrozenSubmission的evaluation_policy_hash必與研究相同；最終結果槽位仍以submission／frozen candidate／metric唯一，因submission已固定policy hash，不以新policy繞過舊槽位。ExposureJournal與應用DB不是共同交易，保守先記intent後更新DB的復原條件依AX-27，不只備份ExposureLedger資料表。

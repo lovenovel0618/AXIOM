@@ -1,6 +1,6 @@
 # Docker 本地架設指南
 
-> AXIOM | 整合基線 v2.3 | 2026-10-19 | 文件 ID AX-41｜文件：`03-架構/41-Docker本地架設指南.md`
+> AXIOM v2.6 設計規格｜文件 ID AX-41｜狀態：待實作、待驗收｜2026-10-20
 
 ## 文件目的
 
@@ -11,10 +11,10 @@
 | 角色 | 平台 | Docker 執行方式 | 映像架構 | GPU |
 |---|---|---|---|---|
 | 開發 | macOS（Apple Silicon／Intel）+ Docker Desktop | Linux 虛擬機 | arm64（必要時 amd64） | 無直通 |
-| 架設 | Windows 11 + WSL2（Linux 發行版）+ Docker | Linux 原生核心 | amd64 | 依宿主是否具 NVIDIA GPU，待確認 |
+| 架設 | Windows 11 + WSL2（Linux 發行版）+ Docker | Linux 原生核心 | amd64 | 依宿主是否具 NVIDIA GPU，待確認（D-02） |
 
 - 兩環境共用同一份 Compose 定義與 `.env` 契約，平台差異僅以覆寫檔表達（見「跨環境一致性」）。
-- 僅涵蓋開發與架設環境；正式對外部署、憑證與雲端受管服務見 [08-部署與運算資源規劃](<08-部署與運算資源規劃.md>)。
+- 僅涵蓋開發與架設環境；正式對外部署、憑證與雲端受管服務見 [08-部署與運算資源規劃](<08-部署與運算資源規劃.md>)，未決前依 D-09 僅限本機 loopback。
 - 本環境為**可重建**：狀態可由 Compose 定義與遷移流程還原，不作為唯一永久資料來源。
 
 ## 容器拓樸
@@ -113,7 +113,7 @@ flowchart TB
 - **換行與權限**：由 Windows 側編輯的檔案可能帶入 CRLF，導致容器內 shell 腳本執行失敗；需以 `.gitattributes` 或 `core.autocrlf` 統一為 LF，並確認掛載檔案的執行權限。
 - **資源上限**：WSL2 預設僅使用宿主部分記憶體與 CPU，需以 `%UserProfile%\.wslconfig` 調整 `memory`／`processors`／`swap` 後重啟 WSL；實際門檻依 P0 基準實測設定。
 - **埠存取**：WSL2 支援 localhost 轉發，Windows 端以 `localhost:8080` 存取服務；若需對外網段開放，須另行設定防火牆與連接埠轉發，且不符「宿主埠僅供本機除錯」原則。
-- **GPU**：若 Windows 宿主具備 NVIDIA GPU 並安裝對應 WSL 驅動，可直通供 Ollama 或訓練 worker 使用，此時可啟用 gpu 佇列；若無，則比照 macOS 走 CPU 並標示為慢速。**此項待確認**，未確認前不得宣稱 GPU 可用。
+- **GPU**：若 Windows 宿主具備 NVIDIA GPU 並安裝對應 WSL 驅動，可直通供 Ollama 或訓練 worker 使用，此時可啟用 gpu 佇列；若無，則比照 macOS 走 CPU 並標示為慢速。**此項待確認（D-02）**，未確認前不得宣稱 GPU 可用。
 - **映像架構**：本案 WSL2 架設基線暫定 amd64；啟動前須檢查宿主與映像架構。與 macOS 的 arm64 並存時，映像需為多架構（以 buildx 建置）或以 amd64 為基準，避免兩環境行為不一致。
 - **生命週期**：宿主休眠或 `wsl --shutdown` 會終止容器，重啟後須確認服務健康與任務租約回收；時間同步與租約過期回收需實測；租約判定以 DB 時間為準。
 - **備份**：資料卷位於 WSL2 虛擬磁碟內，需定期匯出至 Windows 側或外部儲存，並演練還原。
@@ -154,7 +154,7 @@ proof／sandbox 採無網路模式時，不可直接連接 PostgreSQL、Redis �
 
 ## 不在此文件範圍
 
-- 正式 HTTPS 憑證、WAF 與對外網域。
+- 正式 HTTPS 憑證、WAF 與對外網域（D-09）。
 - 雲端受管服務（RDS／S3／ElastiCache）替換方案。
 - Kubernetes 或多節點編排。
 - CI 執行環境與安全掃描管線（見 `03-架構/08`）。
@@ -189,3 +189,5 @@ minio-init 可用 root 憑證建 bucket／service policy，但 web、worker 只�
 ## v2.3 控制面一致性
 
 可信supervisor可連DB／MinIO；搜尋、擬合與proof sandbox一律無網路及憑證，不把可信worker與sandbox畫成同一節點。根取消須追蹤遠端派送與停止確認，不能只停止本機容器後標已完成。公開API僅回Run/Attempt DTO，內部RunRecord／AttemptRecord不作前端下載內容。
+
+封存Evaluator另有曝光恢復能力閘門：ExposureRecoveryState未VERIFIED、獨立journal不可用或金鑰缺失時，不領final任務、不開labels權限；一般fit/development的可用性依既定服務健康檢查，不以禁止final代表整套本地規則皆不可用。正式blind的恢復演練依AX-27。

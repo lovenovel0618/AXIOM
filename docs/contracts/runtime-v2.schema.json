@@ -16,6 +16,12 @@
     },
     {
       "$ref": "#/$defs/FinalEvaluationSlot"
+    },
+    {
+      "$ref": "#/$defs/ResearchBudgetAccount"
+    },
+    {
+      "$ref": "#/$defs/ExposureRecoveryState"
     }
   ],
   "$defs": {
@@ -40,11 +46,17 @@
                 },
                 "minItems": 7,
                 "maxItems": 7
+              },
+              "source_column": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
               }
             },
             "required": [
               "name",
-              "unit"
+              "unit",
+              "source_column"
             ],
             "additionalProperties": false
           },
@@ -67,11 +79,17 @@
               },
               "minItems": 7,
               "maxItems": 7
+            },
+            "source_column": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
             }
           },
           "required": [
             "name",
-            "unit"
+            "unit",
+            "source_column"
           ],
           "additionalProperties": false
         },
@@ -387,6 +405,16 @@
         },
         "domain": {
           "$ref": "#/$defs/ResearchDomain"
+        },
+        "evaluation_policy": {
+          "$ref": "#/$defs/EvaluationPolicy"
+        },
+        "evaluation_policy_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "research_budget_usage": {
+          "$ref": "#/$defs/BudgetUsage"
         }
       },
       "required": [
@@ -410,7 +438,10 @@
         "evidence_bundle_ids",
         "quality_report_id",
         "refit_policy_artifact_id",
-        "domain"
+        "domain",
+        "evaluation_policy",
+        "evaluation_policy_hash",
+        "research_budget_usage"
       ],
       "additionalProperties": false
     },
@@ -548,7 +579,8 @@
                 "AMBIGUOUS",
                 "USER_CANCELLED",
                 "COMPLETED",
-                "DEPENDENCY_FAILURE"
+                "DEPENDENCY_FAILURE",
+                "NO_VALID_CANDIDATE"
               ]
             },
             {
@@ -627,6 +659,14 @@
             ],
             "additionalProperties": false
           }
+        },
+        "diagnostic_artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
         }
       },
       "required": [
@@ -653,7 +693,8 @@
         "is_root",
         "budget_reservations",
         "outcome_status",
-        "skipped_phases"
+        "skipped_phases",
+        "diagnostic_artifact_ids"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -1183,6 +1224,10 @@
               "type": "null"
             }
           ]
+        },
+        "evaluation_policy_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         }
       },
       "required": [
@@ -1206,7 +1251,8 @@
         "observation_split_id",
         "split_role",
         "frozen_candidate_id",
-        "submission_id"
+        "submission_id",
+        "evaluation_policy_hash"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -2500,6 +2546,10 @@
             "EVALUATED",
             "FAILED"
           ]
+        },
+        "evaluation_policy_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         }
       },
       "required": [
@@ -2513,7 +2563,8 @@
         "frozen_candidate_ids",
         "metric_version",
         "snapshot_hash",
-        "status"
+        "status",
+        "evaluation_policy_hash"
       ],
       "additionalProperties": false
     },
@@ -2651,7 +2702,8 @@
                 "AMBIGUOUS",
                 "USER_CANCELLED",
                 "COMPLETED",
-                "DEPENDENCY_FAILURE"
+                "DEPENDENCY_FAILURE",
+                "NO_VALID_CANDIDATE"
               ]
             },
             {
@@ -2780,6 +2832,25 @@
             "FINAL_ONLY",
             "CLOSED"
           ]
+        },
+        "diagnostic_artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
+        },
+        "research_budget_account_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -2814,7 +2885,9 @@
         "input_artifact_id",
         "outcome_status",
         "skipped_phases",
-        "dispatch_stage"
+        "dispatch_stage",
+        "diagnostic_artifact_ids",
+        "research_budget_account_id"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -2861,6 +2934,35 @@
                 "format": "uuid"
               },
               "dataset_id": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "PROFILE",
+                  "SEARCH",
+                  "FIT",
+                  "VALIDATE"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "research_budget_account_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "research_budget_account_id": {
                 "type": "null"
               }
             }
@@ -3078,6 +3180,17 @@
             "CLOSING",
             "CLOSED"
           ]
+        },
+        "research_budget_account_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -3090,7 +3203,8 @@
         "limit",
         "usage",
         "reservations",
-        "status"
+        "status",
+        "research_budget_account_id"
       ],
       "additionalProperties": false
     },
@@ -3282,6 +3396,346 @@
           }
         }
       ]
+    },
+    "EvaluationPolicy": {
+      "type": "object",
+      "properties": {
+        "policy_version": {
+          "const": "1.0"
+        },
+        "metric_version": {
+          "const": "2.0"
+        },
+        "error_model": {
+          "enum": [
+            "EXACT",
+            "ABSOLUTE_BOUND",
+            "UNSPECIFIED"
+          ]
+        },
+        "absolute_error_bound": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "comparison_method": {
+          "enum": [
+            "IID_PAIRED_BOOTSTRAP",
+            "BLOCK_BOOTSTRAP",
+            "NONE"
+          ]
+        },
+        "bootstrap_replicates": {
+          "const": 2000
+        },
+        "bootstrap_seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "block_method": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "MOVING_BLOCK",
+            null
+          ]
+        },
+        "block_length": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "practical_scale_override": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "practical_margin_ratio": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+        },
+        "baseline": {
+          "enum": [
+            "ZERO",
+            "FIT_MEAN"
+          ]
+        },
+        "practical_scale_reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "policy_version",
+        "metric_version",
+        "error_model",
+        "absolute_error_bound",
+        "comparison_method",
+        "bootstrap_replicates",
+        "bootstrap_seed",
+        "block_method",
+        "block_length",
+        "practical_scale_override",
+        "practical_margin_ratio",
+        "baseline",
+        "practical_scale_reason"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "error_model": {
+                "const": "ABSOLUTE_BOUND"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "absolute_error_bound": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "absolute_error_bound": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "comparison_method": {
+                "const": "BLOCK_BOOTSTRAP"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "block_method": {
+                "const": "MOVING_BLOCK"
+              },
+              "block_length": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "block_method": {
+                "type": "null"
+              },
+              "block_length": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "practical_scale_override": {
+                "type": "null"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "practical_scale_reason": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "practical_scale_reason": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ResearchBudgetAccount": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "2.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "limit": {
+          "$ref": "#/$defs/BudgetLimit"
+        },
+        "usage": {
+          "$ref": "#/$defs/BudgetUsage"
+        },
+        "reservations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BudgetReservation"
+          },
+          "uniqueItems": true
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "OPEN",
+            "CLOSING",
+            "CLOSED"
+          ]
+        },
+        "kind": {
+          "const": "ResearchBudgetAccount"
+        },
+        "research_version_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "limit",
+        "usage",
+        "reservations",
+        "status",
+        "kind",
+        "research_version_id"
+      ],
+      "additionalProperties": false
+    },
+    "ExposureRecoveryState": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "ExposureRecoveryState"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "2.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "authority_epoch": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "backup_high_watermark": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "authority_high_watermark": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "replayed_high_watermark": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "journal_verified": {
+          "type": "boolean"
+        },
+        "key_versions_verified": {
+          "type": "boolean"
+        },
+        "status": {
+          "enum": [
+            "VERIFIED",
+            "QUARANTINED"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "authority_epoch",
+        "backup_high_watermark",
+        "authority_high_watermark",
+        "replayed_high_watermark",
+        "journal_verified",
+        "key_versions_verified",
+        "status"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "VERIFIED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "journal_verified": {
+                "const": true
+              },
+              "key_versions_verified": {
+                "const": true
+              },
+              "authority_high_watermark": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      ]
     }
-  }
+  },
+  "x-axiom-draft-revision": "2.6"
 }

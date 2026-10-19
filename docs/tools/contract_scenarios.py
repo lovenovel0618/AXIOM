@@ -27,6 +27,9 @@ def canonical_hash(value: object) -> str:
 
 
 def freeze_decision(c: JsonObject) -> str:
+    policy_result = freeze_policy_decision(c)
+    if policy_result != "ACCEPT":
+        return policy_result
     f, fit, eq = c["frozen_candidate"], c["fit"], c["equation"]
     candidate, sub = c["candidate"], c["submission"]
     if f["candidate_id"] != candidate["id"] or f["fit_run_id"] != fit["id"] or fit["id"] not in candidate["fit_run_ids"]:
@@ -43,7 +46,8 @@ def freeze_decision(c: JsonObject) -> str:
     if set(f["parameters"]) != {p["name"] for p in eq["dsl"]["parameters"]}:
         return "BINDING_MISMATCH"
     payload = {"research_version_id": c["research_version"]["id"], "sealed_test_id": sub["sealed_test_id"],
-               "metric_version": sub["metric_version"], "frozen_candidates": [f]}
+               "metric_version": sub["metric_version"], "evaluation_policy_hash": sub["evaluation_policy_hash"],
+               "frozen_candidates": [f]}
     if sub["snapshot_hash"] != canonical_hash(payload):
         return "SNAPSHOT_MISMATCH"
     if sub["frozen_candidate_ids"] != [f["id"]] or f["development_rank"] != candidate["development_rank"]:
@@ -401,7 +405,108 @@ def cursor_decision(scenario: Scenario) -> str:
     return "ACCEPT"
 
 
+def freeze_policy_decision(context: JsonObject) -> str:
+    version = context["research_version"]
+    policy_hash = canonical_hash(version["evaluation_policy"])
+    if version["evaluation_policy_hash"] != policy_hash:
+        return "EVALUATION_POLICY_MISMATCH"
+    if context["submission"]["evaluation_policy_hash"] != policy_hash:
+        return "EVALUATION_POLICY_MISMATCH"
+    return "ACCEPT"
+
+
+def exposure_recovery_decision(scenario: Scenario) -> str:
+    state = scenario.case["recovery"]
+    if not state["journal_verified"] or not state["key_versions_verified"]:
+        return "EXPOSURE_RECOVERY_BLOCKED"
+    authoritative = state["authority_high_watermark"]
+    if authoritative is None or state["replayed_high_watermark"] != authoritative:
+        return "EXPOSURE_RECOVERY_BLOCKED"
+    if state["backup_high_watermark"] > authoritative:
+        return "EXPOSURE_RECOVERY_BLOCKED"
+    return "ACCEPT" if state["status"] == "VERIFIED" else "EXPOSURE_RECOVERY_BLOCKED"
+
+
+def empty_search_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if case["infrastructure_failed"]:
+        return "FAILED"
+    if case["eligible_candidates"] == 0:
+        return "SUCCEEDED:INSUFFICIENT_EVIDENCE:NO_VALID_CANDIDATE:REVIEW"
+    if not case["final_budget_available"]:
+        return "SUCCEEDED:INSUFFICIENT_EVIDENCE:BUDGET_EXHAUSTED:REVIEW"
+    return "FREEZE_AND_EVALUATE"
+
+
+def policy_numbers_valid(policy: JsonObject) -> bool:
+    if not 0 < Fraction(policy["practical_margin_ratio"]) <= 1:
+        return False
+    override = policy["practical_scale_override"]
+    if override is not None and Fraction(override) <= 0:
+        return False
+    if policy["error_model"] == "ABSOLUTE_BOUND":
+        return Fraction(policy["absolute_error_bound"]) > 0
+    return True
+
+
+def bootstrap_policy_valid(case: JsonObject, policy: JsonObject) -> bool:
+    if case.get("grouped_rows"):
+        return policy["comparison_method"] == "NONE"
+    if case["time_ordered"] and policy["comparison_method"] == "IID_PAIRED_BOOTSTRAP":
+        return False
+    if policy["comparison_method"] == "BLOCK_BOOTSTRAP":
+        return 1 <= policy["block_length"] < case["development_count"]
+    return True
+
+
+def evaluation_policy_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    policy = case["policy"]
+    if not policy_numbers_valid(policy) or not bootstrap_policy_valid(case, policy):
+        return "EVALUATION_POLICY_INVALID"
+    if case["fit_scale"] == 0 and policy["practical_scale_override"] is None:
+        return "EVALUATION_POLICY_INVALID"
+    if policy["error_model"] == "UNSPECIFIED" or policy["comparison_method"] == "NONE":
+        return "INSUFFICIENT_EVIDENCE"
+    return "ACCEPT"
+
+
+def column_binding_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    profile = case["semantic_profile"]
+    bindings = profile["inputs"] + [profile["target"]]
+    aliases = [item["name"] for item in bindings]
+    if len(aliases) != len(set(aliases)):
+        return "SOURCE_COLUMN_CONFLICT"
+    columns = [item["source_column"] for item in bindings]
+    if any(column not in case["dataset_columns"] for column in columns):
+        return "SOURCE_COLUMN_NOT_FOUND"
+    if len(columns) != len(set(columns)):
+        return "SOURCE_COLUMN_CONFLICT"
+    return "ACCEPT"
+
+
+def research_budget_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    research_used, root_used = case["research_used"], case["root_used"]
+    if case.get("usage_event_seen"):
+        return "ALREADY_ACCOUNTED"
+    for allocation in case["allocations"]:
+        if research_used + allocation > case["research_limit"]:
+            return "RESEARCH_BUDGET_EXHAUSTED"
+        if root_used + allocation > case["root_limit"]:
+            return "RUN_BUDGET_EXHAUSTED"
+        research_used += allocation
+        root_used += allocation
+    return "ACCEPT"
+
+
 CASE_HANDLERS: dict[str, Callable[[Scenario], str]] = {
+    "exposure_recovery": exposure_recovery_decision,
+    "empty_search": empty_search_decision,
+    "evaluation_policy": evaluation_policy_decision,
+    "column_binding": column_binding_decision,
+    "research_budget": research_budget_decision,
     "access": access_decision,
     "final_slot": final_slot_decision,
     "domain": domain_decision,

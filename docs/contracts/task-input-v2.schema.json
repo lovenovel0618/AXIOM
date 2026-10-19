@@ -128,13 +128,17 @@
               },
               "domain": {
                 "$ref": "research-v2.schema.json#/$defs/ResearchDomain"
+              },
+              "evaluation_policy": {
+                "$ref": "research-v2.schema.json#/$defs/EvaluationPolicy"
               }
             },
             "required": [
               "dataset_version_id",
               "semantic_profile",
               "observation_split",
-              "domain"
+              "domain",
+              "evaluation_policy"
             ],
             "additionalProperties": false
           },
@@ -363,6 +367,10 @@
                     "type": "null"
                   }
                 ]
+              },
+              "evaluation_policy_hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
               }
             },
             "required": [
@@ -370,7 +378,8 @@
               "split_role",
               "observation_split_id",
               "frozen_candidate_id",
-              "submission_id"
+              "submission_id",
+              "evaluation_policy_hash"
             ],
             "additionalProperties": false,
             "allOf": [
@@ -451,5 +460,6 @@
         }
       }
     }
-  ]
+  ],
+  "x-axiom-draft-revision": "2.6"
 }

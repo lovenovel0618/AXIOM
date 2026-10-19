@@ -1,6 +1,6 @@
 # 21｜API與任務契約
 
-> AXIOM v2.5 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.6 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-20
 
 ## 契約範圍與認證
 
@@ -25,11 +25,11 @@ MVP API 前綴 /api/v2，JSON 使用 UTF-8，傳輸使用 HTTPS（本機開發�
 | GET /frozen-submissions/{id} | reader | 200 FrozenSubmission，僅授權範圍的提交資訊 |
 | GET /frozen-candidates/{id} | reader | 200 FrozenCandidate，固定FitRun與參數 |
 | POST /researches | name；researcher | 201 Research 容器，與執行分離 |
-| POST /researches/{id}/versions | dataset_version_id、semantic_profile、observation_split、domain、budget、purpose、可選refit_policy；editor | 201 DRAFT ResearchVersion，內容固定，新修改另建版本 |
+| POST /researches/{id}/versions | dataset_version_id、semantic_profile、observation_split、domain、evaluation_policy、budget、purpose、可選refit_policy；editor | 201 DRAFT ResearchVersion，內容固定，新修改另建版本 |
 | GET /research-versions/{id} | reader | 200 ResearchVersion+X-Control-Revision，取得狀態轉移前置版本 |
 | GET /evidence-bundles/{id} | reader | 200 EvidenceBundle+X-Control-Revision，取得撤銷前置版本 |
-| POST /research-versions/{id}/validate | {}；editor | 202 PROFILE run，合法時版本 READY，否則 DRAFT+品質報告 |
-| POST /research-versions/{id}/runs | type=SEARCH、seed；editor | 202 QUEUED run，須 READY；原子預留預算 |
+| POST /research-versions/{id}/validate | 可選run_budget；editor | 202 PROFILE run，合法時版本 READY，否則 DRAFT+品質報告 |
+| POST /research-versions/{id}/runs | type=SEARCH、seed、可選run_budget；editor | 202 QUEUED run，須 READY；原子預留預算 |
 | GET /runs/{id} | reader | 200 Run+X-Control-Revision，包括 status、phase、attempt、stop_reason、成本與有效產物引用 |
 | POST /runs/{id}/cancel | {}；editor | 202 CANCEL_REQUESTED 或已確認 CANCELLED；終態／子run 409 |
 | GET /runs/{id}/events | Last-Event-ID；reader | 200 text/event-stream；只輸出該 run 的授權事件 |
@@ -147,3 +147,14 @@ CreateResearchVersion.domain為必填ResearchDomain，與DSL domain相同的有�
 |---|---|---|
 | AC-21-11 | reader沿candidate／bundle／artifact引用尋找final內容 | 每個端點再查封存政策，不能以間接引用繞過404 |
 | AC-21-12 | 建立研究缺domain、反向界或變數名不符 | 422；合法domain固定保存並由PROFILE／插件驗證 |
+
+## v2.6 研究輸入與不足結束
+
+CreateResearchVersion必填evaluation_policy；semantic_profile.inputs／target必填source_column。未知來源欄／同欄角色衝突回422 SOURCE_COLUMN_NOT_FOUND／SOURCE_COLUMN_CONFLICT，政策不合法回422 EVALUATION_POLICY_INVALID。UNSPECIFIED誤差模型與NONE比較方法可探索但不得形成SUPPORTED。PROFILE／SEARCH的可選run_budget僅限制root，不能重置ResearchVersion累計；研究／root超額各回429 RESEARCH_BUDGET_EXHAUSTED／RUN_BUDGET_EXHAUSTED，狀態及預留保持原子。
+
+Run的diagnostic_artifact_ids供零候選／預算不足報告讀取，沿既有Artifact端點授權；SUCCEEDED不表示數學受支持。根outcome=INSUFFICIENT_EVIDENCE、版本REVIEW但無有效bundle時，核准回409 INVALID_TRANSITION，UI不提供無證據發布。新政策／映射需新研究版本；跨版本重用final仍受曝光ledger限制。內部政策hash不一致回EVALUATION_POLICY_MISMATCH，恢復曝光資格未驗證回EXPOSURE_RECOVERY_BLOCKED，不能重試繞過。
+
+| ID | 情境 | 預期 |
+|---|---|---|
+| AC-21-13 | 建立UTF-8欄位映射與完整evaluation_policy | 正確保存並可重開；修改需新版本 |
+| AC-21-14 | 無證據不足報告嘗試核准；或新root超研究預算 | 前者409，後者429；無發布或新預留副作用 |

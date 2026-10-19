@@ -22,7 +22,8 @@
               0,
               0,
               0
-            ]
+            ],
+            "source_column": "x"
           }
         ],
         "target": {
@@ -35,7 +36,8 @@
             0,
             0,
             0
-          ]
+          ],
+          "source_column": "y"
         },
         "units_confirmed": true,
         "time_ordered": false,
@@ -111,7 +113,32 @@
           "lower_closed": true,
           "upper_closed": true
         }
-      ]
+      ],
+      "evaluation_policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0.001",
+        "comparison_method": "IID_PAIRED_BOOTSTRAP",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": null,
+        "block_length": null,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9",
+      "research_budget_usage": {
+        "cpu_seconds": 0,
+        "gpu_seconds": 0,
+        "tokens": 0,
+        "peak_memory_bytes": 0,
+        "elapsed_wall_seconds": 0,
+        "candidates_generated": 0,
+        "candidates_accepted": 0
+      }
     },
     "equation": {
       "kind": "EquationVersion",
@@ -281,8 +308,9 @@
         "00000000-0000-4000-8000-000000000061"
       ],
       "metric_version": "2.0",
-      "snapshot_hash": "b90aa7071f074b292c76a2416d28a985aad45ccc95a45c29d6007414f22e7449",
-      "status": "FROZEN"
+      "snapshot_hash": "bad4f5756e8c6bae5a61a5aa8f2fc035e99daac9c37f6545a9bfa5aadc3fe5a2",
+      "status": "FROZEN",
+      "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9"
     },
     "benchmark_partition": {
       "kind": "BenchmarkPartition",
@@ -350,7 +378,9 @@
       "input_artifact_id": "00000000-0000-4000-8000-000000000090",
       "outcome_status": null,
       "skipped_phases": [],
-      "dispatch_stage": "SEARCH_OPEN"
+      "dispatch_stage": "SEARCH_OPEN",
+      "diagnostic_artifact_ids": [],
+      "research_budget_account_id": "00000000-0000-4000-8000-000000000110"
     },
     "child_record": {
       "kind": "RunRecord",
@@ -393,7 +423,9 @@
       "input_artifact_id": "00000000-0000-4000-8000-000000000091",
       "outcome_status": null,
       "skipped_phases": [],
-      "dispatch_stage": "SEARCH_OPEN"
+      "dispatch_stage": "SEARCH_OPEN",
+      "diagnostic_artifact_ids": [],
+      "research_budget_account_id": "00000000-0000-4000-8000-000000000110"
     },
     "attempt_record": {
       "kind": "AttemptRecord",
@@ -2795,6 +2827,656 @@
         ]
       },
       "expected": "BLIND_ELIGIBILITY_DENIED"
+    },
+    {
+      "id": "CF-96",
+      "check": "exposure_recovery",
+      "expected": "ACCEPT",
+      "recovery": {
+        "kind": "ExposureRecoveryState",
+        "id": "00000000-0000-4000-8000-000000000111",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "authority_epoch": "00000000-0000-4000-8000-000000000112",
+        "backup_high_watermark": 10,
+        "authority_high_watermark": 20,
+        "replayed_high_watermark": 20,
+        "journal_verified": true,
+        "key_versions_verified": true,
+        "status": "VERIFIED"
+      }
+    },
+    {
+      "id": "CF-97",
+      "check": "exposure_recovery",
+      "expected": "EXPOSURE_RECOVERY_BLOCKED",
+      "recovery": {
+        "kind": "ExposureRecoveryState",
+        "id": "00000000-0000-4000-8000-000000000111",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "authority_epoch": "00000000-0000-4000-8000-000000000112",
+        "backup_high_watermark": 10,
+        "authority_high_watermark": 20,
+        "replayed_high_watermark": 10,
+        "journal_verified": true,
+        "key_versions_verified": true,
+        "status": "VERIFIED"
+      }
+    },
+    {
+      "id": "CF-98",
+      "check": "exposure_recovery",
+      "expected": "EXPOSURE_RECOVERY_BLOCKED",
+      "recovery": {
+        "kind": "ExposureRecoveryState",
+        "id": "00000000-0000-4000-8000-000000000111",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "authority_epoch": "00000000-0000-4000-8000-000000000112",
+        "backup_high_watermark": 10,
+        "authority_high_watermark": null,
+        "replayed_high_watermark": 20,
+        "journal_verified": true,
+        "key_versions_verified": true,
+        "status": "QUARANTINED"
+      }
+    },
+    {
+      "id": "CF-99",
+      "check": "exposure_recovery",
+      "expected": "EXPOSURE_RECOVERY_BLOCKED",
+      "recovery": {
+        "kind": "ExposureRecoveryState",
+        "id": "00000000-0000-4000-8000-000000000111",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "authority_epoch": "00000000-0000-4000-8000-000000000112",
+        "backup_high_watermark": 10,
+        "authority_high_watermark": 20,
+        "replayed_high_watermark": 20,
+        "journal_verified": false,
+        "key_versions_verified": true,
+        "status": "QUARANTINED"
+      }
+    },
+    {
+      "id": "CF-100",
+      "check": "exposure_recovery",
+      "expected": "EXPOSURE_RECOVERY_BLOCKED",
+      "recovery": {
+        "kind": "ExposureRecoveryState",
+        "id": "00000000-0000-4000-8000-000000000111",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "authority_epoch": "00000000-0000-4000-8000-000000000112",
+        "backup_high_watermark": 10,
+        "authority_high_watermark": 20,
+        "replayed_high_watermark": 20,
+        "journal_verified": true,
+        "key_versions_verified": false,
+        "status": "QUARANTINED"
+      }
+    },
+    {
+      "id": "CF-101",
+      "check": "empty_search",
+      "expected": "SUCCEEDED:INSUFFICIENT_EVIDENCE:NO_VALID_CANDIDATE:REVIEW",
+      "eligible_candidates": 0,
+      "final_budget_available": true,
+      "infrastructure_failed": false
+    },
+    {
+      "id": "CF-102",
+      "check": "empty_search",
+      "expected": "SUCCEEDED:INSUFFICIENT_EVIDENCE:BUDGET_EXHAUSTED:REVIEW",
+      "eligible_candidates": 2,
+      "final_budget_available": false,
+      "infrastructure_failed": false
+    },
+    {
+      "id": "CF-103",
+      "check": "empty_search",
+      "expected": "FREEZE_AND_EVALUATE",
+      "eligible_candidates": 2,
+      "final_budget_available": true,
+      "infrastructure_failed": false
+    },
+    {
+      "id": "CF-104",
+      "check": "empty_search",
+      "expected": "FAILED",
+      "eligible_candidates": 0,
+      "final_budget_available": true,
+      "infrastructure_failed": true
+    },
+    {
+      "id": "CF-105",
+      "check": "evaluation_policy",
+      "expected": "ACCEPT",
+      "policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0.001",
+        "comparison_method": "IID_PAIRED_BOOTSTRAP",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": null,
+        "block_length": null,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "time_ordered": false,
+      "fit_scale": 1,
+      "development_count": 6
+    },
+    {
+      "id": "CF-106",
+      "check": "evaluation_policy",
+      "expected": "INSUFFICIENT_EVIDENCE",
+      "policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "UNSPECIFIED",
+        "absolute_error_bound": null,
+        "comparison_method": "IID_PAIRED_BOOTSTRAP",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": null,
+        "block_length": null,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "time_ordered": false,
+      "fit_scale": 1,
+      "development_count": 6
+    },
+    {
+      "id": "CF-107",
+      "check": "evaluation_policy",
+      "expected": "EVALUATION_POLICY_INVALID",
+      "policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0.001",
+        "comparison_method": "IID_PAIRED_BOOTSTRAP",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": null,
+        "block_length": null,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "time_ordered": true,
+      "fit_scale": 1,
+      "development_count": 6
+    },
+    {
+      "id": "CF-108",
+      "check": "evaluation_policy",
+      "expected": "EVALUATION_POLICY_INVALID",
+      "policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0",
+        "comparison_method": "IID_PAIRED_BOOTSTRAP",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": null,
+        "block_length": null,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "time_ordered": false,
+      "fit_scale": 1,
+      "development_count": 6
+    },
+    {
+      "id": "CF-109",
+      "check": "evaluation_policy",
+      "expected": "EVALUATION_POLICY_INVALID",
+      "policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0.001",
+        "comparison_method": "IID_PAIRED_BOOTSTRAP",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": null,
+        "block_length": null,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "time_ordered": false,
+      "fit_scale": 0,
+      "development_count": 6
+    },
+    {
+      "id": "CF-110",
+      "check": "evaluation_policy",
+      "expected": "ACCEPT",
+      "policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0.001",
+        "comparison_method": "IID_PAIRED_BOOTSTRAP",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": null,
+        "block_length": null,
+        "practical_scale_override": "1",
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": "預註冊量測尺度"
+      },
+      "time_ordered": false,
+      "fit_scale": 0,
+      "development_count": 6
+    },
+    {
+      "id": "CF-111",
+      "check": "evaluation_policy",
+      "expected": "INSUFFICIENT_EVIDENCE",
+      "policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0.001",
+        "comparison_method": "NONE",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": null,
+        "block_length": null,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "time_ordered": false,
+      "fit_scale": 1,
+      "development_count": 6
+    },
+    {
+      "id": "CF-112",
+      "check": "evaluation_policy",
+      "expected": "ACCEPT",
+      "policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0.001",
+        "comparison_method": "BLOCK_BOOTSTRAP",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": "MOVING_BLOCK",
+        "block_length": 2,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "time_ordered": true,
+      "fit_scale": 1,
+      "development_count": 6
+    },
+    {
+      "id": "CF-113",
+      "check": "evaluation_policy",
+      "expected": "EVALUATION_POLICY_INVALID",
+      "policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0.001",
+        "comparison_method": "BLOCK_BOOTSTRAP",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": "MOVING_BLOCK",
+        "block_length": 7,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "time_ordered": true,
+      "fit_scale": 1,
+      "development_count": 6
+    },
+    {
+      "id": "CF-114",
+      "check": "column_binding",
+      "expected": "ACCEPT",
+      "semantic_profile": {
+        "inputs": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_column": "時間（秒）"
+          }
+        ],
+        "target": {
+          "name": "y",
+          "unit": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source_column": "位移（公分）"
+        },
+        "units_confirmed": true,
+        "time_ordered": false,
+        "measurement_resolution": "0.001",
+        "resolution_reason": "公開測試設定"
+      },
+      "dataset_columns": [
+        "時間（秒）",
+        "位移（公分）"
+      ]
+    },
+    {
+      "id": "CF-115",
+      "check": "column_binding",
+      "expected": "SOURCE_COLUMN_NOT_FOUND",
+      "semantic_profile": {
+        "inputs": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_column": "時間（秒）"
+          }
+        ],
+        "target": {
+          "name": "y",
+          "unit": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source_column": "位移（公分）"
+        },
+        "units_confirmed": true,
+        "time_ordered": false,
+        "measurement_resolution": "0.001",
+        "resolution_reason": "公開測試設定"
+      },
+      "dataset_columns": [
+        "時間（秒）"
+      ]
+    },
+    {
+      "id": "CF-116",
+      "check": "column_binding",
+      "expected": "SOURCE_COLUMN_CONFLICT",
+      "semantic_profile": {
+        "inputs": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_column": "時間（秒）"
+          }
+        ],
+        "target": {
+          "name": "y",
+          "unit": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source_column": "時間（秒）"
+        },
+        "units_confirmed": true,
+        "time_ordered": false,
+        "measurement_resolution": "0.001",
+        "resolution_reason": "公開測試設定"
+      },
+      "dataset_columns": [
+        "時間（秒）",
+        "位移（公分）"
+      ]
+    },
+    {
+      "id": "CF-117",
+      "check": "research_budget",
+      "expected": "RESEARCH_BUDGET_EXHAUSTED",
+      "research_limit": 100,
+      "research_used": 60,
+      "root_used": 0,
+      "root_limit": 100,
+      "allocations": [
+        60
+      ]
+    },
+    {
+      "id": "CF-118",
+      "check": "research_budget",
+      "expected": "RUN_BUDGET_EXHAUSTED",
+      "research_limit": 100,
+      "research_used": 20,
+      "root_used": 20,
+      "root_limit": 50,
+      "allocations": [
+        40
+      ]
+    },
+    {
+      "id": "CF-119",
+      "check": "research_budget",
+      "expected": "RESEARCH_BUDGET_EXHAUSTED",
+      "research_limit": 100,
+      "research_used": 0,
+      "root_used": 0,
+      "root_limit": 200,
+      "allocations": [
+        60,
+        60
+      ]
+    },
+    {
+      "id": "CF-120",
+      "check": "research_budget",
+      "expected": "ACCEPT",
+      "research_limit": 100,
+      "research_used": 60,
+      "root_used": 0,
+      "root_limit": 40,
+      "allocations": [
+        40
+      ]
+    },
+    {
+      "id": "CF-121",
+      "check": "research_budget",
+      "expected": "ALREADY_ACCOUNTED",
+      "research_limit": 100,
+      "research_used": 60,
+      "root_used": 0,
+      "root_limit": 100,
+      "allocations": [
+        40
+      ],
+      "usage_event_seen": true
+    },
+    {
+      "id": "CF-122",
+      "check": "freeze",
+      "expected": "EVALUATION_POLICY_MISMATCH",
+      "mutations": [
+        [
+          "submission.evaluation_policy_hash",
+          "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        ]
+      ]
+    },
+    {
+      "id": "CF-123",
+      "check": "evaluation_policy",
+      "expected": "INSUFFICIENT_EVIDENCE",
+      "policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0.001",
+        "comparison_method": "NONE",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": null,
+        "block_length": null,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "time_ordered": true,
+      "fit_scale": 1,
+      "development_count": 6,
+      "grouped_rows": false
+    },
+    {
+      "id": "CF-124",
+      "check": "evaluation_policy",
+      "expected": "EVALUATION_POLICY_INVALID",
+      "policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0.001",
+        "comparison_method": "IID_PAIRED_BOOTSTRAP",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": null,
+        "block_length": null,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "time_ordered": false,
+      "fit_scale": 1,
+      "development_count": 6,
+      "grouped_rows": true
+    },
+    {
+      "id": "CF-125",
+      "check": "evaluation_policy",
+      "expected": "INSUFFICIENT_EVIDENCE",
+      "policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0.001",
+        "comparison_method": "NONE",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": null,
+        "block_length": null,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "time_ordered": false,
+      "fit_scale": 1,
+      "development_count": 6,
+      "grouped_rows": true
+    },
+    {
+      "id": "CF-126",
+      "check": "column_binding",
+      "expected": "SOURCE_COLUMN_CONFLICT",
+      "semantic_profile": {
+        "inputs": [
+          {
+            "name": "x",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_column": "時間（秒）"
+          }
+        ],
+        "target": {
+          "name": "x",
+          "unit": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "source_column": "位移（公分）"
+        },
+        "units_confirmed": true,
+        "time_ordered": false,
+        "measurement_resolution": "0.001",
+        "resolution_reason": "公開測試設定"
+      },
+      "dataset_columns": [
+        "時間（秒）",
+        "位移（公分）"
+      ]
     }
   ]
 }

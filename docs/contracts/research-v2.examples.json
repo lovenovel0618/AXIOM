@@ -20,7 +20,8 @@
               0,
               0,
               0
-            ]
+            ],
+            "source_column": "x"
           }
         ],
         "target": {
@@ -33,7 +34,8 @@
             0,
             0,
             0
-          ]
+          ],
+          "source_column": "y"
         },
         "units_confirmed": true,
         "time_ordered": false,
@@ -107,7 +109,32 @@
           "lower_closed": true,
           "upper_closed": true
         }
-      ]
+      ],
+      "evaluation_policy": {
+        "policy_version": "1.0",
+        "metric_version": "2.0",
+        "error_model": "ABSOLUTE_BOUND",
+        "absolute_error_bound": "0.001",
+        "comparison_method": "IID_PAIRED_BOOTSTRAP",
+        "bootstrap_replicates": 2000,
+        "bootstrap_seed": 42,
+        "block_method": null,
+        "block_length": null,
+        "practical_scale_override": null,
+        "practical_margin_ratio": "0.01",
+        "baseline": "ZERO",
+        "practical_scale_reason": null
+      },
+      "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9",
+      "research_budget_usage": {
+        "cpu_seconds": 0,
+        "gpu_seconds": 0,
+        "tokens": 0,
+        "peak_memory_bytes": 0,
+        "elapsed_wall_seconds": 0,
+        "candidates_generated": 0,
+        "candidates_accepted": 0
+      }
     },
     {
       "kind": "Run",
@@ -141,7 +168,8 @@
       "budget_reservations": [],
       "is_root": true,
       "outcome_status": null,
-      "skipped_phases": []
+      "skipped_phases": [],
+      "diagnostic_artifact_ids": []
     },
     {
       "kind": "ValidationRun",
@@ -167,7 +195,8 @@
       "observation_split_id": "00000000-0000-4000-8000-000000000040",
       "split_role": "FINAL_TEST",
       "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
-      "submission_id": "00000000-0000-4000-8000-000000000065"
+      "submission_id": "00000000-0000-4000-8000-000000000065",
+      "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9"
     },
     {
       "kind": "EquationVersion",
@@ -378,8 +407,9 @@
         "00000000-0000-4000-8000-000000000061"
       ],
       "metric_version": "2.0",
-      "snapshot_hash": "b90aa7071f074b292c76a2416d28a985aad45ccc95a45c29d6007414f22e7449",
-      "status": "FROZEN"
+      "snapshot_hash": "bad4f5756e8c6bae5a61a5aa8f2fc035e99daac9c37f6545a9bfa5aadc3fe5a2",
+      "status": "FROZEN",
+      "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9"
     },
     {
       "kind": "SealedTest",
@@ -497,7 +527,8 @@
           "phase": "RETRIEVING",
           "reason": "MVP_FEATURE_DISABLED"
         }
-      ]
+      ],
+      "diagnostic_artifact_ids": []
     },
     {
       "kind": "ReviewDecision",
@@ -536,7 +567,8 @@
       "observation_split_id": "00000000-0000-4000-8000-000000000040",
       "split_role": "FINAL_TEST",
       "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
-      "submission_id": "00000000-0000-4000-8000-000000000065"
+      "submission_id": "00000000-0000-4000-8000-000000000065",
+      "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9"
     },
     {
       "kind": "Artifact",
@@ -551,6 +583,43 @@
       "size_bytes": 100,
       "media_type": "application/json",
       "access_class": "SEALED_DETAIL"
+    },
+    {
+      "kind": "Run",
+      "id": "00000000-0000-4000-8000-000000000004",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "dataset_id": null,
+      "type": "SEARCH",
+      "status": "SUCCEEDED",
+      "revision": 1,
+      "seed": 42,
+      "environment_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "active_attempt_id": null,
+      "lease_generation": 0,
+      "current_event_cursor": "RUN:00000000-0000-4000-8000-000000000004:0",
+      "budget_usage": {
+        "cpu_seconds": 0,
+        "gpu_seconds": 0,
+        "tokens": 0,
+        "peak_memory_bytes": 0,
+        "elapsed_wall_seconds": 0,
+        "candidates_generated": 0,
+        "candidates_accepted": 0
+      },
+      "phase": "FINALIZING",
+      "stop_reason": "NO_VALID_CANDIDATE",
+      "evidence_bundle_ids": [],
+      "child_run_ids": [],
+      "budget_reservations": [],
+      "is_root": true,
+      "outcome_status": "INSUFFICIENT_EVIDENCE",
+      "skipped_phases": [],
+      "diagnostic_artifact_ids": [
+        "00000000-0000-4000-8000-000000000113"
+      ]
     }
   ],
   "invalid": [
@@ -587,7 +656,8 @@
         "budget_reservations": [],
         "is_root": true,
         "outcome_status": null,
-        "skipped_phases": []
+        "skipped_phases": [],
+        "diagnostic_artifact_ids": []
       },
       "reason": "VALIDATE requires equation_version_id"
     },
@@ -624,7 +694,8 @@
         "budget_reservations": [],
         "is_root": true,
         "outcome_status": null,
-        "skipped_phases": []
+        "skipped_phases": [],
+        "diagnostic_artifact_ids": []
       },
       "reason": "SEARCH requires research version"
     },
@@ -668,7 +739,8 @@
         "observation_split_id": "00000000-0000-4000-8000-000000000040",
         "split_role": "FINAL_TEST",
         "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
-        "submission_id": "00000000-0000-4000-8000-000000000065"
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9"
       },
       "reason": "null metric requires named reason"
     },
@@ -706,7 +778,8 @@
         "is_root": true,
         "cancel_requested_at": null,
         "outcome_status": null,
-        "skipped_phases": []
+        "skipped_phases": [],
+        "diagnostic_artifact_ids": []
       },
       "reason": "private runtime fields forbidden in public DTO"
     },
@@ -735,7 +808,8 @@
         "observation_split_id": "00000000-0000-4000-8000-000000000040",
         "split_role": "FINAL_TEST",
         "frozen_candidate_id": null,
-        "submission_id": "00000000-0000-4000-8000-000000000065"
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9"
       },
       "reason": "FINAL_TEST requires FrozenCandidate"
     },
@@ -847,7 +921,8 @@
         "observation_split_id": "00000000-0000-4000-8000-000000000040",
         "split_role": "FINAL_TEST",
         "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
-        "submission_id": null
+        "submission_id": null,
+        "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9"
       }
     },
     {
@@ -876,7 +951,8 @@
         "observation_split_id": "00000000-0000-4000-8000-000000000040",
         "split_role": "DEVELOPMENT",
         "frozen_candidate_id": null,
-        "submission_id": "00000000-0000-4000-8000-000000000065"
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "evaluation_policy_hash": "026222d4eb17270ed453dbc8c782be398f8f120379b52feddb402da9ef65e9e9"
       }
     },
     {

@@ -27,6 +27,15 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_NAME = "MANIFEST.json"
 DEFINITIONS_KEY = "$defs"
 DSL_SCHEMA_NAME = "dsl-v1.schema.json"
+RUNTIME_SCHEMA_NAME = "runtime-v2.schema.json"
+RESEARCH_SCHEMA_NAME = "research-v2.schema.json"
+DOC_VERSION = "v2.6"
+RELEASE_MATRIX_GLOB = "46-*.md"
+DECISION_LIST_GLOB = "37-*.md"
+MATRIX_ONLY_CHAPTER = "AC-46-"
+REQUIREMENT_COUNTS = {"REQ": 10, "NFR": 7}
+ACCEPTANCE_PATTERN = r"(AC-\d{2}-)(\d{2})(?:～(\d{2}))?"
+DECISION_PATTERN = r"D-\d{2}"
 
 
 def check(condition: bool, message: str) -> None:
@@ -60,7 +69,7 @@ def tracked_files() -> list[Path]:
 def manifest_data() -> JsonObject:
     files = tracked_files()
     return {
-        "project": "AXIOM", "version": "2.5", "created": "2026-10-20",
+        "project": "AXIOM", "version": DOC_VERSION.removeprefix("v"), "created": "2026-10-20",
         "date": "2026-10-20", "documents": sum(p.suffix == ".md" for p in files),
         "file_count": len(files),
         "files": [{"path": str(p.relative_to(ROOT)), "bytes": p.stat().st_size,
@@ -144,13 +153,45 @@ def check_markdown_document(path: Path, index: str) -> tuple[int | None, list[st
     return chapter_id, case_ids, check_markdown_links(path, plain)
 
 
-def check_requirement_traces(case_ids: list[str]) -> None:
-    trace = next(ROOT.rglob("46-*.md")).read_text()
-    for n in range(1, 11):
-        check(f"| REQ-{n:03d} " in trace, f"Missing requirement mapping: REQ-{n:03d}")
-    for match in re.finditer(r"(AC-\d{2}-)(\d{2})(?:～(\d{2}))?", trace):
+def check_document_header(path: Path) -> None:
+    header = next((line for line in path.read_text(encoding="utf-8").splitlines()
+                   if line.startswith(">")), "")
+    check(DOC_VERSION in header, f"Stale document version header: {path}")
+
+
+def acceptance_ranges(text: str) -> set[str]:
+    covered: set[str] = set()
+    for match in re.finditer(ACCEPTANCE_PATTERN, text):
         for n in range(int(match[2]), int(match[3] or match[2]) + 1):
-            check(match[1] + f"{n:02d}" in case_ids, f"Missing referenced test: {match[0]}")
+            covered.add(match[1] + f"{n:02d}")
+    return covered
+
+
+def check_requirement_traces(case_ids: list[str]) -> None:
+    trace = next(ROOT.rglob(RELEASE_MATRIX_GLOB)).read_text()
+    for prefix, count in REQUIREMENT_COUNTS.items():
+        for n in range(1, count + 1):
+            check(f"| {prefix}-{n:03d} " in trace, f"Missing requirement mapping: {prefix}-{n:03d}")
+    covered = acceptance_ranges(trace)
+    for case_id in sorted(covered):
+        check(case_id in case_ids, f"Undefined referenced test: {case_id}")
+    for case_id in case_ids:
+        if not case_id.startswith(MATRIX_ONLY_CHAPTER):
+            check(case_id in covered, f"Acceptance case not traced in release matrix: {case_id}")
+
+
+def check_decision_references() -> None:
+    source = next(ROOT.rglob(DECISION_LIST_GLOB))
+    defined = set(re.findall(DECISION_PATTERN, source.read_text(encoding="utf-8")))
+    referenced: set[str] = set()
+    for path in ROOT.rglob("*.md"):
+        tokens = set(re.findall(DECISION_PATTERN, path.read_text(encoding="utf-8")))
+        for token in tokens:
+            check(token in defined, f"Undefined decision reference: {token} in {path}")
+        if path != source:
+            referenced |= tokens
+    for decision in sorted(defined):
+        check(decision in referenced, f"Decision lacks a blocking-document reference: {decision}")
 
 
 def check_markdown() -> dict[str, int]:
@@ -160,6 +201,7 @@ def check_markdown() -> dict[str, int]:
     link_count = 0
     index = (ROOT / "README.md").read_text()
     for path in paths:
+        check_document_header(path)
         chapter_id, document_cases, links = check_markdown_document(path, index)
         if chapter_id is not None:
             chapter_ids.append(chapter_id)
@@ -168,6 +210,7 @@ def check_markdown() -> dict[str, int]:
     check(sorted(chapter_ids) == list(range(49)), "Chapter numbers must be unique AX-00..48")
     check(len(case_ids) == len(set(case_ids)), "Duplicate acceptance ID")
     check_requirement_traces(case_ids)
+    check_decision_references()
     return {"markdown": len(paths), "chapters": len(chapter_ids), "links": link_count,
             "acceptance_cases": len(case_ids)}
 
@@ -221,7 +264,7 @@ def bundled(value: Any, mapping: Mapping[str, str]) -> Any:
 
 
 def check_bundled_schemas(schemas: dict[str, JsonObject], api: JsonObject) -> None:
-    definitions = schemas["research-v2.schema.json"][DEFINITIONS_KEY]
+    definitions = schemas[RESEARCH_SCHEMA_NAME][DEFINITIONS_KEY]
     mapping = {"#/$defs/" + name: "#/components/schemas/" + name for name in definitions}
     mapping[DSL_SCHEMA_NAME] = "#/components/schemas/DSL"
     for name, schema in definitions.items():
@@ -352,6 +395,25 @@ def check_local_schema_refs(folder: Path) -> None:
                 check((folder / reference.split("#")[0]).is_file(), f"Missing schema ref: {reference}")
 
 
+def check_research_completion_contracts(schemas: dict[str, JsonObject], api: JsonObject) -> None:
+    draft_revision = DOC_VERSION.removeprefix("v")
+    for name in [RESEARCH_SCHEMA_NAME, RUNTIME_SCHEMA_NAME, "task-input-v2.schema.json"]:
+        check(schemas[name]["x-axiom-draft-revision"] == draft_revision, "Draft schema revision drift")
+    check(api["info"]["x-axiom-draft-revision"] == draft_revision, "Draft API revision drift")
+    definitions = schemas[RESEARCH_SCHEMA_NAME][DEFINITIONS_KEY]
+    profile = definitions["SemanticProfile"]["properties"]
+    for column in [profile["inputs"]["items"], profile["target"]]:
+        check("source_column" in column["required"], "Source-column binding missing")
+    create_version = api["components"]["schemas"]["CreateResearchVersion"]
+    check("evaluation_policy" in create_version["required"], "Evaluation policy input missing")
+    for name in ["ValidationRun", "FrozenSubmission"]:
+        check("evaluation_policy_hash" in definitions[name]["required"], "Policy reference missing")
+    check("diagnostic_artifact_ids" in definitions["Run"]["required"], "Insufficient-result report missing")
+    for name in ["ResearchBudgetAccount", "ExposureRecoveryState"]:
+        check(name in schemas[RUNTIME_SCHEMA_NAME][DEFINITIONS_KEY], "Internal recovery/account schema missing")
+        check(name not in api["components"]["schemas"], "Internal control record leaked into HTTP")
+
+
 def check_contracts() -> dict[str, int]:
     folder = ROOT / "contracts"
     schemas, registry = load_schemas(folder)
@@ -364,12 +426,13 @@ def check_contracts() -> dict[str, int]:
     example_count += check_api_examples(folder, api)
     check_api_operations(schemas, api)
     check_api_headers(api)
-    definitions = schemas["research-v2.schema.json"][DEFINITIONS_KEY]
-    runtime = schemas["runtime-v2.schema.json"][DEFINITIONS_KEY]
+    definitions = schemas[RESEARCH_SCHEMA_NAME][DEFINITIONS_KEY]
+    runtime = schemas[RUNTIME_SCHEMA_NAME][DEFINITIONS_KEY]
     check_public_projection(definitions, runtime, api)
     suite = read_json(folder / "conformance-v2.examples.json")
     check_scenario_context(suite, schemas, registry)
     check_recovery_contracts(definitions, runtime, api, schemas[DSL_SCHEMA_NAME])
+    check_research_completion_contracts(schemas, api)
     scenario_count = check_scenarios(suite)
     check_topology()
     check_local_schema_refs(folder)
