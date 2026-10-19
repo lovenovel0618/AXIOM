@@ -8,6 +8,7 @@ from fractions import Fraction
 import hashlib
 import hmac
 import json
+import math
 from uuid import UUID
 from typing import Any, TypeAlias, cast
 
@@ -646,7 +647,175 @@ def split_dependence_decision(scenario: Scenario) -> str:
     return "ACCEPT"
 
 
+def representation_guard_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if case["selection_role"] == "FINAL_TEST":
+        return "FINAL_SELECTION_DENIED"
+    if case["output_dimension"] > case["max_dimension"]:
+        return "REPRESENTATION_LIMIT_EXCEEDED"
+    if case["method"] == "LOG" and min(case["values"]) <= 0:
+        return "TRANSFORM_DOMAIN_INVALID"
+    if case["method"] == "FFT" and (not case["uniform_sampling"] or not case["observed_time"]):
+        return "SAMPLING_POLICY_INVALID"
+    if case["inverse_kind"] == "EXACT" and case["information_loss"]:
+        return "REPRESENTATION_EQUIVALENCE_INVALID"
+    if not set(case["support_rows"]) <= set(case["allowed_rows"]):
+        return "REPRESENTATION_SPLIT_LEAK"
+    return "ACCEPT"
+
+
+def trace_graph_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    seen = set(case["committed_parent_ids"])
+    for node in case["nodes"]:
+        if node["id"] in seen:
+            return "TRACE_NODE_CONFLICT"
+        if node["tenant"] != case["tenant"]:
+            return "TRACE_TENANT_MISMATCH"
+        if not set(node["parents"]) <= seen:
+            return "TRACE_DEPENDENCY_INVALID"
+        seen.add(node["id"])
+    if case["late_attempt"] and case["promote_evidence"]:
+        return "STALE_ATTEMPT"
+    return "ACCEPT"
+
+
+def failure_judgment_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if case["reject_entire_family"]:
+        return "CLAIM_SCOPE_INVALID"
+    if case["judgment"] == "CONFIRMED_COUNTEREXAMPLE":
+        if not case["counterexample_verified"] or not case["same_scope"]:
+            return "COUNTEREXAMPLE_INVALID"
+        if case["failure_class"] in {"NUMERICAL", "OPTIMIZATION", "RESOURCE", "INFRASTRUCTURE"}:
+            return "COUNTEREXAMPLE_INVALID"
+    return "ACCEPT"
+
+
+def hypothesis_recovery_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if case["attempt_reuse_final"]:
+        return "BLIND_ELIGIBILITY_DENIED"
+    if case["revisits"] >= case["max_revisits"] or not case["budget_available"]:
+        return "RECOVERY_BUDGET_EXHAUSTED"
+    if not case["trigger_met"]:
+        return "NO_RECOVERY_TRIGGER"
+    if case["data_changed"] or case["root_terminal"]:
+        return "NEW_VERSION_REQUIRED"
+    return "REVISIT_ACTIVE_BRANCH" if case["stage"] == "SEARCH_OPEN" else "DISPATCH_STAGE_VIOLATION"
+
+
+def probability_guard_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if case["method"] in {"LLM_CONFIDENCE", "ONE_MINUS_P", "MODEL_VOTE"}:
+        return "UNDEFINED_PROBABILITY"
+    if case["value"] is None:
+        return "ACCEPT" if case["reason"] else "UNDEFINED_PROBABILITY"
+    if not 0 <= case["value"] <= 1 or not case["basis_verified"]:
+        return "UNDEFINED_PROBABILITY"
+    if case["event"] == "TRUE_LAW_OF_REAL_WORLD":
+        return "UNDEFINED_PROBABILITY"
+    return "ACCEPT"
+
+
+def independent_paths_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    dimensions = ["data", "assumption", "method", "implementation", "experiment"]
+    paths = case["paths"]
+    shared = any(len({path[key] for path in paths}) < len(paths) for key in dimensions)
+    if shared and case["multiply_as_independent"]:
+        return "DEPENDENT_EVIDENCE"
+    return "ACCEPT"
+
+
+def square_inverse_decision(scenario: Scenario) -> str:
+    # Public fixed-family oracle only: integer square targets and a sign-domain constraint.
+    case = scenario.case
+    target = case["target"]
+    if target < 0:
+        return "NONE_REAL"
+    root = math.isqrt(target)
+    if root * root != target:
+        return "UNKNOWN_IN_THIS_FIXTURE"
+    solutions = {root, -root}
+    if case["nonnegative_domain"]:
+        solutions = {value for value in solutions if value >= 0}
+    if solutions != set(case["claimed_solutions"]):
+        return "INVERSE_SOLUTION_SET_INVALID"
+    return "UNIQUE" if len(solutions) == 1 else "MULTIPLE"
+
+
+def token_capture_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if case["chunk_count_as_token_count"]:
+        return "TOKEN_MEASUREMENT_INVALID"
+    if case["token_source"] != "NOT_CAPTURED" and not case["tokenizer_pinned"]:
+        return "TOKEN_MEASUREMENT_INVALID"
+    if not case["done_received"]:
+        return "PARTIAL_USAGE_UNKNOWN"
+    duration = case["eval_duration_ns"]
+    if duration == 0 or case["eval_count"] is None:
+        return "TOKEN_RATE_UNAVAILABLE"
+    rate = case["eval_count"] * 1_000_000_000 / duration
+    if rate != case["expected_rate"]:
+        raise AssertionError("Token duration units drift")
+    return "ACCEPT"
+
+
+def archive_guard_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if case["decoded_bytes"] > case["max_decoded_bytes"]:
+        return "ARCHIVE_LIMIT_EXCEEDED"
+    for member in case["members"]:
+        actual = hashlib.sha256(member["restored"].encode()).hexdigest()
+        if actual != member["expected_sha256"]:
+            return "ARCHIVE_CHECKSUM_MISMATCH"
+    if case["delete_original"] and not case["retention_approved"]:
+        return "RETENTION_POLICY_BLOCKED"
+    return "ACCEPT"
+
+
+def experience_summary_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if not set(case["opposition_ids"]) <= set(case["retained_opposition_ids"]):
+        return "EXPERIENCE_COUNTEREXAMPLES_LOST"
+    unique_cases = set(case["support_ids"]) | set(case["opposition_ids"])
+    if case["independent_case_count"] != len(unique_cases):
+        return "EXPERIENCE_DENOMINATOR_INVALID"
+    if case["asserts_universal_success"] and case["opposition_ids"]:
+        return "EXPERIENCE_CLAIM_INVALID"
+    return "ACCEPT"
+
+
+def learning_release_decision(scenario: Scenario) -> str:
+    case = scenario.case
+    if set(case["source_access_classes"]) & {"SEALED_DETAIL", "RELEASED_AGGREGATE"}:
+        return "LEARNING_SOURCE_FORBIDDEN"
+    train, development, test = (set(case[key]) for key in ["train", "development", "test"])
+    if train & development or train & test or development & test:
+        return "TRAINING_FAMILY_LEAK"
+    if not case["sources_active"] or not case["rights_verified"]:
+        return "LEARNING_SOURCE_FORBIDDEN"
+    if not case["baseline_passed"] or not case["ablation_passed"] or case["regression_detected"]:
+        return "LEARNING_RELEASE_REJECTED"
+    if not case["independent_approval"]:
+        return "INDEPENDENT_REVIEW_REQUIRED"
+    return "ACCEPT"
+
+
 CASE_HANDLERS: dict[str, Callable[[Scenario], str]] = {
+    "representation_guard": representation_guard_decision,
+    "trace_graph": trace_graph_decision,
+    "failure_judgment": failure_judgment_decision,
+    "hypothesis_recovery": hypothesis_recovery_decision,
+    "probability_guard": probability_guard_decision,
+    "independent_paths": independent_paths_decision,
+    "square_inverse": square_inverse_decision,
+    "token_capture": token_capture_decision,
+    "archive_guard": archive_guard_decision,
+    "experience_summary": experience_summary_decision,
+    "learning_release": learning_release_decision,
+
     "unit_conversion": unit_conversion_decision,
     "independent_review": independent_review_decision,
     "publication_claim": publication_claim_decision,

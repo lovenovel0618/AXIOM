@@ -1,6 +1,6 @@
 # 31｜工作拆解WBS與依賴
 
-> AXIOM v2.7 設計規格｜文件 ID AX-31｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.8 設計規格｜文件 ID AX-31｜狀態：待實作、待驗收｜2026-10-20
 
 ## 文件定位與決策摘要
 
@@ -40,3 +40,9 @@ WBS-01 專案規範與 ADR；02 資料契約；03 數學 DSL；04 基準生成�
 本輪新增契約不是純文件工作。交付順序為：資料層provenance／policy registry／upload及dispatch唯一鍵 → import與canonical轉換 → manifest／quota／有界supervisor → Evaluator分母與claim裁決 → API列表／摘要／ACL → UI還原及安全renderer → AX-29整合故障注入。每項WBS驗收需把schema、服務、DB遷移及UI投影一起列入，不能只交新增欄位。
 
 D-01影響解析／容量配額，D-03影響正式研究通過門檻，D-05影響發布政策、摘要釋出及刪除，D-06影響復原承諾；未決可用公開fixture及阻擋行為開發，不能先啟用對外發布。正式政策需具名負責人核准，文件維護者不能代簽。其餘D-02／04／07／08／09維持AX-37的階段阻擋，不因首期表單完成自動關閉。
+
+## 自主研究需求交付工作包
+
+REQ-011：Backend/Math交結構報告、有限表徵recipe及row依賴；REQ-012：Backend/QA交決策journal／圖、失敗分類、HRR與故障注入；REQ-013：Math/QA交分軸證據、VerificationPlan、逆解／proof及競爭解釋；REQ-014：Platform/AI/Data交儲存policy、capture、封存／批次、資料集及LearningRelease。Frontend交自動建議確認、表徵比較、決策圖、重審與封存狀態。角色尚未具名，D-08未關閉前不承諾新日期。
+
+順序：M1 registry／trace／結構確認→M4 Gateway capture及有限表徵／記憶→M5 proof與多路徑→M6／M7新major多維／多序列／訓練。每包同時交DB約束、API／payload、UI投影、權限、取消／恢復、預算及測試；原貼文的數字與硬體例子不代替D-01～09決策。

@@ -4,7 +4,7 @@
     "title": "AXIOM MVP API",
     "version": "2.0.0",
     "description": "Design contract; not an implemented service. Business validation and RBAC are normative in AX-21/26.",
-    "x-axiom-draft-revision": "2.7"
+    "x-axiom-draft-revision": "2.8"
   },
   "servers": [
     {
@@ -6440,6 +6440,14 @@
               "format": "uuid"
             },
             "uniqueItems": true
+          },
+          "research_trace_artifact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "uniqueItems": true
           }
         },
         "required": [
@@ -6467,7 +6475,8 @@
           "budget_reservations",
           "outcome_status",
           "skipped_phases",
-          "diagnostic_artifact_ids"
+          "diagnostic_artifact_ids",
+          "research_trace_artifact_ids"
         ],
         "additionalProperties": false,
         "allOf": [

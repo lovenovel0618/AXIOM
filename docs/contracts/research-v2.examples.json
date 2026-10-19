@@ -181,7 +181,8 @@
       "is_root": true,
       "outcome_status": null,
       "skipped_phases": [],
-      "diagnostic_artifact_ids": []
+      "diagnostic_artifact_ids": [],
+      "research_trace_artifact_ids": []
     },
     {
       "kind": "ValidationRun",
@@ -547,7 +548,8 @@
           "reason": "MVP_FEATURE_DISABLED"
         }
       ],
-      "diagnostic_artifact_ids": []
+      "diagnostic_artifact_ids": [],
+      "research_trace_artifact_ids": []
     },
     {
       "kind": "ReviewDecision",
@@ -655,7 +657,8 @@
       "skipped_phases": [],
       "diagnostic_artifact_ids": [
         "00000000-0000-4000-8000-000000000113"
-      ]
+      ],
+      "research_trace_artifact_ids": []
     },
     {
       "kind": "PublicationClaim",
@@ -729,7 +732,8 @@
         "is_root": true,
         "outcome_status": null,
         "skipped_phases": [],
-        "diagnostic_artifact_ids": []
+        "diagnostic_artifact_ids": [],
+        "research_trace_artifact_ids": []
       },
       "reason": "VALIDATE requires equation_version_id"
     },
@@ -767,7 +771,8 @@
         "is_root": true,
         "outcome_status": null,
         "skipped_phases": [],
-        "diagnostic_artifact_ids": []
+        "diagnostic_artifact_ids": [],
+        "research_trace_artifact_ids": []
       },
       "reason": "SEARCH requires research version"
     },
@@ -854,7 +859,8 @@
         "cancel_requested_at": null,
         "outcome_status": null,
         "skipped_phases": [],
-        "diagnostic_artifact_ids": []
+        "diagnostic_artifact_ids": [],
+        "research_trace_artifact_ids": []
       },
       "reason": "private runtime fields forbidden in public DTO"
     },

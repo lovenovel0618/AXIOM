@@ -1,6 +1,6 @@
 # 18｜ChatGPT與Ollama協作
 
-> AXIOM v2.7 設計規格｜文件 ID AX-18｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.8 設計規格｜文件 ID AX-18｜狀態：待實作、待驗收｜2026-10-20
 
 ## 文件定位與決策摘要
 
@@ -70,3 +70,7 @@ flowchart TD
 ## 輸出與回退契約
 
 M4 提案 schema 必含 hypothesis_type、candidate_ast（遵循 DSL 版本）、assumptions、proposed_tests、expected_cost、risks、source_ids；候選 AST 為可空，null 必須附 cannot_propose_reason。無 source_ids 不能捏造引用。輸入只取有授權且未撤銷的開發上下文，禁止 final_test。供應商 adapter、模型版本與 token 對帳需通過 M4 契約審查；D-04 未關閉前外部 adapter 保持停用。
+
+## 本地模型池與可追溯呼叫
+
+AX-52定義候選模型角色、capability／memory硬篩選與受控探索，不再固定「只有某家模型才能做高難度推理」。小型整理、協調、數學提案、替代挑戰及embedding各自選型；多模型一致不升證據。模型tag存在只證候選可查，實際品質、digest、runtime與tokenizer／權限先驗收。每呼叫產生AIRuntimeRecord，缺usage或斷流不當0；不能取得的內部思考不承諾保存。

@@ -1,6 +1,6 @@
 # 21｜API與任務契約
 
-> AXIOM v2.7 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.8 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-20
 
 ## 契約範圍與認證
 
@@ -176,3 +176,9 @@ CreateReview.claim必填PublicationClaimDraft：claim_kind、frozen_candidate_id
 ReleasedSummary只回研究ID、安全Artifact ID、disclosure policy ID/hash及目前validity；不回bundle、claim、final ValidationRun或原PublishedArtifact ID。私有SummaryLineage保存完整關聯。metadata／content均依私有關係即時查有效性；REVOKED摘要保留可讀metadata及撤銷警示，原內容端點一律409 ARTIFACT_UNAVAILABLE；QUARANTINED內容同樣409。不可在下載時改原檔內容而沿用舊sha256。來源不可見不會讓已核准的獨立摘要自動404，來源撤銷／隔離則不能被摘要繞過。各GET仍需摘要本身ACL，RELEASED_AGGREGATE不代表匿名公開。
 
 新增穩定錯誤：422 UNIT_CONVERSION_INVALID、SPLIT_DEPENDENCE_CONFLICT、PUBLICATION_CLAIM_INVALID；403 INDEPENDENT_REVIEW_REQUIRED；409 PUBLICATION_POLICY_BLOCKED、DISCLOSURE_POLICY_BLOCKED、UPLOAD_OBJECT_CHANGED；429 TENANT_ADMISSION_DENIED。上述皆retryable=false，修正設定／權限或新版本後才重新操作，不能自動重試。曝光復原未通過仍沿原503閘門，不能混成新研究輸入錯誤。
+
+## v2.8 可驗證研究軌跡
+
+Run必填research_trace_artifact_ids，透過既有GET run、研究runs列表及GET Artifact metadata/content找回TraceChunk；列表逐項做AX-26授權，SEALED_DETAIL chunk不向Solver／一般reader回傳。trace追加不改control revision；snapshot與Artifact registry一致讀出，尚未產生chunk時為空。chunk payload使用research-learning-v1，API Run仍為2.0未部署草案修訂2.8，內部payload不是新增HTTP資源。
+
+目前不新增高階job或多維HTTP端點；M4／M6／M7實作前須另交付匹配任務、預算／取消／恢復及新major契約。現行OpenAPI及六類TaskInput只描述已凍結首期介面，不允許將新kind塞進Run.type猜測執行。

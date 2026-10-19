@@ -29,11 +29,12 @@ DEFINITIONS_KEY = "$defs"
 DSL_SCHEMA_NAME = "dsl-v1.schema.json"
 RUNTIME_SCHEMA_NAME = "runtime-v2.schema.json"
 RESEARCH_SCHEMA_NAME = "research-v2.schema.json"
-DOC_VERSION = "v2.7"
+DOC_VERSION = "v2.8"
+CHAPTER_COUNT = 53
 RELEASE_MATRIX_GLOB = "46-*.md"
 DECISION_LIST_GLOB = "37-*.md"
 MATRIX_ONLY_CHAPTER = "AC-46-"
-REQUIREMENT_COUNTS = {"REQ": 10, "NFR": 7}
+REQUIREMENT_COUNTS = {"REQ": 14, "NFR": 7}
 ACCEPTANCE_PATTERN = r"(AC-\d{2}-)(\d{2})(?:～(\d{2}))?"
 DECISION_PATTERN = r"D-\d{2}"
 
@@ -207,7 +208,7 @@ def check_markdown() -> dict[str, int]:
             chapter_ids.append(chapter_id)
         case_ids.extend(document_cases)
         link_count += links
-    check(sorted(chapter_ids) == list(range(49)), "Chapter numbers must be unique AX-00..48")
+    check(sorted(chapter_ids) == list(range(CHAPTER_COUNT)), "Chapter numbers must be unique AX-00..52")
     check(len(case_ids) == len(set(case_ids)), "Duplicate acceptance ID")
     check_requirement_traces(case_ids)
     check_decision_references()
@@ -248,7 +249,7 @@ def check_example_set(prefix: str, examples: JsonObject, validator: Validator) -
 
 def check_schema_examples(folder: Path, schemas: dict[str, JsonObject], registry: SchemaRegistry) -> int:
     count = 0
-    for prefix in ["dsl-v1", "research-v2", "runtime-v2", "event-v2", "task-input-v2"]:
+    for prefix in ["dsl-v1", "research-v2", "runtime-v2", "event-v2", "task-input-v2", "research-learning-v1"]:
         validator = schema_validator(schemas[prefix + ".schema.json"], registry=registry)
         count += check_example_set(prefix, read_json(folder / (prefix + ".examples.json")), validator)
     return count
@@ -431,8 +432,8 @@ def check_review_coverage(suite: JsonObject) -> int:
           "Review scope must distinguish specification from product validation")
     paths = {str(p.relative_to(ROOT)) for p in ROOT.rglob("*.md") if p.name[:2].isdigit()}
     rows = review["chapters"]
-    check(len(rows) == 49 and {row["path"] for row in rows} == paths, "Incomplete review coverage")
-    check({row["chapter_id"] for row in rows} == {f"AX-{n:02d}" for n in range(49)}, "Review chapter ID drift")
+    check(len(rows) == CHAPTER_COUNT and {row["path"] for row in rows} == paths, "Incomplete review coverage")
+    check({row["chapter_id"] for row in rows} == {f"AX-{n:02d}" for n in range(CHAPTER_COUNT)}, "Review chapter ID drift")
     findings = review["findings"]
     identifiers = {finding["id"] for finding in findings}
     check(len(identifiers) == len(findings), "Duplicate review finding")
@@ -485,6 +486,61 @@ def check_lifecycle_contracts(definitions: JsonObject, runtime: JsonObject, api:
           "Sealed source reference leaked into summary")
 
 
+def check_attachment_source(source: JsonObject) -> None:
+    path = (ROOT / source["path"]).resolve()
+    check(path.is_relative_to(ROOT) and path.is_file(), "Attachment source missing or escaped docs")
+    raw = path.read_bytes()
+    check(len(raw) == source["bytes"], "Attachment source size drift")
+    check(hashlib.sha256(raw).hexdigest() == source["sha256"], "Attachment source hash drift")
+
+
+def check_attachment_item(item: JsonObject, sources: set[str], case_ids: set[str]) -> None:
+    check(item["source_id"] in sources, "Unknown attachment source")
+    check(item["status"] == "SPECIFIED" and item["product_status"] == "NOT_RUN", "Attachment cannot claim product PASS")
+    path = ROOT / item["authority_path"]
+    check(path.is_file() and item["requirement_id"] in next(ROOT.rglob("02-*.md")).read_text(),
+          "Attachment requirement authority missing")
+    check(bool(item["acceptance_ids"]) and set(item["acceptance_ids"]) <= case_ids,
+          "Attachment acceptance reference missing")
+
+
+def check_attachment_requests() -> int:
+    ledger = read_json(ROOT / "contracts/attachment-requests-v1.json")
+    check(ledger["document_revision"] == DOC_VERSION.removeprefix("v"), "Attachment revision drift")
+    check(ledger["scope"] == "DOCUMENT_REFERENCE_ONLY" and ledger["product_status"] == "NOT_RUN",
+          "Attachment ledger scope invalid")
+    sources = ledger["sources"]
+    identifiers = {source["id"] for source in sources}
+    check(len(sources) == 4 and identifiers == {f"SRC-{n:02d}" for n in range(1, 5)}, "Four attachment sources required")
+    for source in sources:
+        check_attachment_source(source)
+    case_ids = {identifier for path in ROOT.rglob("*.md") for identifier in acceptance_ids(path.read_text())}
+    items = ledger["items"]
+    check(len({item["id"] for item in items}) == len(items), "Duplicate attachment requirement")
+    check({item["source_id"] for item in items} == identifiers, "Unintegrated attachment")
+    for item in items:
+        check_attachment_item(item, identifiers, case_ids)
+    expected = {f"AC-{n:02d}-{case:02d}" for n in range(49, 53) for case in range(1, 9)}
+    covered = {identifier for item in items for identifier in item["acceptance_ids"]}
+    check(covered == expected, "Incomplete attachment acceptance coverage")
+    return len(items)
+
+
+def check_learning_boundaries(schemas: dict[str, JsonObject], api: JsonObject) -> None:
+    payload = schemas["research-learning-v1.schema.json"]
+    check(payload["x-axiom-draft-revision"] == DOC_VERSION.removeprefix("v"), "Learning payload revision drift")
+    definitions = schemas[RESEARCH_SCHEMA_NAME][DEFINITIONS_KEY]
+    check("research_trace_artifact_ids" in definitions["Run"]["required"], "Run trace navigation missing")
+    check(definitions["SemanticProfile"]["properties"]["inputs"]["maxItems"] == 1,
+          "Future representation payload must not silently widen the public single-input profile")
+    check(definitions["Run"]["properties"]["type"]["enum"] == ["INGEST", "PROFILE", "SEARCH", "FIT", "VALIDATE", "REVOKE"],
+          "Learning jobs must not masquerade as current public Run types")
+    for name, definition in payload[DEFINITIONS_KEY].items():
+        check(name not in api["components"]["schemas"], "Internal learning payload leaked as HTTP DTO: " + name)
+        if "kind" in definition.get("properties", {}):
+            check("artifact_access_class" in definition["required"], "Learning payload classification missing")
+
+
 def check_contracts() -> dict[str, int]:
     folder = ROOT / "contracts"
     schemas, registry = load_schemas(folder)
@@ -505,14 +561,16 @@ def check_contracts() -> dict[str, int]:
     check_recovery_contracts(definitions, runtime, api, schemas[DSL_SCHEMA_NAME])
     check_research_completion_contracts(schemas, api)
     check_lifecycle_contracts(definitions, runtime, api)
+    check_learning_boundaries(schemas, api)
     check_reference_ranges(suite)
     finding_count = check_review_coverage(suite)
+    attachment_count = check_attachment_requests()
     scenario_count = check_scenarios(suite)
     check_topology()
     check_local_schema_refs(folder)
     return {"schemas": len(schemas), "contract_examples": example_count,
             "api_operations": sum(len(v) for v in api["paths"].values()), "contract_scenarios": scenario_count,
-            "review_findings": finding_count}
+            "review_findings": finding_count, "attachment_requirements": attachment_count}
 
 
 def check_public_oracles() -> dict[str, int]:

@@ -1,0 +1,440 @@
+{
+  "schema_version": "1.0",
+  "document_revision": "2.8",
+  "scope": "DOCUMENT_REFERENCE_ONLY",
+  "product_status": "NOT_RUN",
+  "sources": [
+    {
+      "id": "SRC-01",
+      "path": "14-自主研究/sources/01-數據表徵原始討論.txt",
+      "sha256": "f9a75443117fcf5b8d85445ce5e4e7eb01dc02dd2361eb7416423645310051a8",
+      "bytes": 15509,
+      "interpretation": "USER_DISCUSSION_WITH_PROPOSED_ASSISTANT_DESIGN",
+      "authority": "Requirements are interpreted in AX-49..52; proposed factual claims and hardware assumptions are not automatic approvals."
+    },
+    {
+      "id": "SRC-02",
+      "path": "14-自主研究/sources/02-錯誤與重審原始討論.txt",
+      "sha256": "41a700a1bf5ba38c9912c2f282407a805ceb11e265197c339f625579e6117e7f",
+      "bytes": 20791,
+      "interpretation": "USER_DISCUSSION_WITH_PROPOSED_ASSISTANT_DESIGN",
+      "authority": "Requirements are interpreted in AX-49..52; proposed factual claims and hardware assumptions are not automatic approvals."
+    },
+    {
+      "id": "SRC-03",
+      "path": "14-自主研究/sources/03-正確性與逆推原始討論.txt",
+      "sha256": "70bceb28227c38e12cb9c00d1aa161127d88f9496d2d8638a339502535a1bea8",
+      "bytes": 25779,
+      "interpretation": "USER_DISCUSSION_WITH_PROPOSED_ASSISTANT_DESIGN",
+      "authority": "Requirements are interpreted in AX-49..52; proposed factual claims and hardware assumptions are not automatic approvals."
+    },
+    {
+      "id": "SRC-04",
+      "path": "14-自主研究/sources/04-Token與模型原始討論.txt",
+      "sha256": "043460ecebf187eea8ec308d36400b1a7434f73775307084d693300bb32f2df9",
+      "bytes": 24730,
+      "interpretation": "USER_DISCUSSION_WITH_PROPOSED_ASSISTANT_DESIGN",
+      "authority": "Requirements are interpreted in AX-49..52; proposed factual claims and hardware assumptions are not automatic approvals."
+    }
+  ],
+  "items": [
+    {
+      "id": "ATT-01-01",
+      "source_id": "SRC-01",
+      "requirement_id": "REQ-011",
+      "requirement": "觀測／座標／狀態／潛在與表徵維度分開，不由一欄推定真維度",
+      "authority_path": "14-自主研究/49-數據結構與自主表徵探索.md",
+      "acceptance_ids": [
+        "AC-49-01"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-01-02",
+      "source_id": "SRC-01",
+      "requirement_id": "REQ-011",
+      "requirement": "非時序二／三維與同步／非同步多時間序列共同納入範圍",
+      "authority_path": "14-自主研究/49-數據結構與自主表徵探索.md",
+      "acceptance_ids": [
+        "AC-49-02"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-01-03",
+      "source_id": "SRC-01",
+      "requirement_id": "REQ-011",
+      "requirement": "週期、座標、log、頻譜／時頻、微積分、嵌入與多尺度要有適用條件",
+      "authority_path": "14-自主研究/49-數據結構與自主表徵探索.md",
+      "acceptance_ids": [
+        "AC-49-03"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-01-04",
+      "source_id": "SRC-01",
+      "requirement_id": "REQ-011",
+      "requirement": "轉換依賴原始列且不可跨split或用未來洩漏",
+      "authority_path": "14-自主研究/49-數據結構與自主表徵探索.md",
+      "acceptance_ids": [
+        "AC-49-04"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-01-05",
+      "source_id": "SRC-01",
+      "requirement_id": "REQ-011",
+      "requirement": "以原觀測空間與Pareto比較表徵，final不能選模",
+      "authority_path": "14-自主研究/49-數據結構與自主表徵探索.md",
+      "acceptance_ids": [
+        "AC-49-05"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-01-06",
+      "source_id": "SRC-01",
+      "requirement_id": "REQ-011",
+      "requirement": "受限n維、升降維、資訊損失與有界搜尋，不保證真狀態重建",
+      "authority_path": "14-自主研究/49-數據結構與自主表徵探索.md",
+      "acceptance_ids": [
+        "AC-49-06"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-01-07",
+      "source_id": "SRC-01",
+      "requirement_id": "REQ-011",
+      "requirement": "同理論多表達分等價／可推導／近似／實證相容及初值",
+      "authority_path": "14-自主研究/49-數據結構與自主表徵探索.md",
+      "acceptance_ids": [
+        "AC-49-07"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-01-08",
+      "source_id": "SRC-01",
+      "requirement_id": "REQ-011",
+      "requirement": "新增變數／表徵可提案，但不允許無限窮舉／任意程式或盲測重置",
+      "authority_path": "14-自主研究/49-數據結構與自主表徵探索.md",
+      "acceptance_ids": [
+        "AC-49-08"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-02-01",
+      "source_id": "SRC-02",
+      "requirement_id": "REQ-012",
+      "requirement": "完整可重建的外部研究決策／工具／分支，非模型隱藏思考承諾",
+      "authority_path": "14-自主研究/50-研究決策軌跡與錯誤恢復.md",
+      "acceptance_ids": [
+        "AC-50-01"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-02-02",
+      "source_id": "SRC-02",
+      "requirement_id": "REQ-012",
+      "requirement": "決策圖、前提依賴與新證據對歷史結論的影響",
+      "authority_path": "14-自主研究/50-研究決策軌跡與錯誤恢復.md",
+      "acceptance_ids": [
+        "AC-50-02"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-02-03",
+      "source_id": "SRC-02",
+      "requirement_id": "REQ-012",
+      "requirement": "區分結構、optimizer、資料、採樣、表徵、數值、範圍、假設與驗證失敗",
+      "authority_path": "14-自主研究/50-研究決策軌跡與錯誤恢復.md",
+      "acceptance_ids": [
+        "AC-50-03"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-02-04",
+      "source_id": "SRC-02",
+      "requirement_id": "REQ-012",
+      "requirement": "已證反例、暫敗、不足、條件成立與數值未知分開，作用於具體主張",
+      "authority_path": "14-自主研究/50-研究決策軌跡與錯誤恢復.md",
+      "acceptance_ids": [
+        "AC-50-04"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-02-05",
+      "source_id": "SRC-02",
+      "requirement_id": "REQ-012",
+      "requirement": "HRR軟淘汰與機器恢復條件，新方法／資料觸發且不復活終態",
+      "authority_path": "14-自主研究/50-研究決策軌跡與錯誤恢復.md",
+      "acceptance_ids": [
+        "AC-50-05"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-02-06",
+      "source_id": "SRC-02",
+      "requirement_id": "REQ-012",
+      "requirement": "保留exploit／explore／revisit，多分支、檢查點與自我修正有成本上限",
+      "authority_path": "14-自主研究/50-研究決策軌跡與錯誤恢復.md",
+      "acceptance_ids": [
+        "AC-50-06"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-02-07",
+      "source_id": "SRC-02",
+      "requirement_id": "REQ-012",
+      "requirement": "結論正確、推導有效與策略效率三軸分開",
+      "authority_path": "14-自主研究/50-研究決策軌跡與錯誤恢復.md",
+      "acceptance_ids": [
+        "AC-50-07"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-02-08",
+      "source_id": "SRC-02",
+      "requirement_id": "REQ-012",
+      "requirement": "誤殺／誤留、根因、恢復延遲／coverage／負遷移及有真值基準",
+      "authority_path": "14-自主研究/50-研究決策軌跡與錯誤恢復.md",
+      "acceptance_ids": [
+        "AC-50-08"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-03-01",
+      "source_id": "SRC-03",
+      "requirement_id": "REQ-013",
+      "requirement": "數值、代數／推導、統計、預測、結構、因果、跨環境與重現分層",
+      "authority_path": "14-自主研究/51-正確性證據與正逆向驗證.md",
+      "acceptance_ids": [
+        "AC-51-01"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-03-02",
+      "source_id": "SRC-03",
+      "requirement_id": "REQ-013",
+      "requirement": "事件／假設空間／先驗／似然／校準明確才報機率，p值非真機率",
+      "authority_path": "14-自主研究/51-正確性證據與正逆向驗證.md",
+      "acceptance_ids": [
+        "AC-51-02"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-03-03",
+      "source_id": "SRC-03",
+      "requirement_id": "REQ-013",
+      "requirement": "經驗只引導優先級，no-memory／盲化標籤／探索及獨立性控制",
+      "authority_path": "14-自主研究/51-正確性證據與正逆向驗證.md",
+      "acceptance_ids": [
+        "AC-51-03"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-03-04",
+      "source_id": "SRC-03",
+      "requirement_id": "REQ-013",
+      "requirement": "函數逆運算的域、無解／多解及正逆回代，非單射不判錯",
+      "authority_path": "14-自主研究/51-正確性證據與正逆向驗證.md",
+      "acceptance_ids": [
+        "AC-51-04"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-03-05",
+      "source_id": "SRC-03",
+      "requirement_id": "REQ-013",
+      "requirement": "參數與結構反演的可識別性、噪聲穩定性與解族",
+      "authority_path": "14-自主研究/51-正確性證據與正逆向驗證.md",
+      "acceptance_ids": [
+        "AC-51-05"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-03-06",
+      "source_id": "SRC-03",
+      "requirement_id": "REQ-013",
+      "requirement": "相容生成系統及反事實需假設，改輸入模擬不等於識別因果",
+      "authority_path": "14-自主研究/51-正確性證據與正逆向驗證.md",
+      "acceptance_ids": [
+        "AC-51-06"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-03-07",
+      "source_id": "SRC-03",
+      "requirement_id": "REQ-013",
+      "requirement": "多種論證、逆向子目標、嚴格界與證明圖，證明搜尋失敗非假",
+      "authority_path": "14-自主研究/51-正確性證據與正逆向驗證.md",
+      "acceptance_ids": [
+        "AC-51-07"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-03-08",
+      "source_id": "SRC-03",
+      "requirement_id": "REQ-013",
+      "requirement": "預註冊驗證計畫及證據充分性，資源停止／可選停止風險分開",
+      "authority_path": "14-自主研究/51-正確性證據與正逆向驗證.md",
+      "acceptance_ids": [
+        "AC-51-08"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-04-01",
+      "source_id": "SRC-04",
+      "requirement_id": "REQ-014",
+      "requirement": "指定本機／NAS／物件儲存root與資料庫分工，容量／權限／路徑安全",
+      "authority_path": "14-自主研究/52-AI紀錄封存與經驗演化.md",
+      "acceptance_ids": [
+        "AC-52-01"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-04-02",
+      "source_id": "SRC-04",
+      "requirement_id": "REQ-014",
+      "requirement": "推論文字／token統計／訓練token／內部狀態分開，串流不等於token",
+      "authority_path": "14-自主研究/52-AI紀錄封存與經驗演化.md",
+      "acceptance_ids": [
+        "AC-52-02"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-04-03",
+      "source_id": "SRC-04",
+      "requirement_id": "REQ-014",
+      "requirement": "lossless封存、語意摘要、條件經驗及權重蒸餾分開，原資料按政策保留",
+      "authority_path": "14-自主研究/52-AI紀錄封存與經驗演化.md",
+      "acceptance_ids": [
+        "AC-52-03"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-04-04",
+      "source_id": "SRC-04",
+      "requirement_id": "REQ-014",
+      "requirement": "反例、去重來源次數、選擇機會及經驗版本可推翻",
+      "authority_path": "14-自主研究/52-AI紀錄封存與經驗演化.md",
+      "acceptance_ids": [
+        "AC-52-04"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-04-05",
+      "source_id": "SRC-04",
+      "requirement_id": "REQ-014",
+      "requirement": "時間／量／事件／資源驅動的有界整理、去重、水位及背壓",
+      "authority_path": "14-自主研究/52-AI紀錄封存與經驗演化.md",
+      "acceptance_ids": [
+        "AC-52-05"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-04-06",
+      "source_id": "SRC-04",
+      "requirement_id": "REQ-014",
+      "requirement": "外部記憶／規則／訓練資料與模型發布分流，權利／污染／撤回可查",
+      "authority_path": "14-自主研究/52-AI紀錄封存與經驗演化.md",
+      "acceptance_ids": [
+        "AC-52-06"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-04-07",
+      "source_id": "SRC-04",
+      "requirement_id": "REQ-014",
+      "requirement": "Ollama候選角色、多模型路由、runtime能力／記憶體實測，硬體未定不猜",
+      "authority_path": "14-自主研究/52-AI紀錄封存與經驗演化.md",
+      "acceptance_ids": [
+        "AC-52-07"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "ATT-04-08",
+      "source_id": "SRC-04",
+      "requirement_id": "REQ-014",
+      "requirement": "RAG優先、策略模型再到微調，獨立基準／canary／回退，不自動學習",
+      "authority_path": "14-自主研究/52-AI紀錄封存與經驗演化.md",
+      "acceptance_ids": [
+        "AC-52-08"
+      ],
+      "status": "SPECIFIED",
+      "product_status": "NOT_RUN"
+    }
+  ],
+  "phase_policy": {
+    "M1_M3": "Structure suggestions and user confirmation; deterministic trace and evidence baseline only.",
+    "M4": "Bounded univariate representation search, recovery, local Gateway capture, RAG and compaction.",
+    "M5": "Multi-approach verification and checked backward proofs.",
+    "M6_M7": "New major contracts for multivariate/multiseries, advanced inverse problems and controlled training."
+  },
+  "corrections": [
+    "Do not select representations with final_test scores.",
+    "Do not infer physical time or true latent dimension from column count.",
+    "Do not equate stream chunks, retokenized tokens and provider-exact token IDs.",
+    "Do not promise ADAPTER compatibility without runtime/model-specific verification.",
+    "Do not treat model consensus, p-values or LLM self-confidence as probability of truth.",
+    "Do not treat the source assistant hardware, deployment and budget examples as approved facts."
+  ]
+}

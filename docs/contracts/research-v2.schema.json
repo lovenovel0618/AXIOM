@@ -745,6 +745,14 @@
             "format": "uuid"
           },
           "uniqueItems": true
+        },
+        "research_trace_artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
         }
       },
       "required": [
@@ -772,7 +780,8 @@
         "budget_reservations",
         "outcome_status",
         "skipped_phases",
-        "diagnostic_artifact_ids"
+        "diagnostic_artifact_ids",
+        "research_trace_artifact_ids"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -3237,5 +3246,5 @@
       "additionalProperties": false
     }
   },
-  "x-axiom-draft-revision": "2.7"
+  "x-axiom-draft-revision": "2.8"
 }

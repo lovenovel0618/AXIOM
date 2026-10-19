@@ -1,6 +1,6 @@
 # 43｜資料庫ERD與關係約束
 
-> AXIOM v2.7 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.8 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-20
 
 ## 權威關係圖
 
@@ -138,3 +138,9 @@ ResearchVersion的evaluation_policy、hash及SemanticProfile.source_column不可
 UploadRecord COMPLETED必非null object_version／ingest_run_id；一session一INGEST，以business unique保證超過冪等TTL仍重用。dispatch key按AX-38設唯一鍵並保存payload hash，不能讓不同payload使用相同key。Evaluation計數、單位比例、publication claim資格與政策來源屬跨物件語意約束，DB CHECK／FK、可信服務與故障注入需共同驗收，JSON shape通過不代表這些不變條件已實作。
 
 MVP不提供資料硬刪除API。D-05未定保留及刪除政策前只允許受審查的隔離／tombstone；操作需先dry-run計算原始檔、projection、report、memory、cache及備份的lineage影響，不能讓失去來源的摘要仍有效。GC只處理確定無引用的暫存，資料庫刪除成功不代表備份／下載副本已消失。私有內容刪除與最少必要audit／曝光ledger保留必分開裁決，無政策就阻擋，不悄悄選擇永久保留或全部刪光。
+
+## 軌跡與學習lineage約束
+
+Run.research_trace_artifact_ids為授權投影，內部以(run_id,chunk_sequence)及node_id唯一、payload hash不可變，前chunk及parent需已存在／同tenant並保證DAG；遲到診斷不寫合法證據關聯。新payload中evidence、row依賴、case family、模型與訓練來源均為同租戶受控FK／registry引用，不能因都是UUID就放行。
+
+批次以(tenant,policy_hash,input_high_watermark)唯一、提交結果後才CAS前移水位；壓縮manifest切換不改Artifact內容身分，原bytes／hash仍可還原。ExperienceVersion append-only、supersedes不成環；模型／規則release與來源撤銷有持久影響索引，不能只靠向量庫刪embedding。M4／M7實作需實際DB遷移與併發驗收，payload schema不代替關係約束。

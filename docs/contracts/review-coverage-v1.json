@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "document_revision": "2.7",
+  "document_revision": "2.8",
   "scope": "DOCUMENT_REFERENCE_ONLY",
   "product_status": "NOT_RUN",
   "findings": [
@@ -665,6 +665,219 @@
       ],
       "reference_case_ids": [],
       "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-25",
+      "finding": "四份需求缺結構／表徵與原空間比較契約",
+      "status": "SPECIFIED",
+      "chapters": [
+        2,
+        5,
+        9,
+        15,
+        30,
+        49
+      ],
+      "evidence_paths": [
+        "01-需求/02-需求規格與使用情境.md",
+        "02-流程/05-基準測試與持續學習流程.md",
+        "04-數學核心/09-數據語意與前處理.md",
+        "04-數學核心/15-雙序列與多序列研究.md",
+        "11-交付/30-里程碑與分階段開發計畫.md",
+        "14-自主研究/49-數據結構與自主表徵探索.md"
+      ],
+      "acceptance_ids": [
+        "AC-49-01",
+        "AC-49-02",
+        "AC-49-03",
+        "AC-49-04",
+        "AC-49-05",
+        "AC-49-06",
+        "AC-49-07",
+        "AC-49-08"
+      ],
+      "reference_case_ids": [
+        "CF-199",
+        "CF-200",
+        "CF-201",
+        "CF-202",
+        "CF-203",
+        "CF-204",
+        "CF-205",
+        "CF-206"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-26",
+      "finding": "四份需求缺決策圖／根因與假設恢復契約",
+      "status": "SPECIFIED",
+      "chapters": [
+        4,
+        7,
+        17,
+        38,
+        43,
+        50
+      ],
+      "evidence_paths": [
+        "02-流程/04-端到端研究流程.md",
+        "03-架構/07-模組邊界與事件契約.md",
+        "05-記憶/17-知識圖譜與理論演化.md",
+        "03-架構/38-演算法插件與研究協調.md",
+        "13-專題深化/43-資料庫ERD與關係約束.md",
+        "14-自主研究/50-研究決策軌跡與錯誤恢復.md"
+      ],
+      "acceptance_ids": [
+        "AC-50-01",
+        "AC-50-02",
+        "AC-50-03",
+        "AC-50-04",
+        "AC-50-05",
+        "AC-50-06",
+        "AC-50-07",
+        "AC-50-08"
+      ],
+      "reference_case_ids": [
+        "CF-207",
+        "CF-208",
+        "CF-209",
+        "CF-210",
+        "CF-211",
+        "CF-212",
+        "CF-213",
+        "CF-214",
+        "CF-215",
+        "CF-216",
+        "CF-217",
+        "CF-218",
+        "CF-219",
+        "CF-220",
+        "CF-221",
+        "CF-222",
+        "CF-223",
+        "CF-224",
+        "CF-225",
+        "CF-226"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-27",
+      "finding": "四份需求缺多軸／逆推與證據充分性契約",
+      "status": "SPECIFIED",
+      "chapters": [
+        3,
+        13,
+        14,
+        28,
+        34,
+        51
+      ],
+      "evidence_paths": [
+        "01-需求/03-成功指標與研究品質.md",
+        "04-數學核心/13-可識別性不確定性與主動採樣.md",
+        "04-數學核心/14-推演一般化與形式化證明.md",
+        "10-測試/28-數學基準測試規格.md",
+        "12-附錄/34-術語表與證據等級.md",
+        "14-自主研究/51-正確性證據與正逆向驗證.md"
+      ],
+      "acceptance_ids": [
+        "AC-51-01",
+        "AC-51-02",
+        "AC-51-03",
+        "AC-51-04",
+        "AC-51-05",
+        "AC-51-06",
+        "AC-51-07",
+        "AC-51-08"
+      ],
+      "reference_case_ids": [
+        "CF-227",
+        "CF-228",
+        "CF-229",
+        "CF-230",
+        "CF-231",
+        "CF-232",
+        "CF-233",
+        "CF-234",
+        "CF-235",
+        "CF-236",
+        "CF-237",
+        "CF-238",
+        "CF-239",
+        "CF-240",
+        "CF-241",
+        "CF-242",
+        "CF-243",
+        "CF-244"
+      ],
+      "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-28",
+      "finding": "四份需求缺Token封存／反例／受控學習與選型契約",
+      "status": "SPECIFIED",
+      "chapters": [
+        18,
+        19,
+        20,
+        25,
+        26,
+        27,
+        37,
+        44,
+        52
+      ],
+      "evidence_paths": [
+        "06-AI/18-ChatGPT與Ollama協作.md",
+        "06-AI/19-策略學習微調與蒸餾.md",
+        "07-資料與API/20-資料模型與儲存規劃.md",
+        "09-非功能/25-效能與成本治理.md",
+        "09-非功能/26-安全隱私與可信執行.md",
+        "09-非功能/27-可觀測性備份與故障復原.md",
+        "12-附錄/37-決策待確認清單.md",
+        "13-專題深化/44-研究工作台畫面詳細規格.md",
+        "14-自主研究/52-AI紀錄封存與經驗演化.md"
+      ],
+      "acceptance_ids": [
+        "AC-52-01",
+        "AC-52-02",
+        "AC-52-03",
+        "AC-52-04",
+        "AC-52-05",
+        "AC-52-06",
+        "AC-52-07",
+        "AC-52-08"
+      ],
+      "reference_case_ids": [
+        "CF-245",
+        "CF-246",
+        "CF-247",
+        "CF-248",
+        "CF-249",
+        "CF-250",
+        "CF-251",
+        "CF-252",
+        "CF-253",
+        "CF-254",
+        "CF-255",
+        "CF-256",
+        "CF-257",
+        "CF-258",
+        "CF-259",
+        "CF-260",
+        "CF-261",
+        "CF-262",
+        "CF-263",
+        "CF-264",
+        "CF-265",
+        "CF-266",
+        "CF-267",
+        "CF-268",
+        "CF-269"
+      ],
+      "product_status": "NOT_RUN"
     }
   ],
   "chapters": [
@@ -693,7 +906,8 @@
       "path": "01-需求/02-需求規格與使用情境.md",
       "review_focus": "功能需求、NFR及MVP邊界",
       "finding_ids": [
-        "RG-20"
+        "RG-20",
+        "RG-25"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -703,7 +917,8 @@
       "path": "01-需求/03-成功指標與研究品質.md",
       "review_focus": "成功指標、分母與正式門檻",
       "finding_ids": [
-        "RG-12"
+        "RG-12",
+        "RG-27"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -714,7 +929,8 @@
       "review_focus": "版本狀態、零候選、取消與失敗",
       "finding_ids": [
         "RG-09",
-        "RG-14"
+        "RG-14",
+        "RG-26"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -724,7 +940,8 @@
       "path": "02-流程/05-基準測試與持續學習流程.md",
       "review_focus": "隔離、曝光資格與基準更新",
       "finding_ids": [
-        "RG-02"
+        "RG-02",
+        "RG-25"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -745,7 +962,8 @@
       "review_focus": "雙stream、outbox與重送",
       "finding_ids": [
         "RG-08",
-        "RG-16"
+        "RG-16",
+        "RG-26"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -770,7 +988,8 @@
         "RG-02",
         "RG-03",
         "RG-04",
-        "RG-05"
+        "RG-05",
+        "RG-25"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -811,7 +1030,8 @@
       "path": "04-數學核心/13-可識別性不確定性與主動採樣.md",
       "review_focus": "歧義、不確定性與主動採樣",
       "finding_ids": [
-        "RG-12"
+        "RG-12",
+        "RG-27"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -822,7 +1042,8 @@
       "review_focus": "證明軸與後續推演界線",
       "finding_ids": [
         "RG-14",
-        "RG-24"
+        "RG-24",
+        "RG-27"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -833,7 +1054,8 @@
       "review_focus": "群組／時間及多序列延後",
       "finding_ids": [
         "RG-03",
-        "RG-24"
+        "RG-24",
+        "RG-25"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -854,7 +1076,8 @@
       "review_focus": "主張與圖譜撤銷傳播",
       "finding_ids": [
         "RG-14",
-        "RG-17"
+        "RG-17",
+        "RG-26"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -864,7 +1087,8 @@
       "path": "06-AI/18-ChatGPT與Ollama協作.md",
       "review_focus": "外部AI權限及未核准外送",
       "finding_ids": [
-        "RG-24"
+        "RG-24",
+        "RG-28"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -875,7 +1099,8 @@
       "review_focus": "負面樣本、污染與模型回退",
       "finding_ids": [
         "RG-17",
-        "RG-24"
+        "RG-24",
+        "RG-28"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -887,7 +1112,8 @@
       "finding_ids": [
         "RG-04",
         "RG-13",
-        "RG-19"
+        "RG-19",
+        "RG-28"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -943,7 +1169,8 @@
       "review_focus": "根／研究／租戶成本與計量",
       "finding_ids": [
         "RG-05",
-        "RG-10"
+        "RG-10",
+        "RG-28"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -959,7 +1186,8 @@
         "RG-15",
         "RG-16",
         "RG-17",
-        "RG-19"
+        "RG-19",
+        "RG-28"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -972,7 +1200,8 @@
         "RG-07",
         "RG-09",
         "RG-16",
-        "RG-19"
+        "RG-19",
+        "RG-28"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -984,7 +1213,8 @@
       "finding_ids": [
         "RG-02",
         "RG-03",
-        "RG-12"
+        "RG-12",
+        "RG-27"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1005,7 +1235,8 @@
       "review_focus": "首期與後續里程碑",
       "finding_ids": [
         "RG-20",
-        "RG-24"
+        "RG-24",
+        "RG-25"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1050,7 +1281,8 @@
       "finding_ids": [
         "RG-12",
         "RG-14",
-        "RG-15"
+        "RG-15",
+        "RG-27"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1080,7 +1312,8 @@
       "path": "12-附錄/37-決策待確認清單.md",
       "review_focus": "九項未決條件及阻擋點",
       "finding_ids": [
-        "RG-23"
+        "RG-23",
+        "RG-28"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1094,7 +1327,8 @@
         "RG-08",
         "RG-09",
         "RG-10",
-        "RG-11"
+        "RG-11",
+        "RG-26"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1150,7 +1384,8 @@
         "RG-10",
         "RG-13",
         "RG-15",
-        "RG-19"
+        "RG-19",
+        "RG-26"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1163,7 +1398,8 @@
         "RG-06",
         "RG-15",
         "RG-16",
-        "RG-18"
+        "RG-18",
+        "RG-28"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1212,6 +1448,46 @@
       "review_focus": "契約權威、修訂與全面審查",
       "finding_ids": [
         "RG-22"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-49",
+      "path": "14-自主研究/49-數據結構與自主表徵探索.md",
+      "review_focus": "一至n維、週期、多序列與表徵選擇／洩漏",
+      "finding_ids": [
+        "RG-25"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-50",
+      "path": "14-自主研究/50-研究決策軌跡與錯誤恢復.md",
+      "review_focus": "決策DAG、失敗歸因、恢復及反誤殺",
+      "finding_ids": [
+        "RG-26"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-51",
+      "path": "14-自主研究/51-正確性證據與正逆向驗證.md",
+      "review_focus": "多軸正確性、機率、逆推與證據充分性",
+      "finding_ids": [
+        "RG-27"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-52",
+      "path": "14-自主研究/52-AI紀錄封存與經驗演化.md",
+      "review_focus": "AI捕捉、封存／整理、反例與本地模型選型",
+      "finding_ids": [
+        "RG-28"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"

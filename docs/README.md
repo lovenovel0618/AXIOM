@@ -1,10 +1,12 @@
 # AXIOM｜專案企劃與工程設計規格
 
-> 文件版本 v2.7｜2026-10-20｜設計已修訂；產品實作、基準與發布簽核尚未執行
+> 文件版本 v2.8｜2026-10-20｜設計已修訂；產品實作、基準與發布簽核尚未執行
 
 AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探索）是數據驅動的公式發現、獨立驗證、推演與經驗學習平台。MVP 僅單變量實數顯式函數：匯入、DSL v1、三基線策略、拒答、版本與工作台；記憶與 AI 在 M4，推演及雙／多序列在後續階段。
 
-本目錄包含 49 篇編號章節（AX-00～48）、本索引、整合紀錄與全量審查清單，共 52 份 Markdown，另有 machine-readable contracts 與文件檢查工具。目前沒有可執行產品或 Compose 實作，Docker 命令是待實作的操作介面。文件／fixture 檢查通過不等同產品測試通過。
+完整產品還包含自主表徵、決策與錯誤重審、正逆向多路徑驗證、AI紀錄與經驗演化；詳見AX-49～52，按M1～M7分段交付。
+
+本目錄包含 53 篇編號章節（AX-00～52）、本索引、整合紀錄與全量審查清單，共 56 份 Markdown，另有 machine-readable contracts 與文件檢查工具。目前沒有可執行產品或 Compose 實作，Docker 命令是待實作的操作介面。文件／fixture 檢查通過不等同產品測試通過。
 
 ## 建議閱讀路徑
 
@@ -15,7 +17,7 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 - 維運：[AX-08 部署與運算資源規劃](<03-架構/08-部署與運算資源規劃.md>) → [AX-41 Docker本地架設指南](<03-架構/41-Docker本地架設指南.md>) → [AX-27 可觀測性備份與故障復原](<09-非功能/27-可觀測性備份與故障復原.md>) → [AX-45 非功能SLO與壓測方案](<13-專題深化/45-非功能SLO與壓測方案.md>) → [AX-37 決策待確認清單](<12-附錄/37-決策待確認清單.md>) → [AX-46 發布驗收矩陣與交付證據](<13-專題深化/46-發布驗收矩陣與交付證據.md>)。
 - 記憶／AI：[AX-16 經驗記憶與檢索架構](<05-記憶/16-經驗記憶與檢索架構.md>) → [AX-17 知識圖譜與理論演化](<05-記憶/17-知識圖譜與理論演化.md>) → [AX-18 ChatGPT與Ollama協作](<06-AI/18-ChatGPT與Ollama協作.md>) → [AX-19 策略學習微調與蒸餾](<06-AI/19-策略學習微調與蒸餾.md>) → [AX-26 安全隱私與可信執行](<09-非功能/26-安全隱私與可信執行.md>)。
 
-## v2.7 的核心規則
+## v2.8 的核心規則
 
 - 本地平台維持 ADR-006：macOS 開發、Windows 11 + WSL2 架設。
 - 里程碑唯一依 AX-30；當期 MUST 以 AX-02／46 為準，不將全部未來能力當 MVP 前置。
@@ -127,8 +129,18 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 - [AX-46 發布驗收矩陣與交付證據](<13-專題深化/46-發布驗收矩陣與交付證據.md>)
 - [AX-47 完整研究物件契約](<13-專題深化/47-完整研究物件契約.md>)
 
+## 14-自主研究
+
+- [AX-49 數據結構與自主表徵探索](<14-自主研究/49-數據結構與自主表徵探索.md>)
+- [AX-50 研究決策軌跡與錯誤恢復](<14-自主研究/50-研究決策軌跡與錯誤恢復.md>)
+- [AX-51 正確性證據與正逆向驗證](<14-自主研究/51-正確性證據與正逆向驗證.md>)
+- [AX-52 AI紀錄封存與經驗演化](<14-自主研究/52-AI紀錄封存與經驗演化.md>)
+
 ## 機器可讀契約與公開 fixture
 
+- [attachment-requests-v1.json](<contracts/attachment-requests-v1.json>)
+- [research-learning-v1.schema.json](<contracts/research-learning-v1.schema.json>)
+- [research-learning-v1.examples.json](<contracts/research-learning-v1.examples.json>)
 - [api-v2.examples.json](<contracts/api-v2.examples.json>)
 - [benchmark-v1.json](<contracts/benchmark-v1.json>)
 - [conformance-v2.examples.json](<contracts/conformance-v2.examples.json>)

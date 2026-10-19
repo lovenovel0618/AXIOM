@@ -44,7 +44,8 @@
       "diagnostic_artifact_ids": [],
       "research_budget_account_id": "00000000-0000-4000-8000-000000000110",
       "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
-      "provenance_id": "00000000-0000-4000-8000-000000000702"
+      "provenance_id": "00000000-0000-4000-8000-000000000702",
+      "research_trace_artifact_ids": []
     },
     {
       "kind": "RunRecord",
@@ -91,7 +92,8 @@
       "diagnostic_artifact_ids": [],
       "research_budget_account_id": "00000000-0000-4000-8000-000000000110",
       "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
-      "provenance_id": "00000000-0000-4000-8000-000000000702"
+      "provenance_id": "00000000-0000-4000-8000-000000000702",
+      "research_trace_artifact_ids": []
     },
     {
       "kind": "AttemptRecord",
@@ -238,7 +240,8 @@
       "diagnostic_artifact_ids": [],
       "research_budget_account_id": null,
       "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
-      "provenance_id": "00000000-0000-4000-8000-000000000702"
+      "provenance_id": "00000000-0000-4000-8000-000000000702",
+      "research_trace_artifact_ids": []
     },
     {
       "kind": "ResourceProvenance",
@@ -354,7 +357,8 @@
         "diagnostic_artifact_ids": [],
         "research_budget_account_id": "00000000-0000-4000-8000-000000000110",
         "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
-        "provenance_id": "00000000-0000-4000-8000-000000000702"
+        "provenance_id": "00000000-0000-4000-8000-000000000702",
+        "research_trace_artifact_ids": []
       },
       "reason": "internal root needs budget account"
     },
@@ -467,7 +471,8 @@
         "diagnostic_artifact_ids": [],
         "research_budget_account_id": null,
         "execution_manifest_id": "00000000-0000-4000-8000-000000000701",
-        "provenance_id": "00000000-0000-4000-8000-000000000702"
+        "provenance_id": "00000000-0000-4000-8000-000000000702",
+        "research_trace_artifact_ids": []
       }
     },
     {
