@@ -96,7 +96,22 @@
       "published_artifact_ids": [],
       "evidence_bundle_ids": [],
       "quality_report_id": null,
-      "refit_policy_artifact_id": null
+      "refit_policy_artifact_id": null,
+      "domain": [
+        {
+          "name": "x",
+          "lower": {
+            "numerator": "-10",
+            "denominator": "1"
+          },
+          "upper": {
+            "numerator": "10",
+            "denominator": "1"
+          },
+          "lower_closed": true,
+          "upper_closed": true
+        }
+      ]
     },
     "equation": {
       "kind": "EquationVersion",
@@ -473,7 +488,16 @@
       "protocol_hash": "4444444444444444444444444444444444444444444444444444444444444444",
       "state": "RESERVED",
       "submission_id": "00000000-0000-4000-8000-000000000065",
-      "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+      "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+      "final_observation_tokens": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ],
+      "final_lineage_tokens": [
+        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      ],
+      "exposure_fingerprint_version": "1.0"
     }
   },
   "cases": [
@@ -1249,7 +1273,16 @@
         "protocol_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
         "state": "RESERVED",
         "submission_id": "00000000-0000-4000-8000-000000000065",
-        "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+        "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "final_observation_tokens": [
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        ],
+        "final_lineage_tokens": [
+          "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        ],
+        "exposure_fingerprint_version": "1.0"
       },
       "mutations": [
         [
@@ -1276,7 +1309,16 @@
         "protocol_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
         "state": "RESERVED",
         "submission_id": "00000000-0000-4000-8000-000000000065",
-        "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+        "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "final_observation_tokens": [
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        ],
+        "final_lineage_tokens": [
+          "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        ],
+        "exposure_fingerprint_version": "1.0"
       },
       "mutations": [
         [
@@ -1284,6 +1326,1474 @@
           "RETIRED"
         ]
       ],
+      "expected": "BLIND_ELIGIBILITY_DENIED"
+    },
+    {
+      "id": "CF-57",
+      "check": "exposure_identity",
+      "expected": "BLIND_ELIGIBILITY_DENIED",
+      "proposed": {
+        "kind": "SealedTest",
+        "id": "00000000-0000-4000-8000-000000000041",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "benchmark_partition_id": null,
+        "benchmark_case_id": null,
+        "final_rows_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+        "protocol_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+        "state": "RESERVED",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "source_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "final_observation_tokens": [
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        ],
+        "final_lineage_tokens": [
+          "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        ],
+        "exposure_fingerprint_version": "1.0"
+      },
+      "mutations": [
+        [
+          "sealed_test.state",
+          "CONSUMED"
+        ]
+      ]
+    },
+    {
+      "id": "CF-58",
+      "check": "exposure_identity",
+      "expected": "BLIND_ELIGIBILITY_DENIED",
+      "proposed": {
+        "kind": "SealedTest",
+        "id": "00000000-0000-4000-8000-000000000041",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000999",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "benchmark_partition_id": null,
+        "benchmark_case_id": "repackaged",
+        "final_rows_hash": "7777777777777777777777777777777777777777777777777777777777777777",
+        "protocol_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+        "state": "RESERVED",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "source_content_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "final_observation_tokens": [
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        ],
+        "final_lineage_tokens": [
+          "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        ],
+        "exposure_fingerprint_version": "1.0"
+      },
+      "mutations": [
+        [
+          "sealed_test.state",
+          "CONSUMED"
+        ]
+      ]
+    },
+    {
+      "id": "CF-59",
+      "check": "exposure_identity",
+      "expected": "BLIND_ELIGIBILITY_DENIED",
+      "proposed": {
+        "kind": "SealedTest",
+        "id": "00000000-0000-4000-8000-000000000041",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "benchmark_partition_id": null,
+        "benchmark_case_id": null,
+        "final_rows_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+        "protocol_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+        "state": "RESERVED",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "final_observation_tokens": [
+          "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        ],
+        "final_lineage_tokens": [
+          "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        ],
+        "exposure_fingerprint_version": "1.0"
+      },
+      "mutations": [
+        [
+          "sealed_test.state",
+          "CONSUMED"
+        ]
+      ]
+    },
+    {
+      "id": "CF-60",
+      "check": "exposure_identity",
+      "expected": "BLIND_ELIGIBILITY_DENIED",
+      "proposed": {
+        "kind": "SealedTest",
+        "id": "00000000-0000-4000-8000-000000000041",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "benchmark_partition_id": null,
+        "benchmark_case_id": null,
+        "final_rows_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+        "protocol_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+        "state": "RESERVED",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "final_observation_tokens": [
+          "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        ],
+        "final_lineage_tokens": [
+          "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ],
+        "exposure_fingerprint_version": "1.0"
+      },
+      "mutations": [
+        [
+          "sealed_test.state",
+          "CONSUMED"
+        ]
+      ]
+    },
+    {
+      "id": "CF-61",
+      "check": "exposure_identity",
+      "expected": "ACCEPT",
+      "proposed": {
+        "kind": "SealedTest",
+        "id": "00000000-0000-4000-8000-000000000041",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "benchmark_partition_id": null,
+        "benchmark_case_id": null,
+        "final_rows_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+        "protocol_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+        "state": "RESERVED",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "final_observation_tokens": [
+          "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        ],
+        "final_lineage_tokens": [
+          "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        ],
+        "exposure_fingerprint_version": "1.0"
+      },
+      "mutations": [
+        [
+          "sealed_test.state",
+          "CONSUMED"
+        ]
+      ]
+    },
+    {
+      "id": "CF-62",
+      "check": "exposure_identity",
+      "expected": "TEST_ALREADY_RESERVED",
+      "proposed": {
+        "kind": "SealedTest",
+        "id": "00000000-0000-4000-8000-000000000041",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "benchmark_partition_id": null,
+        "benchmark_case_id": null,
+        "final_rows_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+        "protocol_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+        "state": "RESERVED",
+        "submission_id": "00000000-0000-4000-8000-000000000999",
+        "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "final_observation_tokens": [
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        ],
+        "final_lineage_tokens": [
+          "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        ],
+        "exposure_fingerprint_version": "1.0"
+      },
+      "mutations": [
+        [
+          "sealed_test.state",
+          "RESERVED"
+        ]
+      ]
+    },
+    {
+      "id": "CF-63",
+      "check": "exposure_identity",
+      "expected": "ACCEPT",
+      "proposed": {
+        "kind": "SealedTest",
+        "id": "00000000-0000-4000-8000-000000000041",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "benchmark_partition_id": null,
+        "benchmark_case_id": null,
+        "final_rows_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+        "protocol_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+        "state": "RESERVED",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "final_observation_tokens": [
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        ],
+        "final_lineage_tokens": [
+          "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        ],
+        "exposure_fingerprint_version": "1.0"
+      },
+      "mutations": [
+        [
+          "sealed_test.state",
+          "RESERVED"
+        ]
+      ]
+    },
+    {
+      "id": "CF-64",
+      "check": "split",
+      "expected": "ACCEPT",
+      "mutations": [
+        [
+          "observation_rows",
+          [
+            {
+              "row_id": 0,
+              "time": 9,
+              "group": 0
+            },
+            {
+              "row_id": 1,
+              "time": 8,
+              "group": 1
+            },
+            {
+              "row_id": 2,
+              "time": 7,
+              "group": 2
+            },
+            {
+              "row_id": 3,
+              "time": 6,
+              "group": 3
+            },
+            {
+              "row_id": 4,
+              "time": 5,
+              "group": 4
+            },
+            {
+              "row_id": 5,
+              "time": 4,
+              "group": 5
+            },
+            {
+              "row_id": 6,
+              "time": 3,
+              "group": 6
+            },
+            {
+              "row_id": 7,
+              "time": 2,
+              "group": 7
+            },
+            {
+              "row_id": 8,
+              "time": 1,
+              "group": 8
+            },
+            {
+              "row_id": 9,
+              "time": 0,
+              "group": 9
+            }
+          ]
+        ],
+        [
+          "research_version.observation_split",
+          {
+            "kind": "TIME_ORDERED",
+            "fit": [
+              9,
+              8,
+              7,
+              6,
+              5,
+              4
+            ],
+            "development": [
+              3,
+              2
+            ],
+            "final_test": [
+              1,
+              0
+            ],
+            "gap_rows": 0,
+            "policy_version": "2.0",
+            "sealed_final_test": true,
+            "id": "00000000-0000-4000-8000-000000000040",
+            "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+            "lookback_rows": 0,
+            "horizon_rows": 0,
+            "seed": 42,
+            "time_column": "time",
+            "group_column": null,
+            "group_assignment_digest": null,
+            "row_ids_hash": "1c3aad2d6f18fa8121d1cc398ec627dd9325725fdc91d39c5781ed1ce9fdd955",
+            "splitter_version": "2.0.0",
+            "sealed_test_id": "00000000-0000-4000-8000-000000000041",
+            "benchmark_partition_id": null,
+            "benchmark_case_id": null
+          }
+        ]
+      ]
+    },
+    {
+      "id": "CF-65",
+      "check": "split",
+      "expected": "ACCEPT",
+      "mutations": [
+        [
+          "observation_rows",
+          [
+            {
+              "row_id": 0,
+              "time": 15,
+              "group": 0
+            },
+            {
+              "row_id": 1,
+              "time": 14,
+              "group": 1
+            },
+            {
+              "row_id": 2,
+              "time": 13,
+              "group": 2
+            },
+            {
+              "row_id": 3,
+              "time": 12,
+              "group": 3
+            },
+            {
+              "row_id": 4,
+              "time": 11,
+              "group": 4
+            },
+            {
+              "row_id": 5,
+              "time": 10,
+              "group": 5
+            },
+            {
+              "row_id": 6,
+              "time": 9,
+              "group": 6
+            },
+            {
+              "row_id": 7,
+              "time": 8,
+              "group": 7
+            },
+            {
+              "row_id": 8,
+              "time": 7,
+              "group": 8
+            },
+            {
+              "row_id": 9,
+              "time": 6,
+              "group": 9
+            },
+            {
+              "row_id": 10,
+              "time": 5,
+              "group": 10
+            },
+            {
+              "row_id": 11,
+              "time": 4,
+              "group": 11
+            },
+            {
+              "row_id": 12,
+              "time": 3,
+              "group": 12
+            },
+            {
+              "row_id": 13,
+              "time": 2,
+              "group": 13
+            },
+            {
+              "row_id": 14,
+              "time": 1,
+              "group": 14
+            },
+            {
+              "row_id": 15,
+              "time": 0,
+              "group": 15
+            }
+          ]
+        ],
+        [
+          "research_version.observation_split",
+          {
+            "kind": "TIME_ORDERED",
+            "fit": [
+              15,
+              14,
+              13,
+              12
+            ],
+            "development": [
+              9,
+              8,
+              7,
+              6
+            ],
+            "final_test": [
+              3,
+              2,
+              1,
+              0
+            ],
+            "gap_rows": 2,
+            "policy_version": "2.0",
+            "sealed_final_test": true,
+            "id": "00000000-0000-4000-8000-000000000040",
+            "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+            "lookback_rows": 1,
+            "horizon_rows": 1,
+            "seed": 42,
+            "time_column": "time",
+            "group_column": null,
+            "group_assignment_digest": null,
+            "row_ids_hash": "be43277092c55f7ea4d9ae508ec1375fb85d6ef2fff37278c3006f20deeca765",
+            "splitter_version": "2.0.0",
+            "sealed_test_id": "00000000-0000-4000-8000-000000000041",
+            "benchmark_partition_id": null,
+            "benchmark_case_id": null
+          }
+        ]
+      ]
+    },
+    {
+      "id": "CF-66",
+      "check": "split",
+      "expected": "GAP_TOO_SMALL",
+      "mutations": [
+        [
+          "observation_rows",
+          [
+            {
+              "row_id": 0,
+              "time": 15,
+              "group": 0
+            },
+            {
+              "row_id": 1,
+              "time": 14,
+              "group": 1
+            },
+            {
+              "row_id": 2,
+              "time": 13,
+              "group": 2
+            },
+            {
+              "row_id": 3,
+              "time": 12,
+              "group": 3
+            },
+            {
+              "row_id": 4,
+              "time": 11,
+              "group": 4
+            },
+            {
+              "row_id": 5,
+              "time": 10,
+              "group": 5
+            },
+            {
+              "row_id": 6,
+              "time": 9,
+              "group": 6
+            },
+            {
+              "row_id": 7,
+              "time": 8,
+              "group": 7
+            },
+            {
+              "row_id": 8,
+              "time": 7,
+              "group": 8
+            },
+            {
+              "row_id": 9,
+              "time": 6,
+              "group": 9
+            },
+            {
+              "row_id": 10,
+              "time": 5,
+              "group": 10
+            },
+            {
+              "row_id": 11,
+              "time": 4,
+              "group": 11
+            },
+            {
+              "row_id": 12,
+              "time": 3,
+              "group": 12
+            },
+            {
+              "row_id": 13,
+              "time": 2,
+              "group": 13
+            },
+            {
+              "row_id": 14,
+              "time": 1,
+              "group": 14
+            },
+            {
+              "row_id": 15,
+              "time": 0,
+              "group": 15
+            }
+          ]
+        ],
+        [
+          "research_version.observation_split",
+          {
+            "kind": "TIME_ORDERED",
+            "fit": [
+              15,
+              14,
+              13,
+              12
+            ],
+            "development": [
+              10,
+              9,
+              8,
+              7
+            ],
+            "final_test": [
+              3,
+              2,
+              1,
+              0
+            ],
+            "gap_rows": 2,
+            "policy_version": "2.0",
+            "sealed_final_test": true,
+            "id": "00000000-0000-4000-8000-000000000040",
+            "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+            "lookback_rows": 0,
+            "horizon_rows": 0,
+            "seed": 42,
+            "time_column": "time",
+            "group_column": null,
+            "group_assignment_digest": null,
+            "row_ids_hash": "eb1721dfa9ba5aa12ac96b9e8f2cef5544cebace111cf201dd7fff6486353f76",
+            "splitter_version": "2.0.0",
+            "sealed_test_id": "00000000-0000-4000-8000-000000000041",
+            "benchmark_partition_id": null,
+            "benchmark_case_id": null
+          }
+        ]
+      ]
+    },
+    {
+      "id": "CF-67",
+      "check": "split",
+      "expected": "ACCEPT",
+      "mutations": [
+        [
+          "observation_rows",
+          [
+            {
+              "row_id": 0,
+              "time": 6,
+              "group": 0
+            },
+            {
+              "row_id": 1,
+              "time": 0,
+              "group": 1
+            },
+            {
+              "row_id": 2,
+              "time": 8,
+              "group": 2
+            },
+            {
+              "row_id": 3,
+              "time": 2,
+              "group": 3
+            },
+            {
+              "row_id": 4,
+              "time": 9,
+              "group": 4
+            },
+            {
+              "row_id": 5,
+              "time": 4,
+              "group": 5
+            },
+            {
+              "row_id": 6,
+              "time": 1,
+              "group": 6
+            },
+            {
+              "row_id": 7,
+              "time": 7,
+              "group": 7
+            },
+            {
+              "row_id": 8,
+              "time": 3,
+              "group": 8
+            },
+            {
+              "row_id": 9,
+              "time": 5,
+              "group": 9
+            }
+          ]
+        ],
+        [
+          "research_version.observation_split",
+          {
+            "kind": "TIME_ORDERED",
+            "fit": [
+              1,
+              6,
+              3,
+              8,
+              5,
+              9
+            ],
+            "development": [
+              0,
+              7
+            ],
+            "final_test": [
+              2,
+              4
+            ],
+            "gap_rows": 0,
+            "policy_version": "2.0",
+            "sealed_final_test": true,
+            "id": "00000000-0000-4000-8000-000000000040",
+            "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+            "lookback_rows": 0,
+            "horizon_rows": 0,
+            "seed": 42,
+            "time_column": "time",
+            "group_column": null,
+            "group_assignment_digest": null,
+            "row_ids_hash": "c3db5193b9b46f9968ff8002c93c10a7bf087208dcd457c40ad53b7cfe3bda91",
+            "splitter_version": "2.0.0",
+            "sealed_test_id": "00000000-0000-4000-8000-000000000041",
+            "benchmark_partition_id": null,
+            "benchmark_case_id": null
+          }
+        ]
+      ]
+    },
+    {
+      "id": "CF-68",
+      "check": "split",
+      "expected": "TIME_LEAK",
+      "mutations": [
+        [
+          "observation_rows",
+          [
+            {
+              "row_id": 0,
+              "time": 9,
+              "group": 0
+            },
+            {
+              "row_id": 1,
+              "time": 7,
+              "group": 1
+            },
+            {
+              "row_id": 2,
+              "time": 7,
+              "group": 2
+            },
+            {
+              "row_id": 3,
+              "time": 6,
+              "group": 3
+            },
+            {
+              "row_id": 4,
+              "time": 5,
+              "group": 4
+            },
+            {
+              "row_id": 5,
+              "time": 4,
+              "group": 5
+            },
+            {
+              "row_id": 6,
+              "time": 3,
+              "group": 6
+            },
+            {
+              "row_id": 7,
+              "time": 2,
+              "group": 7
+            },
+            {
+              "row_id": 8,
+              "time": 1,
+              "group": 8
+            },
+            {
+              "row_id": 9,
+              "time": 0,
+              "group": 9
+            }
+          ]
+        ],
+        [
+          "research_version.observation_split",
+          {
+            "kind": "TIME_ORDERED",
+            "fit": [
+              9,
+              8,
+              7,
+              6,
+              5,
+              4
+            ],
+            "development": [
+              3,
+              2
+            ],
+            "final_test": [
+              1,
+              0
+            ],
+            "gap_rows": 0,
+            "policy_version": "2.0",
+            "sealed_final_test": true,
+            "id": "00000000-0000-4000-8000-000000000040",
+            "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+            "lookback_rows": 0,
+            "horizon_rows": 0,
+            "seed": 42,
+            "time_column": "time",
+            "group_column": null,
+            "group_assignment_digest": null,
+            "row_ids_hash": "1c3aad2d6f18fa8121d1cc398ec627dd9325725fdc91d39c5781ed1ce9fdd955",
+            "splitter_version": "2.0.0",
+            "sealed_test_id": "00000000-0000-4000-8000-000000000041",
+            "benchmark_partition_id": null,
+            "benchmark_case_id": null
+          }
+        ]
+      ]
+    },
+    {
+      "id": "CF-69",
+      "check": "split",
+      "expected": "TIME_ORDER_INVALID",
+      "mutations": [
+        [
+          "observation_rows",
+          [
+            {
+              "row_id": 0,
+              "time": 9,
+              "group": 0
+            },
+            {
+              "row_id": 1,
+              "time": 8,
+              "group": 1
+            },
+            {
+              "row_id": 2,
+              "time": 7,
+              "group": 2
+            },
+            {
+              "row_id": 3,
+              "time": 6,
+              "group": 3
+            },
+            {
+              "row_id": 4,
+              "time": 5,
+              "group": 4
+            },
+            {
+              "row_id": 5,
+              "time": 4,
+              "group": 5
+            },
+            {
+              "row_id": 6,
+              "time": 3,
+              "group": 6
+            },
+            {
+              "row_id": 7,
+              "time": 2,
+              "group": 7
+            },
+            {
+              "row_id": 8,
+              "time": 1,
+              "group": 8
+            },
+            {
+              "row_id": 9,
+              "time": 0,
+              "group": 9
+            }
+          ]
+        ],
+        [
+          "research_version.observation_split",
+          {
+            "kind": "TIME_ORDERED",
+            "fit": [
+              8,
+              9,
+              7,
+              6,
+              5,
+              4
+            ],
+            "development": [
+              3,
+              2
+            ],
+            "final_test": [
+              1,
+              0
+            ],
+            "gap_rows": 0,
+            "policy_version": "2.0",
+            "sealed_final_test": true,
+            "id": "00000000-0000-4000-8000-000000000040",
+            "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+            "lookback_rows": 0,
+            "horizon_rows": 0,
+            "seed": 42,
+            "time_column": "time",
+            "group_column": null,
+            "group_assignment_digest": null,
+            "row_ids_hash": "d53b35a026f5864a88641c3552d5a3bca6b22867df1ed20cdf974259fc63f1aa",
+            "splitter_version": "2.0.0",
+            "sealed_test_id": "00000000-0000-4000-8000-000000000041",
+            "benchmark_partition_id": null,
+            "benchmark_case_id": null
+          }
+        ]
+      ]
+    },
+    {
+      "id": "CF-70",
+      "check": "access",
+      "expected": "NOT_FOUND",
+      "actor": "reader",
+      "access_class": "SEALED_DETAIL",
+      "acl_read": true
+    },
+    {
+      "id": "CF-71",
+      "check": "access",
+      "expected": "NOT_FOUND",
+      "actor": "admin",
+      "access_class": "SEALED_DETAIL",
+      "acl_read": true
+    },
+    {
+      "id": "CF-72",
+      "check": "access",
+      "expected": "NOT_FOUND",
+      "actor": "solver",
+      "access_class": "SEALED_DETAIL",
+      "acl_read": true
+    },
+    {
+      "id": "CF-73",
+      "check": "access",
+      "expected": "ACCEPT",
+      "actor": "reviewer",
+      "access_class": "SEALED_DETAIL",
+      "acl_read": true,
+      "isolated_grant": true,
+      "independent_reviewer": true
+    },
+    {
+      "id": "CF-74",
+      "check": "access",
+      "expected": "NOT_FOUND",
+      "actor": "reviewer",
+      "access_class": "SEALED_DETAIL",
+      "acl_read": true,
+      "isolated_grant": true,
+      "independent_reviewer": false
+    },
+    {
+      "id": "CF-75",
+      "check": "access",
+      "expected": "ACCEPT",
+      "actor": "evaluator",
+      "access_class": "SEALED_DETAIL",
+      "acl_read": true,
+      "submission_bound": true
+    },
+    {
+      "id": "CF-76",
+      "check": "access",
+      "expected": "NOT_FOUND",
+      "actor": "evaluator",
+      "access_class": "SEALED_DETAIL",
+      "acl_read": true,
+      "submission_bound": false
+    },
+    {
+      "id": "CF-77",
+      "check": "access",
+      "expected": "ACCEPT",
+      "actor": "reader",
+      "access_class": "RELEASED_AGGREGATE",
+      "acl_read": true,
+      "release_checked": true
+    },
+    {
+      "id": "CF-78",
+      "check": "access",
+      "expected": "NOT_FOUND",
+      "actor": "solver",
+      "access_class": "RELEASED_AGGREGATE",
+      "acl_read": true,
+      "release_checked": true
+    },
+    {
+      "id": "CF-79",
+      "check": "access",
+      "expected": "NOT_FOUND",
+      "actor": "reader",
+      "access_class": "RELEASED_AGGREGATE",
+      "acl_read": true,
+      "release_checked": false
+    },
+    {
+      "id": "CF-80",
+      "check": "access",
+      "expected": "ACCEPT",
+      "actor": "solver",
+      "access_class": "PROJECT",
+      "acl_read": true,
+      "task_bound": true
+    },
+    {
+      "id": "CF-81",
+      "check": "access",
+      "expected": "NOT_FOUND",
+      "actor": "solver",
+      "access_class": "PROJECT",
+      "acl_read": true,
+      "task_bound": false
+    },
+    {
+      "id": "CF-82",
+      "check": "access",
+      "expected": "NOT_FOUND",
+      "actor": "reader",
+      "access_class": "PROJECT",
+      "acl_read": true,
+      "inherited_sealed": true
+    },
+    {
+      "id": "CF-83",
+      "check": "access",
+      "expected": "NOT_FOUND",
+      "actor": "reviewer",
+      "access_class": "SEALED_DETAIL",
+      "acl_read": false,
+      "isolated_grant": true,
+      "independent_reviewer": true
+    },
+    {
+      "id": "CF-84",
+      "check": "final_slot",
+      "expected": "REUSE_EVALUATION_RUN",
+      "existing": {
+        "kind": "FinalEvaluationSlot",
+        "id": "00000000-0000-4000-8000-000000000095",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+        "metric_version": "2.0",
+        "run_id": "00000000-0000-4000-8000-000000000096",
+        "validation_run_id": null,
+        "status": "PENDING"
+      },
+      "incoming": {
+        "kind": "FinalEvaluationSlot",
+        "id": "00000000-0000-4000-8000-000000000095",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+        "metric_version": "2.0",
+        "run_id": "00000000-0000-4000-8000-000000000999",
+        "validation_run_id": null,
+        "status": "PENDING"
+      }
+    },
+    {
+      "id": "CF-85",
+      "check": "final_slot",
+      "expected": "EXISTING_RESULT",
+      "existing": {
+        "kind": "FinalEvaluationSlot",
+        "id": "00000000-0000-4000-8000-000000000095",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+        "metric_version": "2.0",
+        "run_id": "00000000-0000-4000-8000-000000000096",
+        "validation_run_id": null,
+        "status": "COMPLETED"
+      },
+      "incoming": {
+        "kind": "FinalEvaluationSlot",
+        "id": "00000000-0000-4000-8000-000000000095",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+        "metric_version": "2.0",
+        "run_id": "00000000-0000-4000-8000-000000000999",
+        "validation_run_id": null,
+        "status": "PENDING"
+      }
+    },
+    {
+      "id": "CF-86",
+      "check": "final_slot",
+      "expected": "INVALID_TRANSITION",
+      "existing": {
+        "kind": "FinalEvaluationSlot",
+        "id": "00000000-0000-4000-8000-000000000095",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+        "metric_version": "2.0",
+        "run_id": "00000000-0000-4000-8000-000000000096",
+        "validation_run_id": null,
+        "status": "FAILED"
+      },
+      "incoming": {
+        "kind": "FinalEvaluationSlot",
+        "id": "00000000-0000-4000-8000-000000000095",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+        "metric_version": "2.0",
+        "run_id": "00000000-0000-4000-8000-000000000999",
+        "validation_run_id": null,
+        "status": "PENDING"
+      }
+    },
+    {
+      "id": "CF-87",
+      "check": "final_slot",
+      "expected": "NEW_SLOT",
+      "existing": {
+        "kind": "FinalEvaluationSlot",
+        "id": "00000000-0000-4000-8000-000000000095",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+        "metric_version": "2.0",
+        "run_id": "00000000-0000-4000-8000-000000000096",
+        "validation_run_id": null,
+        "status": "PENDING"
+      },
+      "incoming": {
+        "kind": "FinalEvaluationSlot",
+        "id": "00000000-0000-4000-8000-000000000095",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000999",
+        "metric_version": "2.0",
+        "run_id": "00000000-0000-4000-8000-000000000096",
+        "validation_run_id": null,
+        "status": "PENDING"
+      }
+    },
+    {
+      "id": "CF-88",
+      "check": "domain",
+      "expected": "ACCEPT",
+      "input_values": [
+        "-10",
+        "0",
+        "10"
+      ],
+      "equation_domain": [
+        {
+          "name": "x",
+          "lower": {
+            "numerator": "-10",
+            "denominator": "1"
+          },
+          "upper": {
+            "numerator": "10",
+            "denominator": "1"
+          },
+          "lower_closed": true,
+          "upper_closed": true
+        }
+      ]
+    },
+    {
+      "id": "CF-89",
+      "check": "domain",
+      "expected": "DOMAIN_VIOLATION",
+      "input_values": [
+        "11"
+      ]
+    },
+    {
+      "id": "CF-90",
+      "check": "domain",
+      "expected": "DOMAIN_VIOLATION",
+      "input_values": [
+        "-10"
+      ],
+      "mutations": [
+        [
+          "research_version.domain.0.lower_closed",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "CF-91",
+      "check": "domain",
+      "expected": "INVALID_RESEARCH_DOMAIN",
+      "input_values": [],
+      "mutations": [
+        [
+          "research_version.domain.0.upper",
+          {
+            "numerator": "-11",
+            "denominator": "1"
+          }
+        ]
+      ]
+    },
+    {
+      "id": "CF-92",
+      "check": "domain",
+      "expected": "INVALID_RESEARCH_DOMAIN",
+      "input_values": [],
+      "mutations": [
+        [
+          "research_version.domain.0.name",
+          "z"
+        ]
+      ]
+    },
+    {
+      "id": "CF-93",
+      "check": "domain",
+      "expected": "EQUATION_DOMAIN_MISMATCH",
+      "input_values": [
+        "0"
+      ],
+      "equation_domain": [
+        {
+          "name": "x",
+          "lower": {
+            "numerator": "-10",
+            "denominator": "1"
+          },
+          "upper": {
+            "numerator": "1",
+            "denominator": "1"
+          },
+          "lower_closed": true,
+          "upper_closed": true
+        }
+      ]
+    },
+    {
+      "id": "CF-94",
+      "check": "exposure_tokens",
+      "original": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "rows": [
+          {
+            "input": "0",
+            "target": "1",
+            "input_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "target_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_namespace": "trusted-fixture-source",
+            "observation_id": "training-A"
+          },
+          {
+            "input": "8",
+            "target": "17",
+            "input_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "target_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_namespace": "trusted-fixture-source",
+            "observation_id": "observation-A"
+          }
+        ],
+        "final_ids": [
+          1
+        ]
+      },
+      "proposed": {
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "rows": [
+          {
+            "input": "8.000",
+            "target": "17.0",
+            "input_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "target_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_namespace": "repacked-wrapper",
+            "observation_id": "new-wrapper-ID"
+          },
+          {
+            "input": "0",
+            "target": "999",
+            "input_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "target_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_namespace": "trusted-fixture-source",
+            "observation_id": "training-A"
+          }
+        ],
+        "final_ids": [
+          0
+        ]
+      },
+      "expected": "BLIND_ELIGIBILITY_DENIED"
+    },
+    {
+      "id": "CF-95",
+      "check": "exposure_tokens",
+      "original": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "rows": [
+          {
+            "input": "0",
+            "target": "1",
+            "input_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "target_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_namespace": "trusted-fixture-source",
+            "observation_id": "training-A"
+          },
+          {
+            "input": "8",
+            "target": "17",
+            "input_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "target_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_namespace": "trusted-fixture-source",
+            "observation_id": "observation-A"
+          }
+        ],
+        "final_ids": [
+          1
+        ]
+      },
+      "proposed": {
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "rows": [
+          {
+            "input": "8",
+            "target": "17.0001",
+            "input_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "target_unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "source_namespace": "trusted-fixture-source",
+            "observation_id": "observation-A"
+          }
+        ],
+        "final_ids": [
+          0
+        ]
+      },
       "expected": "BLIND_ELIGIBILITY_DENIED"
     }
   ]

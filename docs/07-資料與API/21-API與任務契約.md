@@ -1,6 +1,6 @@
 # 21｜API與任務契約
 
-> AXIOM v2.4 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.5 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-20
 
 ## 契約範圍與認證
 
@@ -25,7 +25,7 @@ MVP API 前綴 /api/v2，JSON 使用 UTF-8，傳輸使用 HTTPS（本機開發�
 | GET /frozen-submissions/{id} | reader | 200 FrozenSubmission，僅授權範圍的提交資訊 |
 | GET /frozen-candidates/{id} | reader | 200 FrozenCandidate，固定FitRun與參數 |
 | POST /researches | name；researcher | 201 Research 容器，與執行分離 |
-| POST /researches/{id}/versions | dataset_version_id、semantic_profile、observation_split、budget、purpose、可選refit_policy；editor | 201 DRAFT ResearchVersion，內容固定，新修改另建版本 |
+| POST /researches/{id}/versions | dataset_version_id、semantic_profile、observation_split、domain、budget、purpose、可選refit_policy；editor | 201 DRAFT ResearchVersion，內容固定，新修改另建版本 |
 | GET /research-versions/{id} | reader | 200 ResearchVersion+X-Control-Revision，取得狀態轉移前置版本 |
 | GET /evidence-bundles/{id} | reader | 200 EvidenceBundle+X-Control-Revision，取得撤銷前置版本 |
 | POST /research-versions/{id}/validate | {}；editor | 202 PROFILE run，合法時版本 READY，否則 DRAFT+品質報告 |
@@ -36,10 +36,10 @@ MVP API 前綴 /api/v2，JSON 使用 UTF-8，傳輸使用 HTTPS（本機開發�
 | GET /runs/{id}/candidates | cursor、limit；reader | 200 CandidatePage；未驗證UI由validation_status顯示E0／P0，完成後讀ValidationRun兩軸 |
 | GET /equation-versions/{id} | reader | 200 EquationVersion，DSL 與 hash 用於候選顯示 |
 | GET /fit-runs/{id} | reader | 200 FitRun，參數與精度 |
-| GET /validation-runs/{id} | reader | 200 ValidationRun，指標／覆蓋率與證據雙軸 |
+| GET /validation-runs/{id} | reader；FINAL_TEST另需隔離覆核授權或綁定提交的Evaluator scope | 200 ValidationRun，指標／覆蓋率與證據雙軸 |
 | GET /published-artifacts/{id} | reader | 200 PublishedArtifact，附當前有效性由 EvidenceBundle 查詢 |
-| GET /artifacts/{id} | reader | 200 Artifact metadata，資料來源與 hash |
-| GET /artifacts/{id}/content | reader | 200 受控串流內容，禁止跳轉未授權物件 URI |
+| GET /artifacts/{id} | reader＋access_class／lineage政策 | 200 Artifact metadata，資料來源與 hash |
+| GET /artifacts/{id}/content | reader＋access_class／lineage政策 | 200 受控串流內容，禁止跳轉未授權物件 URI |
 | GET /review-decisions/{id} | reader；依所屬研究ACL | 200 ReviewDecision，還原歷史審核意見與決定 |
 | POST /research-versions/{id}/reviews | decision、evidence_bundle_id、comment；獨立 reviewer | 201 ReviewDecision；核准且證據有效才發布 |
 | POST /evidence-bundles/{id}/revoke | reason、counterexample_artifact_id；reviewer | 202 撤銷工作，權威讀取立刻排除，清理傳播見 AX-26 |
@@ -67,7 +67,7 @@ validate、提交 SEARCH、cancel、review、revoke 額外要求 If-Control-Revi
 | 429 | QUOTA_EXCEEDED / RATE_LIMITED | 限流可依 Retry-After 重送；總配額不足需調整預算 |
 | 503 | DEPENDENCY_UNAVAILABLE | true，有限退避重試且保留 key |
 
-內部 worker 另有 STALE_ATTEMPT、ROOT_CANCELLED、TASK_TREE_MISMATCH、TEST_ALREADY_RESERVED、TEST_ALREADY_CONSUMED、CHECKPOINT_INCOMPATIBLE、DATASET_CONTAMINATION、FEATURE_DISABLED、DISPATCH_STAGE_VIOLATION、REFIT_POLICY_INVALID；不可當成通用 500。所有錯誤包含 AX-48 envelope，unknown fields 拒絕；details 不洩漏租戶外資料與秘密。
+內部 worker 另有 STALE_ATTEMPT、ROOT_CANCELLED、TASK_TREE_MISMATCH、TEST_ALREADY_RESERVED、TEST_ALREADY_CONSUMED、CHECKPOINT_INCOMPATIBLE、DATASET_CONTAMINATION、FEATURE_DISABLED、DISPATCH_STAGE_VIOLATION、REFIT_POLICY_INVALID、BLIND_ELIGIBILITY_DENIED、INVALID_RESEARCH_DOMAIN、EQUATION_DOMAIN_MISMATCH；不可當成通用 500。所有錯誤包含 AX-48 envelope，unknown fields 拒絕；details 不洩漏租戶外資料與秘密。
 
 ## 兩種事件流與生命週期
 
@@ -136,3 +136,14 @@ GET /review-decisions/{id} 只讀且不可覆寫，decision使用APPROVE／REJEC
 | AC-21-10 | PROFILE品質不通過後重開 | quality_report_id可讀報告；無產物時明確null |
 
 CreateResearchVersion.refit_policy省略／null表示禁用重擬合；提供時依AX-28預註冊並產生refit_policy_artifact_id。政策Artifact與研究版本同交易登記，不接受客戶端直接指定政策Artifact ID。
+
+## 封存回應與定義域
+
+reader只代表基礎ACL，並非final資料授權。ValidationRun.split_role=FINAL_TEST、含final證據的EvidenceBundle／PublishedArtifact及其Artifact皆追加AX-26的封存政策；一般reader無權時404。GET Artifact metadata與content使用相同access_class及lineage裁決，不能只限制下載。所有列表／快照／SSE／冪等回放同樣檢查；對外彙總報告另建RELEASED_AGGREGATE Artifact，不能將原final報告直接改為PROJECT。OpenAPI在相應GET端點標記artifact-class-and-lineage-v1政策，實際服務端授權仍待實作。
+
+CreateResearchVersion.domain為必填ResearchDomain，與DSL domain相同的有限有理上下界格式，MVP恰含一個輸入、名稱與semantic_profile一致；使用者必須確認，不從final資料自動推算。反向、空域、錯變數名回422 INVALID_RESEARCH_DOMAIN；資料或求值超出域回DOMAIN_VIOLATION。研究保存的domain不可變，修改另建ResearchVersion；預設建議、公式域及外插定義依AX-10。PROFILE TaskInput亦保存相同domain，SEARCH／FIT／VALIDATE由不可變研究版本解析並驗證相符。
+
+| ID | 情境 | 預期 |
+|---|---|---|
+| AC-21-11 | reader沿candidate／bundle／artifact引用尋找final內容 | 每個端點再查封存政策，不能以間接引用繞過404 |
+| AC-21-12 | 建立研究缺domain、反向界或變數名不符 | 422；合法domain固定保存並由PROFILE／插件驗證 |

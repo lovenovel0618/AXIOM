@@ -131,6 +131,19 @@
         "candidates_generated": 0,
         "candidates_accepted": 0
       }
+    },
+    {
+      "kind": "FinalEvaluationSlot",
+      "id": "00000000-0000-4000-8000-000000000095",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-20T00:00:00Z",
+      "submission_id": "00000000-0000-4000-8000-000000000065",
+      "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+      "metric_version": "2.0",
+      "run_id": "00000000-0000-4000-8000-000000000096",
+      "validation_run_id": null,
+      "status": "PENDING"
     }
   ],
   "invalid": [
@@ -207,6 +220,22 @@
         }
       },
       "reason": "heartbeat must be timestamp"
+    },
+    {
+      "reason": "Completed final result slot requires result reference",
+      "document": {
+        "kind": "FinalEvaluationSlot",
+        "id": "00000000-0000-4000-8000-000000000095",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+        "metric_version": "2.0",
+        "run_id": "00000000-0000-4000-8000-000000000096",
+        "validation_run_id": null,
+        "status": "COMPLETED"
+      }
     }
   ]
 }

@@ -1,0 +1,5 @@
+-r requirements.txt
+nodeenv==1.11.0
+pyright==1.1.414
+types-jsonschema==4.26.0.20261006
+typing-extensions==4.16.0

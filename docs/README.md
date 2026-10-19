@@ -1,6 +1,6 @@
 # AXIOM｜專案企劃與工程設計規格
 
-> 文件版本 v2.4｜2026-10-20｜設計已修訂；產品實作、基準與發布簽核尚未執行
+> 文件版本 v2.5｜2026-10-20｜設計已修訂；產品實作、基準與發布簽核尚未執行
 
 AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探索）是數據驅動的公式發現、獨立驗證、推演與經驗學習平台。MVP 僅單變量實數顯式函數：匯入、DSL v1、三基線策略、拒答、版本與工作台；記憶與 AI 在 M4，推演及雙／多序列在後續階段。
 
@@ -15,11 +15,13 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 - 維運：[AX-08 部署與運算資源規劃](<03-架構/08-部署與運算資源規劃.md>) → [AX-41 Docker本地架設指南](<03-架構/41-Docker本地架設指南.md>) → [AX-27 可觀測性備份與故障復原](<09-非功能/27-可觀測性備份與故障復原.md>) → [AX-45 非功能SLO與壓測方案](<13-專題深化/45-非功能SLO與壓測方案.md>) → [AX-37 決策待確認清單](<12-附錄/37-決策待確認清單.md>) → [AX-46 發布驗收矩陣與交付證據](<13-專題深化/46-發布驗收矩陣與交付證據.md>)。
 - 記憶／AI：[AX-16 經驗記憶與檢索架構](<05-記憶/16-經驗記憶與檢索架構.md>) → [AX-17 知識圖譜與理論演化](<05-記憶/17-知識圖譜與理論演化.md>) → [AX-18 ChatGPT與Ollama協作](<06-AI/18-ChatGPT與Ollama協作.md>) → [AX-19 策略學習微調與蒸餾](<06-AI/19-策略學習微調與蒸餾.md>) → [AX-26 安全隱私與可信執行](<09-非功能/26-安全隱私與可信執行.md>)。
 
-## v2.4 的核心規則
+## v2.5 的核心規則
 
 - 本地平台維持 ADR-006：macOS 開發、Windows 11 + WSL2 架設。
 - 里程碑唯一依 AX-30；當期 MUST 以 AX-02／46 為準，不將全部未來能力當 MVP 前置。
-- 搜尋只讀 fit/development；final_test 由隔離 Evaluator 在候選凍結後一次評估。
+- 搜尋只讀 fit/development；final_test 由隔離 Evaluator 在候選凍結後一次評估，詳細結果另查封存授權。
+- 最終評估以持久化槽位跨run去重；盲測資格按觀測內容／可信來源雙token追蹤，來源檔變動不重置曝光。
+- 研究必填固定domain；時間切分依時間排序位置驗gap，原始row_id只供追溯。
 - DSL v1、研究／內部物件 v2、API v2、事件 v2 有明確欄位與合法範例；跨物件、租戶與數學語意仍由實作驗證。
 - 舊 worker 提交、取消／完成競態及預算預留以權威交易裁決；凍結後僅派最終評估，PROFILE停止後可回DRAFT重試。
 - 預註冊聯集重擬合保存實際列與hash；封存消耗不可逆，同提交故障恢復不重置盲測資格。
@@ -139,15 +141,18 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 
 ## 文件檢查方式
 
-檢查工具依賴鎖定於 [requirements.txt](<tools/requirements.txt>)，僅用於文件與契約驗證。先在獨立環境安裝，再執行 [check_docs.py](<tools/check_docs.py>)：
+執行依賴鎖定於 [requirements.txt](<tools/requirements.txt>)；編輯與靜態檢查另使用 [requirements-dev.txt](<tools/requirements-dev.txt>)，包含Pyright及jsonschema型別宣告。從專案根目錄以Python 3.14建立本地環境，再執行嚴格型別與文件檢查：
 
 ```sh
-python3 -m venv /tmp/axiom-docs-venv
-/tmp/axiom-docs-venv/bin/python -m pip install -r docs/tools/requirements.txt
-/tmp/axiom-docs-venv/bin/python docs/tools/check_docs.py
+python3 -m venv .venv
+.venv/bin/python -m pip install -r docs/tools/requirements-dev.txt
+.venv/bin/pyright
+.venv/bin/python docs/tools/check_docs.py
 ```
 
-編輯後經審查再以 `--write-manifest` 重建清單，接著無參數重跑確認。工具檢查本地連結、編號、AC 追溯、公開／內部 schema 正反例及投影一致、OpenAPI 雙向端點覆蓋、56 組跨契約參考情境、公開資料 oracle 與 manifest；不執行搜尋引擎、安全隔離、備份恢復或瀏覽器驗收。
+專案根目錄的pyrightconfig.json採strict模式檢查docs/tools；VS Code設定預設使用專案.venv。若編輯器已選其他Python，執行「Python: Select Interpreter」選擇.venv/bin/python，然後重新啟動語言伺服器。.venv與Python cache不納入Git。純執行驗證可只安裝requirements.txt；不能將執行通過當成靜態型別檢查通過。SonarQube for VS Code使用「Analyze Current File with SonarQube」或「Analyze Changed Files with SonarQube」檢查工具；維持S3776的預設15上限，不以停用規則消除提示。JSON動態欄位的Any僅用於schema資料邊界；工具函式、容器、Registry及第三方驗證器介面仍明確標註型別，不關閉診斷。
+
+編輯後經審查再以 `--write-manifest` 重建清單，接著無參數重跑確認。工具檢查本地連結、編號、AC 追溯、公開／內部 schema 正反例及投影一致、OpenAPI 雙向端點覆蓋、95 組跨契約參考情境、公開資料 oracle 與 manifest；不執行搜尋引擎、安全隔離、備份恢復或瀏覽器驗收。
 
 ## 整合與維護
 

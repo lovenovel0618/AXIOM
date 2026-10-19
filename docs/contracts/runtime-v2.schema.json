@@ -13,6 +13,9 @@
     },
     {
       "$ref": "#/$defs/BudgetAccount"
+    },
+    {
+      "$ref": "#/$defs/FinalEvaluationSlot"
     }
   ],
   "$defs": {
@@ -381,6 +384,9 @@
               "type": "null"
             }
           ]
+        },
+        "domain": {
+          "$ref": "#/$defs/ResearchDomain"
         }
       },
       "required": [
@@ -403,7 +409,8 @@
         "published_artifact_ids",
         "evidence_bundle_ids",
         "quality_report_id",
-        "refit_policy_artifact_id"
+        "refit_policy_artifact_id",
+        "domain"
       ],
       "additionalProperties": false
     },
@@ -1165,6 +1172,17 @@
               "type": "null"
             }
           ]
+        },
+        "submission_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -1187,7 +1205,8 @@
         "artifact_id",
         "observation_split_id",
         "split_role",
-        "frozen_candidate_id"
+        "frozen_candidate_id",
+        "submission_id"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -1248,6 +1267,20 @@
               "frozen_candidate_id": {
                 "type": "string",
                 "format": "uuid"
+              },
+              "submission_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "submission_id": {
+                "type": "null"
+              },
+              "frozen_candidate_id": {
+                "type": "null"
               }
             }
           }
@@ -1664,6 +1697,14 @@
         "media_type": {
           "type": "string",
           "minLength": 1
+        },
+        "access_class": {
+          "type": "string",
+          "enum": [
+            "PROJECT",
+            "SEALED_DETAIL",
+            "RELEASED_AGGREGATE"
+          ]
         }
       },
       "required": [
@@ -1677,7 +1718,8 @@
         "status",
         "owner_id",
         "size_bytes",
-        "media_type"
+        "media_type",
+        "access_class"
       ],
       "additionalProperties": false
     },
@@ -2277,6 +2319,27 @@
         "source_content_sha256": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
+        },
+        "final_observation_tokens": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "final_lineage_tokens": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "exposure_fingerprint_version": {
+          "const": "1.0"
         }
       },
       "required": [
@@ -2293,7 +2356,10 @@
         "protocol_hash",
         "state",
         "submission_id",
-        "source_content_sha256"
+        "source_content_sha256",
+        "final_observation_tokens",
+        "final_lineage_tokens",
+        "exposure_fingerprint_version"
       ],
       "additionalProperties": false
     },
@@ -3056,6 +3122,166 @@
         "top_k"
       ],
       "additionalProperties": false
+    },
+    "ResearchDomain": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"
+          },
+          "lower": {
+            "type": "object",
+            "properties": {
+              "numerator": {
+                "type": "string",
+                "pattern": "^-?(0|[1-9][0-9]{0,127})$"
+              },
+              "denominator": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,127}$"
+              }
+            },
+            "required": [
+              "numerator",
+              "denominator"
+            ],
+            "additionalProperties": false
+          },
+          "upper": {
+            "type": "object",
+            "properties": {
+              "numerator": {
+                "type": "string",
+                "pattern": "^-?(0|[1-9][0-9]{0,127})$"
+              },
+              "denominator": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,127}$"
+              }
+            },
+            "required": [
+              "numerator",
+              "denominator"
+            ],
+            "additionalProperties": false
+          },
+          "lower_closed": {
+            "type": "boolean"
+          },
+          "upper_closed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "lower",
+          "upper",
+          "lower_closed",
+          "upper_closed"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "FinalEvaluationSlot": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "FinalEvaluationSlot"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "const": "2.0"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "submission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "frozen_candidate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "metric_version": {
+          "const": "2.0"
+        },
+        "run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "validation_run_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "COMPLETED",
+            "FAILED"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id",
+        "tenant_id",
+        "schema_version",
+        "created_at",
+        "submission_id",
+        "frozen_candidate_id",
+        "metric_version",
+        "run_id",
+        "validation_run_id",
+        "status"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "COMPLETED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "validation_run_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "validation_run_id": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

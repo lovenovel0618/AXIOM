@@ -77,3 +77,15 @@
 ## v2.4 生命週期與還原缺口修訂（2026-10-20）
 
 本輪完成六項跨契約修正：PROFILE取消／永久失敗回DRAFT；SEARCH_OPEN／FINAL_ONLY／CLOSED區分凍結與結束；封存測試先消耗後讀取、同提交故障恢復與不可逆退役；預註冊fit+development重擬合列與hash；研究快照證據／品質報告引用及審核唯讀API；Run結果與略過階段欄位、APPROVE／REJECT統一。同步修改公開／runtime／TaskInput／OpenAPI及fixture，擴充文件參考情境。契約仍是未部署2.0草案，產品與故障注入驗收仍NOT_RUN。
+
+## v2.5 權限與觀測身分修訂（2026-10-20）
+
+完成五項審查缺口：逐資源SEALED_DETAIL與聚合報告授權；FinalEvaluationSlot及最終結果partial unique／提交成員FK；觀測內容與可信來源雙token曝光ledger；依chronological_rank檢查時間gap；CreateResearchVersion／PROFILE／DSL固定ResearchDomain。公開、runtime、TaskInput及OpenAPI／fixture同步更新，文件工具增加原缺陷的回歸情境。全部仍為設計與參考裁決，實際授權、HMAC密鑰管理、多交易競態及產品驗收保持NOT_RUN。
+
+## 文件工具型別與開發環境修正（2026-10-20）
+
+補上兩支Python工具的函式／容器型別、JSON載入物件檢查與schema資料邊界；Registry使用SchemaRegistry，動態jsonschema驗證器經其Validator protocol提供已知介面。加入專案.venv設定、strict Pyright設定與鎖定的requirements-dev.txt，避免只在/tmp安裝依賴導致編輯器無法解析匯入。執行結果與靜態型別檢查分開驗證，未停用診斷規則，產品驗收仍NOT_RUN。
+
+## 文件工具SonarQube重構（2026-10-20）
+
+將集中情境分派改為具型別的handler表，分離時間／群組切分、域界、計量與重試裁決；文件檢查按Markdown、schema、OpenAPI與投影責任拆函式。抽出共用字串常數，改以單次掃描解析程式區塊及表格欄位，避免回溯型正規表示式。使用本機SonarQube for VS Code分析器檢查兩支工具，保持原規則啟用；另以strict Pyright、95個參考情境及Markdown正反例確認重構未破壞驗證行為。

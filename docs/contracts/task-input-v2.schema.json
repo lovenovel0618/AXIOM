@@ -125,12 +125,16 @@
               },
               "observation_split": {
                 "$ref": "research-v2.schema.json#/$defs/ObservationSplit"
+              },
+              "domain": {
+                "$ref": "research-v2.schema.json#/$defs/ResearchDomain"
               }
             },
             "required": [
               "dataset_version_id",
               "semantic_profile",
-              "observation_split"
+              "observation_split",
+              "domain"
             ],
             "additionalProperties": false
           },

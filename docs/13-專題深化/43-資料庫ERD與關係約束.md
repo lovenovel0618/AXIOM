@@ -1,6 +1,6 @@
 # 43｜資料庫ERD與關係約束
 
-> AXIOM v2.4 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.5 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-20
 
 ## 權威關係圖
 
@@ -35,6 +35,12 @@ erDiagram
  FROZEN_SUBMISSION ||--o{ SUBMISSION_CANDIDATE_LINK : freezes
  FROZEN_CANDIDATE ||--o{ SUBMISSION_CANDIDATE_LINK : ordered
  SEALED_TEST ||--o| FROZEN_SUBMISSION : consumes
+ FROZEN_SUBMISSION ||--o{ FINAL_EVALUATION_SLOT : reserves
+ FROZEN_CANDIDATE ||--o{ FINAL_EVALUATION_SLOT : evaluated_by
+ RUN ||--o| FINAL_EVALUATION_SLOT : allocated
+ FINAL_EVALUATION_SLOT ||--o| VALIDATION_RUN : result
+ SEALED_TEST ||--o{ SEALED_OBSERVATION_MEMBERSHIP : includes
+ EXPOSURE_LEDGER |o--o{ SEALED_OBSERVATION_MEMBERSHIP : guards
  FIT_RUN ||--o{ VALIDATION_RUN : evaluated
  FROZEN_CANDIDATE ||--o{ VALIDATION_RUN : final_evaluated
  RESEARCH_VERSION ||--o{ EVIDENCE_BUNDLE : collects
@@ -64,7 +70,7 @@ Derived feature、memory、training snapshot 是 M4/M7 的擴充表，所有引�
 | Run / Attempt | unique(run_id,generation)，(tenant_id,status,created_at) 索引 | 租約世代及排隊查詢 |
 | Candidate | unique(search_run_id,equation_version_id)，rank 索引 | 同搜尋結構候選去重；擬合另表 |
 | FitRun | unique(run_id)、同租戶FK；id為FitRun識別，資料／公式版本FK | 不混合不同參數估計 |
-| ValidationRun | unique(run_id,observation_split_id,split_role,metric_version) | 重送不重複評分；所有必評點計 coverage |
+| ValidationRun | 開發評估unique(tenant_id,run_id,observation_split_id,split_role,metric_version)；FINAL_TEST另partial unique(tenant_id,submission_id,frozen_candidate_id,metric_version) | 更換run_id仍不能重複最終結果；final需非null提交引用 |
 | Evidence links | unique(bundle_id,validation_id/proof_id)；tenant 複合 FK | 防止外租戶或重複證據 |
 | ReviewDecision | unique(research_version_id,expected_revision) | 同 revision 僅一個審核決定 |
 | Outbox | event_id 唯一、unique(stream_scope,stream_id,sequence) | 至少一次投遞＋消費去重 |
@@ -102,3 +108,19 @@ ROOT_RUN 是 RunRecord 中 parent_run_id IS NULL 的子集合，不是另建可�
 ObservationSplit、BenchmarkPartition、SealedTest各有獨立id及版本；SealedTest的來源內容／case／final rows／protocol指紋唯一，不依Dataset容器id。FrozenSubmission透過link表固定有序FrozenCandidate；一個FrozenCandidate精確引用一個FitRun，不能只引用Candidate的fit陣列。最終ValidationRun必須同FrozenCandidate資料／split與binding。
 
 BudgetReservation.id與UsageReport.usage_event_id唯一；另unique(attempt_id,sequence)，相同序號不同內容拒絕。Public DTO的budget_usage由帳本投影，不與limit共用型別。Outbox的sequence按stream_scope/stream_id分配，RESEARCH流不因任一Run終態關閉。
+
+## 最終評估結果槽位與曝光帳本
+
+FinalEvaluationSlot為內部持久化表／runtime物件，以unique(tenant_id,submission_id,frozen_candidate_id,metric_version)為業務鍵，保存固定run_id、status=PENDING／COMPLETED／FAILED及可null的validation_run_id。凍結包的SubmissionCandidateLink以同租戶submission／candidate成員鍵約束；slot及最終ValidationRun皆須複合FK引用該成員，metric_version等於submission固定值。FINAL_TEST的submission_id／frozen_candidate_id必非null；其他split兩者均null，不能共用最終唯一鍵。
+
+首次派送在root lock內以槽位業務鍵insert-on-conflict，與建立唯一VALIDATE run／input manifest／outbox同交易。競爭者讀既有slot，回同run_id或已完成ValidationRun，不另建評估run；租約恢復只建原run的新attempt。不可對含NULL的通用唯一索引誤認為已保護final結果。最終ValidationRun、slot=COMPLETED、validation_run_id及結果outbox同交易提交；PENDING／FAILED的結果引用必null，FAILED slot不以新run重啟已終止根。結果提交仍經AX-38 fencing、根取消及artifact校驗；衝突不能以新UUID繞過。
+
+SealedObservationMembership保存每個SealedTest的final_observation_tokens／final_lineage_tokens；ExposureLedger以unique(tenant_id,fingerprint_version,token_kind,token)保護觀測級資格，token_kind區分CONTENT／LINEAGE，狀態RESERVED／CONSUMED／RETIRED並綁submission_id。正式blind的穩定來源namespace／observation ID由Generator登記，不能從Dataset容器或使用者自填case_id取得。登記、變更來源及新切分都查token重疊，不只比整包hash。預留時先root、SealedTest，再以固定token順序鎖／insert ledger，最後建立slot／run／outbox；同提交可重試，不同提交碰撞拒絕。資料讀取前SealedTest與全部成員ledger同交易CONSUMED；退役同樣保留成員紀錄，不能靠刪原版本重新登記。私有token只存Evaluator控制域，不透過普通API／日誌外洩。
+
+| ID | 情境 | 預期 |
+|---|---|---|
+| AC-43-05 | 同提交／候選／metric並行建立兩個不同run | 只有一個slot及評估run；衝突讀回原run／結果 |
+| AC-43-06 | 不同run_id寫同一final結果或引用非包成員 | 最終partial unique／複合FK拒絕，無第二份有效結果 |
+| AC-43-07 | 改訓練列／重排原檔／換容器後預留相同或部分final觀測 | 觀測ledger命中；不同提交不可重新取得盲測資格 |
+
+全域鎖順序統一為root→既有ancestor／run（深度序）→SealedTest→ExposureLedger（token_kind/token排序）→FinalEvaluationSlot→BudgetAccount；沒有該資源時略過，不能持帳本鎖再回頭取曝光／槽位鎖。原AX-38的root→ancestor/run→budget順序在此細化，取消與純計量不反向取其他鎖。

@@ -1,6 +1,6 @@
 # 10｜公式DSL與等價正規化
 
-> AXIOM v2.4 設計規格｜文件 ID AX-10｜狀態：待實作、待驗收｜2026-10-20
+> AXIOM v2.5 設計規格｜文件 ID AX-10｜狀態：待實作、待驗收｜2026-10-20
 
 ## DSL v1 範圍
 
@@ -51,3 +51,11 @@ x/x 與 1 在包含 0 的原始域不能合併；sqrt(x²) 等擴充式不得直
 | AC-10-04 | add(var_length,var_time)、超深 AST、未知變數 | 分別 UNIT_MISMATCH、AST_LIMIT_EXCEEDED、UNKNOWN_SYMBOL |
 
 M1 必須逐條執行；fixture 檢查不能取代安全執行器與數值測試。證據語義見 AX-34，租戶內身分與版本關係見 AX-43／47。
+
+## 固定研究域、公式域與外插
+
+ResearchVersion.domain／CreateResearchVersion.domain使用ResearchDomain，形狀與DSL domain一致；MVP唯一輸入名必與semantic_profile相同，有限有理界、上下界順序與開閉旗標經語意驗證。使用者須在啟動前顯式確認。UI可由fit資料提出[min,max]建議，但不讀development／final來擴大預設域，也不自動接受建議；固定域須容納研究宣告的觀測。PROFILE可信服務檢查三區輸入值均在域內，正式封存資料不向Solver透露越界點、極值或labels，只提供經遮罩的阻擋原因。
+
+MVP每個EquationVersion.dsl.domain必等於所屬研究的canonical domain，不能由插件縮到容易通過的子域；運算造成的孔洞另以DOMAIN_VIOLATION／valid_mask與coverage處理，不透過改域排除失敗點。domain參與EquationVersion identity_hash，研究域不可原地變更；所有FIT／VALIDATE／FrozenCandidate沿研究及公式引用核對域。單點域只有兩端閉合才非空；非法域在計算前拒絕。
+
+觀測域是允許求值及聲明的固定範圍；訓練支撐範圍是fit觀測的覆蓋；兩者之間可顯示為外插且不能提高證據。超出固定domain不執行DSL求值，UI標示域外並留空，不能因拖曳圖表暗中擴域。需要新範圍必另建研究版本，並重新審查資料與驗證資格。

@@ -1716,7 +1716,7 @@
             }
           },
           "404": {
-            "description": "Error semantics in AX-21",
+            "description": "Not found or unauthorized, including sealed detail",
             "content": {
               "application/json": {
                 "schema": {
@@ -1815,7 +1815,9 @@
               }
             }
           }
-        }
+        },
+        "description": "AX-26 access_class checks apply to metadata, content and linked resources. SEALED_DETAIL requires an isolated human reviewer grant or submission-bound evaluator service scope; project reader/admin/Solver alone is insufficient. Unauthorized resources return 404. Released aggregate reports are separately checked artifacts.",
+        "x-axiom-access-policy": "artifact-class-and-lineage-v1"
       }
     },
     "/research-versions/{id}/validate": {
@@ -3565,8 +3567,20 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Not found or unauthorized, including sealed detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "description": "AX-26 access_class checks apply to metadata, content and linked resources. SEALED_DETAIL requires an isolated human reviewer grant or submission-bound evaluator service scope; project reader/admin/Solver alone is insufficient. Unauthorized resources return 404. Released aggregate reports are separately checked artifacts.",
+        "x-axiom-access-policy": "artifact-class-and-lineage-v1"
       }
     },
     "/published-artifacts/{id}": {
@@ -3603,8 +3617,20 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Not found or unauthorized, including sealed detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "description": "AX-26 access_class checks apply to metadata, content and linked resources. SEALED_DETAIL requires an isolated human reviewer grant or submission-bound evaluator service scope; project reader/admin/Solver alone is insufficient. Unauthorized resources return 404. Released aggregate reports are separately checked artifacts.",
+        "x-axiom-access-policy": "artifact-class-and-lineage-v1"
       }
     },
     "/artifacts/{id}": {
@@ -3641,8 +3667,20 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Not found or unauthorized, including sealed detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "description": "AX-26 access_class checks apply to metadata, content and linked resources. SEALED_DETAIL requires an isolated human reviewer grant or submission-bound evaluator service scope; project reader/admin/Solver alone is insufficient. Unauthorized resources return 404. Released aggregate reports are separately checked artifacts.",
+        "x-axiom-access-policy": "artifact-class-and-lineage-v1"
       }
     },
     "/artifacts/{id}/content": {
@@ -3680,8 +3718,20 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Not found or unauthorized, including sealed detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "description": "AX-26 access_class checks apply to metadata, content and linked resources. SEALED_DETAIL requires an isolated human reviewer grant or submission-bound evaluator service scope; project reader/admin/Solver alone is insufficient. Unauthorized resources return 404. Released aggregate reports are separately checked artifacts.",
+        "x-axiom-access-policy": "artifact-class-and-lineage-v1"
       }
     },
     "/researches/{id}": {
@@ -4096,6 +4146,9 @@
               }
             ],
             "description": "Optional; omitted/null disables refit. Server persists immutable policy Artifact before any search starts."
+          },
+          "domain": {
+            "$ref": "#/components/schemas/ResearchDomain"
           }
         },
         "required": [
@@ -4103,7 +4156,8 @@
           "semantic_profile",
           "budget",
           "purpose",
-          "observation_split"
+          "observation_split",
+          "domain"
         ],
         "additionalProperties": false
       },
@@ -5612,6 +5666,9 @@
                 "type": "null"
               }
             ]
+          },
+          "domain": {
+            "$ref": "#/components/schemas/ResearchDomain"
           }
         },
         "required": [
@@ -5634,7 +5691,8 @@
           "published_artifact_ids",
           "evidence_bundle_ids",
           "quality_report_id",
-          "refit_policy_artifact_id"
+          "refit_policy_artifact_id",
+          "domain"
         ],
         "additionalProperties": false
       },
@@ -6396,6 +6454,17 @@
                 "type": "null"
               }
             ]
+          },
+          "submission_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -6418,7 +6487,8 @@
           "artifact_id",
           "observation_split_id",
           "split_role",
-          "frozen_candidate_id"
+          "frozen_candidate_id",
+          "submission_id"
         ],
         "additionalProperties": false,
         "allOf": [
@@ -6479,6 +6549,20 @@
                 "frozen_candidate_id": {
                   "type": "string",
                   "format": "uuid"
+                },
+                "submission_id": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "submission_id": {
+                  "type": "null"
+                },
+                "frozen_candidate_id": {
+                  "type": "null"
                 }
               }
             }
@@ -6895,6 +6979,14 @@
           "media_type": {
             "type": "string",
             "minLength": 1
+          },
+          "access_class": {
+            "type": "string",
+            "enum": [
+              "PROJECT",
+              "SEALED_DETAIL",
+              "RELEASED_AGGREGATE"
+            ]
           }
         },
         "required": [
@@ -6908,7 +7000,8 @@
           "status",
           "owner_id",
           "size_bytes",
-          "media_type"
+          "media_type",
+          "access_class"
         ],
         "additionalProperties": false
       },
@@ -7508,6 +7601,27 @@
           "source_content_sha256": {
             "type": "string",
             "pattern": "^[0-9a-f]{64}$"
+          },
+          "final_observation_tokens": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "final_lineage_tokens": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "exposure_fingerprint_version": {
+            "const": "1.0"
           }
         },
         "required": [
@@ -7524,7 +7638,10 @@
           "protocol_hash",
           "state",
           "submission_id",
-          "source_content_sha256"
+          "source_content_sha256",
+          "final_observation_tokens",
+          "final_lineage_tokens",
+          "exposure_fingerprint_version"
         ],
         "additionalProperties": false
       },
@@ -7776,6 +7893,70 @@
           "top_k"
         ],
         "additionalProperties": false
+      },
+      "ResearchDomain": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"
+            },
+            "lower": {
+              "type": "object",
+              "properties": {
+                "numerator": {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]{0,127})$"
+                },
+                "denominator": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]{0,127}$"
+                }
+              },
+              "required": [
+                "numerator",
+                "denominator"
+              ],
+              "additionalProperties": false
+            },
+            "upper": {
+              "type": "object",
+              "properties": {
+                "numerator": {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]{0,127})$"
+                },
+                "denominator": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]{0,127}$"
+                }
+              },
+              "required": [
+                "numerator",
+                "denominator"
+              ],
+              "additionalProperties": false
+            },
+            "lower_closed": {
+              "type": "boolean"
+            },
+            "upper_closed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "name",
+            "lower",
+            "upper",
+            "lower_closed",
+            "upper_closed"
+          ],
+          "additionalProperties": false
+        },
+        "minItems": 1,
+        "maxItems": 1
       }
     },
     "securitySchemes": {
@@ -7786,7 +7967,8 @@
       },
       "serviceBearer": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "description": "Scopes and per-task resource grants are checked server-side; bearer is not sufficient for SEALED_DETAIL. Evaluator scope final:evaluate is bound to submission; Solver never receives it."
       }
     }
   }

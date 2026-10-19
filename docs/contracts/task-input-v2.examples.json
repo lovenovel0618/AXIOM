@@ -146,7 +146,22 @@
           "sealed_test_id": "00000000-0000-4000-8000-000000000041",
           "benchmark_partition_id": null,
           "benchmark_case_id": null
-        }
+        },
+        "domain": [
+          {
+            "name": "x",
+            "lower": {
+              "numerator": "-10",
+              "denominator": "1"
+            },
+            "upper": {
+              "numerator": "10",
+              "denominator": "1"
+            },
+            "lower_closed": true,
+            "upper_closed": true
+          }
+        ]
       }
     },
     {

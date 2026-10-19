@@ -92,7 +92,22 @@
       "published_artifact_ids": [],
       "evidence_bundle_ids": [],
       "quality_report_id": null,
-      "refit_policy_artifact_id": null
+      "refit_policy_artifact_id": null,
+      "domain": [
+        {
+          "name": "x",
+          "lower": {
+            "numerator": "-10",
+            "denominator": "1"
+          },
+          "upper": {
+            "numerator": "10",
+            "denominator": "1"
+          },
+          "lower_closed": true,
+          "upper_closed": true
+        }
+      ]
     },
     {
       "kind": "Run",
@@ -151,7 +166,8 @@
       "artifact_id": "00000000-0000-4000-8000-000000000030",
       "observation_split_id": "00000000-0000-4000-8000-000000000040",
       "split_role": "FINAL_TEST",
-      "frozen_candidate_id": "00000000-0000-4000-8000-000000000061"
+      "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+      "submission_id": "00000000-0000-4000-8000-000000000065"
     },
     {
       "kind": "EquationVersion",
@@ -379,7 +395,16 @@
       "protocol_hash": "4444444444444444444444444444444444444444444444444444444444444444",
       "state": "RESERVED",
       "submission_id": "00000000-0000-4000-8000-000000000065",
-      "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+      "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+      "final_observation_tokens": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ],
+      "final_lineage_tokens": [
+        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      ],
+      "exposure_fingerprint_version": "1.0"
     },
     {
       "kind": "BenchmarkPartition",
@@ -486,6 +511,46 @@
       "decision": "REJECT",
       "comment": "證據不足，請建立新研究版本補驗。",
       "expected_revision": 4
+    },
+    {
+      "kind": "ValidationRun",
+      "id": "00000000-0000-4000-8000-000000000006",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "run_id": "00000000-0000-4000-8000-000000000005",
+      "fit_run_id": "00000000-0000-4000-8000-000000000004",
+      "metric_version": "2.0",
+      "metrics": {
+        "mae": 0,
+        "rmse": 0
+      },
+      "valid_coverage": 1,
+      "empirical_level": "E1",
+      "proof_level": "P0",
+      "outcome_status": "SUPPORTED",
+      "artifact_uri": "objects/public/example.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "metric_reasons": {},
+      "artifact_id": "00000000-0000-4000-8000-000000000030",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "split_role": "FINAL_TEST",
+      "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+      "submission_id": "00000000-0000-4000-8000-000000000065"
+    },
+    {
+      "kind": "Artifact",
+      "id": "00000000-0000-4000-8000-000000000097",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-20T00:00:00Z",
+      "artifact_uri": "private://evaluator/final-report",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "status": "AVAILABLE",
+      "owner_id": "00000000-0000-4000-8000-000000000098",
+      "size_bytes": 100,
+      "media_type": "application/json",
+      "access_class": "SEALED_DETAIL"
     }
   ],
   "invalid": [
@@ -602,7 +667,8 @@
         "artifact_id": "00000000-0000-4000-8000-000000000030",
         "observation_split_id": "00000000-0000-4000-8000-000000000040",
         "split_role": "FINAL_TEST",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061"
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+        "submission_id": "00000000-0000-4000-8000-000000000065"
       },
       "reason": "null metric requires named reason"
     },
@@ -668,7 +734,8 @@
         "artifact_id": "00000000-0000-4000-8000-000000000030",
         "observation_split_id": "00000000-0000-4000-8000-000000000040",
         "split_role": "FINAL_TEST",
-        "frozen_candidate_id": null
+        "frozen_candidate_id": null,
+        "submission_id": "00000000-0000-4000-8000-000000000065"
       },
       "reason": "FINAL_TEST requires FrozenCandidate"
     },
@@ -752,6 +819,81 @@
         "decision": "REJECTED",
         "comment": "證據不足，請建立新研究版本補驗。",
         "expected_revision": 4
+      }
+    },
+    {
+      "reason": "Final evaluation must identify its frozen submission",
+      "document": {
+        "kind": "ValidationRun",
+        "id": "00000000-0000-4000-8000-000000000006",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "run_id": "00000000-0000-4000-8000-000000000005",
+        "fit_run_id": "00000000-0000-4000-8000-000000000004",
+        "metric_version": "2.0",
+        "metrics": {
+          "mae": 0,
+          "rmse": 0
+        },
+        "valid_coverage": 1,
+        "empirical_level": "E1",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "artifact_uri": "objects/public/example.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "metric_reasons": {},
+        "artifact_id": "00000000-0000-4000-8000-000000000030",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "split_role": "FINAL_TEST",
+        "frozen_candidate_id": "00000000-0000-4000-8000-000000000061",
+        "submission_id": null
+      }
+    },
+    {
+      "reason": "Development validation must not claim final submission membership",
+      "document": {
+        "kind": "ValidationRun",
+        "id": "00000000-0000-4000-8000-000000000006",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "run_id": "00000000-0000-4000-8000-000000000005",
+        "fit_run_id": "00000000-0000-4000-8000-000000000004",
+        "metric_version": "2.0",
+        "metrics": {
+          "mae": 0,
+          "rmse": 0
+        },
+        "valid_coverage": 1,
+        "empirical_level": "E1",
+        "proof_level": "P0",
+        "outcome_status": "SUPPORTED",
+        "artifact_uri": "objects/public/example.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "metric_reasons": {},
+        "artifact_id": "00000000-0000-4000-8000-000000000030",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "split_role": "DEVELOPMENT",
+        "frozen_candidate_id": null,
+        "submission_id": "00000000-0000-4000-8000-000000000065"
+      }
+    },
+    {
+      "reason": "Artifact access class must use server policy enum",
+      "document": {
+        "kind": "Artifact",
+        "id": "00000000-0000-4000-8000-000000000097",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-20T00:00:00Z",
+        "artifact_uri": "private://evaluator/final-report",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "status": "AVAILABLE",
+        "owner_id": "00000000-0000-4000-8000-000000000098",
+        "size_bytes": 100,
+        "media_type": "application/json",
+        "access_class": "PUBLIC"
       }
     }
   ]
