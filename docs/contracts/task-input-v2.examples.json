@@ -29,7 +29,18 @@
         "equation_version_id": "00000000-0000-4000-8000-000000000060",
         "fit_projection_artifact_id": "00000000-0000-4000-8000-000000000191",
         "optimizer": "qr@1",
-        "seed": 42
+        "seed": 42,
+        "split_role": "FIT",
+        "fit_row_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "fit_rows_hash": "4e098021cf9ec15699efd082b803811ec67394af4b3ea324e86edbccc3cbeac3",
+        "refit_policy_artifact_id": null
       }
     },
     {
@@ -150,6 +161,34 @@
         "revocation_id": "00000000-0000-4000-8000-000000000101",
         "policy_version": "2.0"
       }
+    },
+    {
+      "kind": "TaskInput",
+      "schema_version": "2.0",
+      "run_id": "00000000-0000-4000-8000-000000000063",
+      "type": "FIT",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "payload": {
+        "candidate_id": "00000000-0000-4000-8000-000000000064",
+        "equation_version_id": "00000000-0000-4000-8000-000000000060",
+        "fit_projection_artifact_id": "00000000-0000-4000-8000-000000000191",
+        "optimizer": "qr@1",
+        "seed": 42,
+        "split_role": "FIT_DEVELOPMENT",
+        "fit_row_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
+        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080"
+      }
     }
   ],
   "invalid": [
@@ -191,6 +230,37 @@
         "raw_database_url": "postgres://not-allowed"
       },
       "reason": "manifest cannot carry database credentials"
+    },
+    {
+      "reason": "Combined FIT requires preregistered policy reference",
+      "document": {
+        "kind": "TaskInput",
+        "schema_version": "2.0",
+        "run_id": "00000000-0000-4000-8000-000000000063",
+        "type": "FIT",
+        "research_version_id": "00000000-0000-4000-8000-000000000003",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "payload": {
+          "candidate_id": "00000000-0000-4000-8000-000000000064",
+          "equation_version_id": "00000000-0000-4000-8000-000000000060",
+          "fit_projection_artifact_id": "00000000-0000-4000-8000-000000000191",
+          "optimizer": "qr@1",
+          "seed": 42,
+          "split_role": "FIT_DEVELOPMENT",
+          "fit_row_ids": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
+          "refit_policy_artifact_id": null
+        }
+      }
     }
   ]
 }

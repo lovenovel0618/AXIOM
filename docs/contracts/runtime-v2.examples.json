@@ -37,7 +37,10 @@
       "cancel_requested_at": null,
       "cancellation_epoch": 0,
       "root_epoch_at_dispatch": 0,
-      "input_artifact_id": "00000000-0000-4000-8000-000000000090"
+      "input_artifact_id": "00000000-0000-4000-8000-000000000090",
+      "outcome_status": null,
+      "skipped_phases": [],
+      "dispatch_stage": "SEARCH_OPEN"
     },
     {
       "kind": "RunRecord",
@@ -77,7 +80,10 @@
       "cancellation_epoch": 0,
       "root_epoch_at_dispatch": 0,
       "equation_version_id": "00000000-0000-4000-8000-000000000060",
-      "input_artifact_id": "00000000-0000-4000-8000-000000000091"
+      "input_artifact_id": "00000000-0000-4000-8000-000000000091",
+      "outcome_status": null,
+      "skipped_phases": [],
+      "dispatch_stage": "SEARCH_OPEN"
     },
     {
       "kind": "AttemptRecord",
@@ -165,7 +171,10 @@
         "cancel_requested_at": null,
         "cancellation_epoch": 0,
         "root_epoch_at_dispatch": 0,
-        "input_artifact_id": "00000000-0000-4000-8000-000000000090"
+        "input_artifact_id": "00000000-0000-4000-8000-000000000090",
+        "outcome_status": null,
+        "skipped_phases": [],
+        "dispatch_stage": "SEARCH_OPEN"
       },
       "reason": "internal root needs budget account"
     },

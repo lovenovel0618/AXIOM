@@ -1,6 +1,6 @@
 # 21｜API與任務契約
 
-> AXIOM v2.3 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-19
+> AXIOM v2.4 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-20
 
 ## 契約範圍與認證
 
@@ -25,7 +25,7 @@ MVP API 前綴 /api/v2，JSON 使用 UTF-8，傳輸使用 HTTPS（本機開發�
 | GET /frozen-submissions/{id} | reader | 200 FrozenSubmission，僅授權範圍的提交資訊 |
 | GET /frozen-candidates/{id} | reader | 200 FrozenCandidate，固定FitRun與參數 |
 | POST /researches | name；researcher | 201 Research 容器，與執行分離 |
-| POST /researches/{id}/versions | dataset_version_id、semantic_profile、observation_split、budget、purpose；editor | 201 DRAFT ResearchVersion，內容固定，新修改另建版本 |
+| POST /researches/{id}/versions | dataset_version_id、semantic_profile、observation_split、budget、purpose、可選refit_policy；editor | 201 DRAFT ResearchVersion，內容固定，新修改另建版本 |
 | GET /research-versions/{id} | reader | 200 ResearchVersion+X-Control-Revision，取得狀態轉移前置版本 |
 | GET /evidence-bundles/{id} | reader | 200 EvidenceBundle+X-Control-Revision，取得撤銷前置版本 |
 | POST /research-versions/{id}/validate | {}；editor | 202 PROFILE run，合法時版本 READY，否則 DRAFT+品質報告 |
@@ -40,6 +40,7 @@ MVP API 前綴 /api/v2，JSON 使用 UTF-8，傳輸使用 HTTPS（本機開發�
 | GET /published-artifacts/{id} | reader | 200 PublishedArtifact，附當前有效性由 EvidenceBundle 查詢 |
 | GET /artifacts/{id} | reader | 200 Artifact metadata，資料來源與 hash |
 | GET /artifacts/{id}/content | reader | 200 受控串流內容，禁止跳轉未授權物件 URI |
+| GET /review-decisions/{id} | reader；依所屬研究ACL | 200 ReviewDecision，還原歷史審核意見與決定 |
 | POST /research-versions/{id}/reviews | decision、evidence_bundle_id、comment；獨立 reviewer | 201 ReviewDecision；核准且證據有效才發布 |
 | POST /evidence-bundles/{id}/revoke | reason、counterexample_artifact_id；reviewer | 202 撤銷工作，權威讀取立刻排除，清理傳播見 AX-26 |
 
@@ -66,7 +67,7 @@ validate、提交 SEARCH、cancel、review、revoke 額外要求 If-Control-Revi
 | 429 | QUOTA_EXCEEDED / RATE_LIMITED | 限流可依 Retry-After 重送；總配額不足需調整預算 |
 | 503 | DEPENDENCY_UNAVAILABLE | true，有限退避重試且保留 key |
 
-內部 worker 另有 STALE_ATTEMPT、ROOT_CANCELLED、TASK_TREE_MISMATCH、TEST_ALREADY_RESERVED、TEST_ALREADY_CONSUMED、CHECKPOINT_INCOMPATIBLE、DATASET_CONTAMINATION、FEATURE_DISABLED；不可當成通用 500。所有錯誤包含 AX-48 envelope，unknown fields 拒絕；details 不洩漏租戶外資料與秘密。
+內部 worker 另有 STALE_ATTEMPT、ROOT_CANCELLED、TASK_TREE_MISMATCH、TEST_ALREADY_RESERVED、TEST_ALREADY_CONSUMED、CHECKPOINT_INCOMPATIBLE、DATASET_CONTAMINATION、FEATURE_DISABLED、DISPATCH_STAGE_VIOLATION、REFIT_POLICY_INVALID；不可當成通用 500。所有錯誤包含 AX-48 envelope，unknown fields 拒絕；details 不洩漏租戶外資料與秘密。
 
 ## 兩種事件流與生命週期
 
@@ -122,3 +123,16 @@ Run 回 evidence_bundle_ids／child_run_ids，Candidate 回 fit_run_ids／valida
 ## 控制版本與HTTP快取
 
 X-Control-Revision／If-Control-Revision是v2明確定義的業務前置條件，值為revision十進位字串，適用狀態轉移及核准／取消。它們不宣稱是HTTP representation ETag。GET可變snapshot回Cache-Control: no-store；heartbeat與成本計量可改內部／usage資料但不改control revision，客戶端不可用revision當整份回應的內容hash。歷史已凍結Artifact以sha256辨識內容。成本的遲到結算由GET run重讀顯示，不向已終態RUN stream追加事件。
+
+## 快照還原與操作結果
+
+ResearchVersion 必填 evidence_bundle_ids／frozen_submission_ids／review_ids／published_artifact_ids，以及可null的quality_report_id。由對應GET取得完整資源，品質報告透過Artifact metadata/content讀取；引用、研究狀態與current_event_cursor在同一一致性讀點讀出。新增證據、審核、發布及撤銷更新投影與RESEARCH outbox同交易，游標過期後仍能從快照重建目前證據及歷史審核，不靠七天前事件內容。引用仍逐項重新檢查ACL／撤銷；不因歷史引用直接放行內容。
+
+GET /review-decisions/{id} 只讀且不可覆寫，decision使用APPROVE／REJECT；跨租戶、研究不可見或引用不可讀均404。ResearchVersion.review_ids列出歷史審核，不只最後一筆。Run.outcome_status為操作級研究結論；ValidationRun.outcome_status為單次評估結論。SEARCH根依AX-13／28彙整證據，不把某一子結果機械複製為研究結論；無可用驗證時為INSUFFICIENT_EVIDENCE。非研究判定操作、尚未形成結論或取消時為null。skipped_phases記錄被略過階段與原因；不得從phase跳躍猜測。
+
+| ID | 情境 | 預期 |
+|---|---|---|
+| AC-21-09 | 審核事件已過保留期後重新登入 | snapshot引用→GET bundle/review/publication完整還原，含拒絕意見 |
+| AC-21-10 | PROFILE品質不通過後重開 | quality_report_id可讀報告；無產物時明確null |
+
+CreateResearchVersion.refit_policy省略／null表示禁用重擬合；提供時依AX-28預註冊並產生refit_policy_artifact_id。政策Artifact與研究版本同交易登記，不接受客戶端直接指定政策Artifact ID。

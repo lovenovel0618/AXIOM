@@ -39,8 +39,8 @@ def tracked_files():
 def manifest_data():
     files = tracked_files()
     return {
-        "project": "AXIOM", "version": "2.3", "created": "2026-10-19",
-        "date": "2026-10-19", "documents": sum(p.suffix == ".md" for p in files),
+        "project": "AXIOM", "version": "2.4", "created": "2026-10-20",
+        "date": "2026-10-20", "documents": sum(p.suffix == ".md" for p in files),
         "file_count": len(files),
         "files": [{"path": str(p.relative_to(ROOT)), "bytes": p.stat().st_size,
                    "sha256": hashlib.sha256(p.read_bytes()).hexdigest()} for p in files],
@@ -180,6 +180,14 @@ def check_contracts():
         if isinstance(value, dict) and "kind" in value:
             profile = "runtime-v2" if value["kind"] in {"RunRecord", "AttemptRecord"} else "research-v2"
             Draft202012Validator(schemas[profile + ".schema.json"], registry=registry, format_checker=FormatChecker()).validate(value)
+    for field in ["evidence_bundle_ids", "review_ids", "quality_report_id"]:
+        check(field in definitions["ResearchVersion"]["required"], "Snapshot recovery reference missing: " + field)
+    check(api["paths"]["/review-decisions/{id}"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
+          == {"$ref": "#/components/schemas/ReviewDecision"}, "Review history cannot be recovered")
+    check(definitions["ReviewDecision"]["properties"]["decision"]["enum"] == ["APPROVE", "REJECT"], "Review enum drift")
+    check("dispatch_stage" not in definitions["Run"]["properties"], "Private dispatch control leaked")
+    check("outcome_status" in definitions["Run"]["required"] and "skipped_phases" in definitions["Run"]["required"],
+          "Run outcome/skip projection missing")
     conformance_count = check_scenarios(suite)
     topology = next(ROOT.rglob("06-*.md")).read_text()
     edges = re.findall(r"\b([A-Z][A-Z0-9]*)\s*-->\s*([A-Z][A-Z0-9]*)", topology)

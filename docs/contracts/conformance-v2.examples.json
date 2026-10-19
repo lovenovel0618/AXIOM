@@ -93,7 +93,10 @@
         "00000000-0000-4000-8000-000000000065"
       ],
       "review_ids": [],
-      "published_artifact_ids": []
+      "published_artifact_ids": [],
+      "evidence_bundle_ids": [],
+      "quality_report_id": null,
+      "refit_policy_artifact_id": null
     },
     "equation": {
       "kind": "EquationVersion",
@@ -203,7 +206,17 @@
         "b": "1"
       },
       "optimizer": "public-linear-oracle",
-      "precision_bits": 53
+      "precision_bits": 53,
+      "fit_row_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "fit_rows_hash": "4e098021cf9ec15699efd082b803811ec67394af4b3ea324e86edbccc3cbeac3",
+      "refit_policy_artifact_id": null
     },
     "candidate": {
       "kind": "Candidate",
@@ -319,7 +332,10 @@
       "cancel_requested_at": null,
       "cancellation_epoch": 0,
       "root_epoch_at_dispatch": 0,
-      "input_artifact_id": "00000000-0000-4000-8000-000000000090"
+      "input_artifact_id": "00000000-0000-4000-8000-000000000090",
+      "outcome_status": null,
+      "skipped_phases": [],
+      "dispatch_stage": "SEARCH_OPEN"
     },
     "child_record": {
       "kind": "RunRecord",
@@ -359,7 +375,10 @@
       "cancellation_epoch": 0,
       "root_epoch_at_dispatch": 0,
       "equation_version_id": "00000000-0000-4000-8000-000000000060",
-      "input_artifact_id": "00000000-0000-4000-8000-000000000091"
+      "input_artifact_id": "00000000-0000-4000-8000-000000000091",
+      "outcome_status": null,
+      "skipped_phases": [],
+      "dispatch_stage": "SEARCH_OPEN"
     },
     "attempt_record": {
       "kind": "AttemptRecord",
@@ -867,6 +886,405 @@
       "expected_family_match": false,
       "expected_exact_match": false,
       "expected": "ACCEPT"
+    },
+    {
+      "id": "CF-28",
+      "check": "profile_transition",
+      "expected": "CANCELLED:DRAFT",
+      "action": "cancel_confirmed"
+    },
+    {
+      "id": "CF-29",
+      "check": "profile_transition",
+      "expected": "FAILED:DRAFT",
+      "action": "permanent_failure"
+    },
+    {
+      "id": "CF-30",
+      "check": "profile_transition",
+      "expected": "SUCCEEDED:DRAFT",
+      "action": "quality_failure"
+    },
+    {
+      "id": "CF-31",
+      "check": "profile_transition",
+      "expected": "RUNNING:VALIDATING",
+      "action": "retry"
+    },
+    {
+      "id": "CF-32",
+      "check": "profile_transition",
+      "expected": "INVALID_TRANSITION",
+      "action": "validate",
+      "stopping": true
+    },
+    {
+      "id": "CF-33",
+      "check": "stage",
+      "expected": "ACCEPT",
+      "stage": "FINAL_ONLY",
+      "operation": "final_validate",
+      "matching_submission": true
+    },
+    {
+      "id": "CF-34",
+      "check": "stage",
+      "expected": "DISPATCH_STAGE_VIOLATION",
+      "stage": "FINAL_ONLY",
+      "operation": "fit",
+      "matching_submission": true
+    },
+    {
+      "id": "CF-35",
+      "check": "stage",
+      "expected": "DISPATCH_STAGE_VIOLATION",
+      "stage": "FINAL_ONLY",
+      "operation": "final_validate",
+      "matching_submission": false
+    },
+    {
+      "id": "CF-36",
+      "check": "stage",
+      "expected": "DISPATCH_STAGE_VIOLATION",
+      "stage": "CLOSED",
+      "operation": "final_validate",
+      "matching_submission": true
+    },
+    {
+      "id": "CF-37",
+      "check": "stage",
+      "expected": "ROOT_CANCELLED",
+      "stage": "FINAL_ONLY",
+      "operation": "final_validate",
+      "matching_submission": true,
+      "cancelled": true
+    },
+    {
+      "id": "CF-38",
+      "check": "stage",
+      "expected": "INVALID_TRANSITION",
+      "stage": "SEARCH_OPEN",
+      "operation": "freeze",
+      "active_exploration": 1
+    },
+    {
+      "id": "CF-39",
+      "check": "stage",
+      "expected": "ACCEPT",
+      "stage": "SEARCH_OPEN",
+      "operation": "freeze",
+      "active_exploration": 0
+    },
+    {
+      "id": "CF-40",
+      "check": "seal_recovery",
+      "expected": "COMMIT_CONSUMED_BEFORE_READ",
+      "state": "RESERVED",
+      "action": "read_labels"
+    },
+    {
+      "id": "CF-41",
+      "check": "seal_recovery",
+      "expected": "RECOVER_SAME_RUN",
+      "state": "RESERVED",
+      "action": "retry",
+      "same_submission": true
+    },
+    {
+      "id": "CF-42",
+      "check": "seal_recovery",
+      "expected": "RECOVER_SAME_RUN",
+      "state": "CONSUMED",
+      "action": "retry",
+      "same_submission": true
+    },
+    {
+      "id": "CF-43",
+      "check": "seal_recovery",
+      "expected": "EXISTING_RESULT",
+      "state": "CONSUMED",
+      "action": "retry",
+      "same_submission": true,
+      "has_result": true
+    },
+    {
+      "id": "CF-44",
+      "check": "seal_recovery",
+      "expected": "TEST_ALREADY_CONSUMED",
+      "state": "CONSUMED",
+      "action": "retry",
+      "same_submission": false
+    },
+    {
+      "id": "CF-45",
+      "check": "seal_recovery",
+      "expected": "TEST_ALREADY_RESERVED",
+      "state": "RESERVED",
+      "action": "retry",
+      "same_submission": false
+    },
+    {
+      "id": "CF-46",
+      "check": "seal_recovery",
+      "expected": "REQUEST_IN_PROGRESS",
+      "state": "RESERVED",
+      "action": "retry",
+      "same_submission": true,
+      "lease_active": true
+    },
+    {
+      "id": "CF-47",
+      "check": "seal_recovery",
+      "expected": "INVALID_TRANSITION",
+      "state": "CONSUMED",
+      "action": "retry",
+      "same_submission": true,
+      "root_terminal": true
+    },
+    {
+      "id": "CF-48",
+      "check": "seal_recovery",
+      "expected": "RETIRED",
+      "state": "RESERVED",
+      "action": "cancel"
+    },
+    {
+      "id": "CF-49",
+      "check": "seal_recovery",
+      "expected": "CONSUMED",
+      "state": "CONSUMED",
+      "action": "permanent_failure"
+    },
+    {
+      "id": "CF-50",
+      "check": "seal_recovery",
+      "expected": "TEST_RETIRED",
+      "state": "RETIRED",
+      "action": "retry",
+      "same_submission": true
+    },
+    {
+      "id": "CF-51",
+      "check": "refit",
+      "expected": "ACCEPT",
+      "fit": {
+        "kind": "FitRun",
+        "id": "00000000-0000-4000-8000-000000000062",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "run_id": "00000000-0000-4000-8000-000000000063",
+        "equation_version_id": "00000000-0000-4000-8000-000000000060",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "split_role": "FIT_DEVELOPMENT",
+        "parameters": {
+          "a": "2",
+          "b": "1"
+        },
+        "optimizer": "public-linear-oracle",
+        "precision_bits": 53,
+        "fit_row_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
+        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080"
+      },
+      "preregistered": true,
+      "mutations": [
+        [
+          "research_version.refit_policy_artifact_id",
+          "00000000-0000-4000-8000-000000000080"
+        ]
+      ]
+    },
+    {
+      "id": "CF-52",
+      "check": "refit",
+      "expected": "REFIT_ROWS_MISMATCH",
+      "fit": {
+        "kind": "FitRun",
+        "id": "00000000-0000-4000-8000-000000000062",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "run_id": "00000000-0000-4000-8000-000000000063",
+        "equation_version_id": "00000000-0000-4000-8000-000000000060",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "split_role": "FIT_DEVELOPMENT",
+        "parameters": {
+          "a": "2",
+          "b": "1"
+        },
+        "optimizer": "public-linear-oracle",
+        "precision_bits": 53,
+        "fit_row_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
+        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080"
+      },
+      "preregistered": true,
+      "mutations": [
+        [
+          "research_version.refit_policy_artifact_id",
+          "00000000-0000-4000-8000-000000000080"
+        ]
+      ]
+    },
+    {
+      "id": "CF-53",
+      "check": "refit",
+      "expected": "REFIT_POLICY_INVALID",
+      "fit": {
+        "kind": "FitRun",
+        "id": "00000000-0000-4000-8000-000000000062",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "run_id": "00000000-0000-4000-8000-000000000063",
+        "equation_version_id": "00000000-0000-4000-8000-000000000060",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "split_role": "FIT_DEVELOPMENT",
+        "parameters": {
+          "a": "2",
+          "b": "1"
+        },
+        "optimizer": "public-linear-oracle",
+        "precision_bits": 53,
+        "fit_row_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
+        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080"
+      },
+      "preregistered": false,
+      "mutations": [
+        [
+          "research_version.refit_policy_artifact_id",
+          "00000000-0000-4000-8000-000000000080"
+        ]
+      ]
+    },
+    {
+      "id": "CF-54",
+      "check": "refit",
+      "expected": "REFIT_POLICY_INVALID",
+      "fit": {
+        "kind": "FitRun",
+        "id": "00000000-0000-4000-8000-000000000062",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "run_id": "00000000-0000-4000-8000-000000000063",
+        "equation_version_id": "00000000-0000-4000-8000-000000000060",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "split_role": "FIT_DEVELOPMENT",
+        "parameters": {
+          "a": "2",
+          "b": "1"
+        },
+        "optimizer": "public-linear-oracle",
+        "precision_bits": 53,
+        "fit_row_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
+        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080"
+      },
+      "preregistered": true,
+      "mutations": [
+        [
+          "research_version.refit_policy_artifact_id",
+          null
+        ]
+      ]
+    },
+    {
+      "id": "CF-55",
+      "check": "exposure_identity",
+      "proposed": {
+        "kind": "SealedTest",
+        "id": "00000000-0000-4000-8000-000000000041",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "benchmark_partition_id": null,
+        "benchmark_case_id": null,
+        "final_rows_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+        "protocol_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "state": "RESERVED",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      "mutations": [
+        [
+          "sealed_test.state",
+          "CONSUMED"
+        ]
+      ],
+      "expected": "BLIND_ELIGIBILITY_DENIED"
+    },
+    {
+      "id": "CF-56",
+      "check": "exposure_identity",
+      "proposed": {
+        "kind": "SealedTest",
+        "id": "00000000-0000-4000-8000-000000000041",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "benchmark_partition_id": null,
+        "benchmark_case_id": null,
+        "final_rows_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+        "protocol_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "state": "RESERVED",
+        "submission_id": "00000000-0000-4000-8000-000000000065",
+        "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      "mutations": [
+        [
+          "sealed_test.state",
+          "RETIRED"
+        ]
+      ],
+      "expected": "BLIND_ELIGIBILITY_DENIED"
     }
   ]
 }

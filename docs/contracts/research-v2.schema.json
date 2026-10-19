@@ -399,6 +399,36 @@
             "format": "uuid"
           },
           "uniqueItems": true
+        },
+        "evidence_bundle_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uniqueItems": true
+        },
+        "quality_report_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "refit_policy_artifact_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -418,7 +448,10 @@
         "current_event_cursor",
         "frozen_submission_ids",
         "review_ids",
-        "published_artifact_ids"
+        "published_artifact_ids",
+        "evidence_bundle_ids",
+        "quality_report_id",
+        "refit_policy_artifact_id"
       ],
       "additionalProperties": false
     },
@@ -589,6 +622,52 @@
             "$ref": "#/$defs/BudgetReservation"
           },
           "uniqueItems": true
+        },
+        "outcome_status": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "SUPPORTED",
+                "AMBIGUOUS",
+                "INSUFFICIENT_EVIDENCE",
+                "FALSIFIED"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "skipped_phases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "phase": {
+                "type": "string",
+                "enum": [
+                  "PROFILING",
+                  "FEASIBILITY",
+                  "RETRIEVING",
+                  "PLANNING",
+                  "SEARCHING",
+                  "FITTING",
+                  "VALIDATING",
+                  "FINALIZING"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "phase",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
         }
       },
       "required": [
@@ -613,7 +692,9 @@
         "evidence_bundle_ids",
         "child_run_ids",
         "is_root",
-        "budget_reservations"
+        "budget_reservations",
+        "outcome_status",
+        "skipped_phases"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -919,13 +1000,36 @@
           "type": "string",
           "enum": [
             "FIT",
-            "DEVELOPMENT",
-            "FINAL_TEST"
+            "FIT_DEVELOPMENT"
           ]
         },
         "precision_bits": {
           "type": "integer",
           "minimum": 53
+        },
+        "fit_row_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "fit_rows_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "refit_policy_artifact_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -941,9 +1045,38 @@
         "optimizer",
         "observation_split_id",
         "split_role",
-        "precision_bits"
+        "precision_bits",
+        "fit_row_ids",
+        "fit_rows_hash",
+        "refit_policy_artifact_id"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "split_role": {
+                "const": "FIT_DEVELOPMENT"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "refit_policy_artifact_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "refit_policy_artifact_id": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
     },
     "ValidationRun": {
       "type": "object",
@@ -2363,6 +2496,35 @@
         "metric_version",
         "snapshot_hash",
         "status"
+      ],
+      "additionalProperties": false
+    },
+    "RefitPolicyRequest": {
+      "type": "object",
+      "properties": {
+        "optimizer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "optimizer_parameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "candidate_selection": {
+          "const": "TOP_K_DEVELOPMENT"
+        },
+        "top_k": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "optimizer",
+        "optimizer_parameters",
+        "candidate_selection",
+        "top_k"
       ],
       "additionalProperties": false
     }

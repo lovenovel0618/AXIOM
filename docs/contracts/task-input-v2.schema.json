@@ -226,6 +226,37 @@
               "seed": {
                 "type": "integer",
                 "minimum": 0
+              },
+              "split_role": {
+                "type": "string",
+                "enum": [
+                  "FIT",
+                  "FIT_DEVELOPMENT"
+                ]
+              },
+              "fit_row_ids": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              },
+              "fit_rows_hash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "refit_policy_artifact_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "required": [
@@ -233,9 +264,39 @@
               "equation_version_id",
               "fit_projection_artifact_id",
               "optimizer",
-              "seed"
+              "seed",
+              "split_role",
+              "fit_row_ids",
+              "fit_rows_hash",
+              "refit_policy_artifact_id"
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "split_role": {
+                      "const": "FIT_DEVELOPMENT"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "refit_policy_artifact_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                },
+                "else": {
+                  "properties": {
+                    "refit_policy_artifact_id": {
+                      "type": "null"
+                    }
+                  }
+                }
+              }
+            ]
           },
           "research_version_id": {
             "type": "string",

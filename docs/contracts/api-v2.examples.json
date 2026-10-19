@@ -97,6 +97,89 @@
         "evidence_bundle_id": "00000000-0000-4000-8000-000000000010",
         "comment": "待實作後覆核"
       }
+    },
+    {
+      "schema": "CreateResearchVersion",
+      "document": {
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "semantic_profile": {
+          "inputs": [
+            {
+              "name": "x",
+              "unit": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "target": {
+            "name": "y",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "units_confirmed": true,
+          "time_ordered": false,
+          "measurement_resolution": "0.001",
+          "resolution_reason": "公開測試設定"
+        },
+        "budget": {
+          "cpu_seconds": 60,
+          "gpu_seconds": 0,
+          "tokens": 0,
+          "memory_bytes": 268435456,
+          "wall_seconds": 120,
+          "candidate_limit": 100
+        },
+        "purpose": "DESCRIPTION",
+        "observation_split": {
+          "kind": "EXPLICIT",
+          "fit": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "development": [
+            6,
+            7
+          ],
+          "final_test": [
+            8,
+            9
+          ],
+          "gap_rows": 0,
+          "policy_version": "2.0",
+          "sealed_final_test": true,
+          "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+          "lookback_rows": 0,
+          "horizon_rows": 0,
+          "seed": 42,
+          "time_column": null,
+          "group_column": null,
+          "group_assignment_digest": null,
+          "splitter_version": "2.0.0"
+        },
+        "refit_policy": {
+          "optimizer": "QR",
+          "optimizer_parameters": {},
+          "candidate_selection": "TOP_K_DEVELOPMENT",
+          "top_k": 3
+        }
+      }
     }
   ],
   "invalid": [
@@ -194,6 +277,89 @@
         }
       },
       "reason": "client cannot assign sealed test identity"
+    },
+    {
+      "schema": "CreateResearchVersion",
+      "document": {
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "semantic_profile": {
+          "inputs": [
+            {
+              "name": "x",
+              "unit": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "target": {
+            "name": "y",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "units_confirmed": true,
+          "time_ordered": false,
+          "measurement_resolution": "0.001",
+          "resolution_reason": "公開測試設定"
+        },
+        "budget": {
+          "cpu_seconds": 60,
+          "gpu_seconds": 0,
+          "tokens": 0,
+          "memory_bytes": 268435456,
+          "wall_seconds": 120,
+          "candidate_limit": 100
+        },
+        "purpose": "DESCRIPTION",
+        "observation_split": {
+          "kind": "EXPLICIT",
+          "fit": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "development": [
+            6,
+            7
+          ],
+          "final_test": [
+            8,
+            9
+          ],
+          "gap_rows": 0,
+          "policy_version": "2.0",
+          "sealed_final_test": true,
+          "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+          "lookback_rows": 0,
+          "horizon_rows": 0,
+          "seed": 42,
+          "time_column": null,
+          "group_column": null,
+          "group_assignment_digest": null,
+          "splitter_version": "2.0.0"
+        },
+        "refit_policy": {
+          "optimizer": "QR",
+          "optimizer_parameters": {},
+          "candidate_selection": "TOP_K_DEVELOPMENT",
+          "top_k": 0
+        }
+      }
     }
   ]
 }

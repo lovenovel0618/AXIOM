@@ -85,6 +85,54 @@ def partition_decision(c):
 
 def execute_case(c, case):
     kind = case["check"]
+    if kind == "profile_transition":
+        action = case["action"]
+        if case.get("stopping") and action == "validate":
+            return "INVALID_TRANSITION"
+        return {"cancel_confirmed": "CANCELLED:DRAFT", "permanent_failure": "FAILED:DRAFT",
+                "quality_failure": "SUCCEEDED:DRAFT", "retry": "RUNNING:VALIDATING",
+                "validate": "QUEUED:VALIDATING"}[action]
+    if kind == "stage":
+        stage, operation = case["stage"], case["operation"]
+        if case.get("cancelled"):
+            return "ROOT_CANCELLED"
+        if operation == "freeze":
+            return "ACCEPT" if stage == "SEARCH_OPEN" and case["active_exploration"] == 0 else "INVALID_TRANSITION"
+        if stage == "CLOSED":
+            return "DISPATCH_STAGE_VIOLATION"
+        if stage == "FINAL_ONLY" and (operation != "final_validate" or not case.get("matching_submission")):
+            return "DISPATCH_STAGE_VIOLATION"
+        return "ACCEPT"
+    if kind == "seal_recovery":
+        state, action = case["state"], case["action"]
+        if action == "retry" and case.get("has_result") and case.get("same_submission"):
+            return "EXISTING_RESULT"
+        if state == "RETIRED":
+            return "TEST_RETIRED"
+        if action == "retry":
+            if not case["same_submission"]:
+                return "TEST_ALREADY_CONSUMED" if state == "CONSUMED" else "TEST_ALREADY_RESERVED"
+            if case.get("root_terminal"):
+                return "INVALID_TRANSITION"
+            return "REQUEST_IN_PROGRESS" if case.get("lease_active") else "RECOVER_SAME_RUN"
+        if action == "read_labels":
+            return "COMMIT_CONSUMED_BEFORE_READ" if state == "RESERVED" else "INVALID_TRANSITION"
+        if action in {"cancel", "permanent_failure"}:
+            return "RETIRED" if state == "RESERVED" else "CONSUMED"
+    if kind == "refit":
+        fit, split = case["fit"], c["research_version"]["observation_split"]
+        role = fit["split_role"]
+        if role not in {"FIT", "FIT_DEVELOPMENT"}:
+            return "REFIT_POLICY_INVALID"
+        expected = sorted(split["fit"] + (split["development"] if role == "FIT_DEVELOPMENT" else []))
+        if fit["fit_row_ids"] != expected or fit["fit_rows_hash"] != canonical_hash(expected):
+            return "REFIT_ROWS_MISMATCH"
+        if role == "FIT_DEVELOPMENT" and (not fit["refit_policy_artifact_id"] or not case["preregistered"]
+                or fit["refit_policy_artifact_id"] != c["research_version"]["refit_policy_artifact_id"]):
+            return "REFIT_POLICY_INVALID"
+        if role == "FIT" and fit["refit_policy_artifact_id"] is not None:
+            return "REFIT_POLICY_INVALID"
+        return "ACCEPT"
     if kind == "freeze":
         return freeze_decision(c)
     if kind in {"submit", "dispatch"}:
@@ -158,6 +206,12 @@ def execute_case(c, case):
     if kind == "memory":
         if max(sum(sample) for sample in case["samples"]) != case["expected_peak"]:
             raise AssertionError("Concurrent memory peak oracle mismatch")
+        return "ACCEPT"
+    if kind == "exposure_identity":
+        original, proposed = c["sealed_test"], case["proposed"]
+        exposure_fields = ["source_content_sha256", "benchmark_case_id", "final_rows_hash"]
+        if all(original[key] == proposed[key] for key in exposure_fields) and original["state"] in {"CONSUMED", "RETIRED"}:
+            return "BLIND_ELIGIBILITY_DENIED"
         return "ACCEPT"
     if kind == "sealed_identity":
         original = c["sealed_test"]

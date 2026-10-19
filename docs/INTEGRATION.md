@@ -73,3 +73,7 @@
 研究／內部schema及事件採2.0，HTTP為/api/v2，metric與觀測政策為2.0；DSL仍1.0。未部署v1草案以Git保留，本次沒有宣稱相容服務或資料遷移已執行。控制版本改用X-Control-Revision／If-Control-Revision，不把業務revision當整份動態回應的ETag；可變snapshot不作HTTP快取。冪等回放先重新授權，原操作結果與目前資源狀態分開讀取。
 
 共49篇章節／51份Markdown，新增runtime契約與27組conformance參考情境，原AC編號保留並補充跨契約驗收。manifest涵蓋全部現行文件、契約與工具。參考情境通過不代表真實交易、worker、符號引擎、瀏覽器或正式發布已通過，產品狀態仍NOT_RUN，未決D-03／D-06等發布阻擋不變。
+
+## v2.4 生命週期與還原缺口修訂（2026-10-20）
+
+本輪完成六項跨契約修正：PROFILE取消／永久失敗回DRAFT；SEARCH_OPEN／FINAL_ONLY／CLOSED區分凍結與結束；封存測試先消耗後讀取、同提交故障恢復與不可逆退役；預註冊fit+development重擬合列與hash；研究快照證據／品質報告引用及審核唯讀API；Run結果與略過階段欄位、APPROVE／REJECT統一。同步修改公開／runtime／TaskInput／OpenAPI及fixture，擴充文件參考情境。契約仍是未部署2.0草案，產品與故障注入驗收仍NOT_RUN。

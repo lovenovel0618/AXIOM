@@ -89,7 +89,10 @@
       "current_event_cursor": "RESEARCH:00000000-0000-4000-8000-000000000003:0",
       "frozen_submission_ids": [],
       "review_ids": [],
-      "published_artifact_ids": []
+      "published_artifact_ids": [],
+      "evidence_bundle_ids": [],
+      "quality_report_id": null,
+      "refit_policy_artifact_id": null
     },
     {
       "kind": "Run",
@@ -121,7 +124,9 @@
       "evidence_bundle_ids": [],
       "child_run_ids": [],
       "budget_reservations": [],
-      "is_root": true
+      "is_root": true,
+      "outcome_status": null,
+      "skipped_phases": []
     },
     {
       "kind": "ValidationRun",
@@ -313,7 +318,17 @@
         "b": "1"
       },
       "optimizer": "public-linear-oracle",
-      "precision_bits": 53
+      "precision_bits": 53,
+      "fit_row_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "fit_rows_hash": "4e098021cf9ec15699efd082b803811ec67394af4b3ea324e86edbccc3cbeac3",
+      "refit_policy_artifact_id": null
     },
     {
       "kind": "FrozenCandidate",
@@ -389,6 +404,88 @@
           "partition": "SEALED_TEST"
         }
       ]
+    },
+    {
+      "kind": "FitRun",
+      "id": "00000000-0000-4000-8000-000000000062",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "run_id": "00000000-0000-4000-8000-000000000063",
+      "equation_version_id": "00000000-0000-4000-8000-000000000060",
+      "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+      "observation_split_id": "00000000-0000-4000-8000-000000000040",
+      "split_role": "FIT_DEVELOPMENT",
+      "parameters": {
+        "a": "2",
+        "b": "1"
+      },
+      "optimizer": "public-linear-oracle",
+      "precision_bits": 53,
+      "fit_row_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
+      "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080"
+    },
+    {
+      "kind": "Run",
+      "id": "00000000-0000-4000-8000-000000000004",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "dataset_id": null,
+      "type": "SEARCH",
+      "status": "SUCCEEDED",
+      "revision": 1,
+      "seed": 42,
+      "environment_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "active_attempt_id": null,
+      "lease_generation": 0,
+      "current_event_cursor": "RUN:00000000-0000-4000-8000-000000000004:0",
+      "budget_usage": {
+        "cpu_seconds": 0,
+        "gpu_seconds": 0,
+        "tokens": 0,
+        "peak_memory_bytes": 0,
+        "elapsed_wall_seconds": 0,
+        "candidates_generated": 0,
+        "candidates_accepted": 0
+      },
+      "phase": "FINALIZING",
+      "stop_reason": "AMBIGUOUS",
+      "evidence_bundle_ids": [],
+      "child_run_ids": [],
+      "budget_reservations": [],
+      "is_root": true,
+      "outcome_status": "AMBIGUOUS",
+      "skipped_phases": [
+        {
+          "phase": "RETRIEVING",
+          "reason": "MVP_FEATURE_DISABLED"
+        }
+      ]
+    },
+    {
+      "kind": "ReviewDecision",
+      "id": "00000000-0000-4000-8000-000000000085",
+      "tenant_id": "00000000-0000-4000-8000-000000000100",
+      "schema_version": "2.0",
+      "created_at": "2026-10-19T00:00:00Z",
+      "research_version_id": "00000000-0000-4000-8000-000000000003",
+      "evidence_bundle_id": "00000000-0000-4000-8000-000000000086",
+      "reviewer_id": "00000000-0000-4000-8000-000000000087",
+      "decision": "REJECT",
+      "comment": "證據不足，請建立新研究版本補驗。",
+      "expected_revision": 4
     }
   ],
   "invalid": [
@@ -423,7 +520,9 @@
         "evidence_bundle_ids": [],
         "child_run_ids": [],
         "budget_reservations": [],
-        "is_root": true
+        "is_root": true,
+        "outcome_status": null,
+        "skipped_phases": []
       },
       "reason": "VALIDATE requires equation_version_id"
     },
@@ -458,7 +557,9 @@
         "evidence_bundle_ids": [],
         "child_run_ids": [],
         "budget_reservations": [],
-        "is_root": true
+        "is_root": true,
+        "outcome_status": null,
+        "skipped_phases": []
       },
       "reason": "SEARCH requires research version"
     },
@@ -537,7 +638,9 @@
         "child_run_ids": [],
         "budget_reservations": [],
         "is_root": true,
-        "cancel_requested_at": null
+        "cancel_requested_at": null,
+        "outcome_status": null,
+        "skipped_phases": []
       },
       "reason": "private runtime fields forbidden in public DTO"
     },
@@ -568,6 +671,88 @@
         "frozen_candidate_id": null
       },
       "reason": "FINAL_TEST requires FrozenCandidate"
+    },
+    {
+      "reason": "Fitting final labels is forbidden",
+      "document": {
+        "kind": "FitRun",
+        "id": "00000000-0000-4000-8000-000000000062",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "run_id": "00000000-0000-4000-8000-000000000063",
+        "equation_version_id": "00000000-0000-4000-8000-000000000060",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "split_role": "FINAL_TEST",
+        "parameters": {
+          "a": "2",
+          "b": "1"
+        },
+        "optimizer": "public-linear-oracle",
+        "precision_bits": 53,
+        "fit_row_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
+        "refit_policy_artifact_id": "00000000-0000-4000-8000-000000000080"
+      }
+    },
+    {
+      "reason": "Combined refit requires preregistered policy",
+      "document": {
+        "kind": "FitRun",
+        "id": "00000000-0000-4000-8000-000000000062",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "run_id": "00000000-0000-4000-8000-000000000063",
+        "equation_version_id": "00000000-0000-4000-8000-000000000060",
+        "dataset_version_id": "00000000-0000-4000-8000-000000000001",
+        "observation_split_id": "00000000-0000-4000-8000-000000000040",
+        "split_role": "FIT_DEVELOPMENT",
+        "parameters": {
+          "a": "2",
+          "b": "1"
+        },
+        "optimizer": "public-linear-oracle",
+        "precision_bits": 53,
+        "fit_row_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "fit_rows_hash": "29101ebf1ead685029508789eee51c4d4fff65524064d8e32a48efded7036982",
+        "refit_policy_artifact_id": null
+      }
+    },
+    {
+      "reason": "Rejected review uses REJECT, not REJECTED",
+      "document": {
+        "kind": "ReviewDecision",
+        "id": "00000000-0000-4000-8000-000000000085",
+        "tenant_id": "00000000-0000-4000-8000-000000000100",
+        "schema_version": "2.0",
+        "created_at": "2026-10-19T00:00:00Z",
+        "research_version_id": "00000000-0000-4000-8000-000000000003",
+        "evidence_bundle_id": "00000000-0000-4000-8000-000000000086",
+        "reviewer_id": "00000000-0000-4000-8000-000000000087",
+        "decision": "REJECTED",
+        "comment": "證據不足，請建立新研究版本補驗。",
+        "expected_revision": 4
+      }
     }
   ]
 }
