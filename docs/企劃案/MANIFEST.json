@@ -298,18 +298,18 @@
     },
     {
       "path": "INTEGRATION.md",
-      "bytes": 12279,
-      "sha256": "6fa44c0d0ef71072b4bdd4ea821520b3c8581a4a8d5db28dfa773d3f307c1392"
+      "bytes": 12289,
+      "sha256": "d57c8ed81d4dccd2b09cbe3213d27d2088c6d86be86f6c79c04d318b7d957ae9"
     },
     {
       "path": "README.md",
-      "bytes": 17328,
-      "sha256": "95e321b1b218f63f75f4cebe0fab1d50a34b1794b83c6c77117646ca154c8c59"
+      "bytes": 17358,
+      "sha256": "a67da527b7271eb16a9db2ee3e8da1a2cad36b8899848eba295692828026dba8"
     },
     {
       "path": "REVIEW.md",
-      "bytes": 16268,
-      "sha256": "ea4dc10b6c6d8951584089910ab1b40883d10cfd1c9f082762f6667da564a079"
+      "bytes": 16278,
+      "sha256": "16b8f896cd89fadd54f36e891e3da5be58a7b8c6d3f3438245f7bd96c9a725b9"
     },
     {
       "path": "contracts/api-v2.examples.json",
@@ -418,8 +418,8 @@
     },
     {
       "path": "tools/check_docs.py",
-      "bytes": 42301,
-      "sha256": "2432bffdb74a3acfe90a9cb347bf4681a038c04a51f18535d3b8dbbe4191f03f"
+      "bytes": 42305,
+      "sha256": "ff2ac7bb12255e0e644fedb2d334ce001461933f871bc6f1dcae8970b156fd36"
     },
     {
       "path": "tools/contract_scenarios.py",

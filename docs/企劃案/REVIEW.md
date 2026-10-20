@@ -143,6 +143,6 @@ REVIEWED表示本版已檢查下列規格面及其關聯，並非保證日後不
 
 ## 驗證及交付界線
 
-`docs/tools/check_docs.py`檢查章節／連結／AC追溯、schema正反例、OpenAPI同步及雙向路由、錯誤碼／能力／政策登錄、公開／私有投影、參考裁決、四個公開oracle、逐章review清單與manifest。Pyright驗證docs工具型別；Sonar使用本機已安裝Python analyzer核對實際診斷。所有結果以本次實際執行輸出為準，清單不保存虛構的產品PASS。
+`docs/企劃案/tools/check_docs.py`檢查章節／連結／AC追溯、schema正反例、OpenAPI同步及雙向路由、錯誤碼／能力／政策登錄、公開／私有投影、參考裁決、四個公開oracle、逐章review清單與manifest。Pyright驗證docs工具型別；Sonar使用本機已安裝Python analyzer核對實際診斷。所有結果以本次實際執行輸出為準，清單不保存虛構的產品PASS。
 
 產品交付還需執行AC-29-05～22及既有全部首期gate，保存版本、環境digest、輸入／實際結果、交易時間線與獨立覆核；並行上傳、任務停止、洩漏防護、最終評估、刪除及復原需真實服務故障注入。完成規格與通過文件檢查後，仍不能省略這一步。

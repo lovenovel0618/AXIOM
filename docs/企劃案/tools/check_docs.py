@@ -763,7 +763,7 @@ def check_index_numbers(summary: Mapping[str, int]) -> None:
     check(f"共 {summary['chapters']} 篇編號章節" in navigation, "AX-01 chapter count drifted")
     governance = next(ROOT.rglob("48-*.md")).read_text(encoding="utf-8")
     check(f"審查範圍是{summary['chapters']}章" in governance, "AX-48 chapter count drifted")
-    root_readme = (ROOT.parent / README_NAME).read_text(encoding="utf-8")
+    root_readme = (ROOT.parents[1] / README_NAME).read_text(encoding="utf-8")
     check(f"{summary['chapters']} 篇編號章節" in root_readme, "Root README chapter count drifted")
 
 

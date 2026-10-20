@@ -1,5 +1,5 @@
 {
-  "include": ["docs/tools"],
+  "include": ["docs/企劃案/tools"],
   "exclude": [".venv"],
   "venvPath": ".",
   "venv": ".venv",

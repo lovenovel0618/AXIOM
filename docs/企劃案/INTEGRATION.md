@@ -55,7 +55,7 @@
 | 權限／外送／撤銷模糊 | AX-26 身分、操作矩陣、分級、快取與模型隔離 | 真實政策批准與 D-04／05 |
 | 重複模板掩蓋細節 | 共用規則集中 AX-48，移除重複泛用能力／流程／驗收段 | 後續變更依權威表持續維護 |
 
-新增 contracts 與 docs/tools/check_docs.py，供 schema、OpenAPI、範例、公開 oracle、追溯及檔案校驗。v2.2 為 49 篇編號章節、51 份 Markdown；manifest 現涵蓋 contracts 與工具，documents 不再等於 files 筆數，全部檔案數使用 file_count。文件通過不代表產品通過，G2／G7 的正式門檻未核准時保持 BLOCKED。
+新增 contracts 與 docs/企劃案/tools/check_docs.py，供 schema、OpenAPI、範例、公開 oracle、追溯及檔案校驗。v2.2 為 49 篇編號章節、51 份 Markdown；manifest 現涵蓋 contracts 與工具，documents 不再等於 files 筆數，全部檔案數使用 file_count。文件通過不代表產品通過，G2／G7 的正式門檻未核准時保持 BLOCKED。
 
 ## v2.3 跨契約一致性修訂（2026-10-19）
 
