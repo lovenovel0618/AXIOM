@@ -2,7 +2,7 @@
 
 AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探索）是數據驅動的公式發現、獨立驗證、推演與經驗學習平台。
 
-目前僅有設計規格與機器可讀契約，尚無可執行產品或產品 Docker Compose 實作；所有驗收案例狀態為 NOT_RUN，文件檢查通過不等同產品測試通過。
+目前已有設計規格、工程工具與 T04 本機 Django／Vue／Compose 基礎切片，可測健康檢查及合成任務派送。正式研究 API／Run 尚未完成；企劃驗收案例維持 NOT_RUN，工程測試通過不等同產品整體驗收。
 
 ## 企劃案
 
@@ -12,31 +12,45 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 
 ## 技術實作與檢查
 
-目前由你一人開發，各技術角色由本人兼任；開發採「技術文件→代碼→測試→代碼檢測→自我檢查→commit／push」，不等待第二位程式 reviewer。目前已實作 T01 的離線開工基線檢查與 T02 的隔離相容性驗證（含測試專用 Compose），以及 T03 公開 oracle／分區／投影與真實 UID canary 驗證；技術設計與執行方式見 [技術文件](docs/技術文件/README.md)，產品服務尚未建立。T02 的重現指令、鎖定依賴與平台實測見 [相容性驗證](docs/技術文件/M0/T02-技術選型與相容性驗證.md)。
+目前由你一人開發，各技術角色由本人兼任；開發採「技術文件→代碼→測試→代碼檢測→自我檢查→commit／push」，不等待第二位程式 reviewer。目前已實作 T01 的離線開工基線檢查與 T02 的隔離相容性驗證（含測試專用 Compose），以及 T03 公開 oracle／分區／投影與真實 UID canary 驗證；技術設計與執行方式見 [技術文件](docs/技術文件/README.md)，T04 已加入本機服務骨架，啟動及診斷見 [infra/README.md](infra/README.md)。T02 的重現指令、鎖定依賴與平台實測見 [相容性驗證](docs/技術文件/M0/T02-技術選型與相容性驗證.md)。
 
 ```sh
-.venv/bin/python tools/development_baseline.py
-.venv/bin/python -m unittest discover -s tests -v
+.venv-backend/bin/python tools/development_baseline.py
+.venv-backend/bin/python -m unittest discover -s tests -v
 ```
 
 基線有效與 M0 就緒分開回報；單人責任已設定；未決政策及其他交付不自動核准。環境安裝及型別檢查方式如下。
 
-T03 的固定公開案例與隔離測試見 [技術文件](docs/技術文件/M0/T03-公開基準與盲測隔離基線.md)，可先執行 `.venv/bin/python -m tools.benchmark.public_oracle`。
+T03 的固定公開案例與隔離測試見 [技術文件](docs/技術文件/M0/T03-公開基準與盲測隔離基線.md)，可先執行 `.venv-backend/bin/python -m tools.benchmark.public_oracle`。
 
 ## 文件檢查
 
 ```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -r docs/企劃案/tools/requirements-dev.txt
-.venv/bin/pyright
-.venv/bin/python docs/企劃案/tools/check_docs.py
+uv venv --python 3.13 .venv-backend
+uv pip sync --python .venv-backend/bin/python --require-hashes backend/requirements-dev.lock
+.venv-backend/bin/pyright
+.venv-backend/bin/python docs/企劃案/tools/check_docs.py
 ```
 
 工具檢查本地連結、章節編號、標頭版本、AC 追溯、schema 與 OpenAPI 一致、跨契約參考情境、公開 oracle 與 MANIFEST 校驗；不執行搜尋引擎、安全隔離、備份恢復或瀏覽器驗收。編輯文件後以 `--write-manifest` 重建清單。細節見 [docs/企劃案/README.md](docs/企劃案/README.md)。
 
 ## 本地架設
 
-macOS（開發）與 Windows 11 + WSL2（架設）共用同一份 Docker Compose 定義；服務清單、環境變數、健康檢查與平台注意事項見 [AX-41 Docker本地架設指南](docs/企劃案/03-架構/41-Docker本地架設指南.md)。目前尚無 `compose.yaml` 或 `Dockerfile`，文件中的指令為目標操作介面。
+macOS（開發）與 Windows 11 + WSL2（架設）共用同一份 Docker Compose 定義；服務清單、環境變數、健康檢查與平台注意事項見 [AX-41 Docker本地架設指南](docs/企劃案/03-架構/41-Docker本地架設指南.md)。T04 已實作本機切片；WSL2 與完整目標拓樸尚未驗收。
+
+依 [設定說明](infra/README.md) 建立未追蹤的 `.env` 並填入獨立亂數密鑰後：
+
+```sh
+docker compose up --build -d --wait --wait-timeout 120
+docker compose run --rm web python manage.py probe_smoke
+```
+
+開啟 <http://127.0.0.1:15173>。產品交易測試與前端檢查：
+
+```sh
+docker compose run --rm web python manage.py test foundation.tests -v 2
+docker compose run --rm frontend sh -c 'npm run typecheck && npm test && npm run build'
+```
 
 ## 未決事項
 

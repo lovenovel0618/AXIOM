@@ -12,16 +12,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
+          python-version: "3.13"
       - name: Install dev dependencies
-        run: python -m pip install -r docs/企劃案/tools/requirements-dev.txt
+        run: |
+          python -m venv .venv-backend
+          .venv-backend/bin/python -m pip install --require-hashes -r backend/requirements-dev.lock
       - name: Test engineering tools
-        run: python -m unittest discover -s tests -v
+        run: .venv-backend/bin/python -m unittest discover -s tests -v
       - name: Validate development baseline
-        run: python tools/development_baseline.py
+        run: .venv-backend/bin/python tools/development_baseline.py
       - name: Check public benchmark references
-        run: python -m tools.benchmark.public_oracle
-      - name: Type check Python tools and tests
-        run: pyright
+        run: .venv-backend/bin/python -m tools.benchmark.public_oracle
+      - name: Type check Python tools, backend and tests
+        run: .venv-backend/bin/pyright
       - name: Validate documentation and contracts
-        run: python docs/企劃案/tools/check_docs.py
+        run: .venv-backend/bin/python docs/企劃案/tools/check_docs.py

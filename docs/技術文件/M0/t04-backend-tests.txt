@@ -1,0 +1,42 @@
+ Container axiom-t04-check-postgres-1 Running
+ Container axiom-t04-check-redis-1 Running
+ Container axiom-t04-check-postgres-1 Waiting
+ Container axiom-t04-check-postgres-1 Healthy
+ Container axiom-t04-check-migrate-1 Starting
+ Container axiom-t04-check-migrate-1 Started
+ Container axiom-t04-check-migrate-1 Waiting
+ Container axiom-t04-check-redis-1 Waiting
+ Container axiom-t04-check-migrate-1 Exited
+ Container axiom-t04-check-redis-1 Healthy
+ Container axiom-t04-check-web-run-2ab22d6b39d0 Creating
+ Container axiom-t04-check-web-run-2ab22d6b39d0 Created
+Creating test database for alias 'default' ('test_axiom')...
+Found 17 test(s).
+Operations to perform:
+  Apply all migrations: foundation
+Running migrations:
+  Applying foundation.0001_initial... OK
+System check identified no issues (0 silenced).
+test_completed_probe_not_redispatched (foundation.tests.test_dispatch.DispatchTests.test_completed_probe_not_redispatched) ... ok
+test_database_rejects_done_without_effect (foundation.tests.test_dispatch.DispatchTests.test_database_rejects_done_without_effect) ... ok
+test_database_rejects_running_without_lease (foundation.tests.test_dispatch.DispatchTests.test_database_rejects_running_without_lease) ... ok
+test_database_rejects_second_completion (foundation.tests.test_dispatch.DispatchTests.test_database_rejects_second_completion) ... ok
+test_duplicate_delivery_has_one_effect (foundation.tests.test_dispatch.DispatchTests.test_duplicate_delivery_has_one_effect) ... ok
+test_expired_result_rejected_before_and_after_requeue (foundation.tests.test_dispatch.DispatchTests.test_expired_result_rejected_before_and_after_requeue) ... ok
+test_failed_readiness_hides_exception_details (foundation.tests.test_dispatch.DispatchTests.test_failed_readiness_hides_exception_details) ... ok
+test_health_checks_live_dependencies (foundation.tests.test_dispatch.DispatchTests.test_health_checks_live_dependencies) ... ok
+test_health_endpoints_reject_mutation (foundation.tests.test_dispatch.DispatchTests.test_health_endpoints_reject_mutation) ... ok
+test_multiple_relay_passes_are_idempotent (foundation.tests.test_dispatch.DispatchTests.test_multiple_relay_passes_are_idempotent) ... ok
+test_parallel_claims_have_one_winner (foundation.tests.test_dispatch.DispatchTests.test_parallel_claims_have_one_winner) ... ok
+test_publish_failure_retains_pending_record (foundation.tests.test_dispatch.DispatchTests.test_publish_failure_retains_pending_record) ... ok
+test_rolled_back_creation_not_visible_to_relay (foundation.tests.test_dispatch.DispatchTests.test_rolled_back_creation_not_visible_to_relay) ... ok
+test_valid_lease_not_requeued (foundation.tests.test_dispatch.DispatchTests.test_valid_lease_not_requeued) ... ok
+test_wrong_generation_cannot_claim (foundation.tests.test_dispatch.DispatchTests.test_wrong_generation_cannot_claim) ... ok
+test_wrong_generation_cannot_complete (foundation.tests.test_dispatch.DispatchTests.test_wrong_generation_cannot_complete) ... ok
+test_wrong_token_cannot_complete (foundation.tests.test_dispatch.DispatchTests.test_wrong_token_cannot_complete) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.267s
+
+OK
+Destroying test database for alias 'default' ('test_axiom')...

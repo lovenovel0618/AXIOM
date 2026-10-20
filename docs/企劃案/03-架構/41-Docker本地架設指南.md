@@ -17,7 +17,13 @@
 - 僅涵蓋開發與架設環境；正式對外部署、憑證與雲端受管服務見 [08-部署與運算資源規劃](<08-部署與運算資源規劃.md>)，未決前依 D-09 僅限本機 loopback。
 - 本環境為**可重建**：狀態可由 Compose 定義與遷移流程還原，不作為唯一永久資料來源。
 
-## 容器拓樸
+## T04 已實作的本機切片
+
+根目錄 compose.yaml 已提供 PostgreSQL 16、Redis 7、Python 3.13 的 migration／web／worker／relay，以及 Node 24 Vue 開發頁；映像使用 T02 驗證的 digest。宿主入口為 loopback 18000（web）與 15173（frontend），DB／Redis 不映射宿主埠。實際變數為 AXIOM_SECRET_KEY、AXIOM_DB_PASSWORD，選配 AXIOM_WEB_PORT／AXIOM_FRONTEND_PORT；沒有預設密碼。
+
+執行指令與測試見 [infra 說明](<../../../infra/README.md>)、[T04 技術設計](<../../技術文件/M0/T04-產品工程骨架.md>)。已實作健康端點固定為 /health/live/、/health/ready/；worker 另以 probe_smoke 實測。Windows WSL2 未實測，不能由 macOS arm64 結果推論通過。下列完整拓樸與尚未實作的設定是後續目標，不是目前 Compose 功能；物件儲存、正式 Run、研究帳號、AI 與 proof 均未啟用。
+
+## 目標容器拓樸
 
 ```mermaid
 flowchart TB
@@ -55,16 +61,16 @@ flowchart TB
 
 | 服務 | 映像 | 容器埠 | 宿主埠 | 用途 |
 |---|---|---|---|---|
-| nginx | nginx:1.27-alpine | 80 | 8080 | 反向代理與靜態檔 |
-| web | 自建 python:3.12-slim | 8000 | 8000 | Django + DRF API |
-| frontend | node:20-alpine | 5173 | 5173 | Vue 3 + Vite 開發伺服器 |
+| nginx | 待選定並鎖 digest（尚未啟用） | 80 | 8080 | 反向代理與靜態檔 |
+| web | 自建 python:3.13-slim（T02 digest） | 8000 | loopback 18000 | Django；研究 API 待實作 |
+| frontend | node:24（T02 digest） | 5173 | loopback 15173 | Vue 3 + Vite 開發伺服器 |
 | worker | 同 web 映像 | — | 無 | Celery 佇列：light／search／precision |
 | beat | 同 web 映像 | — | 無 | 週期性排程（清理、TTL、基準回歸） |
 | proof | 同 web 映像（選配） | — | 無 | 受限符號／形式化驗證，預設不啟用 |
-| postgres | pgvector/pgvector:pg16 | 5432 | 5432 | 交易資料與向量索引 |
-| redis | redis:7-alpine | 6379 | 6379 | 佇列、快取、分散鎖 |
-| minio | minio/minio | 9000／9001 | 9000／9001 | 物件儲存與 Console |
-| minio-init | minio/mc | — | 無 | 一次性建立 bucket 與存取政策 |
+| postgres | postgres:16-alpine（T02 digest；向量擴充待選） | 5432 | 無 | 交易資料與向量索引 |
+| redis | redis:7-alpine | 6379 | 無 | 佇列、快取、分散鎖 |
+| minio | 待鎖 MinIO digest（未啟用） | 9000／9001 | 9000／9001 | 物件儲存與 Console |
+| minio-init | 待鎖 mc digest（未啟用） | — | 無 | 一次性建立 bucket 與存取政策 |
 
 佇列隔離依 `03-架構/08` 的工作池分層；macOS 開發環境不啟用 gpu 佇列，相關任務降級為本地 CPU 或明確標示為未執行，不得假裝已使用外部推理。WSL2 架設環境是否啟用 gpu 佇列，取決於宿主 GPU 直通能力（待確認，見「Windows WSL2 架設環境注意事項」）。
 
@@ -93,7 +99,7 @@ flowchart TB
 ## 啟動順序與健康檢查
 
 - 依賴以 `depends_on: condition: service_healthy` 表達，不以固定 `sleep` 取代。
-- 健康檢查端點：postgres `pg_isready`、redis `redis-cli ping`、minio `/minio/health/live`、web `/livez`（程序存活、不查 schema）及 `/readyz`（DB schema、必要服務與 init version 已就緒）、nginx 反向探測 `/readyz`。
+- 健康檢查端點：postgres `pg_isready`、redis `redis-cli ping`、minio `/minio/health/live`、web `/health/live/`（程序存活、不查 schema）及 `/health/ready/`（DB schema、必要服務與 init version 已就緒）、nginx 反向探測 `/health/ready/`。
 - 首次啟動先啟動 PostgreSQL／Redis／MinIO 並等待基礎服務健康，再執行一次性 init job（遷移、bucket／最小權限帳號、管理員與公開 fixture），最後啟動 web／worker／nginx。init 失敗即停止，不先等待依賴 schema 的 web 就緒。
 - 任一必要服務不健康時，web 不得對外提供服務；此為 Pre-flight 閘門，避免半啟動狀態產生不可信結果。
 

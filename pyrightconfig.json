@@ -2,14 +2,28 @@
   "include": [
     "docs/企劃案/tools",
     "tools",
-    "tests"
+    "tests",
+    "backend"
   ],
   "exclude": [
     ".venv",
-    ".venv-compat"
+    ".venv-compat",
+    ".venv-backend"
   ],
   "venvPath": ".",
-  "venv": ".venv",
-  "pythonVersion": "3.14",
-  "typeCheckingMode": "strict"
+  "venv": ".venv-backend",
+  "pythonVersion": "3.13",
+  "typeCheckingMode": "strict",
+  "executionEnvironments": [
+    {
+      "root": "backend",
+      "pythonVersion": "3.13",
+      "extraPaths": [
+        "backend"
+      ]
+    },
+    {
+      "root": "."
+    }
+  ]
 }

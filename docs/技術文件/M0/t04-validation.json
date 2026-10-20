@@ -1,0 +1,147 @@
+{
+  "scope": "T04_FOUNDATION_SLICE",
+  "date": "2026-10-20",
+  "review_method": "SELF_REVIEW",
+  "t04_ticket_status": "IN_PROGRESS",
+  "formal_run_attempt": "NOT_RUN",
+  "product_gate_status": "NOT_RUN",
+  "runtime": {
+    "docker_os": "linux",
+    "architecture": "arm64",
+    "container_python": "3.13.16",
+    "local_tools_python": "3.13.15",
+    "node": "24.22.0"
+  },
+  "tests": {
+    "existing_tools": 74,
+    "postgresql_backend": 17,
+    "frontend": 8,
+    "status": "PASS"
+  },
+  "strict_pyright": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "sonar": {
+    "python": {
+      "analyzed_files": 33,
+      "diagnostics": {
+        "backend/foundation/management/__init__.py": [],
+        "backend/foundation/management/commands/__init__.py": [],
+        "docs/企劃案/tools/check_docs.py": [],
+        "tools/benchmark/access_child.py": [],
+        "tests/test_compatibility_probe.py": [],
+        "backend/foundation/management/commands/probe_smoke.py": [],
+        "backend/foundation/__init__.py": [],
+        "backend/manage.py": [],
+        "tools/development_baseline.py": [],
+        "backend/config/celery.py": [],
+        "backend/foundation/models.py": [],
+        "tests/test_development_baseline.py": [],
+        "backend/foundation/tests/test_dispatch.py": [],
+        "backend/foundation/tests/__init__.py": [],
+        "backend/config/wsgi.py": [],
+        "tests/test_public_oracle.py": [],
+        "docs/企劃案/tools/contract_scenarios.py": [],
+        "tools/benchmark/partition.py": [],
+        "backend/foundation/migrations/__init__.py": [],
+        "backend/config/settings.py": [],
+        "backend/foundation/health.py": [],
+        "tools/compatibility/python_probe.py": [],
+        "backend/config/__init__.py": [],
+        "tools/compatibility/celery_app.py": [],
+        "tests/test_benchmark_partition.py": [],
+        "backend/foundation/migrations/0001_initial.py": [],
+        "backend/foundation/dispatch.py": [],
+        "tests/test_isolation_probe.py": [],
+        "backend/config/urls.py": [],
+        "tools/benchmark/isolation_probe.py": [],
+        "backend/foundation/management/commands/dispatch_probes.py": [],
+        "tools/benchmark/public_oracle.py": [],
+        "backend/foundation/tasks.py": []
+      }
+    },
+    "javascript_vue": {
+      "analyzed_files": 11,
+      "diagnostics": {
+        "frontend/src/App.vue": [],
+        "frontend/vite.config.ts": [],
+        "tools/compatibility/frontend/vite.config.ts": [],
+        "tools/compatibility/frontend/src/state.ts": [],
+        "tools/compatibility/frontend/record.mjs": [],
+        "frontend/src/main.ts": [],
+        "tools/compatibility/frontend/src/App.vue": [],
+        "tools/compatibility/frontend/src/main.ts": [],
+        "frontend/src/health.ts": [],
+        "frontend/tests/health.test.ts": [],
+        "tools/compatibility/frontend/tests/compatibility.test.ts": []
+      }
+    },
+    "iac": {
+      "analyzed_files": 3,
+      "diagnostics": {
+        "frontend/Dockerfile": [],
+        "backend/Dockerfile": [],
+        "compose.yaml": []
+      }
+    }
+  },
+  "outage": {
+    "redis_ready_http": 503,
+    "redis_live_http": 200,
+    "probe_during_outage": "PENDING",
+    "smoke_during_outage": "TIMEOUT_AFTER_30_SECONDS",
+    "probe_after_recovery": {
+      "state": "DONE",
+      "completions": 1
+    },
+    "postgres_ready_http": 503,
+    "postgres_live_http": 200,
+    "recovered_ready_http": 200
+  },
+  "sources": {
+    "backend/Dockerfile": "fcc935b1789b52260c5f0a311f2ad225537eac373dff423fe5df208cb4e23bc2",
+    "backend/config/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend/config/celery.py": "fdbb0b46b49c62ed533e4fe873857f1140da4b763d03f25d689ab875e02910e6",
+    "backend/config/settings.py": "c284013c6a977d4af9b86fd86d2818d25155a2706b8d850e739fc001c892250f",
+    "backend/config/urls.py": "20b77d8bc447e070c27d012d662e88b4ecfedb250c5277396ecef69df35eb1e4",
+    "backend/config/wsgi.py": "eae3ca58dd999ba3acca85130f6c2fbae3b7a511850b0bb692c9073c0d8a21d0",
+    "backend/foundation/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend/foundation/dispatch.py": "b11fab372131ca8cb936cb1ce6314619ba395f561561ae4a495424dff9aad9e1",
+    "backend/foundation/health.py": "081dff0cecd5836e732bd98a67f0e6f22eea8ce394c09cb6979aa04898ff8900",
+    "backend/foundation/management/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend/foundation/management/commands/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend/foundation/management/commands/dispatch_probes.py": "87a6a9aeac377b237916dce039870b877174c9263e83598543b668dbd99adedc",
+    "backend/foundation/management/commands/probe_smoke.py": "bd470844bc7455eb89c6407d063553cd3add5744b89df4b0ed88cff58587c4a1",
+    "backend/foundation/migrations/0001_initial.py": "c7da583e56f0e0e6f2a29667264ab7eea9fa9c5dc21953906cc34dec2ae1a021",
+    "backend/foundation/migrations/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend/foundation/models.py": "6fa4f8ce9c5203b5d0fa06fb1d3a9ada421bd0d3c5a539fa6a0f9901a759c206",
+    "backend/foundation/tasks.py": "bf89f767b388b0037107ae37689b6ad2c22773756161174e9f95565a07a275a6",
+    "backend/foundation/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend/foundation/tests/test_dispatch.py": "03bd291e134cdb11231610fc6854787a8566fff208dd518101950ce1186b4aab",
+    "backend/manage.py": "a765aaf496d27c105bd1e4a5ded2c97f664b841d1acb702dc29182a39d41f2cd",
+    "backend/pyrightconfig.json": "3f366fa718886f4b0a2128ce03a1d835a0919d04ea8a2da1239f57e21def96f2",
+    "backend/requirements-dev.in": "9f3cc471f9a11d8a25ac8dc3383becf8f05329d851189d9de22416c7de52155f",
+    "backend/requirements-dev.lock": "3d283d84a1af98e51c67965ae8d6d2a8d11acee879182014929e44737910d476",
+    "compose.yaml": "9e0c6425d759d7f39520873c47fd2a4a28d9d4c53caa551c182f641140697ad6",
+    "frontend/.node-version": "a1c56e968c358e10872d64220b3ae759ffe7feaffc4da95fae425dbcca43fe44",
+    "frontend/Dockerfile": "a0fef8ee64cd8272be4a1d4b7258a0187b3130858eccc9d12c520d25abd5c697",
+    "frontend/index.html": "250c8528971ee38ca007bc9d023017620bd410461fe32933d3dd4dd2288b9417",
+    "frontend/package-lock.json": "d65fa7dbfb1e2a205d66c668f8a7f53b1b0a339f06fd7b4933f01bfcff8cc21c",
+    "frontend/package.json": "83da0ea75a76376fd4f01e73b66e055149a401626e6f11bb948d3cf64f1824b6",
+    "frontend/src/App.vue": "09aed6440612bc013d889c27f4212a92ead198887aa20a6e6334e34ab0fccbf2",
+    "frontend/src/health.ts": "e16153f0cbb6495ed5ba8abec85c4e87a30186d4b6d36745377b656883396ff5",
+    "frontend/src/main.ts": "50cb9f18b1c7115799ae456f0d0038840278b49ea520b5549d468ec76c248fb9",
+    "frontend/tests/health.test.ts": "d1aca0545b1fa364e809878ad795b02ec140e7ff9f29eaaf54e7b0d46896fc80",
+    "frontend/tsconfig.json": "24ec8374bb6571b9f001948c6cd65aab9d6fab2e3ff48406043a9ddc58d00fbd",
+    "frontend/vite.config.ts": "2ab4792a6be4e7b512af84f86bc19d310b4f754211bdb3d7d027d395b1fd8ef9",
+    "infra/README.md": "901c34260f27e8709db48e0f31055c07507fb9c42f2a608330cdc70502c3890f",
+    "pyrightconfig.json": "ba8ee66262441b3476e72ca1df489ae67e2b0db8e04065eb5359b58b9ca90128"
+  },
+  "http_module_smoke": {
+    "main_ts": 200,
+    "app_vue": 200,
+    "optimized_vue_dependency": 200,
+    "vite_permission_errors_after_fix": 0
+  }
+}

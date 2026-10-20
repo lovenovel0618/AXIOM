@@ -1,0 +1,52 @@
+name: product-check
+on:
+  push:
+    branches: [master]
+  pull_request:
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      AXIOM_SECRET_KEY: ci-synthetic-key-for-local-tests-only-12345678901234567890
+      AXIOM_DB_PASSWORD: ci-disposable-password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: |
+          python -m venv .venv-backend
+          .venv-backend/bin/python -m pip install --require-hashes -r backend/requirements-dev.lock
+      - run: .venv-backend/bin/pyright -p backend
+      - run: docker compose -p axiom-ci up --build -d --wait --wait-timeout 120
+      - run: docker compose -p axiom-ci run --rm web python manage.py test foundation.tests -v 2
+      - run: docker compose -p axiom-ci run --rm web python manage.py makemigrations --check --dry-run
+      - run: docker compose -p axiom-ci run --rm web python manage.py probe_smoke
+      - name: Loopback HTTP and frontend proxy smoke
+        run: |
+          curl --fail http://127.0.0.1:18000/health/ready/
+          curl --fail http://127.0.0.1:15173/health/ready/
+          curl --fail http://127.0.0.1:15173/
+          curl --fail http://127.0.0.1:15173/src/main.ts
+          curl --fail http://127.0.0.1:15173/src/App.vue
+          curl --fail --retry 5 --retry-delay 1 --retry-all-errors http://127.0.0.1:15173/node_modules/.vite/deps/vue.js
+      - name: Logs and cleanup
+        if: always()
+        run: |
+          docker compose -p axiom-ci logs --no-color
+          docker compose -p axiom-ci down --volumes --remove-orphans
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.22.0"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --ignore-scripts
+        working-directory: frontend
+      - run: npm run typecheck && npm test && npm run build
+        working-directory: frontend

@@ -169,16 +169,16 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 
 ## 文件檢查方式
 
-執行依賴鎖定於 [requirements.txt](<tools/requirements.txt>)；編輯與靜態檢查另使用 [requirements-dev.txt](<tools/requirements-dev.txt>)，包含Pyright及jsonschema型別宣告。從專案根目錄以Python 3.14建立本地環境，再執行嚴格型別與文件檢查：
+執行依賴鎖定於 [requirements.txt](<tools/requirements.txt>)；編輯與靜態檢查另使用 [requirements-dev.txt](<tools/requirements-dev.txt>)，包含Pyright及jsonschema型別宣告。T04 起從專案根目錄以 Python 3.13 建立含 backend runtime／stubs 的共用開發環境，再執行嚴格型別與文件檢查：
 
 ```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -r docs/企劃案/tools/requirements-dev.txt
-.venv/bin/pyright
-.venv/bin/python docs/企劃案/tools/check_docs.py
+uv venv --python 3.13 .venv-backend
+uv pip sync --python .venv-backend/bin/python --require-hashes backend/requirements-dev.lock
+.venv-backend/bin/pyright
+.venv-backend/bin/python docs/企劃案/tools/check_docs.py
 ```
 
-專案根目錄的pyrightconfig.json採strict模式檢查docs/企劃案/tools；VS Code設定預設使用專案.venv。若編輯器已選其他Python，執行「Python: Select Interpreter」選擇.venv/bin/python，然後重新啟動語言伺服器。.venv與Python cache不納入Git。純執行驗證可只安裝requirements.txt；不能將執行通過當成靜態型別檢查通過。SonarQube for VS Code使用「Analyze Current File with SonarQube」或「Analyze Changed Files with SonarQube」檢查工具；維持S3776的預設15上限，不以停用規則消除提示。JSON動態欄位的Any僅用於schema資料邊界；工具函式、容器、Registry及第三方驗證器介面仍明確標註型別，不關閉診斷。
+專案根目錄的pyrightconfig.json採 strict 模式檢查 docs/企劃案/tools、tools、tests 及 backend；VS Code 設定預設使用專案 .venv-backend。若編輯器已選其他Python，執行「Python: Select Interpreter」選擇 .venv-backend/bin/python，然後重新啟動語言伺服器。.venv／.venv-backend 與 Python cache 不納入 Git。純執行驗證可只安裝requirements.txt；不能將執行通過當成靜態型別檢查通過。SonarQube for VS Code使用「Analyze Current File with SonarQube」或「Analyze Changed Files with SonarQube」檢查工具；維持S3776的預設15上限，不以停用規則消除提示。JSON動態欄位的Any僅用於schema資料邊界；工具函式、容器、Registry及第三方驗證器介面仍明確標註型別，不關閉診斷。
 
 編輯後經審查再以 `--write-manifest` 重建清單，接著無參數重跑確認。工具檢查本地連結、編號、標頭版本、AC 追溯與決策引用、公開／內部 schema 正反例及投影一致、OpenAPI 雙向端點覆蓋、330 組跨契約參考情境、錯誤碼／能力／政策三份登錄與 AX-21／26／30／37／53 的雙向一致性、公開資料 oracle 與 manifest；不執行搜尋引擎、安全隔離、備份恢復或瀏覽器驗收。
 

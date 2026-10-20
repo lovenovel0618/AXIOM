@@ -1,0 +1,89 @@
+name: axiom-dev
+x-backend: &backend
+  build:
+    context: .
+    dockerfile: backend/Dockerfile
+  environment: &environment
+    AXIOM_SECRET_KEY: ${AXIOM_SECRET_KEY:?Set AXIOM_SECRET_KEY in .env}
+    AXIOM_DB_PASSWORD: ${AXIOM_DB_PASSWORD:?Set AXIOM_DB_PASSWORD in .env}
+    AXIOM_DB_HOST: postgres
+    AXIOM_DB_NAME: axiom
+    AXIOM_DB_USER: axiom
+    AXIOM_REDIS_URL: redis://redis:6379/0
+  networks: [private]
+services:
+  postgres:
+    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    environment:
+      POSTGRES_DB: axiom
+      POSTGRES_USER: axiom
+      POSTGRES_PASSWORD: ${AXIOM_DB_PASSWORD:?Set AXIOM_DB_PASSWORD in .env}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    networks: [private]
+    healthcheck:
+      test: [CMD, pg_isready, -U, axiom, -d, axiom]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  redis:
+    image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    command: [redis-server, --appendonly, "yes"]
+    volumes: [redis-data:/data]
+    networks: [private]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  migrate:
+    <<: *backend
+    command: [python, manage.py, migrate, --noinput]
+    depends_on:
+      postgres: {condition: service_healthy}
+  web:
+    <<: *backend
+    networks: [private, edge]
+    ports: ["127.0.0.1:${AXIOM_WEB_PORT:-18000}:8000"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/health/ready/', timeout=6)"]
+      interval: 5s
+      timeout: 8s
+      retries: 20
+  worker:
+    <<: *backend
+    command: [celery, -A, config.celery:app, worker, --loglevel=INFO, --concurrency=1, --queues=foundation]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+  relay:
+    <<: *backend
+    command: [python, manage.py, dispatch_probes]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    restart: on-failure
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    environment:
+      AXIOM_WEB_TARGET: http://web:8000
+    ports: ["127.0.0.1:${AXIOM_FRONTEND_PORT:-15173}:5173"]
+    networks: [edge]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:5173/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      web: {condition: service_healthy}
+networks:
+  edge:
+  private:
+    internal: true
+volumes:
+  postgres-data:
+  redis-data:

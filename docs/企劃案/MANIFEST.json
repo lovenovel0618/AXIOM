@@ -63,8 +63,8 @@
     },
     {
       "path": "03-架構/41-Docker本地架設指南.md",
-      "bytes": 14134,
-      "sha256": "e9f3fa401d3c0de60ff19ef39907d125389cd263008e372a5ba75687da51e1af"
+      "bytes": 15222,
+      "sha256": "388498f602188cb938a65c884477c314525469152a59b933ee247f04182b8302"
     },
     {
       "path": "04-數學核心/09-數據語意與前處理.md",
@@ -188,8 +188,8 @@
     },
     {
       "path": "11-交付/31-工作拆解WBS與依賴.md",
-      "bytes": 21139,
-      "sha256": "4e6a139d986101263dc3006348351bc9dfb0224008c6d8909ba42769d10dfb72"
+      "bytes": 21382,
+      "sha256": "0c7ae9665d3cc7481c7607560d88d98901d205e9836f035446dab239de72fd78"
     },
     {
       "path": "11-交付/32-風險登錄與決策紀錄.md",
@@ -293,8 +293,8 @@
     },
     {
       "path": "15-工程/53-工程治理與開發者工作流.md",
-      "bytes": 9969,
-      "sha256": "11b46ef2b237f88fabaaf84f5f53c1d919d58266690c61c56b081a26a0d142e4"
+      "bytes": 10661,
+      "sha256": "e493aeb06abb15970605d727bb13f9e9e8d7c1fc703ba4a269f1998d8cbd9b7f"
     },
     {
       "path": "INTEGRATION.md",
@@ -303,8 +303,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 17584,
-      "sha256": "58e8fae43b4bf78d9eec0c41cb9c75b412e3e8b942bcfc2968c4e6628b18fdb0"
+      "bytes": 17746,
+      "sha256": "e8fc22692cb28246760053e5d4eca78159f3075fd864c0c47e446f184a400c1f"
     },
     {
       "path": "REVIEW.md",

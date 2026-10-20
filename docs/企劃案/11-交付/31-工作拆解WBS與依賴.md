@@ -167,12 +167,13 @@ T02 與 T03、T05 與 T06 在依賴上可並行，但目前只有一人，預設
 開工時只需先執行本套文件已存在的品質檢查：
 
 ```sh
-.venv/bin/python -m pip install -r docs/企劃案/tools/requirements-dev.txt
-.venv/bin/pyright
-.venv/bin/python docs/企劃案/tools/check_docs.py
+uv venv --python 3.13 .venv-backend
+uv pip sync --python .venv-backend/bin/python --require-hashes backend/requirements-dev.lock
+.venv-backend/bin/pyright
+.venv-backend/bin/python docs/企劃案/tools/check_docs.py
 ```
 
-首次建立 `.venv` 的方式見 [索引](<../README.md>)。Compose、產品 migration、API smoke 與 E2E 指令待 T04／T07 實作後補入根目錄 README，執行前先確認對應檔案及入口已存在。
+首次建立 `.venv` 的方式見 [索引](<../README.md>)。T04 本機 Compose、migration、健康檢查與合成派送 smoke 已補入根目錄 README 及 infra/README.md。T04 目前交付基礎切片；內部 DispatchProbe 只驗證派送／世代 fencing，不是正式 Run／Attempt，正式 Run 契約與 API／E2E 尚待完成，不因基礎切片通過關閉整張 T04 或 M0。
 
 ## 每張開發工作票與交接程序
 

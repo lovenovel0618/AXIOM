@@ -10,3 +10,7 @@ __pycache__/
 .venv-compat/
 node_modules/
 dist/
+
+# Local product configuration and isolated typing environment
+.env
+.venv-backend/
