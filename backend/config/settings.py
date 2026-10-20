@@ -1,15 +1,18 @@
 """Loopback development settings; secrets are supplied by the environment."""
 import os
+from pathlib import Path
 
 SECRET_KEY = os.environ["AXIOM_SECRET_KEY"]
 if len(SECRET_KEY) < 50:
     raise ValueError("AXIOM_SECRET_KEY must contain at least 50 characters")
 DEBUG = False
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "web", "testserver"]
-INSTALLED_APPS = ["foundation", "runtime"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "web", "frontend", "testserver"]
+INSTALLED_APPS = ["django.contrib.auth", "django.contrib.contenttypes", "django.contrib.sessions", "foundation", "runtime", "catalog"]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -38,3 +41,13 @@ CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_CONNECTION_TIMEOUT = 3
 CELERY_BROKER_TRANSPORT_OPTIONS = {"socket_timeout": 3, "socket_connect_timeout": 3}
+
+TEMPLATES = [{"BACKEND": "django.template.backends.django.DjangoTemplates", "APP_DIRS": True}]
+SESSION_COOKIE_NAME = "axiom_session"
+CSRF_COOKIE_NAME = "axiom_csrf"
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_AGE = 28800
+CSRF_FAILURE_VIEW = "catalog.http.csrf_failure"
+DATA_UPLOAD_MAX_MEMORY_SIZE = 65536
+OBJECT_ROOT = Path(os.environ.get("AXIOM_OBJECT_ROOT", "/var/lib/axiom/objects"))

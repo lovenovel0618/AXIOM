@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "scope": "T05_LOCAL_SYNTHETIC_HTTP",
+  "via_frontend": false,
+  "upload_http": 204,
+  "cross_tenant_http": 404,
+  "revoked_token_http": 404,
+  "complete_http": 503,
+  "business_ingest_status": "NOT_RUN",
+  "upload_id": "edef7539-1810-4d0b-97c5-e783d6d29151",
+  "object_version": "02f1889d-8a82-4029-8cf0-97a90a130165",
+  "registered_objects": 1,
+  "sha256": "278481a91ae8d509e7cc9dc55cf71151dcda647c6d185fb462bfc9aaeb095563"
+}

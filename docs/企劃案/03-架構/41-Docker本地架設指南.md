@@ -21,7 +21,7 @@
 
 根目錄 compose.yaml 已提供 PostgreSQL 16、Redis 7、Python 3.13 的 migration／web／worker／relay，以及 Node 24 Vue 開發頁；映像使用 T02 驗證的 digest。宿主入口為 loopback 18000（web）與 15173（frontend），DB／Redis 不映射宿主埠。實際變數為 AXIOM_SECRET_KEY、AXIOM_DB_PASSWORD，選配 AXIOM_WEB_PORT／AXIOM_FRONTEND_PORT；沒有預設密碼。
 
-執行指令與測試見 [infra 說明](<../../../infra/README.md>)、[T04 技術設計](<../../技術文件/M0/T04-產品工程骨架.md>)。已實作健康端點固定為 /health/live/、/health/ready/；worker 另以 probe_smoke 實測。Windows WSL2 未實測，不能由 macOS arm64 結果推論通過。下列完整拓樸與尚未實作的設定是後續目標，不是目前 Compose 功能；物件儲存、正式 Run、研究帳號、AI 與 proof 均未啟用。
+執行指令與測試見 [infra 說明](<../../../infra/README.md>)、[T04 技術設計](<../../技術文件/M0/T04-產品工程骨架.md>)。已實作健康端點固定為 /health/live/、/health/ready/；worker 另以 probe_smoke 實測。Windows WSL2 未實測，不能由 macOS arm64 結果推論通過。下列完整拓樸與尚未實作的設定是後續目標，不是目前 Compose 功能；T05 已加入資料集登入帳號、租戶ACL與web專用object-data本地volume；MinIO／S3、正式業務Run、AI與proof均未啟用。
 
 ## 目標容器拓樸
 

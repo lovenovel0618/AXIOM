@@ -3,7 +3,8 @@
     "config",
     "foundation",
     "manage.py",
-    "runtime"
+    "runtime",
+    "catalog"
   ],
   "venvPath": "..",
   "venv": ".venv-backend",

@@ -10,6 +10,7 @@ x-backend: &backend
     AXIOM_DB_NAME: axiom
     AXIOM_DB_USER: axiom
     AXIOM_REDIS_URL: redis://redis:6379/0
+    AXIOM_OBJECT_ROOT: /var/lib/axiom/objects
   networks: [private]
 services:
   postgres:
@@ -43,6 +44,7 @@ services:
   web:
     <<: *backend
     networks: [private, edge]
+    volumes: [object-data:/var/lib/axiom/objects]
     ports: ["127.0.0.1:${AXIOM_WEB_PORT:-18000}:8000"]
     depends_on:
       migrate: {condition: service_completed_successfully}
@@ -87,3 +89,4 @@ networks:
 volumes:
   postgres-data:
   redis-data:
+  object-data:

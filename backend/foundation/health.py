@@ -1,5 +1,6 @@
 """Operational endpoints return no dependency addresses or exception details."""
 import logging
+import os
 from django.conf import settings
 from django.db import DatabaseError, connection
 from django.db.migrations.recorder import MigrationRecorder
@@ -21,8 +22,10 @@ def live(_request: HttpRequest) -> JsonResponse:
 def ready(_request: HttpRequest) -> JsonResponse:
     try:
         DispatchProbe.objects.exists()
-        required = {("foundation", "0001_initial"), ("runtime", "0001_initial"), ("runtime", "0002_document_guards")}
+        required = {("foundation", "0001_initial"), ("runtime", "0001_initial"), ("runtime", "0002_document_guards"), ("runtime", "0003_runtimerun_runtime_run_tenant_identity"), ("catalog", "0002_tenant_guards"), ("sessions", "0001_initial")}
         if required.difference(MigrationRecorder(connection).applied_migrations()):
+            return JsonResponse({"status": "unavailable"}, status=503)
+        if not settings.OBJECT_ROOT.is_dir() or not os.access(settings.OBJECT_ROOT, os.W_OK):
             return JsonResponse({"status": "unavailable"}, status=503)
         with Redis.from_url(settings.REDIS_URL, socket_connect_timeout=2, socket_timeout=2) as client:
             client.ping()
