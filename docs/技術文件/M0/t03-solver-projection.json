@@ -1,0 +1,104 @@
+{
+  "visibility": "PUBLIC_SMOKE_ONLY",
+  "scope": "PUBLIC_PROJECTION_ONLY",
+  "cases": [
+    {
+      "case_id": "B-LINE",
+      "observations": {
+        "fit": [
+          {
+            "row_id": 0,
+            "x": 0.0,
+            "y": 1.0
+          },
+          {
+            "row_id": 1,
+            "x": 1.0,
+            "y": 3.0
+          },
+          {
+            "row_id": 2,
+            "x": 2.0,
+            "y": 5.0
+          },
+          {
+            "row_id": 3,
+            "x": 3.0,
+            "y": 7.0
+          },
+          {
+            "row_id": 4,
+            "x": 4.0,
+            "y": 9.0
+          },
+          {
+            "row_id": 5,
+            "x": 5.0,
+            "y": 11.0
+          }
+        ],
+        "development": [
+          {
+            "row_id": 6,
+            "x": 6.0,
+            "y": 13.0
+          },
+          {
+            "row_id": 7,
+            "x": 7.0,
+            "y": 15.0
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "B-NOISE",
+      "observations": {
+        "fit": [
+          {
+            "row_id": 0,
+            "x": 0.0,
+            "y": 1.0
+          },
+          {
+            "row_id": 1,
+            "x": 1.0,
+            "y": -1.0
+          },
+          {
+            "row_id": 2,
+            "x": 2.0,
+            "y": 1.0
+          },
+          {
+            "row_id": 3,
+            "x": 3.0,
+            "y": -1.0
+          },
+          {
+            "row_id": 4,
+            "x": 4.0,
+            "y": 1.0
+          },
+          {
+            "row_id": 5,
+            "x": 5.0,
+            "y": -1.0
+          }
+        ],
+        "development": [
+          {
+            "row_id": 6,
+            "x": 6.0,
+            "y": 1.0
+          },
+          {
+            "row_id": 7,
+            "x": 7.0,
+            "y": -1.0
+          }
+        ]
+      }
+    }
+  ]
+}

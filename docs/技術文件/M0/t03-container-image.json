@@ -1,0 +1,13 @@
+{
+  "image": "axiom-t03-isolation",
+  "id": "sha256:a6ae99a7e046581a07b36477aaa1d389559f8b473953341a2d71b8a094ef7e4c",
+  "os": "linux",
+  "architecture": "arm64",
+  "default_user": "probe",
+  "setup_user_override": 0,
+  "base_image": "python:3.13-slim@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f",
+  "network": "none",
+  "memory": "128m",
+  "pids_limit": 32,
+  "cpus": 1
+}

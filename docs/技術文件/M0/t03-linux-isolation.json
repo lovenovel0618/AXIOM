@@ -1,0 +1,33 @@
+{
+  "scope": "POSIX_FILE_ACCESS_PROBE_ONLY",
+  "product_status": "NOT_RUN",
+  "platform": "Linux",
+  "machine": "aarch64",
+  "python": "3.13.16",
+  "status": "PASS",
+  "solver": {
+    "uid": 10001,
+    "effective_capabilities": 0,
+    "sealed_access": "DENIED",
+    "identity_verified": true,
+    "public_access": "ALLOWED",
+    "exit_code": 0,
+    "directory_access": "DENIED",
+    "gid": 10001
+  },
+  "evaluator": {
+    "uid": 10002,
+    "effective_capabilities": 0,
+    "sealed_access": "ALLOWED",
+    "identity_verified": true,
+    "public_access": "ALLOWED",
+    "exit_code": 0,
+    "directory_access": "ALLOWED",
+    "gid": 10002
+  },
+  "negative_controls": {
+    "wrong_identity_detected": true,
+    "insecure_permissions_detected": true,
+    "missing_file_not_accepted_as_denial": true
+  }
+}

@@ -12,7 +12,7 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 
 ## 技術實作與檢查
 
-目前由你一人開發，各技術角色由本人兼任；開發採「技術文件→代碼→測試→代碼檢測→自我檢查→commit／push」，不等待第二位程式 reviewer。目前已實作 T01 的離線開工基線檢查與 T02 的隔離相容性驗證（含測試專用 Compose）；技術設計與執行方式見 [技術文件](docs/技術文件/README.md)，產品服務尚未建立。T02 的重現指令、鎖定依賴與平台實測見 [相容性驗證](docs/技術文件/M0/T02-技術選型與相容性驗證.md)。
+目前由你一人開發，各技術角色由本人兼任；開發採「技術文件→代碼→測試→代碼檢測→自我檢查→commit／push」，不等待第二位程式 reviewer。目前已實作 T01 的離線開工基線檢查與 T02 的隔離相容性驗證（含測試專用 Compose），以及 T03 公開 oracle／分區／投影與真實 UID canary 驗證；技術設計與執行方式見 [技術文件](docs/技術文件/README.md)，產品服務尚未建立。T02 的重現指令、鎖定依賴與平台實測見 [相容性驗證](docs/技術文件/M0/T02-技術選型與相容性驗證.md)。
 
 ```sh
 .venv/bin/python tools/development_baseline.py
@@ -20,6 +20,8 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 ```
 
 基線有效與 M0 就緒分開回報；單人責任已設定；未決政策及其他交付不自動核准。環境安裝及型別檢查方式如下。
+
+T03 的固定公開案例與隔離測試見 [技術文件](docs/技術文件/M0/T03-公開基準與盲測隔離基線.md)，可先執行 `.venv/bin/python -m tools.benchmark.public_oracle`。
 
 ## 文件檢查
 

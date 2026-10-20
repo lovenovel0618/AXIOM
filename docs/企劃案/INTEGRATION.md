@@ -129,3 +129,7 @@
 ## T02 技術選型與相容性驗證
 
 先產技術文件，再交 Python／Node 鎖檔、macOS 與隔離 Linux arm64 的 Django／DRF／數學／PostgreSQL／Celery 實測、Vue／Pinia／Router 型別及建置測試、依賴 inventory 與 SBOM。測試 Compose 不是產品部署。Windows WSL2、完整授權與產品案例仍待驗；下一步按 T03 補公開 fixture／oracle 與盲測隔離基線，不自動關閉 M0。
+
+## T03 公開基準與盲測隔離基線
+
+先產技術文件，再交既有四個公開案例的獨立 oracle、完整分母／失敗列評分、題目級 family／source 分區參考與 Solver 白名單投影。新增 Linux 真實 UID canary 與放寬權限、缺檔、錯誤身份的反例測試，不以同帳號條件判斷取代權限實測。CI 加公開 oracle 與隔離 job；正式私有 generator／種子、產品 ACL／ledger 與 D-03 仍待交付或決策，產品狀態 NOT_RUN。下一步 T04 接產品工程骨架。

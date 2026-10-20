@@ -1,0 +1,9 @@
+{
+  "scope": "POSIX_FILE_ACCESS_PROBE_ONLY",
+  "product_status": "NOT_RUN",
+  "platform": "Darwin",
+  "machine": "arm64",
+  "python": "3.14.7",
+  "status": "NOT_RUN",
+  "reason": "Requires a disposable Linux container with UID setup permission"
+}

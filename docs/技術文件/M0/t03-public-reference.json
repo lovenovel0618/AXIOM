@@ -1,0 +1,176 @@
+{
+  "scope": "PUBLIC_REFERENCE_ONLY",
+  "product_status": "NOT_RUN",
+  "status": "PASS",
+  "python": "3.14.7",
+  "platform": "Darwin",
+  "machine": "arm64",
+  "visibility": "PUBLIC_SMOKE_ONLY",
+  "version": "1.0",
+  "source_sha256": "d87c73c3d13590aa9954ac33a52ffdb7442d5a592cfd4c442559d2f6ed18f7d9",
+  "atol": 1e-10,
+  "rtol": 1e-10,
+  "cases": [
+    {
+      "id": "B-LINE",
+      "status": "PASS",
+      "scores": {
+        "fit": {
+          "selected_count": 6,
+          "valid_count": 6,
+          "failed_count": 0,
+          "coverage": 1.0,
+          "mae": 0.0,
+          "rmse": 0.0,
+          "passed": true,
+          "row_ids": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "failed_rows": [],
+          "failure_counts": {}
+        },
+        "development": {
+          "selected_count": 2,
+          "valid_count": 2,
+          "failed_count": 0,
+          "coverage": 1.0,
+          "mae": 0.0,
+          "rmse": 0.0,
+          "passed": true,
+          "row_ids": [
+            6,
+            7
+          ],
+          "failed_rows": [],
+          "failure_counts": {}
+        },
+        "final_test": {
+          "selected_count": 2,
+          "valid_count": 2,
+          "failed_count": 0,
+          "coverage": 1.0,
+          "mae": 0.0,
+          "rmse": 0.0,
+          "passed": true,
+          "row_ids": [
+            8,
+            9
+          ],
+          "failed_rows": [],
+          "failure_counts": {}
+        }
+      }
+    },
+    {
+      "id": "B-DOMAIN",
+      "status": "PASS",
+      "score": {
+        "selected_count": 3,
+        "valid_count": 2,
+        "failed_count": 1,
+        "coverage": 0.6666666666666666,
+        "mae": 0.0,
+        "rmse": 0.0,
+        "passed": false,
+        "row_ids": [
+          0,
+          1,
+          2
+        ],
+        "failed_rows": [
+          1
+        ],
+        "failure_counts": {
+          "DOMAIN_VIOLATION": 1
+        }
+      }
+    },
+    {
+      "id": "B-AMBIG",
+      "status": "PASS",
+      "outcome": "AMBIGUOUS",
+      "scores": {
+        "sine": {
+          "selected_count": 5,
+          "valid_count": 5,
+          "failed_count": 0,
+          "coverage": 1.0,
+          "mae": 0.0,
+          "rmse": 0.0,
+          "passed": true,
+          "row_ids": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "failed_rows": [],
+          "failure_counts": {}
+        },
+        "identity": {
+          "selected_count": 5,
+          "valid_count": 5,
+          "failed_count": 0,
+          "coverage": 1.0,
+          "mae": 7.49656329974091e-05,
+          "rmse": 0.00010617708385155498,
+          "passed": true,
+          "row_ids": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "failed_rows": [],
+          "failure_counts": {}
+        }
+      },
+      "suggested_x": 1,
+      "distinguishing_difference": 0.1585290151921035,
+      "unique": false
+    },
+    {
+      "id": "B-NOISE",
+      "status": "PASS",
+      "outcome": "INSUFFICIENT_EVIDENCE",
+      "candidate": {
+        "selected_count": 2,
+        "valid_count": 2,
+        "failed_count": 0,
+        "coverage": 1.0,
+        "mae": 10.0,
+        "rmse": 10.04987562112089,
+        "passed": false,
+        "row_ids": [
+          8,
+          9
+        ],
+        "failed_rows": [],
+        "failure_counts": {}
+      },
+      "baseline": {
+        "selected_count": 2,
+        "valid_count": 2,
+        "failed_count": 0,
+        "coverage": 1.0,
+        "mae": 1.0,
+        "rmse": 1.0,
+        "passed": false,
+        "row_ids": [
+          8,
+          9
+        ],
+        "failed_rows": [],
+        "failure_counts": {}
+      },
+      "randomness_proven": false
+    }
+  ]
+}
