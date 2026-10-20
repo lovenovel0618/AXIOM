@@ -6,7 +6,7 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 
 完整產品還包含自主表徵、決策與錯誤重審、正逆向多路徑驗證、AI紀錄與經驗演化；詳見AX-49～52，按M1～M7分段交付。
 
-本目錄包含 53 篇編號章節（AX-00～52）、本索引、整合紀錄與全量審查清單，共 56 份 Markdown，另有 machine-readable contracts 與文件檢查工具。目前沒有可執行產品或 Compose 實作，Docker 命令是待實作的操作介面。文件／fixture 檢查通過不等同產品測試通過。
+本目錄包含 54 篇編號章節（AX-00～53）、本索引、整合紀錄與全量審查清單，共 57 份 Markdown，另有 machine-readable contracts 與文件檢查工具。目前沒有可執行產品或 Compose 實作，Docker 命令是待實作的操作介面。文件／fixture 檢查通過不等同產品測試通過。
 
 ## 建議閱讀路徑
 
@@ -16,6 +16,7 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 - 前端：[AX-22 設計系統與視覺規範](<08-前端UX/22-設計系統與視覺規範.md>) → [AX-23 頁面清單與資訊架構](<08-前端UX/23-頁面清單與資訊架構.md>) → [AX-24 畫面線框與互動流程](<08-前端UX/24-畫面線框與互動流程.md>) → [AX-44 研究工作台畫面詳細規格](<13-專題深化/44-研究工作台畫面詳細規格.md>) → [AX-35 畫面驗收清單](<12-附錄/35-畫面驗收清單.md>) → [AX-21 API與任務契約](<07-資料與API/21-API與任務契約.md>)。
 - 維運：[AX-08 部署與運算資源規劃](<03-架構/08-部署與運算資源規劃.md>) → [AX-41 Docker本地架設指南](<03-架構/41-Docker本地架設指南.md>) → [AX-27 可觀測性備份與故障復原](<09-非功能/27-可觀測性備份與故障復原.md>) → [AX-45 非功能SLO與壓測方案](<13-專題深化/45-非功能SLO與壓測方案.md>) → [AX-37 決策待確認清單](<12-附錄/37-決策待確認清單.md>) → [AX-46 發布驗收矩陣與交付證據](<13-專題深化/46-發布驗收矩陣與交付證據.md>)。
 - 記憶／AI：[AX-16 經驗記憶與檢索架構](<05-記憶/16-經驗記憶與檢索架構.md>) → [AX-17 知識圖譜與理論演化](<05-記憶/17-知識圖譜與理論演化.md>) → [AX-18 ChatGPT與Ollama協作](<06-AI/18-ChatGPT與Ollama協作.md>) → [AX-19 策略學習微調與蒸餾](<06-AI/19-策略學習微調與蒸餾.md>) → [AX-26 安全隱私與可信執行](<09-非功能/26-安全隱私與可信執行.md>)。
+- 自主研究／治理：[AX-49 數據結構與自主表徵探索](<14-自主研究/49-數據結構與自主表徵探索.md>) → [AX-50 研究決策軌跡與錯誤恢復](<14-自主研究/50-研究決策軌跡與錯誤恢復.md>) → [AX-51 正確性證據與正逆向驗證](<14-自主研究/51-正確性證據與正逆向驗證.md>) → [AX-52 AI紀錄封存與經驗演化](<14-自主研究/52-AI紀錄封存與經驗演化.md>) → [全量審查、缺口與逐章覆蓋](<REVIEW.md>) → [AX-53 工程治理與開發者工作流](<15-工程/53-工程治理與開發者工作流.md>) → [AX-48 共用契約與文件治理](<00-總覽/48-共用契約與文件治理.md>)。
 
 ## v2.9 的核心規則
 
@@ -129,16 +130,23 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 - [AX-46 發布驗收矩陣與交付證據](<13-專題深化/46-發布驗收矩陣與交付證據.md>)
 - [AX-47 完整研究物件契約](<13-專題深化/47-完整研究物件契約.md>)
 
-## 14-自主研究
+### 14-自主研究
 
 - [AX-49 數據結構與自主表徵探索](<14-自主研究/49-數據結構與自主表徵探索.md>)
 - [AX-50 研究決策軌跡與錯誤恢復](<14-自主研究/50-研究決策軌跡與錯誤恢復.md>)
 - [AX-51 正確性證據與正逆向驗證](<14-自主研究/51-正確性證據與正逆向驗證.md>)
 - [AX-52 AI紀錄封存與經驗演化](<14-自主研究/52-AI紀錄封存與經驗演化.md>)
 
-## 機器可讀契約與公開 fixture
+### 15-工程
+
+- [AX-53 工程治理與開發者工作流](<15-工程/53-工程治理與開發者工作流.md>)
+
+### 機器可讀契約與公開 fixture
 
 - [attachment-requests-v1.json](<contracts/attachment-requests-v1.json>)
+- [capability-registry-v1.json](<contracts/capability-registry-v1.json>)
+- [error-codes-v1.json](<contracts/error-codes-v1.json>)
+- [policy-registry-v1.json](<contracts/policy-registry-v1.json>)
 - [research-learning-v1.schema.json](<contracts/research-learning-v1.schema.json>)
 - [research-learning-v1.examples.json](<contracts/research-learning-v1.examples.json>)
 - [api-v2.examples.json](<contracts/api-v2.examples.json>)
@@ -170,17 +178,19 @@ python3 -m venv .venv
 
 專案根目錄的pyrightconfig.json採strict模式檢查docs/tools；VS Code設定預設使用專案.venv。若編輯器已選其他Python，執行「Python: Select Interpreter」選擇.venv/bin/python，然後重新啟動語言伺服器。.venv與Python cache不納入Git。純執行驗證可只安裝requirements.txt；不能將執行通過當成靜態型別檢查通過。SonarQube for VS Code使用「Analyze Current File with SonarQube」或「Analyze Changed Files with SonarQube」檢查工具；維持S3776的預設15上限，不以停用規則消除提示。JSON動態欄位的Any僅用於schema資料邊界；工具函式、容器、Registry及第三方驗證器介面仍明確標註型別，不關閉診斷。
 
-編輯後經審查再以 `--write-manifest` 重建清單，接著無參數重跑確認。工具檢查本地連結、編號、標頭版本、AC 追溯與決策引用、公開／內部 schema 正反例及投影一致、OpenAPI 雙向端點覆蓋、126 組跨契約參考情境、公開資料 oracle 與 manifest；不執行搜尋引擎、安全隔離、備份恢復或瀏覽器驗收。
+編輯後經審查再以 `--write-manifest` 重建清單，接著無參數重跑確認。工具檢查本地連結、編號、標頭版本、AC 追溯與決策引用、公開／內部 schema 正反例及投影一致、OpenAPI 雙向端點覆蓋、330 組跨契約參考情境、錯誤碼／能力／政策三份登錄與 AX-21／26／30／37／53 的雙向一致性、公開資料 oracle 與 manifest；不執行搜尋引擎、安全隔離、備份恢復或瀏覽器驗收。
 
 ## 整合與維護
 
 [整合紀錄](<INTEGRATION.md>) 保存來源合併與本輪審查修訂；來源 `AXIOM_Project` 已在整合校驗後依使用者指示刪除。原 41 研究物件契約改為 AX-47，AX-41 保留 Docker。共用規則集中 AX-48，其餘章節保留各自的專屬案例。
 
-[MANIFEST.json](<MANIFEST.json>) 包含 Markdown、contracts 及工具的 bytes／SHA-256，排除自身、.DS_Store 與 Python cache。documents 是 Markdown 數，file_count 是全部受控檔案數，files 筆數等於 file_count。
+[MANIFEST.json](<MANIFEST.json>) 包含 Markdown、contracts 及工具的 bytes／SHA-256，排除自身、.DS_Store 與 Python cache；受控副檔名為 `.md`、`.json`、`.py`、`.txt`、`.yml`、`.yaml`、`.toml`。documents 是 Markdown 數，file_count 是全部受控檔案數，files 筆數等於 file_count。
 
-## v2.3 這輪修訂
+`14-自主研究/sources` 目錄以 `.txt` 保存四份使用者提供的原始討論原文，經 [attachment-requests-v1.json](<contracts/attachment-requests-v1.json>) 以 SHA-256／bytes 追蹤；來源中的助手建議不是已核准技術事實，採納或修正後才進權威規格。
 
-修正八類跨文件缺口：sandbox拓樸、內外部DTO、父子任務取消、凍結FitRun／參數、雙層資料切分、Limit／Reservation／Usage、研究導覽與長期事件流。研究／事件schema升2.0、HTTP為/api/v2，DSL保持1.0；草案v1可從Git歷史取得，沒有既有部署或已遷移資料聲明。
+## v2.9 這輪修訂
+
+補齊十組可重現一致性缺口（RG-29～RG-38）：建立前結構預覽與 PROFILE 循環依賴、公開與封存共用 trace 鏈、canonical 格式與跨語言身分、凍結綁定表徵與驗證計畫、證據充分性自填、逆解多解與唯一性、訓練分區洗白原觀測、回退版本繼承污染、JSON 悄悄接受重複鍵與非有限數，以及錯誤碼、能力與政策缺登錄與閘門契約。新增 AX-49～52 自主研究與 research-learning-v1 契約，並新增 AX-53 工程治理與開發者工作流，將錯誤碼、能力與政策三份登錄收斂為單一真實來源（contracts/error-codes-v1.json、capability-registry-v1.json、policy-registry-v1.json），與 AX-21／26／30／37／53 及 OpenAPI Error.code enum 雙向校驗。同步 attachment-requests 與 review-coverage 基線。研究／事件schema升2.0、HTTP為/api/v2，DSL保持1.0；草案v1可從Git歷史取得，沒有既有部署或已遷移資料聲明。
 
 [contract_scenarios.py](<tools/contract_scenarios.py>)僅實作公開fixture的參考裁決；不是真正的排程器、符號引擎或權限服務。正式產品的發布阻擋項仍依AX-37／46。
 

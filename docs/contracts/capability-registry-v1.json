@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "document_revision": "2.9",
+  "scope": "DOCUMENT_REFERENCE_ONLY",
+  "product_status": "NOT_RUN",
+  "authority": "11-交付/30-里程碑與分階段開發計畫.md",
+  "baseline_milestone": "M3",
+  "milestones": [
+    "M0",
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M5",
+    "M6",
+    "M7"
+  ],
+  "disabled_behavior": {
+    "error_code": "FEATURE_DISABLED",
+    "rule": "未達 enabled_from 的能力必須以 FEATURE_DISABLED 明確拒絕，API 與 UI 由同一登錄投影，禁止暗中啟用未登錄路由"
+  },
+  "capabilities": [
+    { "id": "EXPERIENCE_MEMORY", "label": "經驗記憶與檢索", "enabled_from": "M4", "reserved_endpoints": ["/experiences"] },
+    { "id": "MODEL_ROUTING", "label": "AI 模型路由與資料外送", "enabled_from": "M4", "reserved_endpoints": ["/models"] },
+    { "id": "FORMAL_PROOF", "label": "符號推導與形式化證明", "enabled_from": "M5", "reserved_endpoints": ["/proofs"] },
+    { "id": "DUAL_SEQUENCE", "label": "雙序列研究", "enabled_from": "M6", "reserved_endpoints": [] },
+    { "id": "MULTI_SEQUENCE", "label": "多維多序列研究", "enabled_from": "M7", "reserved_endpoints": [] },
+    { "id": "STRATEGY_TRAINING", "label": "策略學習與微調", "enabled_from": "M7", "reserved_endpoints": [] }
+  ]
+}

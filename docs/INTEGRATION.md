@@ -109,3 +109,7 @@
 ## v2.9 可執行一致性審查
 
 補齊metadata預覽與fit評估的分工、分級trace鏈、recipe／plan凍結、證據充分性、解集／因果前提、原觀測訓練分區、有效回退及嚴格JSON／canonical profile；九組可重現缺口列入REVIEW與機器追溯。章節仍53篇，原始四份附件bytes不變；新欄位仍是未部署草案修訂，產品驗收NOT_RUN。
+
+## v2.9 治理補強：錯誤碼、能力與政策登錄（2026-10-20）
+
+承接 v2.9 缺口審查，新增 contracts/error-codes-v1.json、capability-registry-v1.json 與 policy-registry-v1.json 三份單一真實來源，並新增 AX-53 工程治理與開發者工作流，定義權威、能力閘門、政策 Fail-Closed、目錄結構與 DoD。工具雙向校驗錯誤碼與 OpenAPI Error.code enum、能力與保留端點、政策與預設 BLOCKED，並將 OpenAPI 各操作的錯誤回應宣告統一。同步補全 AX-01 文件地圖與 AX-48 權威順序。文件現有54篇編號章節、57份Markdown，產品仍NOT_RUN。

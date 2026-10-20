@@ -25,18 +25,28 @@ from contract_scenarios import canonical_hash, check_scenarios, strict_json_load
 JsonObject: TypeAlias = dict[str, Any]
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_NAME = "MANIFEST.json"
+README_NAME = "README.md"
 DEFINITIONS_KEY = "$defs"
 DSL_SCHEMA_NAME = "dsl-v1.schema.json"
 RUNTIME_SCHEMA_NAME = "runtime-v2.schema.json"
 RESEARCH_SCHEMA_NAME = "research-v2.schema.json"
 DOC_VERSION = "v2.9"
-CHAPTER_COUNT = 53
+CHAPTER_COUNT = 54
 RELEASE_MATRIX_GLOB = "46-*.md"
 DECISION_LIST_GLOB = "37-*.md"
+API_DOC_GLOB = "21-*.md"
+MILESTONE_DOC_GLOB = "30-*.md"
+SECURITY_DOC_GLOB = "26-*.md"
+GOVERNANCE_DOC_GLOB = "53-*.md"
+ERROR_CODES_NAME = "error-codes-v1.json"
+CAPABILITY_NAME = "capability-registry-v1.json"
+POLICY_NAME = "policy-registry-v1.json"
 MATRIX_ONLY_CHAPTER = "AC-46-"
 REQUIREMENT_COUNTS = {"REQ": 14, "NFR": 7}
 ACCEPTANCE_PATTERN = r"(AC-\d{2}-)(\d{2})(?:～(\d{2}))?"
 DECISION_PATTERN = r"D-\d{2}"
+ERROR_CODE_TOKEN = r"[A-Z][A-Z0-9_]{2,}"
+TRACKED_SUFFIXES = {".md", ".json", ".py", ".txt", ".yml", ".yaml", ".toml"}
 
 
 def check(condition: bool, message: str) -> None:
@@ -62,7 +72,7 @@ def schema_validator(schema: JsonObject, registry: SchemaRegistry | None = None)
 def tracked_files() -> list[Path]:
     return sorted(
         p for p in ROOT.rglob("*")
-        if p.is_file() and p.suffix in {".md", ".json", ".py", ".txt"}
+        if p.is_file() and p.suffix in TRACKED_SUFFIXES
         and p.name != MANIFEST_NAME and "__pycache__" not in p.parts
     )
 
@@ -149,9 +159,16 @@ def check_markdown_document(path: Path, index: str) -> tuple[int | None, list[st
     check("A[前置資料與條件]" not in content, f"Generic workflow remains: {path}")
     check_table_spacing(plain, path)
     case_ids = acceptance_ids(plain)
-    if path.name != "README.md":
+    if path.name != README_NAME:
         check(str(path.relative_to(ROOT)) in index, f"Missing from README: {path}")
     return chapter_id, case_ids, check_markdown_links(path, plain)
+
+
+def check_navigation_coverage() -> None:
+    """Every chapter must be reachable from the AX-01 document map, not only the README index."""
+    navigation = next(ROOT.rglob("01-*.md")).read_text(encoding="utf-8")
+    for number in range(CHAPTER_COUNT):
+        check(f"AX-{number:02d}" in navigation, f"Chapter missing from AX-01 navigation: AX-{number:02d}")
 
 
 def check_document_header(path: Path) -> None:
@@ -200,7 +217,7 @@ def check_markdown() -> dict[str, int]:
     chapter_ids: list[int] = []
     case_ids: list[str] = []
     link_count = 0
-    index = (ROOT / "README.md").read_text()
+    index = (ROOT / README_NAME).read_text()
     for path in paths:
         check_document_header(path)
         chapter_id, document_cases, links = check_markdown_document(path, index)
@@ -208,7 +225,9 @@ def check_markdown() -> dict[str, int]:
             chapter_ids.append(chapter_id)
         case_ids.extend(document_cases)
         link_count += links
-    check(sorted(chapter_ids) == list(range(CHAPTER_COUNT)), "Chapter numbers must be unique AX-00..52")
+    check(sorted(chapter_ids) == list(range(CHAPTER_COUNT)),
+          f"Chapter numbers must be unique AX-00..{CHAPTER_COUNT - 1:02d}")
+    check_navigation_coverage()
     check(len(case_ids) == len(set(case_ids)), "Duplicate acceptance ID")
     check_requirement_traces(case_ids)
     check_decision_references()
@@ -548,6 +567,117 @@ def check_learning_boundaries(schemas: dict[str, JsonObject], api: JsonObject) -
             check("artifact_access_class" in definition["required"], "Learning payload classification missing")
 
 
+def check_registry_header(name: str, document: JsonObject) -> None:
+    check(document["document_revision"] == DOC_VERSION.removeprefix("v"), f"Registry revision drift: {name}")
+    check(document["scope"] == "DOCUMENT_REFERENCE_ONLY" and document["product_status"] == "NOT_RUN",
+          f"Registry scope must stay document-only: {name}")
+    check((ROOT / document["authority"]).is_file(), f"Registry authority missing: {name}")
+
+
+def registered_error_codes(document: JsonObject) -> set[str]:
+    entries: list[JsonObject] = document["codes"]
+    codes = {str(entry["code"]) for entry in entries}
+    check(len(codes) == len(entries), "Duplicate registered error code")
+    for entry in entries:
+        scope = str(entry["scope"])
+        code = str(entry["code"])
+        check(scope in {"HTTP", "WORKER"}, "Invalid error scope: " + code)
+        check(isinstance(entry["http_exposed"], bool) and isinstance(entry["retryable"], bool),
+              "Error code flags must be boolean: " + code)
+        if scope == "HTTP":
+            check(entry["http_exposed"] is True and isinstance(entry["http_status"], int),
+                  "HTTP code must publish an exposed numeric status: " + code)
+        else:
+            check(entry["http_status"] is None, "Worker code must not fix an HTTP status: " + code)
+    return codes
+
+
+def ax21_declared_codes(doc: str) -> set[str]:
+    """Extract the codes AX-21 declares in its structured lists, for reverse coverage."""
+    declared: set[str] = set()
+    grouped = "(" + ERROR_CODE_TOKEN + r"(?:[、／]" + ERROR_CODE_TOKEN + r")*)"
+    for line in doc.splitlines():
+        if line.startswith("| "):
+            cells = [cell.strip() for cell in line.split("|")[1:-1]]
+            if len(cells) >= 2 and re.fullmatch(r"\d{3}(?: / \d{3})*", cells[0]):
+                declared |= {token.strip() for token in cells[1].split("/") if re.fullmatch(ERROR_CODE_TOKEN, token.strip())}
+            continue
+        marker = "內部 worker 另有 "
+        if marker in line:
+            tail = line.split(marker, 1)[1].split("；", 1)[0]
+            declared |= {token for token in tail.split("、") if re.fullmatch(ERROR_CODE_TOKEN, token)}
+        pattern = r"\d{3}\s*" + grouped if line.startswith("新增穩定錯誤") else r"回\s*\d{3}\s*" + grouped
+        for group in re.findall(pattern, line):
+            declared |= {token for token in re.split(r"[、／]", group) if re.fullmatch(ERROR_CODE_TOKEN, token)}
+    return declared
+
+
+def check_error_codes(api: JsonObject) -> int:
+    document = read_json(ROOT / "contracts" / ERROR_CODES_NAME)
+    check_registry_header(ERROR_CODES_NAME, document)
+    check(document["envelope_fields"] == ["code", "message", "details", "request_id", "retryable"],
+          "Error envelope fields drift")
+    codes = registered_error_codes(document)
+    exposed = sorted(str(entry["code"]) for entry in document["codes"] if entry["http_exposed"])
+    check(api["components"]["schemas"]["Error"]["properties"]["code"]["enum"] == exposed,
+          "OpenAPI Error.code enum drift")
+    doc = next(ROOT.rglob(API_DOC_GLOB)).read_text(encoding="utf-8")
+    for code in sorted(codes):
+        check(code in doc, "Registered error code missing from AX-21: " + code)
+    undeclared = ax21_declared_codes(doc) - codes
+    check(not undeclared, "AX-21 declares unregistered error codes: " + ", ".join(sorted(undeclared)))
+    return len(codes)
+
+
+def check_capability_registry(api: JsonObject) -> int:
+    registry = read_json(ROOT / "contracts" / CAPABILITY_NAME)
+    check_registry_header(CAPABILITY_NAME, registry)
+    milestones: list[str] = registry["milestones"]
+    check(milestones == [f"M{n}" for n in range(8)], "Milestone registry drift")
+    baseline = str(registry["baseline_milestone"])
+    check(baseline in milestones, "Baseline milestone undefined")
+    milestone_doc = next(ROOT.rglob(MILESTONE_DOC_GLOB)).read_text(encoding="utf-8")
+    for milestone in milestones:
+        check(milestone in milestone_doc, "Milestone missing from AX-30: " + milestone)
+    disabled: JsonObject = registry["disabled_behavior"]
+    check(disabled["error_code"] == "FEATURE_DISABLED", "Disabled behaviour code drift")
+    check(str(disabled["error_code"]) in registered_error_codes(read_json(ROOT / "contracts" / ERROR_CODES_NAME)),
+          "Disabled behaviour code is not registered")
+    governance = next(ROOT.rglob(GOVERNANCE_DOC_GLOB)).read_text(encoding="utf-8")
+    capabilities: list[JsonObject] = registry["capabilities"]
+    check(len({str(item["id"]) for item in capabilities}) == len(capabilities), "Duplicate capability")
+    declared = set(api["paths"])
+    for item in capabilities:
+        identifier = str(item["id"])
+        enabled_from = str(item["enabled_from"])
+        check(enabled_from in milestones, "Capability milestone undefined: " + identifier)
+        check(identifier in governance, "Capability absent from AX-53: " + identifier)
+        for endpoint in cast(list[str], item["reserved_endpoints"]):
+            check(enabled_from > baseline, "Baseline capability must not reserve endpoints: " + identifier)
+            check(endpoint not in declared, "Reserved endpoint exposed before enablement: " + endpoint)
+    return len(capabilities)
+
+
+def check_policy_registry() -> int:
+    registry = read_json(ROOT / "contracts" / POLICY_NAME)
+    check_registry_header(POLICY_NAME, registry)
+    check(registry["default_status"] == "BLOCKED", "Policy default must stay BLOCKED")
+    gate = str(registry["decision_gate"])
+    check(gate in next(ROOT.rglob(DECISION_LIST_GLOB)).read_text(encoding="utf-8"), "Policy decision gate undefined")
+    check(gate in next(ROOT.rglob(SECURITY_DOC_GLOB)).read_text(encoding="utf-8"),
+          "Policy decision gate absent from AX-26")
+    governance = next(ROOT.rglob(GOVERNANCE_DOC_GLOB)).read_text(encoding="utf-8")
+    codes = registered_error_codes(read_json(ROOT / "contracts" / ERROR_CODES_NAME))
+    policies: list[JsonObject] = registry["policies"]
+    check(len({str(item["id"]) for item in policies}) == len(policies), "Duplicate policy")
+    for item in policies:
+        identifier = str(item["id"])
+        check(item["status"] == "BLOCKED", "Policy must stay BLOCKED until the gate closes: " + identifier)
+        check(str(item["blocked_code"]) in codes, "Unregistered policy block code: " + str(item["blocked_code"]))
+        check(identifier in governance, "Policy absent from AX-53: " + identifier)
+    return len(policies)
+
+
 def check_contracts() -> dict[str, int]:
     folder = ROOT / "contracts"
     schemas, registry = load_schemas(folder)
@@ -572,12 +702,16 @@ def check_contracts() -> dict[str, int]:
     check_reference_ranges(suite)
     finding_count = check_review_coverage(suite)
     attachment_count = check_attachment_requests()
+    error_count = check_error_codes(api)
+    capability_count = check_capability_registry(api)
+    policy_count = check_policy_registry()
     scenario_count = check_scenarios(suite)
     check_topology()
     check_local_schema_refs(folder)
     return {"schemas": len(schemas), "contract_examples": example_count,
             "api_operations": sum(len(v) for v in api["paths"].values()), "contract_scenarios": scenario_count,
-            "review_findings": finding_count, "attachment_requirements": attachment_count}
+            "review_findings": finding_count, "attachment_requirements": attachment_count,
+            "error_codes": error_count, "capabilities": capability_count, "policies": policy_count}
 
 
 def check_public_oracles() -> dict[str, int]:
@@ -606,11 +740,29 @@ def check_public_oracles() -> dict[str, int]:
     return {"public_fixture_oracles": len(cases)}
 
 
+def check_index_numbers(summary: Mapping[str, int]) -> None:
+    """Fail when the index prose numbers drift from the computed document counts."""
+    index = (ROOT / README_NAME).read_text(encoding="utf-8")
+    expected = {
+        f"{summary['chapters']} 篇編號章節": "chapter count",
+        f"共 {summary['markdown']} 份 Markdown": "markdown count",
+        f"{summary['contract_scenarios']} 組跨契約參考情境": "reference scenario count",
+    }
+    for phrase, label in expected.items():
+        check(phrase in index, f"Index prose drifted from computed {label}: {phrase}")
+    navigation = next(ROOT.rglob("01-*.md")).read_text(encoding="utf-8")
+    check(f"共 {summary['chapters']} 篇編號章節" in navigation, "AX-01 chapter count drifted")
+    governance = next(ROOT.rglob("48-*.md")).read_text(encoding="utf-8")
+    check(f"審查範圍是{summary['chapters']}章" in governance, "AX-48 chapter count drifted")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write-manifest", action="store_true", help="Rebuild manifest after all other checks pass")
     args = parser.parse_args()
-    report: dict[str, int | str] = {**check_markdown(), **check_contracts(), **check_public_oracles()}
+    summary = {**check_markdown(), **check_contracts(), **check_public_oracles()}
+    check_index_numbers(summary)
+    report: dict[str, int | str] = dict(summary)
     expected = manifest_data()
     if args.write_manifest:
         (ROOT / MANIFEST_NAME).write_text(json.dumps(expected, ensure_ascii=False, indent=2) + "\n")

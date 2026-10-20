@@ -3,8 +3,8 @@
   "version": "2.9",
   "created": "2026-10-20",
   "date": "2026-10-20",
-  "documents": 56,
-  "file_count": 82,
+  "documents": 57,
+  "file_count": 86,
   "files": [
     {
       "path": "00-總覽/00-專案憲章.md",
@@ -13,13 +13,13 @@
     },
     {
       "path": "00-總覽/01-閱讀導航與文件地圖.md",
-      "bytes": 6880,
-      "sha256": "5fadd00d3e33309795130f611e89637e1e65e011c8894cd5f01f6e7e57f8e693"
+      "bytes": 7839,
+      "sha256": "8d02ce8555f7deb7107ccf481fd8550a4ee21ae35772a4ce360ea3a2da6d8964"
     },
     {
       "path": "00-總覽/48-共用契約與文件治理.md",
-      "bytes": 8405,
-      "sha256": "5c94045f4f22a3858f03bd60a0447611e062a1b61658fdc618b2e6fb8d9851f1"
+      "bytes": 8724,
+      "sha256": "e5610167ab73b091057014c30a116e1fbddbee29db0d59704a33a11049fd885d"
     },
     {
       "path": "01-需求/02-需求規格與使用情境.md",
@@ -243,8 +243,8 @@
     },
     {
       "path": "13-專題深化/46-發布驗收矩陣與交付證據.md",
-      "bytes": 14447,
-      "sha256": "2be26ff467cb06152d1ee162c168fc1cde3ac3ac4d32e05da75aeec5a065a20e"
+      "bytes": 14530,
+      "sha256": "7eaa4306868c250c74479bad22f54e6beb5808d23494776ceefe139d8103212e"
     },
     {
       "path": "13-專題深化/47-完整研究物件契約.md",
@@ -292,19 +292,24 @@
       "sha256": "043460ecebf187eea8ec308d36400b1a7434f73775307084d693300bb32f2df9"
     },
     {
+      "path": "15-工程/53-工程治理與開發者工作流.md",
+      "bytes": 7357,
+      "sha256": "c8e557c1147fb3ada0b253af0f5c06fc400a859abb1eb86bcedab8760900cbab"
+    },
+    {
       "path": "INTEGRATION.md",
-      "bytes": 11645,
-      "sha256": "611c1bd83be0ba13c3a4ef2b3f12bf78a024c37a7df33ed83aa37ab7bf249855"
+      "bytes": 12279,
+      "sha256": "6fa44c0d0ef71072b4bdd4ea821520b3c8581a4a8d5db28dfa773d3f307c1392"
     },
     {
       "path": "README.md",
-      "bytes": 15230,
-      "sha256": "d66b37d3667fa71b582e56c84df7369aaec17e17a0431f1f2a96a3602c8bc956"
+      "bytes": 17328,
+      "sha256": "95e321b1b218f63f75f4cebe0fab1d50a34b1794b83c6c77117646ca154c8c59"
     },
     {
       "path": "REVIEW.md",
-      "bytes": 15677,
-      "sha256": "1b5deb8256fa9a706054c6d8b0935d9300f93b255547b303f1402b71f045fc7b"
+      "bytes": 16268,
+      "sha256": "ea4dc10b6c6d8951584089910ab1b40883d10cfd1c9f082762f6667da564a079"
     },
     {
       "path": "contracts/api-v2.examples.json",
@@ -322,6 +327,11 @@
       "sha256": "d87c73c3d13590aa9954ac33a52ffdb7442d5a592cfd4c442559d2f6ed18f7d9"
     },
     {
+      "path": "contracts/capability-registry-v1.json",
+      "bytes": 1305,
+      "sha256": "c292806edc081cb1ceb9b3455abd9ded7a8d409c312d0b563f8daae2926f0415"
+    },
+    {
       "path": "contracts/conformance-v2.examples.json",
       "bytes": 188181,
       "sha256": "699cb37a7df05c45a3ddd5c99301f892ebc116d8f77beddc8375f4c33839e3da"
@@ -337,6 +347,11 @@
       "sha256": "e9e992fc2d7c50a12d6be840d7596b941d78b6478bde844e296779d576137cbe"
     },
     {
+      "path": "contracts/error-codes-v1.json",
+      "bytes": 7367,
+      "sha256": "cf7073979103bfd414c5b902db7362ced1e552c235cdb00cd907784cad6ac15f"
+    },
+    {
       "path": "contracts/event-v2.examples.json",
       "bytes": 3828,
       "sha256": "73b5c3edc9b9abd4f1b9341b720d2f67aa0cb6d56fa5225b27d378a1b12e8766"
@@ -348,8 +363,13 @@
     },
     {
       "path": "contracts/openapi-v2.json",
-      "bytes": 240717,
-      "sha256": "ab0a4d478fa260b835e4a69b71c92a33c2cd1064a0156b4d353827117a7ff2d1"
+      "bytes": 305968,
+      "sha256": "ccb1beda1f7a604ae64a014df10602154c21745a42d7c435681602b5d22a6c16"
+    },
+    {
+      "path": "contracts/policy-registry-v1.json",
+      "bytes": 803,
+      "sha256": "af86e5cf714ae69f70f4546af011b7ec6ce4f2109d6b8ed8ed01dc006196f74f"
     },
     {
       "path": "contracts/research-learning-v1.examples.json",
@@ -373,8 +393,8 @@
     },
     {
       "path": "contracts/review-coverage-v1.json",
-      "bytes": 45379,
-      "sha256": "0dee18d3b58e96278054f786f36bbbaaf9afbc9e8f7b50947a54a46585ffde9f"
+      "bytes": 46554,
+      "sha256": "b7bdddacbca0be94b497f3a27b2f537bc7efe041ddfa8c3b3b2b27342df964bd"
     },
     {
       "path": "contracts/runtime-v2.examples.json",
@@ -398,8 +418,8 @@
     },
     {
       "path": "tools/check_docs.py",
-      "bytes": 32743,
-      "sha256": "448920dad9603491ccc2df96c9ad5ad041bf94a0252426bde276391f4808ed16"
+      "bytes": 41267,
+      "sha256": "08da2740058411ce1b22a71162f259b015f44121f6fb353bd20e5385178c7d5c"
     },
     {
       "path": "tools/contract_scenarios.py",

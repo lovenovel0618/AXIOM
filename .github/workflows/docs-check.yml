@@ -1,0 +1,21 @@
+name: docs-check
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Install dev dependencies
+        run: python -m pip install -r docs/tools/requirements-dev.txt
+      - name: Type check docs tools
+        run: pyright
+      - name: Validate documentation and contracts
+        run: python docs/tools/check_docs.py

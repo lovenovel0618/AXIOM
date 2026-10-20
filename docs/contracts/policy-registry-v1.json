@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "document_revision": "2.9",
+  "scope": "DOCUMENT_REFERENCE_ONLY",
+  "product_status": "NOT_RUN",
+  "authority": "09-非功能/26-安全隱私與可信執行.md",
+  "decision_gate": "D-05",
+  "default_status": "BLOCKED",
+  "policies": [
+    { "id": "PUBLICATION_POLICY", "label": "發布政策", "authority_field": "publication_policy_artifact_id", "status": "BLOCKED", "blocked_code": "PUBLICATION_POLICY_BLOCKED" },
+    { "id": "DISCLOSURE_POLICY", "label": "摘要釋出政策", "authority_field": "disclosure policy", "status": "BLOCKED", "blocked_code": "DISCLOSURE_POLICY_BLOCKED" },
+    { "id": "MODEL_ROUTING_POLICY", "label": "模型路由與資料外送政策", "authority_field": "policy_version", "status": "BLOCKED", "blocked_code": "FEATURE_DISABLED" }
+  ]
+}

@@ -1146,6 +1146,37 @@
         "CF-291"
       ],
       "product_status": "NOT_RUN"
+    },
+    {
+      "id": "RG-38",
+      "finding": "錯誤碼、能力與政策缺登錄與閘門契約",
+      "status": "SPECIFIED",
+      "chapters": [
+        21,
+        26,
+        30,
+        31,
+        53
+      ],
+      "evidence_paths": [
+        "15-工程/53-工程治理與開發者工作流.md",
+        "07-資料與API/21-API與任務契約.md",
+        "09-非功能/26-安全隱私與可信執行.md",
+        "11-交付/30-里程碑與分階段開發計畫.md",
+        "11-交付/31-工作拆解WBS與依賴.md"
+      ],
+      "acceptance_ids": [
+        "AC-53-01",
+        "AC-53-02",
+        "AC-53-03",
+        "AC-53-04",
+        "AC-53-05",
+        "AC-53-06",
+        "AC-53-07",
+        "AC-53-08"
+      ],
+      "reference_case_ids": [],
+      "product_status": "NOT_RUN"
     }
   ],
   "chapters": [
@@ -1406,7 +1437,8 @@
         "RG-16",
         "RG-29",
         "RG-32",
-        "RG-37"
+        "RG-37",
+        "RG-38"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1469,7 +1501,8 @@
         "RG-19",
         "RG-28",
         "RG-30",
-        "RG-36"
+        "RG-36",
+        "RG-38"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1520,7 +1553,8 @@
       "finding_ids": [
         "RG-20",
         "RG-24",
-        "RG-25"
+        "RG-25",
+        "RG-38"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1531,7 +1565,8 @@
       "review_focus": "WBS跨層依賴與交付主責",
       "finding_ids": [
         "RG-20",
-        "RG-24"
+        "RG-24",
+        "RG-38"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"
@@ -1789,6 +1824,16 @@
         "RG-28",
         "RG-35",
         "RG-36"
+      ],
+      "review_status": "REVIEWED",
+      "product_status": "NOT_RUN"
+    },
+    {
+      "chapter_id": "AX-53",
+      "path": "15-工程/53-工程治理與開發者工作流.md",
+      "review_focus": "錯誤碼／能力／政策登錄與開發者工作流",
+      "finding_ids": [
+        "RG-38"
       ],
       "review_status": "REVIEWED",
       "product_status": "NOT_RUN"

@@ -6,7 +6,7 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 
 ## 規格文件
 
-完整規格位於 [docs](docs/README.md)：53 篇編號章節（AX-00～52）、整合紀錄、來源採納／全量審查清單、contracts與文件檢查工具。新增自主表徵、錯誤重審、正逆向驗證與AI紀錄／經驗演化規格，按里程碑分段交付。閱讀順序與角色路徑見 [docs/README.md](docs/README.md)。
+完整規格位於 [docs](docs/README.md)：54 篇編號章節（AX-00～53）、整合紀錄、來源採納／全量審查清單、contracts與文件檢查工具。新增自主表徵、錯誤重審、正逆向驗證與AI紀錄／經驗演化規格，按里程碑分段交付。閱讀順序與角色路徑見 [docs/README.md](docs/README.md)。
 
 ## 文件檢查
 
