@@ -1,0 +1,38 @@
+# T02 disposable compatibility harness; no host ports or product data.
+services:
+  postgres:
+    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    environment:
+      POSTGRES_DB: axiom_compat
+      POSTGRES_USER: axiom
+      POSTGRES_PASSWORD: compatibility-only
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U axiom -d axiom_compat"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    networks: [probe]
+  redis:
+    image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    command: [redis-server, --save, "", --appendonly, "no"]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    networks: [probe]
+  probe:
+    build: .
+    environment:
+      AXIOM_COMPAT_ALLOW_DISPOSABLE: "1"
+      AXIOM_COMPAT_POSTGRES: postgresql://axiom:compatibility-only@postgres:5432/axiom_compat
+      AXIOM_COMPAT_REDIS: redis://redis:6379/13
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    networks: [probe]
+networks:
+  probe:
+    internal: true

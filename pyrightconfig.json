@@ -5,7 +5,8 @@
     "tests"
   ],
   "exclude": [
-    ".venv"
+    ".venv",
+    ".venv-compat"
   ],
   "venvPath": ".",
   "venv": ".venv",

@@ -2,7 +2,7 @@
 
 AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探索）是數據驅動的公式發現、獨立驗證、推演與經驗學習平台。
 
-目前僅有設計規格與機器可讀契約，尚無可執行產品或 Docker Compose 實作；所有驗收案例狀態為 NOT_RUN，文件檢查通過不等同產品測試通過。
+目前僅有設計規格與機器可讀契約，尚無可執行產品或產品 Docker Compose 實作；所有驗收案例狀態為 NOT_RUN，文件檢查通過不等同產品測試通過。
 
 ## 企劃案
 
@@ -12,7 +12,7 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 
 ## 技術實作與檢查
 
-目前由你一人開發，各技術角色由本人兼任；開發採「技術文件→代碼→測試→代碼檢測→自我檢查→commit／push」，不等待第二位程式 reviewer。目前已實作 T01 的離線開工基線檢查；技術設計與執行方式見 [技術文件](docs/技術文件/README.md)，產品服務尚未建立。
+目前由你一人開發，各技術角色由本人兼任；開發採「技術文件→代碼→測試→代碼檢測→自我檢查→commit／push」，不等待第二位程式 reviewer。目前已實作 T01 的離線開工基線檢查與 T02 的隔離相容性驗證（含測試專用 Compose）；技術設計與執行方式見 [技術文件](docs/技術文件/README.md)，產品服務尚未建立。T02 的重現指令、鎖定依賴與平台實測見 [相容性驗證](docs/技術文件/M0/T02-技術選型與相容性驗證.md)。
 
 ```sh
 .venv/bin/python tools/development_baseline.py

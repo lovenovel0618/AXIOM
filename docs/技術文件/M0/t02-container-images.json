@@ -1,0 +1,45 @@
+[
+  {
+    "image": "python:3.13-slim",
+    "id": "sha256:3874bc630edcb02f7cecf971aa3dcdec11497788d553b35e9e3b3ac0187da15e",
+    "repo_digests": [
+      "python@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f"
+    ],
+    "os": "linux",
+    "architecture": "arm64"
+  },
+  {
+    "image": "postgres:16-alpine",
+    "id": "sha256:ef738a34a8651d11b2bace81c55c7e2187f786b484add6c83070884340074368",
+    "repo_digests": [
+      "postgres@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea"
+    ],
+    "os": "linux",
+    "architecture": "arm64"
+  },
+  {
+    "image": "redis:7-alpine",
+    "id": "sha256:ec4f171e9ff071bb2a1c936057d3be00206069b028b6c0d61df2477e1dd02c42",
+    "repo_digests": [
+      "redis@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499"
+    ],
+    "os": "linux",
+    "architecture": "arm64"
+  },
+  {
+    "image": "node:24",
+    "id": "sha256:e8dd6f79e0152a88b51415fa1b5f522ccc11c328ec1298119db8957ccdd0db2d",
+    "repo_digests": [
+      "node@sha256:14078204b6bb268c107ceff6d3c43f45a888105e5c2b18b14c32b3409d93a1b0"
+    ],
+    "os": "linux",
+    "architecture": "arm64"
+  },
+  {
+    "image": "axiom-t02-compat-probe",
+    "id": "sha256:10603f35c5049b261855a3df6059c1969bf8ddf899b7cb5e042ec4f71e7da880",
+    "repo_digests": [],
+    "os": "linux",
+    "architecture": "arm64"
+  }
+]

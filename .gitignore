@@ -5,3 +5,8 @@ __pycache__/
 
 # Runtime prompts, token records, archives and training artifacts
 /storage/
+
+# Disposable T02 compatibility environment and build outputs
+.venv-compat/
+node_modules/
+dist/

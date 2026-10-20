@@ -6,7 +6,7 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 
 完整產品還包含自主表徵、決策與錯誤重審、正逆向多路徑驗證、AI紀錄與經驗演化；詳見AX-49～52，按M1～M7分段交付。
 
-本目錄包含 54 篇編號章節（AX-00～53）、本索引、整合紀錄與全量審查清單，共 57 份 Markdown，另有 machine-readable contracts 與文件檢查工具。目前沒有可執行產品或 Compose 實作，Docker 命令是待實作的操作介面。文件／fixture 檢查通過不等同產品測試通過。
+本目錄包含 54 篇編號章節（AX-00～53）、本索引、整合紀錄與全量審查清單，共 57 份 Markdown，另有 machine-readable contracts 與文件檢查工具。目前沒有可執行產品或產品 Compose 實作，Docker 命令是待實作的操作介面。文件／fixture 檢查通過不等同產品測試通過。
 
 ## 建議閱讀路徑
 

@@ -1,0 +1,53 @@
+name: compatibility-check
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  python-services:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build locked Python compatibility environment
+        run: docker compose -p axiom-t02-ci -f tools/compatibility/compose.yaml build
+      - name: Start disposable services
+        run: docker compose -p axiom-t02-ci -f tools/compatibility/compose.yaml up -d --wait postgres redis
+      - name: Run actual database and worker probes
+        run: docker compose -p axiom-t02-ci -f tools/compatibility/compose.yaml run --no-deps --rm -T probe > "${{ runner.temp }}/t02-python.json"
+      - name: Remove disposable services
+        if: always()
+        run: docker compose -p axiom-t02-ci -f tools/compatibility/compose.yaml down --volumes
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t02-python-compatibility
+          path: ${{ runner.temp }}/t02-python.json
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tools/compatibility/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: tools/compatibility/frontend/.node-version
+          cache: npm
+          cache-dependency-path: tools/compatibility/frontend/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Record dependency inventory and SBOM
+        run: |
+          node record.mjs "${{ runner.temp }}/t02-node.json"
+          npm sbom --sbom-format=cyclonedx > "${{ runner.temp }}/t02-frontend-sbom.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: t02-frontend-compatibility
+          path: |
+            ${{ runner.temp }}/t02-node.json
+            ${{ runner.temp }}/t02-frontend-sbom.json

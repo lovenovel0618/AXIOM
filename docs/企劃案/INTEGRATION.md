@@ -125,3 +125,7 @@
 ## 單人開發確認
 
 使用者確認僅本人開發；AX-30／31／37／46／53 以單人兼任各技術角色、自我檢查與依序交付為基線，不再等待第二位程式 reviewer。T01 基線升為2.0，加入 SOLO／SELF_REVIEW 與 project-owner 責任識別；具名欄位不再虛設為未指派。D-08 的人數已確定，但預算／領域／排程及其餘政策未自動核准。研究成果正式發布的獨立審核與盲測隔離保持原契約。
+
+## T02 技術選型與相容性驗證
+
+先產技術文件，再交 Python／Node 鎖檔、macOS 與隔離 Linux arm64 的 Django／DRF／數學／PostgreSQL／Celery 實測、Vue／Pinia／Router 型別及建置測試、依賴 inventory 與 SBOM。測試 Compose 不是產品部署。Windows WSL2、完整授權與產品案例仍待驗；下一步按 T03 補公開 fixture／oracle 與盲測隔離基線，不自動關閉 M0。

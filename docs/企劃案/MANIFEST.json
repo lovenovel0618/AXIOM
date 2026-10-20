@@ -198,8 +198,8 @@
     },
     {
       "path": "12-附錄/33-語言框架與套件選型.md",
-      "bytes": 2386,
-      "sha256": "75560a10544b5e403471fadbac23bff359b7ae69a711bb0390ff14b30883ea33"
+      "bytes": 2781,
+      "sha256": "c9914f8724f96966aa499894892e681b2324f47d2db5135ed35bc8aa275cb9b0"
     },
     {
       "path": "12-附錄/34-術語表與證據等級.md",
@@ -293,18 +293,18 @@
     },
     {
       "path": "15-工程/53-工程治理與開發者工作流.md",
-      "bytes": 9120,
-      "sha256": "a105414dacea2dae86d68cc5745a2ed991c467cd9947acca58a735e6617dc661"
+      "bytes": 9509,
+      "sha256": "aac69ab4df3f9b9b8078a9c37326d26531f9a507c8ed723a448d8b7471133204"
     },
     {
       "path": "INTEGRATION.md",
-      "bytes": 13573,
-      "sha256": "16af116a6b2d6b375aec481fd5f893ab44958f2612e7f6090ee58b84e22cb62f"
+      "bytes": 14002,
+      "sha256": "8ec11e3c639152f419f3cc55a60c247ebd120fcb67fa9e7fcf58d7e8860dc280"
     },
     {
       "path": "README.md",
-      "bytes": 17578,
-      "sha256": "4de7aa120cf23dcc5beb0dc1d56b1ddc514ebbdb2733aa71dc3c2189fb4afe88"
+      "bytes": 17584,
+      "sha256": "58e8fae43b4bf78d9eec0c41cb9c75b412e3e8b942bcfc2968c4e6628b18fdb0"
     },
     {
       "path": "REVIEW.md",
