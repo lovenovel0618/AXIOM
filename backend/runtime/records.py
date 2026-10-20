@@ -52,7 +52,7 @@ def emit(run: RuntimeRun, event_type: str, payload: JsonObject, now: datetime) -
         "event_id": str(event_id), "schema_version": "2.0", "event_type": event_type,
         "tenant_id": str(run.tenant_id), "research_version_id": None, "run_id": str(run.id),
         "stream_scope": "RUN", "stream_id": str(run.id), "sequence": sequence,
-        "occurred_at": now.isoformat(), "trace_id": str(run.id), "producer_version": "t04-control-v1", "payload": payload,
+        "occurred_at": now.isoformat(), "trace_id": str(run.id), "producer_version": "t04-control-v1" if run.control_only else "t07-ingest-v1", "payload": payload,
     }
     validate(event, "event-v2.schema.json")
     RunEvent.objects.create(id=event_id, run=run, sequence=sequence, document=event)
@@ -61,6 +61,10 @@ def emit(run: RuntimeRun, event_type: str, payload: JsonObject, now: datetime) -
 
 def state_event(run: RuntimeRun, event_type: str, now: datetime) -> None:
     emit(run, event_type, {key: run.document[key] for key in ["status", "stop_reason", "revision"]}, now)
+
+
+def task_input_hash(task: JsonObject) -> str:
+    return identity_hash({key: value for key, value in task.items() if key != "execution_manifest_id"})
 
 
 def validate_bindings(record: JsonObject, task: JsonObject, execution: JsonObject, budget: JsonObject) -> None:
@@ -74,7 +78,8 @@ def validate_bindings(record: JsonObject, task: JsonObject, execution: JsonObjec
     }
     if any(record[key] != value for key, value in expected.items()):
         raise ValueError("Invalid INGEST root bindings")
-    pairs = [(task["run_id"], record["id"]), (task["type"], record["type"]), (execution["id"], record["execution_manifest_id"]), (task["execution_manifest_id"], execution["id"]), (execution["tenant_id"], record["tenant_id"]), (execution["environment_digest"], record["environment_digest"]), (execution["seed"], record["seed"]), (execution["input_hash"], identity_hash(task)), (budget["id"], record["budget_account_id"]), (budget["tenant_id"], record["tenant_id"]), (budget["root_run_id"], record["id"])]
+    input_digest = identity_hash(task) if all(plugin["plugin_id"] == "t04-control-only" for plugin in execution["plugins"]) else task_input_hash(task)
+    pairs = [(task["run_id"], record["id"]), (task["type"], record["type"]), (execution["id"], record["execution_manifest_id"]), (task["execution_manifest_id"], execution["id"]), (execution["tenant_id"], record["tenant_id"]), (execution["environment_digest"], record["environment_digest"]), (execution["seed"], record["seed"]), (execution["input_hash"], input_digest), (budget["id"], record["budget_account_id"]), (budget["tenant_id"], record["tenant_id"]), (budget["root_run_id"], record["id"])]
     if any(left != right for left, right in pairs):
         raise ValueError("Input, execution or budget identity mismatch")
     policy = execution["retry_policy"]

@@ -1,0 +1,63 @@
+{
+  "scope": "T07_ACTUAL_LOCAL_INGEST",
+  "status": "PASS",
+  "results": [
+    {
+      "format": "CSV",
+      "run_id": "e240ed5c-2454-440a-9c8c-16bb218f3027",
+      "status": "SUCCEEDED",
+      "version_id": "7e976b2f-0f9c-4770-8f35-2a9bc8e4a031",
+      "preview_id": "b9a190a3-94e5-44f9-ae70-e2e7858c5176",
+      "sha256": "278481a91ae8d509e7cc9dc55cf71151dcda647c6d185fb462bfc9aaeb095563",
+      "budget_usage": {
+        "tokens": 0,
+        "cpu_seconds": 1,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 154722304,
+        "candidates_accepted": 0,
+        "candidates_generated": 0,
+        "elapsed_wall_seconds": 1
+      }
+    },
+    {
+      "format": "JSON",
+      "run_id": "d5d6b05b-433c-4191-b90e-fc7d97f78604",
+      "status": "SUCCEEDED",
+      "version_id": "b36506dc-6cb7-46bc-ac67-f1474257bc6f",
+      "preview_id": "d9e11463-4288-4ba6-9d0f-6a5d03289f9a",
+      "sha256": "284f67204a6e9b22d4d6684ac07639379aafa410d1ed25aee734bf90596540df",
+      "budget_usage": {
+        "tokens": 0,
+        "cpu_seconds": 1,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 155729920,
+        "candidates_accepted": 0,
+        "candidates_generated": 0,
+        "elapsed_wall_seconds": 1
+      }
+    },
+    {
+      "format": "PARQUET",
+      "run_id": "d56e9db7-3de3-4168-a762-58a08f9cd95c",
+      "status": "SUCCEEDED",
+      "version_id": "a867ffe8-0942-4a39-8e02-2216d8d94438",
+      "preview_id": "f125fa1a-5854-455c-bbb4-d822eaf50ba8",
+      "sha256": "59174843b53a0b02104bcf9654922848295168f7f28dcb032675d907a48ba8c7",
+      "budget_usage": {
+        "tokens": 0,
+        "cpu_seconds": 1,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 171311104,
+        "candidates_accepted": 0,
+        "candidates_generated": 0,
+        "elapsed_wall_seconds": 1
+      }
+    }
+  ],
+  "dedup_versions": 3,
+  "invalid_status": "FAILED",
+  "revoked_http_status": 404,
+  "raw_http_status": 404,
+  "research_version_status": "NOT_IMPLEMENTED",
+  "product_gate_status": "NOT_RUN"
+}

@@ -34,7 +34,7 @@ def _initial(record: JsonObject, budget: JsonObject) -> None:
         raise ValueError("New root usage must be zero")
 
 
-def enqueue(tenant_id: UUID, record: JsonObject, task: JsonObject, execution: JsonObject, budget: JsonObject) -> UUID:
+def enqueue(tenant_id: UUID, record: JsonObject, task: JsonObject, execution: JsonObject, budget: JsonObject, *, control_only: bool = True) -> UUID:
     record, task, execution, budget = map(detached, [record, task, execution, budget])
     validate_bindings(record, task, execution, budget)
     _initial(record, budget)
@@ -52,11 +52,11 @@ def enqueue(tenant_id: UUID, record: JsonObject, task: JsonObject, execution: Js
             raise ValueError("Timing exceeds supported datetime range") from error
         deadline = now + timedelta(seconds=policy["queue_timeout_seconds"])
         record["created_at"] = now.isoformat()
-        run, created = RuntimeRun.objects.get_or_create(id=UUID(record["id"]), defaults={"tenant_id": tenant_id, "document": record, "queue_deadline": deadline, "available_at": now})
+        run, created = RuntimeRun.objects.get_or_create(id=UUID(record["id"]), defaults={"tenant_id": tenant_id, "control_only": control_only, "document": record, "queue_deadline": deadline, "available_at": now})
         run = lock_run(tenant_id, run.id)
         if not created:
             previous = snapshot_for(run)
-            if previous.content_hash != digest or any(run.document[key] != record[key] for key in IMMUTABLE_KEYS):
+            if run.control_only != control_only or previous.content_hash != digest or any(run.document[key] != record[key] for key in IMMUTABLE_KEYS):
                 raise ValueError("Existing run input conflict")
             return run.id
         InputSnapshot.objects.create(run=run, task_input=task, execution=execution, budget=budget, content_hash=digest)
@@ -69,7 +69,7 @@ def _attempt_for(run: RuntimeRun) -> RuntimeAttempt:
     return RuntimeAttempt.objects.select_for_update().get(pk=UUID(run.document["active_attempt_id"]), run=run)
 
 
-def _validate_lease(run: RuntimeRun, lease: Lease, now: datetime) -> RuntimeAttempt:
+def validate_lease(run: RuntimeRun, lease: Lease, now: datetime) -> RuntimeAttempt:
     record = run.document
     if record["cancellation_epoch"] != lease.epoch or record["status"] == CANCEL_REQUESTED:
         raise ControlError("ROOT_CANCELLED")
@@ -147,7 +147,7 @@ def heartbeat(lease: Lease) -> None:
     with transaction.atomic():
         run = lock_run(lease.tenant_id, lease.run_id)
         now = db_now()
-        attempt = _validate_lease(run, lease, now)
+        attempt = validate_lease(run, lease, now)
         if _deadline_exceeded(run, snapshot_for(run), now):
             raise ControlError("STALE_ATTEMPT")
         attempt.document.update(heartbeat_at=now.isoformat(), lease_expires_at=(now + timedelta(seconds=LEASE_SECONDS)).isoformat())
@@ -159,7 +159,7 @@ def check_submission(lease: Lease) -> None:
     with transaction.atomic():
         run = lock_run(lease.tenant_id, lease.run_id)
         now = db_now()
-        _validate_lease(run, lease, now)
+        validate_lease(run, lease, now)
         if _deadline_exceeded(run, snapshot_for(run), now):
             raise ControlError("STALE_ATTEMPT")
 

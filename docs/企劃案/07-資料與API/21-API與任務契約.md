@@ -188,3 +188,5 @@ Run必填research_trace_artifact_ids，透過既有GET run、研究runs列表及
 ## v2.9 結構報告導航
 
 DatasetVersion.structure_preview_artifact_id及ResearchVersion.structure_assessment_artifact_id為可null的Artifact引用，分別由既有dataset版本列表／研究snapshot恢復；依AX-49，AVAILABLE／READY等完成狀態必有對應引用，無權時按既有ACL過濾。沒有新增preflight或高階job端點。公開Run及Artifact仍是現行導航邊界，trace鏈按獨立可見stream驗證，不返回隱藏stream ID或hash。
+
+本機 INGEST 的 GET /runs/{id} 另回 X-Usage-Status=NOT_STARTED／MEASURED_UPPER_BOUND／UNKNOWN。UNKNOWN 表示已開始的 attempt 失聯而無法確認用量，不得把零欄位解讀為免費執行；MEASURED_UPPER_BOUND 的 CPU／wall 為向上整秒、memory 為 process high-water 的保守和，非精確同時 RSS 或正式 SLO。此 header 不改 Run JSON，亦不代表完整 quota／budget gate 已驗收。

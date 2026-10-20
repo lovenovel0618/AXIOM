@@ -11,6 +11,8 @@ x-backend: &backend
     AXIOM_DB_USER: axiom
     AXIOM_REDIS_URL: redis://redis:6379/0
     AXIOM_OBJECT_ROOT: /var/lib/axiom/objects
+    AXIOM_INGEST_ENABLED: ${AXIOM_INGEST_ENABLED:-0}
+    AXIOM_IMPORT_LIMITS: ${AXIOM_IMPORT_LIMITS:-}
   networks: [private]
 services:
   postgres:
@@ -57,6 +59,14 @@ services:
   worker:
     <<: *backend
     command: [celery, -A, config.celery:app, worker, --loglevel=INFO, --concurrency=1, --queues=foundation]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+  ingest:
+    <<: *backend
+    profiles: [ingest]
+    command: [celery, -A, config.celery:app, worker, --loglevel=INFO, --concurrency=1, --max-tasks-per-child=1, --queues=ingest]
+    volumes: ["object-data:/var/lib/axiom/objects:ro"]
     depends_on:
       migrate: {condition: service_completed_successfully}
       redis: {condition: service_healthy}

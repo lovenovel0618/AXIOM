@@ -16,7 +16,8 @@ from django.shortcuts import render
 from runtime.contracts import JsonObject
 from runtime.records import db_now
 from catalog.models import Account, Audit, LoginThrottle
-from catalog.services import actor_for, create_dataset, create_upload, dataset_for, list_datasets, put_upload, replay, upload_for, require_key, verify_staged
+from catalog.ingest import complete_upload
+from catalog.services import actor_for, create_dataset, create_upload, dataset_for, list_datasets, put_upload, replay, upload_for
 from catalog.validation import ApiError, decode, validate_api
 
 P = ParamSpec("P")
@@ -156,14 +157,8 @@ def upload_bytes(request: HttpRequest, actor: Account, identity: UUID) -> HttpRe
 def complete(request: HttpRequest, actor: Account, identity: UUID) -> HttpResponse:
     row = upload_for(actor, identity)
     data = body(request, "CompleteUpload")
-    require_key(request.headers.get("Idempotency-Key", ""))
-    if data["checksum"] != row.sha256:
-        raise ApiError("CHECKSUM_MISMATCH", 422)
-    if row.status != "OPEN" or row.expires_at <= db_now():
-        raise ApiError("INVALID_TRANSITION", 409)
-    verify_staged(actor, identity)
-    # T07 installs the actual INGEST handler; never fabricate a control-only success.
-    raise ApiError("DEPENDENCY_UNAVAILABLE", 503)
+    result = complete_upload(actor, row, data["checksum"], request.headers.get("Idempotency-Key", ""))
+    return JsonResponse(result, status=202)
 
 
 def _throttle_key(request: HttpRequest, username: str) -> str:

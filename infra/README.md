@@ -65,7 +65,7 @@ private 網路不提供外連；只有 web／frontend 額外接 edge bridge 以�
 
 `runtime_smoke` 透過同一常駐 relay／worker 跑合成 INGEST 根控制流程，最後 CANCELLED，明確回 business_ingest_status=NOT_RUN。它不讀 upload，不產 DatasetVersion；只有控制基線，不提供 HTTP API。輸入與政策快照為 DB immutable，Attempt 保留重試歷史；根期限與 queue timeout 由 DB 時間及協調器裁決。技術設計見 [Run／Attempt 控制核心](<../docs/技術文件/M0/T04-Run與Attempt控制核心.md>)。
 
-ready 另確認 foundation 與 runtime 兩個 migration（含不可變 trigger）已套用。T04 控制函式仍是可信服務介面，不公開成 Run API；T05 資料集／上傳 API 已另接真實 session 與固定租戶 ACL。控制 worker 與未來實際 INGEST handler 分開，本輪 DB 約束禁止將 control_only 直接關閉。
+ready 另確認 foundation、runtime、catalog與session及新INGEST guards migrations已套用。T04 控制函式仍是可信服務介面，不公開成 Run API；T05 資料集／上傳 API 已另接真實 session 與固定租戶 ACL。控制 worker 與未來實際 INGEST handler 分開，本輪 DB 約束禁止將 control_only 直接關閉。
 
 ## 帳號與上傳操作（T05）
 
@@ -84,7 +84,7 @@ docker compose exec web python manage.py provision_account dino local --role ADM
 | GET／POST /api/v2/datasets | 授權分頁清單／建立資料集；POST body={name} |
 | POST /api/v2/datasets/{id}/uploads | body={filename,format,size_bytes,sha256}；CSV／JSON／PARQUET、最高50MiB |
 | UploadSession.put_url | 只可PUT原bytes，攜帶required_headers及session／CSRF；簽章不放URL query |
-| POST /api/v2/uploads/{id}/complete | 驗目前ACL、checksum與固定版本；依賴T07，目前回503，不建假Run |
+| POST /api/v2/uploads/{id}/complete | 驗目前ACL、checksum與固定版本；預設503，明確啟用後依下節建立真正Run |
 
 Dataset／Upload建立回應可依相同key與payload重讀；不同payload回409，撤權後不回放舊回應。逾期簽章需新session，不能藉重播延長。列表cursor綁actor／租戶並重新查ACL。管理員需明確grant才能讀他人的資料集，可用受控命令：
 
@@ -102,7 +102,7 @@ docker compose exec -T web python manage.py catalog_smoke
 docker compose exec -T web python manage.py catalog_smoke --frontend
 ```
 
-兩者均經真實HTTP登入、建資料集、PUT、查固定版本、測另一租戶與撤權，最後 business_ingest_status=NOT_RUN。--frontend另外走Vite同源代理（僅額外允許Compose內部frontend hostname，不使用萬用Host allowlist）。parser／掃描、DatasetVersion、真正Run結果提交、總租戶配額、GC／備份及公網政策尚待後續工作；不以檔案傳輸通過宣稱資料已安全解析。
+兩者均經真實HTTP登入、建資料集、PUT、查固定版本、測另一租戶與撤權，最後 business_ingest_status=NOT_RUN。--frontend另外走Vite同源代理（僅額外允許Compose內部frontend hostname，不使用萬用Host allowlist）。parser／DatasetVersion及真正Run提交已由下節的明確啟用流程接入；掃描、總配額、GC／備份及公網政策仍待後續，不以檔案傳輸通過宣稱全部安全政策已驗收。
 
 
 ## 有界結構預覽（T07前置切片）
@@ -117,4 +117,27 @@ docker compose exec -T web python manage.py ingest_preview ACTOR_UUID UPLOAD_UUI
 
 子程序有1GiB address-space、CPU、wall deadline及輸出限制；同UID並非檔案系統／網路沙箱，不能用來跑插件。只有Linux實測，宿主macOS會拒絕此入口。原檔不可變，temporary copy在正常／解析失敗時清除；父程序crash遺留、總配額與GC仍待後續。詳細限制見[技術設計](<../docs/技術文件/M0/T07-有界匯入解析設計.md>)。
 
-可丟棄環境另執行 `docker compose exec -T web python manage.py ingest_preview_smoke`，會經真實HTTP建立三格式合成上傳再預覽。T07整張票尚未完成，complete仍503，無DatasetVersion／Artifact／業務Run；後續接完整交易及研究版本。
+可丟棄環境另執行 `docker compose exec -T web python manage.py ingest_preview_smoke`，會經真實HTTP建立三格式合成上傳再預覽。這個前置工具本身不呼叫complete或建立版本；真正Run／Artifact依下一節明確啟用，研究版本仍待後續。
+
+
+## 真正 INGEST 與版本／Artifact（T07第二切片）
+
+預設gate關閉，complete仍503。以下僅用於有權使用的本機公開／合成資料；五項limits全部必填，沒有正式D-01容量或D-05接收核准聲明：
+
+```sh
+AXIOM_INGEST_ENABLED=1 AXIOM_IMPORT_LIMITS='{"max_rows":10000,"max_columns":32,"max_cell_utf8_bytes":65536,"max_decoded_bytes":8388608,"max_parse_seconds":10}' docker compose --profile ingest up --build -d --wait --wait-timeout 120
+```
+
+要持續使用同一設定可放入既有未追蹤.env；不要將秘密或個人資料提交。後續重建需沿用啟用設定。新增ingest worker只聽ingest queue、concurrency=1、每個task重啟pool child，raw volume唯讀；foundation worker／frontend仍無原始volume。relay持久重送，lease拒絕重複／晚到提交；每Run只一個business attempt，失聯不自動重跑未知用量。
+
+啟用後complete回202 Run；同一upload永久指同一Run，已COMPLETED即使過期也回同一ID，但重查目前ACL及checksum。成功才提交DatasetVersion與StructureAssessment metadata Artifact；同dataset／SHA去重。失敗要檢查診斷並另開upload／Run，不重置原Run。新增讀取入口：
+
+- GET /api/v2/datasets/{id}/versions：同Dataset ACL的游標清單。
+- GET /api/v2/runs/{id}：公開Run、X-Control-Revision及X-Usage-Status。
+- GET /api/v2/artifacts/{id}、/content：現行ACL及class檢查、JSON attachment／no-store／nosniff。
+
+原始與TaskInput Artifact當期一律SEALED_DETAIL且HTTP回404；只有純結構預覽與不含原值的錯誤碼診斷為PROJECT。UNKNOWN用量不能當零成本；CPU／wall向上取整，memory為process high-water保守和，非精確同時RSS。這不是cgroup／quota／公網／正式blind驗收。
+
+可丟棄環境可執行 `docker compose exec -T web python manage.py business_ingest_smoke`，會建立三格式合成資料，實際等待relay／worker並讀metadata、測去重／非法資料與撤權。停止新匯入時先停ingest worker，設定AXIOM_INGEST_ENABLED=0並重建web／relay；既有queued Run依期限裁決，不刪除或改成control probe。
+
+metadata中的source_metadata只含欄名／格式型別／row_count，不猜語意、不取labels統計；人工語意、ResearchVersion與PROFILE仍未開放。執行環境／hash、遷移與限制見[技術設計](<../docs/技術文件/M0/T07-INGEST與Artifact提交設計.md>)。

@@ -51,3 +51,6 @@ SESSION_COOKIE_AGE = 28800
 CSRF_FAILURE_VIEW = "catalog.http.csrf_failure"
 DATA_UPLOAD_MAX_MEMORY_SIZE = 65536
 OBJECT_ROOT = Path(os.environ.get("AXIOM_OBJECT_ROOT", "/var/lib/axiom/objects"))
+
+INGEST_ENABLED = os.environ.get("AXIOM_INGEST_ENABLED", "0") == "1"
+INGEST_LIMITS_JSON = os.environ.get("AXIOM_IMPORT_LIMITS", "")

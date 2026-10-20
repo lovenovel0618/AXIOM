@@ -8,6 +8,7 @@ from kombu.exceptions import OperationalError
 from foundation.dispatch import relay
 from foundation.tasks import publish_probe
 from runtime.tasks import relay_control
+from catalog.tasks import relay_ingest
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         while True:
             try:
+                relay_ingest()
                 relay_control()
                 relay(publish_probe)
             except OperationalError:

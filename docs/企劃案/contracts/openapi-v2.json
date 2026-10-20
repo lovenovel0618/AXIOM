@@ -2717,6 +2717,17 @@
                   "const": "no-store"
                 },
                 "description": "Mutable state/usage snapshot is not HTTP-cacheable."
+              },
+              "X-Usage-Status": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "NOT_STARTED",
+                    "MEASURED_UPPER_BOUND",
+                    "UNKNOWN"
+                  ]
+                },
+                "description": "Local INGEST metering status: UNKNOWN after a lost attempt; counters are not proof of zero cost. MEASURED_UPPER_BOUND uses rounded CPU/wall and process high-water memory bounds."
               }
             }
           },

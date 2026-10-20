@@ -1,0 +1,68 @@
+"""Immutable registry and authorized metadata-only content projection."""
+import hashlib
+from uuid import UUID, uuid4
+from catalog.models import Account, Artifact, DatasetVersion, IngestBinding, Provenance, StoredObject
+from catalog.services import dataset_for, provenance
+from catalog.validation import ApiError
+from runtime.contracts import JsonObject, canonical_bytes, validate
+from runtime.records import db_now
+
+
+def register(actor: Account, binding: IngestBinding, identity: UUID, content: JsonObject | None, source: Provenance, raw: StoredObject | None = None) -> Artifact:
+    data = canonical_bytes(content) if content is not None else b""
+    source_id = uuid4()
+    provenance(actor, "Artifact", identity, source_id, source)
+    document: JsonObject = {"kind": "Artifact", "id": str(identity), "tenant_id": str(actor.tenant_id), "schema_version": "2.0", "created_at": db_now().isoformat(),
+        "artifact_uri": f"/api/v2/artifacts/{identity}/content", "sha256": hashlib.sha256(data).hexdigest() if raw is None else raw.sha256,
+        "status": "AVAILABLE", "owner_id": str(actor.id), "size_bytes": len(data) if raw is None else raw.size_bytes,
+        "media_type": "application/json" if raw is None else "application/octet-stream",
+        "access_class": "PROJECT" if content is not None and content.get("kind") in {"StructureAssessment", "ImportDiagnostic"} else "SEALED_DETAIL"}
+    validate(document, "runtime-v2.schema.json", "Artifact")
+    return Artifact.objects.create(id=identity, tenant_id=actor.tenant_id, dataset_id=binding.dataset_id, owner=actor, object=raw, content=content, document=document, provenance_id=source_id)
+
+
+def assessment(binding: IngestBinding, version_id: UUID, identity: UUID, metadata: JsonObject, manifest: UUID) -> JsonObject:
+    count = len(metadata["columns"])
+    result: JsonObject = {"kind": "StructureAssessment", "id": str(identity), "tenant_id": str(binding.tenant_id), "research_version_id": None,
+        "schema_version": "1.0", "created_at": db_now().isoformat(), "artifact_access_class": "PROJECT", "dataset_version_id": str(version_id),
+        "observation_dimension": count, "coordinate_dimension": None, "representation_dimension": count, "intrinsic_dimension_estimate": None,
+        "structure_candidates": ["UNKNOWN"], "time_basis": "UNKNOWN", "periodicity": "UNKNOWN", "method_manifest_id": str(manifest),
+        "fit_rows_hash": None, "uncertainty_reason": "Schema and shape only; semantics and statistical structure require user confirmation and fit-only analysis",
+        "analysis_scope": "METADATA_ONLY", "source_metadata": metadata}
+    validate(result, "research-learning-v1.schema.json", "StructureAssessment")
+    return result
+
+
+def publish(actor: Account, binding: IngestBinding, metadata: JsonObject, execution_id: UUID) -> None:
+    upload = binding.upload
+    existing = DatasetVersion.objects.filter(dataset_id=binding.dataset_id, sha256=upload.sha256).first()
+    if existing is not None:
+        if existing.document["format"] != upload.format:
+            raise ApiError("INVALID_SCHEMA", 422)
+        binding.result = existing
+        binding.save(update_fields=["result"])
+        return
+    source = Provenance.objects.get(resource_type="Run", resource_id=binding.run_id, tenant_id=binding.tenant_id)
+    stored = StoredObject.objects.get(pk=upload.object_version, tenant_id=binding.tenant_id)
+    identity, raw_id, preview_id, source_id = (uuid4() for _index in range(4))
+    raw = register(actor, binding, raw_id, None, source, stored)
+    preview = register(actor, binding, preview_id, assessment(binding, identity, preview_id, metadata, execution_id), source)
+    provenance(actor, "DatasetVersion", identity, source_id, source)
+    created = db_now()
+    document: JsonObject = {"kind": "DatasetVersion", "id": str(identity), "tenant_id": str(binding.tenant_id), "schema_version": "2.0", "created_at": created.isoformat(),
+        "dataset_id": str(binding.dataset_id), "artifact_uri": raw.document["artifact_uri"], "sha256": upload.sha256, "format": upload.format,
+        "row_count": metadata["row_count"], "status": "AVAILABLE", "artifact_id": str(raw_id), "structure_preview_artifact_id": str(preview_id)}
+    validate(document, "research-v2.schema.json", "DatasetVersion")
+    binding.result = DatasetVersion.objects.create(id=identity, tenant_id=binding.tenant_id, dataset_id=binding.dataset_id, sha256=upload.sha256,
+        document=document, raw=raw, preview=preview, provenance_id=source_id, created_at=created)
+    binding.save(update_fields=["result"])
+
+
+def authorized(actor: Account, identity: UUID) -> Artifact:
+    row = Artifact.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
+    if row is None or row.document["access_class"] != "PROJECT":
+        raise ApiError("NOT_FOUND", 404)
+    dataset_for(actor, row.dataset_id)
+    if row.document["status"] != "AVAILABLE":
+        raise ApiError("ARTIFACT_UNAVAILABLE", 409)
+    return row

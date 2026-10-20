@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 from runtime.contracts import JsonObject
+from runtime.models import RuntimeRun
 
 
 class Tenant(models.Model):
@@ -106,7 +107,7 @@ class StoredObject(models.Model):
     provenance_id: models.UUIDField[UUID, UUID] = models.UUIDField()
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="object_tenant_identity"), models.UniqueConstraint(fields=["id", "upload", "tenant"], name="object_upload_tenant_identity")]
+        constraints = [models.UniqueConstraint(fields=["id", "dataset", "tenant"], name="object_dataset_tenant_identity"), models.UniqueConstraint(fields=["id", "tenant"], name="object_tenant_identity"), models.UniqueConstraint(fields=["id", "upload", "tenant"], name="object_upload_tenant_identity")]
 
 
 class IdempotentResult(models.Model):
@@ -132,3 +133,56 @@ class LoginThrottle(models.Model):
     key: models.CharField[str, str] = models.CharField(primary_key=True, max_length=64)
     failures: models.PositiveIntegerField[int, int] = models.PositiveIntegerField(default=0)
     reset_at: models.DateTimeField[datetime, datetime] = models.DateTimeField()
+
+
+class Artifact(models.Model):
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    dataset: models.ForeignKey[Dataset, Dataset] = models.ForeignKey(Dataset, on_delete=models.PROTECT)
+    dataset_id: UUID
+    owner: models.ForeignKey[Account, Account] = models.ForeignKey(Account, on_delete=models.PROTECT)
+    owner_id: UUID
+    object: models.ForeignKey[StoredObject | None, StoredObject | None] = models.ForeignKey(StoredObject, null=True, on_delete=models.PROTECT)
+    object_id: UUID | None
+    content: models.JSONField[JsonObject | None, JsonObject | None] = models.JSONField(null=True)
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    provenance_id: models.UUIDField[UUID, UUID] = models.UUIDField()
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["id", "dataset", "tenant"], name="artifact_dataset_tenant_identity"), models.CheckConstraint(condition=(models.Q(object__isnull=True, content__isnull=False) | models.Q(object__isnull=False, content__isnull=True)), name="artifact_content_source")]
+
+
+class DatasetVersion(models.Model):
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    dataset: models.ForeignKey[Dataset, Dataset] = models.ForeignKey(Dataset, on_delete=models.PROTECT)
+    dataset_id: UUID
+    sha256: models.CharField[str, str] = models.CharField(max_length=64)
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    raw: models.ForeignKey[Artifact, Artifact] = models.ForeignKey(Artifact, on_delete=models.PROTECT, related_name="raw_versions")
+    raw_id: UUID
+    preview: models.ForeignKey[Artifact, Artifact] = models.ForeignKey(Artifact, on_delete=models.PROTECT, related_name="preview_versions")
+    preview_id: UUID
+    provenance_id: models.UUIDField[UUID, UUID] = models.UUIDField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["dataset", "sha256"], name="dataset_content_version_unique"), models.UniqueConstraint(fields=["id", "dataset", "tenant"], name="version_dataset_tenant_identity")]
+
+
+class IngestBinding(models.Model):
+    run: models.OneToOneField[RuntimeRun, RuntimeRun] = models.OneToOneField("runtime.RuntimeRun", on_delete=models.PROTECT, primary_key=True)
+    run_id: UUID
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    dataset: models.ForeignKey[Dataset, Dataset] = models.ForeignKey(Dataset, on_delete=models.PROTECT)
+    dataset_id: UUID
+    upload: models.OneToOneField[Upload, Upload] = models.OneToOneField(Upload, on_delete=models.PROTECT)
+    upload_id: UUID
+    actor: models.ForeignKey[Account, Account] = models.ForeignKey(Account, on_delete=models.PROTECT)
+    actor_id: UUID
+    result: models.ForeignKey[DatasetVersion | None, DatasetVersion | None] = models.ForeignKey(DatasetVersion, null=True, on_delete=models.PROTECT)
+    result_id: UUID | None
+    error_code: models.CharField[str | None, str | None] = models.CharField(max_length=40, null=True)

@@ -36,11 +36,18 @@ jobs:
           curl --silent --show-error --output /dev/null --connect-timeout 5 --max-time 15 --fail http://127.0.0.1:15173/src/main.ts
           curl --silent --show-error --output /dev/null --connect-timeout 5 --max-time 15 --fail http://127.0.0.1:15173/src/App.vue
           curl --silent --show-error --output /dev/null --connect-timeout 5 --max-time 15 --fail --retry 5 --retry-delay 1 --retry-all-errors http://127.0.0.1:15173/node_modules/.vite/deps/vue.js
+      - name: Real opt-in INGEST
+        env:
+          AXIOM_INGEST_ENABLED: "1"
+          AXIOM_IMPORT_LIMITS: '{"max_rows":100,"max_columns":8,"max_cell_utf8_bytes":4096,"max_decoded_bytes":65536,"max_parse_seconds":10}'
+        run: |
+          docker compose -p axiom-ci --profile ingest up -d --wait --wait-timeout 120
+          docker compose -p axiom-ci exec -T web python manage.py business_ingest_smoke
       - name: Logs and cleanup
         if: always()
         run: |
-          docker compose -p axiom-ci logs --no-color
-          docker compose -p axiom-ci down --volumes --remove-orphans
+          docker compose -p axiom-ci --profile ingest logs --no-color
+          docker compose -p axiom-ci --profile ingest down --volumes --remove-orphans
   frontend:
     runs-on: ubuntu-latest
     timeout-minutes: 10

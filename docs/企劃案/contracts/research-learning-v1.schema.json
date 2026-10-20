@@ -345,6 +345,46 @@
             "METADATA_ONLY",
             "FIT_ONLY"
           ]
+        },
+        "source_metadata": {
+          "type": "object",
+          "properties": {
+            "row_count": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "columns": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 128,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "physical_type": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  }
+                },
+                "required": [
+                  "name",
+                  "physical_type"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "row_count",
+            "columns"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [

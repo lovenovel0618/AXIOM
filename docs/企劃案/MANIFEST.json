@@ -128,8 +128,8 @@
     },
     {
       "path": "07-資料與API/21-API與任務契約.md",
-      "bytes": 22820,
-      "sha256": "9a352338d9302b03a4609e89e7a0ef33382c7a78a4e69aa7dcf5d10005e50951"
+      "bytes": 23246,
+      "sha256": "cb2844b284c44d1598e0e9175178bb05bf23773cbd2f6115216fdd5062cef3bc"
     },
     {
       "path": "08-前端UX/22-設計系統與視覺規範.md",
@@ -188,8 +188,8 @@
     },
     {
       "path": "11-交付/31-工作拆解WBS與依賴.md",
-      "bytes": 22223,
-      "sha256": "37da1bedd1b993fe6fb83351e22b50eb0a766e1401b80d958feff904ffe7a7b5"
+      "bytes": 22290,
+      "sha256": "f37f188a89ba1b40c47ea7f5e6dc671aee200a7787d774135f943b1a310cf79c"
     },
     {
       "path": "11-交付/32-風險登錄與決策紀錄.md",
@@ -253,8 +253,8 @@
     },
     {
       "path": "14-自主研究/49-數據結構與自主表徵探索.md",
-      "bytes": 9154,
-      "sha256": "9f98291ca330bf65e380c231ca7212143c518bb9974e985d9ece90d7eaaa4462"
+      "bytes": 9591,
+      "sha256": "f9642f9b38174a5daa1fb8b4bf503ae75c6a5be0cf37105d2202b5518e8cce85"
     },
     {
       "path": "14-自主研究/50-研究決策軌跡與錯誤恢復.md",
@@ -363,8 +363,8 @@
     },
     {
       "path": "contracts/openapi-v2.json",
-      "bytes": 306036,
-      "sha256": "49f30e1d61dfa770ce445ea1e0a016106020383abcca6fa2481de79dd92a8169"
+      "bytes": 306538,
+      "sha256": "903834e5f20db926dc9330621873dc625a968da8d285a42b05f6be67a9176233"
     },
     {
       "path": "contracts/policy-registry-v1.json",
@@ -378,8 +378,8 @@
     },
     {
       "path": "contracts/research-learning-v1.schema.json",
-      "bytes": 66912,
-      "sha256": "f0400db50caa0f2e0af4b67ad940661b0163f53719c1e48aafd5e0f2c75a7bdd"
+      "bytes": 68018,
+      "sha256": "0ee582749b6a70947b76520a4089552ba9fb8aad39f4bc9159d91379a10bb956"
     },
     {
       "path": "contracts/research-v2.examples.json",

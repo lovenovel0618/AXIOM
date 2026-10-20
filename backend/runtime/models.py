@@ -17,7 +17,7 @@ class RuntimeRun(models.Model):
     last_polled_at: models.DateTimeField[datetime | None, datetime | None] = models.DateTimeField(null=True, db_index=True)
 
     class Meta:
-        constraints = [models.CheckConstraint(condition=models.Q(control_only=True), name="runtime_control_only"), models.UniqueConstraint(fields=["id", "tenant_id"], name="runtime_run_tenant_identity")]
+        constraints = [models.UniqueConstraint(fields=["id", "tenant_id"], name="runtime_run_tenant_identity")]
 
 
 class InputSnapshot(models.Model):
