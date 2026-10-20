@@ -4,7 +4,7 @@ COPY backend/requirements.lock /tmp/requirements.lock
 RUN python -m pip install --no-cache-dir --only-binary=:all: --require-hashes -r /tmp/requirements.lock && useradd --create-home axiom && mkdir -p /var/lib/axiom/objects && chown axiom:axiom /var/lib/axiom/objects && chmod 700 /var/lib/axiom/objects
 COPY backend/ /app/
 COPY docs/企劃案/contracts/*.schema.json /app/contracts/
-COPY docs/企劃案/contracts/openapi-v2.json /app/contracts/
+COPY docs/企劃案/contracts/openapi-v2.json docs/企劃案/contracts/dsl-v1.examples.json /app/contracts/
 USER axiom
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]

@@ -2,7 +2,7 @@
 
 AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探索）是數據驅動的公式發現、獨立驗證、推演與經驗學習平台。
 
-目前已有設計規格、工程工具與 T04 本機 Django／Vue／Compose 基礎切片，可測健康檢查及合成任務派送。T05 已提供 session／CSRF、租戶隔離的資料集與上傳 API，以及私有不可變本機物件；已加入持久 Run／Attempt 的 INGEST 根控制流程；完整研究 API／Run 任務樹尚未完成；企劃驗收案例維持 NOT_RUN，工程測試通過不等同產品整體驗收。
+目前已有設計規格、工程工具與 T04 本機 Django／Vue／Compose 基礎切片，可測健康檢查及合成任務派送。T05 已提供 session／CSRF、租戶隔離的資料集與上傳 API，以及私有不可變本機物件；已加入持久 Run／Attempt 的 INGEST 根控制流程；T06 已加入有界純量 DSL 編譯與求值、量綱／域檢查及獨立 oracle；完整研究 API／Run 任務樹尚未完成；企劃驗收案例維持 NOT_RUN，工程測試通過不等同產品整體驗收。
 
 ## 企劃案
 
@@ -22,6 +22,8 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 基線有效與 M0 就緒分開回報；單人責任已設定；未決政策及其他交付不自動核准。環境安裝及型別檢查方式如下。
 
 T03 的固定公開案例與隔離測試見 [技術文件](docs/技術文件/M0/T03-公開基準與盲測隔離基線.md)，可先執行 `.venv-backend/bin/python -m tools.benchmark.public_oracle`。
+
+T06 的設計與限制見 [安全 DSL 求值](docs/技術文件/M0/T06-安全DSL求值設計.md)。未啟動容器時，可執行 `PYTHONPATH=backend .venv-backend/bin/python -m unittest mathematics.tests -v` 及 `PYTHONPATH=backend .venv-backend/bin/python -m mathematics.smoke`。
 
 ## 文件檢查
 
@@ -44,6 +46,7 @@ macOS（開發）與 Windows 11 + WSL2（架設）共用同一份 Docker Compose
 docker compose up --build -d --wait --wait-timeout 120
 docker compose run --rm web python manage.py probe_smoke
 docker compose run --rm web python manage.py runtime_smoke
+docker compose run --rm web python -m mathematics.smoke
 docker compose exec -T web python manage.py catalog_smoke
 docker compose exec -T web python manage.py catalog_smoke --frontend
 ```
@@ -51,7 +54,7 @@ docker compose exec -T web python manage.py catalog_smoke --frontend
 開啟 <http://127.0.0.1:15173>。產品交易測試與前端檢查：
 
 ```sh
-docker compose run --rm web python manage.py test foundation.tests runtime.tests catalog.tests -v 2
+docker compose run --rm web python manage.py test foundation.tests runtime.tests catalog.tests mathematics.tests -v 2
 docker compose run --rm frontend sh -c 'npm run typecheck && npm test && npm run build'
 ```
 

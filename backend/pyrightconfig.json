@@ -4,7 +4,8 @@
     "foundation",
     "manage.py",
     "runtime",
-    "catalog"
+    "catalog",
+    "mathematics"
   ],
   "venvPath": "..",
   "venv": ".venv-backend",

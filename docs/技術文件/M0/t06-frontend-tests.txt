@@ -1,0 +1,52 @@
+ Container axiom-t06-check-postgres-1 Running
+ Container axiom-t06-check-redis-1 Running
+ Container axiom-t06-check-web-1 Running
+ Container axiom-t06-check-postgres-1 Waiting
+ Container axiom-t06-check-postgres-1 Healthy
+ Container axiom-t06-check-migrate-1 Starting
+ Container axiom-t06-check-migrate-1 Started
+ Container axiom-t06-check-migrate-1 Waiting
+ Container axiom-t06-check-redis-1 Waiting
+ Container axiom-t06-check-migrate-1 Exited
+ Container axiom-t06-check-redis-1 Healthy
+ Container axiom-t06-check-web-1 Waiting
+ Container axiom-t06-check-web-1 Healthy
+ Container axiom-t06-check-frontend-run-e20ee1f795d9 Creating
+ Container axiom-t06-check-frontend-run-e20ee1f795d9 Created
+
+> axiom-frontend@0.0.0 typecheck
+> vue-tsc --noEmit
+
+npm notice
+npm notice New major version of npm available! 11.19.1 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+> axiom-frontend@0.0.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /app
+
+ ✓ tests/health.test.ts (8 tests) 31ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  09:57:50
+   Duration  214ms (transform 41ms, setup 0ms, import 57ms, tests 31ms, environment 0ms)
+
+
+> axiom-frontend@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.37 kB │ gzip:  0.29 kB
+dist/assets/index-BpI2dZEI.css   0.53 kB │ gzip:  0.29 kB
+dist/assets/index-CMjKMLIj.js   63.15 kB │ gzip: 25.06 kB
+
+✓ built in 292ms

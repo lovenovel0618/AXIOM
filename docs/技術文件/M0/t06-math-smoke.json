@@ -1,0 +1,27 @@
+{
+  "scope": "T06_PUBLIC_SYNTHETIC_LOCAL_EVALUATOR",
+  "status": "PASS",
+  "precision_bits": 53,
+  "product_gate_status": "NOT_RUN",
+  "linear_identity_hash": "71ed62b70b3411ef6d50a8b3daa296e621d4c3d0fbd1c3759f4af1df554ac4c0",
+  "linear_rows": 17,
+  "max_absolute_error": 0.0,
+  "domain_identity_hash": "803c3153674a5c80430e6e88559992bb9e5441d31a85ff028b81209728107947",
+  "domain_values": [
+    1.0,
+    null,
+    1.0
+  ],
+  "valid_mask": [
+    true,
+    false,
+    true
+  ],
+  "domain_reasons": [
+    null,
+    "DOMAIN_VIOLATION",
+    null
+  ],
+  "decimal_reference_digits": 70,
+  "exp_absolute_error": 0.0
+}
