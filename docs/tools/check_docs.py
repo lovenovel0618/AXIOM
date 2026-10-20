@@ -592,24 +592,26 @@ def registered_error_codes(document: JsonObject) -> set[str]:
     return codes
 
 
-def ax21_declared_codes(doc: str) -> set[str]:
-    """Extract the codes AX-21 declares in its structured lists, for reverse coverage."""
-    declared: set[str] = set()
+def ax21_declared_codes(doc: str) -> tuple[set[str], set[str], set[str]]:
+    """Return (table, worker, inline) codes AX-21 declares, split by declaration site."""
+    table: set[str] = set()
+    worker: set[str] = set()
+    inline: set[str] = set()
     grouped = "(" + ERROR_CODE_TOKEN + r"(?:[、／]" + ERROR_CODE_TOKEN + r")*)"
     for line in doc.splitlines():
         if line.startswith("| "):
             cells = [cell.strip() for cell in line.split("|")[1:-1]]
             if len(cells) >= 2 and re.fullmatch(r"\d{3}(?: / \d{3})*", cells[0]):
-                declared |= {token.strip() for token in cells[1].split("/") if re.fullmatch(ERROR_CODE_TOKEN, token.strip())}
+                table |= {token.strip() for token in cells[1].split("/") if re.fullmatch(ERROR_CODE_TOKEN, token.strip())}
             continue
         marker = "內部 worker 另有 "
         if marker in line:
             tail = line.split(marker, 1)[1].split("；", 1)[0]
-            declared |= {token for token in tail.split("、") if re.fullmatch(ERROR_CODE_TOKEN, token)}
+            worker |= {token for token in tail.split("、") if re.fullmatch(ERROR_CODE_TOKEN, token)}
         pattern = r"\d{3}\s*" + grouped if line.startswith("新增穩定錯誤") else r"回\s*\d{3}\s*" + grouped
         for group in re.findall(pattern, line):
-            declared |= {token for token in re.split(r"[、／]", group) if re.fullmatch(ERROR_CODE_TOKEN, token)}
-    return declared
+            inline |= {token for token in re.split(r"[、／]", group) if re.fullmatch(ERROR_CODE_TOKEN, token)}
+    return table, worker, inline
 
 
 def check_error_codes(api: JsonObject) -> int:
@@ -624,8 +626,15 @@ def check_error_codes(api: JsonObject) -> int:
     doc = next(ROOT.rglob(API_DOC_GLOB)).read_text(encoding="utf-8")
     for code in sorted(codes):
         check(code in doc, "Registered error code missing from AX-21: " + code)
-    undeclared = ax21_declared_codes(doc) - codes
+    table, worker, inline = ax21_declared_codes(doc)
+    undeclared = (table | worker | inline) - codes
     check(not undeclared, "AX-21 declares unregistered error codes: " + ", ".join(sorted(undeclared)))
+    http_codes = {str(entry["code"]) for entry in document["codes"] if entry["scope"] == "HTTP"}
+    worker_codes = {str(entry["code"]) for entry in document["codes"] if entry["scope"] == "WORKER"}
+    check(http_codes <= table, "HTTP error codes absent from AX-21 error table: " + ", ".join(sorted(http_codes - table)))
+    check(worker_codes <= worker, "WORKER error codes absent from AX-21 worker list: " + ", ".join(sorted(worker_codes - worker)))
+    check(not (table & worker_codes), "WORKER error code declared in AX-21 error table: " + ", ".join(sorted(table & worker_codes)))
+    check(not (worker & http_codes), "HTTP error code declared in AX-21 worker list: " + ", ".join(sorted(worker & http_codes)))
     return len(codes)
 
 
@@ -754,6 +763,8 @@ def check_index_numbers(summary: Mapping[str, int]) -> None:
     check(f"共 {summary['chapters']} 篇編號章節" in navigation, "AX-01 chapter count drifted")
     governance = next(ROOT.rglob("48-*.md")).read_text(encoding="utf-8")
     check(f"審查範圍是{summary['chapters']}章" in governance, "AX-48 chapter count drifted")
+    root_readme = (ROOT.parent / README_NAME).read_text(encoding="utf-8")
+    check(f"{summary['chapters']} 篇編號章節" in root_readme, "Root README chapter count drifted")
 
 
 def main() -> None:

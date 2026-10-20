@@ -128,8 +128,8 @@
     },
     {
       "path": "07-資料與API/21-API與任務契約.md",
-      "bytes": 22230,
-      "sha256": "3da56c8a0948020c1c88227192a4ab2500e36f6a2f93e54d86e1ebe6fc1454b0"
+      "bytes": 22654,
+      "sha256": "61eac1a7e0135596af8abaceab4f643d05fa82a5e68bafcaf9911de941f8ee06"
     },
     {
       "path": "08-前端UX/22-設計系統與視覺規範.md",
@@ -293,8 +293,8 @@
     },
     {
       "path": "15-工程/53-工程治理與開發者工作流.md",
-      "bytes": 7357,
-      "sha256": "c8e557c1147fb3ada0b253af0f5c06fc400a859abb1eb86bcedab8760900cbab"
+      "bytes": 7516,
+      "sha256": "a718d2e8a49162aea937994e5c0a70e3bf25a7b484d6c9e59fa0a5349256af79"
     },
     {
       "path": "INTEGRATION.md",
@@ -418,8 +418,8 @@
     },
     {
       "path": "tools/check_docs.py",
-      "bytes": 41267,
-      "sha256": "08da2740058411ce1b22a71162f259b015f44121f6fb353bd20e5385178c7d5c"
+      "bytes": 42301,
+      "sha256": "2432bffdb74a3acfe90a9cb347bf4681a038c04a51f18535d3b8dbbe4191f03f"
     },
     {
       "path": "tools/contract_scenarios.py",
