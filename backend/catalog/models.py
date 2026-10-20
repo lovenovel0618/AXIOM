@@ -169,7 +169,7 @@ class DatasetVersion(models.Model):
     created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["dataset", "sha256"], name="dataset_content_version_unique"), models.UniqueConstraint(fields=["id", "dataset", "tenant"], name="version_dataset_tenant_identity")]
+        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="version_tenant_identity"), models.UniqueConstraint(fields=["dataset", "sha256"], name="dataset_content_version_unique"), models.UniqueConstraint(fields=["id", "dataset", "tenant"], name="version_dataset_tenant_identity")]
 
 
 class IngestBinding(models.Model):
@@ -186,3 +186,34 @@ class IngestBinding(models.Model):
     result: models.ForeignKey[DatasetVersion | None, DatasetVersion | None] = models.ForeignKey(DatasetVersion, null=True, on_delete=models.PROTECT)
     result_id: UUID | None
     error_code: models.CharField[str | None, str | None] = models.CharField(max_length=40, null=True)
+
+
+class Research(models.Model):
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    owner: models.ForeignKey[Account, Account] = models.ForeignKey(Account, on_delete=models.PROTECT)
+    owner_id: UUID
+    name: models.TextField[str, str] = models.TextField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+    provenance_id: models.UUIDField[UUID, UUID] = models.UUIDField()
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="research_tenant_identity")]
+
+
+class ResearchVersion(models.Model):
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    research: models.ForeignKey[Research, Research] = models.ForeignKey(Research, on_delete=models.PROTECT)
+    research_id: UUID
+    dataset_version: models.ForeignKey[DatasetVersion, DatasetVersion] = models.ForeignKey(DatasetVersion, on_delete=models.PROTECT)
+    dataset_version_id: UUID
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+    provenance_id: models.UUIDField[UUID, UUID] = models.UUIDField()
+
+    class Meta:
+        indexes = [models.Index(fields=["research", "-created_at", "-id"], name="research_version_page")]
+        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="research_version_tenant_identity")]

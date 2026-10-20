@@ -104,4 +104,4 @@ class Command(BaseCommand):
                 raise CommandError("Revoked access remained readable")
         self.stdout.write(json.dumps({"scope": "T07_ACTUAL_LOCAL_INGEST", "status": "PASS", "results": results,
             "dedup_versions": 3, "invalid_status": invalid["status"], "revoked_http_status": 404, "raw_http_status": 404,
-            "research_version_status": "NOT_IMPLEMENTED", "product_gate_status": "NOT_RUN"}, indent=2))
+            "research_version_status": "NOT_EXERCISED_BY_THIS_SMOKE", "product_gate_status": "NOT_RUN"}, indent=2))

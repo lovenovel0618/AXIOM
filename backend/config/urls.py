@@ -1,10 +1,15 @@
 from django.urls import path
 from foundation.health import live, ready
-from catalog import http, read_http
+from catalog import http, read_http, research_http
 
 urlpatterns = [path("health/live/", live), path("health/ready/", ready)]
 
 urlpatterns += [
+    path("api/v2/researches", research_http.researches),
+    path("api/v2/researches/<uuid:identity>", research_http.research_detail),
+    path("api/v2/researches/<uuid:identity>/versions", research_http.versions),
+    path("api/v2/research-versions/<uuid:identity>", research_http.version_detail),
+    path("api/v2/research-versions/<uuid:identity>/validate", research_http.validate_draft),
     path("api/v2/datasets/<uuid:identity>/versions", read_http.versions),
     path("api/v2/runs/<uuid:identity>", read_http.run_detail),
     path("api/v2/artifacts/<uuid:identity>", read_http.artifact_detail),

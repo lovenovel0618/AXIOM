@@ -93,7 +93,7 @@ docker compose exec web python manage.py grant_dataset ADMIN_ACTOR_UUID TARGET_A
 # permission 亦可 EDITOR、OWNER、REVOKE；VIEWER 全域角色不因editor grant取得寫入權。
 ```
 
-只有web掛載object-data；worker、frontend沒有原始物件volume。原始filename只作metadata，實際檔名由UUID產生。檔案固定版本且每次驗SHA／大小；沒有匿名下載、目錄列表、靜態原檔或Artifact API。一般down保留DB和物件volume，down --volumes同時刪除，勿用於有保留需求的環境。這是local-versioned-v1，不是S3／MinIO驗收。
+預設配置只有web掛載object-data；foundation worker、frontend沒有原始物件volume。明確啟用ingest profile時另給專用ingest worker唯讀掛載。原始filename只作metadata，實際檔名由UUID產生。檔案固定版本且每次驗SHA／大小；沒有匿名下載、目錄列表或靜態原檔；受授權的metadata Artifact API見T07段落，原檔仍不可經普通API下載。一般down保留DB和物件volume，down --volumes同時刪除，勿用於有保留需求的環境。這是local-versioned-v1，不是S3／MinIO驗收。
 
 以下smoke會建立隔離的隨機合成帳號、資料集及小檔，只能在可丟棄的本機／CI環境執行，不對正式資料庫使用：
 
@@ -117,7 +117,7 @@ docker compose exec -T web python manage.py ingest_preview ACTOR_UUID UPLOAD_UUI
 
 子程序有1GiB address-space、CPU、wall deadline及輸出限制；同UID並非檔案系統／網路沙箱，不能用來跑插件。只有Linux實測，宿主macOS會拒絕此入口。原檔不可變，temporary copy在正常／解析失敗時清除；父程序crash遺留、總配額與GC仍待後續。詳細限制見[技術設計](<../docs/技術文件/M0/T07-有界匯入解析設計.md>)。
 
-可丟棄環境另執行 `docker compose exec -T web python manage.py ingest_preview_smoke`，會經真實HTTP建立三格式合成上傳再預覽。這個前置工具本身不呼叫complete或建立版本；真正Run／Artifact依下一節明確啟用，研究版本仍待後續。
+可丟棄環境另執行 `docker compose exec -T web python manage.py ingest_preview_smoke`，會經真實HTTP建立三格式合成上傳再預覽。這個前置工具本身不呼叫complete或建立版本；真正Run／Artifact依下一節明確啟用，研究版本由下節草稿流程接入。
 
 
 ## 真正 INGEST 與版本／Artifact（T07第二切片）
@@ -140,4 +140,32 @@ AXIOM_INGEST_ENABLED=1 AXIOM_IMPORT_LIMITS='{"max_rows":10000,"max_columns":32,"
 
 可丟棄環境可執行 `docker compose exec -T web python manage.py business_ingest_smoke`，會建立三格式合成資料，實際等待relay／worker並讀metadata、測去重／非法資料與撤權。停止新匯入時先停ingest worker，設定AXIOM_INGEST_ENABLED=0並重建web／relay；既有queued Run依期限裁決，不刪除或改成control probe。
 
-metadata中的source_metadata只含欄名／格式型別／row_count，不猜語意、不取labels統計；人工語意、ResearchVersion與PROFILE仍未開放。執行環境／hash、遷移與限制見[技術設計](<../docs/技術文件/M0/T07-INGEST與Artifact提交設計.md>)。
+metadata中的source_metadata只含欄名／格式型別／row_count，不猜語意、不取labels統計；人工語意與 ResearchVersion 草稿依下節操作；PROFILE仍未開放。執行環境／hash、遷移與限制見[技術設計](<../docs/技術文件/M0/T07-INGEST與Artifact提交設計.md>)。
+
+
+## 人工語意與研究草稿（T07第三切片）
+
+完成前述真實 INGEST 後，已登入的 RESEARCHER／ADMIN 可呼叫現行 v2 API；沒有網頁建立表單，現階段使用同源 HTTP client。POST 皆帶 session、CSRF 及 Idempotency-Key：
+
+- POST／GET /api/v2/researches，GET /api/v2/researches/{id}：建立、分頁及重開 owner 私有研究，POST body 為 {"name":"研究名稱"}。
+- POST／GET /api/v2/researches/{id}/versions：提交 CreateResearchVersion 或查目前可讀草稿列表。
+- GET /api/v2/research-versions/{id}：重開固定快照。修改設定需建立新版本，沒有 PATCH。
+- POST /api/v2/research-versions/{id}/validate：目前通過授權後回 503，未啟用可信 PROFILE。
+
+版本請求必須提供 dataset_version_id、semantic_profile、budget、purpose、observation_split、domain、evaluation_policy，完整形狀沿企劃案 contracts/openapi-v2.json。可執行的合成範例見 backend/catalog/management/commands/research_draft_smoke.py 的 configuration。原始欄名精確比對，單位比例／偏移及誤差界以十進位字串確認，domain 使用已約分的有理數。domain／解析度／界限以 canonical SI 計；本步只固定宣告，尚未讀值或執行數值轉換。
+
+目前支援無時間／群組依賴的 EXPLICIT 或 axiom-iid-sha256-v1 IID_ROWS，必須完整分配每列且不交疊；IID 依 seed 重算 60/20/20（取整邊界），不得自行偽稱隨機切分。TIME_ORDERED／GROUPED_ROWS／refit 依賴仍未實作，合法但尚未支援者回 503；互相矛盾的設定回 422。POST body 上限仍為 64 KiB，因此大型列集合不能在此階段提交；後續需另設版本化有界切分入口，不能放大限制後直接對外開放。
+
+研究僅 owner 可見，ADMIN 無隱含讀權。版本另需目前 Dataset grant；建立／冪等重送需寫權限，只有 READER 時仍可讀取。撤權後單筆 404、版本清單過濾、冪等重送 404。Research 容器本身仍屬 owner，撤銷資料權限不刪研究。
+
+草稿固定為 DRAFT／revision=0，沒有品質結果或 fit 結構報告。sealed_final_test=true 是禁止一般讀取最終原始資料的政策；sealed_test_id 為 null，不代表正式盲測或曝光 ledger 已登記。普通 raw Artifact 仍一律 404，沒有輸出觀測值、Solver 投影、最終評估或發布。研究額度只保存設定與零初始用量，尚無帳本可執行研究任務。
+
+啟用 ingest profile 的可丟棄環境可執行：
+
+```sh
+docker compose exec -T web python manage.py research_draft_smoke
+```
+
+它會經真實 HTTP 上傳含中文欄名的合成資料，等待 queue／worker 成功，確認語意與 cm→m 宣告、建立及重開 DRAFT、重送同 key、驗證 PROFILE 503 及撤權後 404。它不驗證物理單位宣告的真實性，也不宣稱資料品質或研究結論通過。
+
+升級需先排空舊程序，再執行 catalog 0005／0006 migration 並重新啟動同一版本的 web／worker／relay；readiness 要求 0006。新增表不修改既有版本內容。當期 Research／ResearchVersion 整列不可變，後續狀態機需專屬 migration。若要降級，先停寫並備份，將相關草稿與 provenance／冪等關係納入恢復；直接 reverse 到 0004 會移除新增研究表，不能當無損回退。

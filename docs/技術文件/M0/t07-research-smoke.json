@@ -1,0 +1,113 @@
+{
+  "research_draft": {
+    "scope": "T07_RESEARCH_DRAFT_HTTP",
+    "status": "PASS",
+    "ingest_status": "SUCCEEDED",
+    "research_version_status": "DRAFT",
+    "draft_id": "53a06d25-c634-4cef-8ae7-8b4ed3dd76a5",
+    "draft_hash": "d0fbab11d88d3ecdeedee71ecafaa4f799ca65cd8637e4f3a71cc1186f7607d0",
+    "policy_hash": "fd87412e37aae540b74cc66231467baab7636be31cf20c1f625b27a59aa83557",
+    "unicode_source_mapping": "PASS",
+    "replay_and_restore": "PASS",
+    "revoked_http_status": 404,
+    "profile_http_status": 503,
+    "sealed_test_registered": false,
+    "product_gate_status": "NOT_RUN"
+  },
+  "ingest_regression": {
+    "scope": "T07_ACTUAL_LOCAL_INGEST",
+    "status": "PASS",
+    "results": [
+      {
+        "format": "CSV",
+        "run_id": "95cb3f18-3ff0-4882-915e-4c6238f5e7b6",
+        "status": "SUCCEEDED",
+        "version_id": "efce74d3-7135-4750-9907-106bdc52f721",
+        "preview_id": "f98aedc4-11f4-4be3-8ed4-f6770081ce6d",
+        "sha256": "278481a91ae8d509e7cc9dc55cf71151dcda647c6d185fb462bfc9aaeb095563",
+        "budget_usage": {
+          "tokens": 0,
+          "cpu_seconds": 1,
+          "gpu_seconds": 0,
+          "peak_memory_bytes": 154173440,
+          "candidates_accepted": 0,
+          "candidates_generated": 0,
+          "elapsed_wall_seconds": 1
+        }
+      },
+      {
+        "format": "JSON",
+        "run_id": "f1a2729a-7894-4f57-92b4-a52cb56f904a",
+        "status": "SUCCEEDED",
+        "version_id": "e2fa0907-8f60-4a31-bba8-8d15dad30abb",
+        "preview_id": "bb63c0db-d632-4ac8-86e4-a56bff782fcc",
+        "sha256": "284f67204a6e9b22d4d6684ac07639379aafa410d1ed25aee734bf90596540df",
+        "budget_usage": {
+          "tokens": 0,
+          "cpu_seconds": 1,
+          "gpu_seconds": 0,
+          "peak_memory_bytes": 153886720,
+          "candidates_accepted": 0,
+          "candidates_generated": 0,
+          "elapsed_wall_seconds": 1
+        }
+      },
+      {
+        "format": "PARQUET",
+        "run_id": "cce41228-d429-4360-985e-8954c6a802a9",
+        "status": "SUCCEEDED",
+        "version_id": "6fdf70b4-d250-4611-bf19-1e06ba8c9eab",
+        "preview_id": "c1185b5f-8977-4ef2-a172-1f1381836048",
+        "sha256": "59174843b53a0b02104bcf9654922848295168f7f28dcb032675d907a48ba8c7",
+        "budget_usage": {
+          "tokens": 0,
+          "cpu_seconds": 1,
+          "gpu_seconds": 0,
+          "peak_memory_bytes": 170512384,
+          "candidates_accepted": 0,
+          "candidates_generated": 0,
+          "elapsed_wall_seconds": 1
+        }
+      }
+    ],
+    "dedup_versions": 3,
+    "invalid_status": "FAILED",
+    "revoked_http_status": 404,
+    "raw_http_status": 404,
+    "research_version_status": "NOT_EXERCISED_BY_THIS_SMOKE",
+    "product_gate_status": "NOT_RUN"
+  },
+  "default_catalog": {
+    "status": "PASS",
+    "scope": "T05_LOCAL_SYNTHETIC_HTTP",
+    "via_frontend": false,
+    "upload_http": 204,
+    "cross_tenant_http": 404,
+    "revoked_token_http": 404,
+    "complete_http": 503,
+    "business_ingest_status": "NOT_RUN",
+    "upload_id": "9a904939-8662-4135-92d8-f8a98a69a1c8",
+    "object_version": "e299bf91-9394-4d0b-99eb-1c13a6d533ae",
+    "registered_objects": 1,
+    "sha256": "278481a91ae8d509e7cc9dc55cf71151dcda647c6d185fb462bfc9aaeb095563"
+  },
+  "default_frontend_proxy": {
+    "status": "PASS",
+    "scope": "T05_LOCAL_SYNTHETIC_HTTP",
+    "via_frontend": true,
+    "upload_http": 204,
+    "cross_tenant_http": 404,
+    "revoked_token_http": 404,
+    "complete_http": 503,
+    "business_ingest_status": "NOT_RUN",
+    "upload_id": "e059901b-02c7-4c60-9971-c1659cd1b8b9",
+    "object_version": "30d72a88-e7ea-43bf-88bb-ea8e4b26c655",
+    "registered_objects": 1,
+    "sha256": "278481a91ae8d509e7cc9dc55cf71151dcda647c6d185fb462bfc9aaeb095563"
+  },
+  "dispatch": {
+    "status": "PASS",
+    "probe_id": "e22e96b7-06ec-41ae-b7ea-738b67753386",
+    "completions": 1
+  }
+}
