@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "milestone": "M0",
   "product_status": "NOT_RUN",
   "sources": [
@@ -9,23 +9,23 @@
     },
     {
       "path": "docs/企劃案/11-交付/30-里程碑與分階段開發計畫.md",
-      "sha256": "a1f6b1c29c304fc6b20cbc344254a4297ae92bf351d621d1fc8170cbfc254e51"
+      "sha256": "381509e10beb1238139fc7f803af69d455bbb159778c4bc6b9a416c7e1d74281"
     },
     {
       "path": "docs/企劃案/11-交付/31-工作拆解WBS與依賴.md",
-      "sha256": "91bf5323fa7adb55ec5d4ffaecc18cc6b1d3e112cb40d521760514fa338fd1d2"
+      "sha256": "4e6a139d986101263dc3006348351bc9dfb0224008c6d8909ba42769d10dfb72"
     },
     {
       "path": "docs/企劃案/12-附錄/37-決策待確認清單.md",
-      "sha256": "d506741bba11d215f445903add28fbcfe47c9168a9ed62a6576b685c06864fbb"
+      "sha256": "521b92c52ace3ff6225150f31f907275a262e8e25e12c05d75e55b78aec32f4a"
     },
     {
       "path": "docs/企劃案/13-專題深化/46-發布驗收矩陣與交付證據.md",
-      "sha256": "0c3289da78a3f0520f9ad73fa579597a559bcf6031e423a62b460380381bc054"
+      "sha256": "5e45c07a3ae83e1eac60acae0718ab6ce764497b55e982a4803cb4adf953ad25"
     },
     {
       "path": "docs/企劃案/15-工程/53-工程治理與開發者工作流.md",
-      "sha256": "e9bb3795eb2f5c99885b4554db9988c2d413ac86ae36d8706b24507da9759a8e"
+      "sha256": "a105414dacea2dae86d68cc5745a2ed991c467cd9947acca58a735e6617dc661"
     },
     {
       "path": "docs/企劃案/contracts/capability-registry-v1.json",
@@ -279,7 +279,7 @@
     },
     {
       "id": "D-08",
-      "description": "具名人力、預算、領域與排程",
+      "description": "單人開發已確認；預算、領域與排程",
       "owner_role": "專案負責人",
       "deadline": "M0 承諾排程前",
       "restriction": "週數只作估算，不產生承諾日期",
@@ -301,10 +301,10 @@
   "tickets": [
     {
       "id": "T01",
-      "summary": "建當期 MUST、owner／reviewer、決策與風險表",
+      "summary": "建當期 MUST、單人責任／自我檢查、決策與風險表",
       "owner_role": "專案負責人／Tech Lead",
-      "owner": null,
-      "reviewer": null,
+      "owner": "project-owner",
+      "reviewer": "project-owner",
       "wbs": [
         "WBS-01"
       ],
@@ -316,8 +316,8 @@
       "id": "T02",
       "summary": "選型相容性驗證、鎖依賴、授權盤點",
       "owner_role": "Backend／Platform",
-      "owner": null,
-      "reviewer": null,
+      "owner": "project-owner",
+      "reviewer": "project-owner",
       "wbs": [
         "WBS-01",
         "WBS-16"
@@ -332,8 +332,8 @@
       "id": "T03",
       "summary": "設計 fixture、oracle、正式盲測隔離與證據格式",
       "owner_role": "Math／QA",
-      "owner": null,
-      "reviewer": null,
+      "owner": "project-owner",
+      "reviewer": "project-owner",
       "wbs": [
         "WBS-04",
         "WBS-08"
@@ -348,8 +348,8 @@
       "id": "T04",
       "summary": "建工程骨架、CI、Compose、健康檢查與最小 Run／worker 派送",
       "owner_role": "Backend／SRE",
-      "owner": null,
-      "reviewer": null,
+      "owner": "project-owner",
+      "reviewer": "project-owner",
       "wbs": [
         "WBS-02",
         "WBS-15",
@@ -365,8 +365,8 @@
       "id": "T05",
       "summary": "實作租戶、物件版本、DB 約束與 upload adapter",
       "owner_role": "Backend／Security",
-      "owner": null,
-      "reviewer": null,
+      "owner": "project-owner",
+      "reviewer": "project-owner",
       "wbs": [
         "WBS-02",
         "WBS-15"
@@ -381,8 +381,8 @@
       "id": "T06",
       "summary": "實作最小 DSL 求值與獨立 oracle 測試",
       "owner_role": "Math／QA",
-      "owner": null,
-      "reviewer": null,
+      "owner": "project-owner",
+      "reviewer": "project-owner",
       "wbs": [
         "WBS-03",
         "WBS-04"
@@ -398,8 +398,8 @@
       "id": "T07",
       "summary": "打通合成資料 INGEST→確認→研究版本→已知公式求值",
       "owner_role": "Backend／Math／QA",
-      "owner": null,
-      "reviewer": null,
+      "owner": "project-owner",
+      "reviewer": "project-owner",
       "wbs": [
         "WBS-02",
         "WBS-03",
@@ -416,8 +416,8 @@
       "id": "T08",
       "summary": "審查缺口並建立下一輪搜尋／Evaluator 工作票",
       "owner_role": "Tech Lead／QA",
-      "owner": null,
-      "reviewer": null,
+      "owner": "project-owner",
+      "reviewer": "project-owner",
       "wbs": [
         "WBS-01"
       ],
@@ -427,5 +427,10 @@
       "deliverable": "未完成條目、決策與估算更新，不因展示成功關閉整個 M1",
       "status": "NOT_STARTED"
     }
-  ]
+  ],
+  "development": {
+    "mode": "SOLO",
+    "developer_id": "project-owner",
+    "review_method": "SELF_REVIEW"
+  }
 }

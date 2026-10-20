@@ -9,11 +9,12 @@
     "sources",
     "requirements",
     "decisions",
-    "tickets"
+    "tickets",
+    "development"
   ],
   "properties": {
     "schema_version": {
-      "const": "1.0"
+      "const": "2.0"
     },
     "milestone": {
       "const": "M0"
@@ -183,28 +184,14 @@
             "minLength": 1
           },
           "owner": {
-            "anyOf": [
-              {
-                "type": "null"
-              },
-              {
-                "type": "string",
-                "minLength": 1,
-                "pattern": "^\\S(?:.*\\S)?$"
-              }
-            ]
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^\\S(?:.*\\S)?$"
           },
           "reviewer": {
-            "anyOf": [
-              {
-                "type": "null"
-              },
-              {
-                "type": "string",
-                "minLength": 1,
-                "pattern": "^\\S(?:.*\\S)?$"
-              }
-            ]
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^\\S(?:.*\\S)?$"
           },
           "wbs": {
             "type": "array",
@@ -235,6 +222,28 @@
               "NOT_STARTED"
             ]
           }
+        }
+      }
+    },
+    "development": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "developer_id",
+        "review_method"
+      ],
+      "properties": {
+        "mode": {
+          "const": "SOLO"
+        },
+        "developer_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^\\S(?:.*\\S)?$"
+        },
+        "review_method": {
+          "const": "SELF_REVIEW"
         }
       }
     }

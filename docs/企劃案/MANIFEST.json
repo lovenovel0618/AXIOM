@@ -183,13 +183,13 @@
     },
     {
       "path": "11-交付/30-里程碑與分階段開發計畫.md",
-      "bytes": 3852,
-      "sha256": "a1f6b1c29c304fc6b20cbc344254a4297ae92bf351d621d1fc8170cbfc254e51"
+      "bytes": 4220,
+      "sha256": "381509e10beb1238139fc7f803af69d455bbb159778c4bc6b9a416c7e1d74281"
     },
     {
       "path": "11-交付/31-工作拆解WBS與依賴.md",
-      "bytes": 19917,
-      "sha256": "91bf5323fa7adb55ec5d4ffaecc18cc6b1d3e112cb40d521760514fa338fd1d2"
+      "bytes": 21139,
+      "sha256": "4e6a139d986101263dc3006348351bc9dfb0224008c6d8909ba42769d10dfb72"
     },
     {
       "path": "11-交付/32-風險登錄與決策紀錄.md",
@@ -218,8 +218,8 @@
     },
     {
       "path": "12-附錄/37-決策待確認清單.md",
-      "bytes": 3501,
-      "sha256": "d506741bba11d215f445903add28fbcfe47c9168a9ed62a6576b685c06864fbb"
+      "bytes": 3573,
+      "sha256": "521b92c52ace3ff6225150f31f907275a262e8e25e12c05d75e55b78aec32f4a"
     },
     {
       "path": "13-專題深化/42-公式搜尋與推演決策樹.md",
@@ -243,8 +243,8 @@
     },
     {
       "path": "13-專題深化/46-發布驗收矩陣與交付證據.md",
-      "bytes": 14530,
-      "sha256": "0c3289da78a3f0520f9ad73fa579597a559bcf6031e423a62b460380381bc054"
+      "bytes": 15000,
+      "sha256": "5e45c07a3ae83e1eac60acae0718ab6ce764497b55e982a4803cb4adf953ad25"
     },
     {
       "path": "13-專題深化/47-完整研究物件契約.md",
@@ -293,13 +293,13 @@
     },
     {
       "path": "15-工程/53-工程治理與開發者工作流.md",
-      "bytes": 8392,
-      "sha256": "e9bb3795eb2f5c99885b4554db9988c2d413ac86ae36d8706b24507da9759a8e"
+      "bytes": 9120,
+      "sha256": "a105414dacea2dae86d68cc5745a2ed991c467cd9947acca58a735e6617dc661"
     },
     {
       "path": "INTEGRATION.md",
-      "bytes": 13100,
-      "sha256": "ce588c8677d5b6880f13768706a27877cc0f8d309b1745558ff77f1863033068"
+      "bytes": 13573,
+      "sha256": "16af116a6b2d6b375aec481fd5f893ab44958f2612e7f6090ee58b84e22cb62f"
     },
     {
       "path": "README.md",

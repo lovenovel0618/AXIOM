@@ -44,6 +44,8 @@ DEPENDENCIES: dict[str, set[str]] = {
 class Report:
     validation_status: str = "FAIL"
     m0_ready: bool = False
+    development_mode: str | None = None
+    review_method: str | None = None
     product_status: str = "NOT_RUN"
     requirements: int = 0
     decisions: int = 0
@@ -158,7 +160,17 @@ def check_graph(graph: dict[str, set[str]]) -> None:
         remaining = {key: deps - ready for key, deps in remaining.items() if key not in ready}
 
 
-def check_ticket(row: JsonObject, authority: list[str]) -> list[str]:
+def check_solo_assignment(row: JsonObject, developer_id: str) -> None:
+    identifier = str(row["id"])
+    for role in ("owner", "reviewer"):
+        name = str(row[role])
+        if name != name.strip():
+            raise ValueError("Assignment name has surrounding whitespace: " + identifier)
+        if name != developer_id:
+            raise ValueError("SOLO ticket must use the project developer: " + identifier)
+
+
+def check_ticket(row: JsonObject, authority: list[str], developer_id: str) -> None:
     identifier = str(row["id"])
     if row["summary"] != authority[1] or row["deliverable"] != authority[3]:
         raise ValueError("Ticket authority drift: " + identifier)
@@ -167,24 +179,18 @@ def check_ticket(row: JsonObject, authority: list[str]) -> list[str]:
     expected_status = "IN_PROGRESS" if identifier == "T01" else "NOT_STARTED"
     if row["status"] != expected_status:
         raise ValueError("Ticket progress requires a separate delivery review: " + identifier)
-    for role in ("owner", "reviewer"):
-        name = row[role]
-        if name is not None and name != name.strip():
-            raise ValueError("Assignment name has surrounding whitespace: " + identifier)
-    if row["owner"] is not None and row["reviewer"] is not None and row["owner"].casefold() == row["reviewer"].casefold():
-        raise ValueError("Owner cannot review their own work: " + identifier)
-    return [f"{identifier}: {role} unassigned" for role in ("owner", "reviewer") if row[role] is None]
+    check_solo_assignment(row, developer_id)
 
 
-def check_tickets(root: Path, records: list[JsonObject]) -> list[str]:
+def check_tickets(root: Path, records: list[JsonObject], developer_id: str) -> None:
+    if developer_id != developer_id.strip():
+        raise ValueError("Developer ID has surrounding whitespace")
     indexed = index_records(records, set(DEPENDENCIES), "tickets")
     authority = table_rows(contained_path(root, WBS_PATH), r"T\d{2}")
     graph = {identifier: set(row["depends_on"]) for identifier, row in indexed.items()}
     check_graph(graph)
-    blockers: list[str] = []
     for identifier, row in indexed.items():
-        blockers.extend(check_ticket(row, authority[identifier]))
-    return blockers
+        check_ticket(row, authority[identifier], developer_id)
 
 
 def validate_baseline(root: Path, baseline_path: Path) -> Report:
@@ -200,8 +206,10 @@ def validate_baseline(root: Path, baseline_path: Path) -> Report:
         check_sources(root, baseline["sources"])
         check_requirements(root, baseline["requirements"])
         report.blockers = check_decisions(root, baseline["decisions"])
-        report.blockers.extend(check_tickets(root, baseline["tickets"]))
-        report.blockers.append("M0 closure requires decision evidence, named sign-off and remaining deliveries")
+        check_tickets(root, baseline["tickets"], baseline["development"]["developer_id"])
+        report.development_mode = baseline["development"]["mode"]
+        report.review_method = baseline["development"]["review_method"]
+        report.blockers.append("M0 closure requires decision evidence and remaining deliveries; SOLO development may continue")
         report.requirements = len(baseline["requirements"])
         report.decisions = len(baseline["decisions"])
         report.tickets = len(baseline["tickets"])

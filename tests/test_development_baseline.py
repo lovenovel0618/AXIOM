@@ -45,7 +45,9 @@ class BaselineTests(unittest.TestCase):
         self.assertFalse(report.m0_ready)
         self.assertEqual(report.product_status, "NOT_RUN")
         self.assertTrue(any("D-03" in blocker for blocker in report.blockers))
-        self.assertTrue(any("T01: owner unassigned" in blocker for blocker in report.blockers))
+        self.assertEqual(report.development_mode, "SOLO")
+        self.assertEqual(report.review_method, "SELF_REVIEW")
+        self.assertFalse(any("unassigned" in blocker for blocker in report.blockers))
 
     def test_missing_requirement(self) -> None:
         self.document["requirements"].pop()
@@ -131,11 +133,35 @@ class BaselineTests(unittest.TestCase):
                 document["tickets"][0][field] = "altered"
                 self.assert_invalid(document, "Ticket authority drift: T01")
 
-    def test_owner_cannot_self_review_or_use_blank_name(self) -> None:
-        self.document["tickets"][0].update(owner="Developer", reviewer="developer")
-        self.assert_invalid(self.document, "Owner cannot review")
-        self.document["tickets"][0].update(owner="  ", reviewer=None)
-        self.assert_invalid(self.document, "owner")
+    def test_solo_owner_can_review_their_own_code(self) -> None:
+        report = self.validate(self.document)
+        self.assertEqual(report.validation_status, "PASS", report.errors)
+        ticket = self.document["tickets"][0]
+        self.assertEqual(ticket["owner"], ticket["reviewer"])
+        self.assertEqual(report.review_method, "SELF_REVIEW")
+
+    def test_solo_assignments_cannot_invent_another_developer(self) -> None:
+        for role in ("owner", "reviewer"):
+            with self.subTest(role=role):
+                document = deepcopy(self.document)
+                document["tickets"][0][role] = "another-person"
+                self.assert_invalid(document, "SOLO ticket must use the project developer")
+
+    def test_solo_assignment_is_required_and_not_blank(self) -> None:
+        for value in (None, "", "  "):
+            with self.subTest(value=value):
+                document = deepcopy(self.document)
+                document["tickets"][0]["owner"] = value
+                self.assert_invalid(document, "owner")
+
+    def test_solo_mode_and_self_review_cannot_claim_independence(self) -> None:
+        for field, value in (("mode", "TEAM"), ("review_method", "INDEPENDENT_REVIEW")):
+            with self.subTest(field=field):
+                document = deepcopy(self.document)
+                document["development"][field] = value
+                self.assert_invalid(document, "development")
+        del self.document["development"]
+        self.assert_invalid(self.document, "development")
 
     def test_trailing_newline_cannot_bypass_name_validation(self) -> None:
         self.document["tickets"][0].update(owner="Developer\n", reviewer="Reviewer")
@@ -150,8 +176,9 @@ class BaselineTests(unittest.TestCase):
         self.assertEqual(report.errors, ["SchemaError: Invalid baseline schema"])
 
     def test_named_assignments_do_not_close_m0(self) -> None:
+        self.document["development"]["developer_id"] = "solo-developer"
         for ticket in self.document["tickets"]:
-            ticket.update(owner="Assigned developer", reviewer="Independent reviewer")
+            ticket.update(owner="solo-developer", reviewer="solo-developer")
         report = self.validate(self.document)
         self.assertEqual(report.validation_status, "PASS", report.errors)
         self.assertFalse(report.m0_ready)

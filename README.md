@@ -12,14 +12,14 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 
 ## 技術實作與檢查
 
-開發採「技術文件→代碼→測試→代碼檢測→commit／push」。目前已實作 T01 的離線開工基線檢查；技術設計與執行方式見 [技術文件](docs/技術文件/README.md)，產品服務尚未建立。
+目前由你一人開發，各技術角色由本人兼任；開發採「技術文件→代碼→測試→代碼檢測→自我檢查→commit／push」，不等待第二位程式 reviewer。目前已實作 T01 的離線開工基線檢查；技術設計與執行方式見 [技術文件](docs/技術文件/README.md)，產品服務尚未建立。
 
 ```sh
 .venv/bin/python tools/development_baseline.py
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-基線有效與 M0 就緒分開回報；未決政策與人員不自動核准。環境安裝及型別檢查方式如下。
+基線有效與 M0 就緒分開回報；單人責任已設定；未決政策及其他交付不自動核准。環境安裝及型別檢查方式如下。
 
 ## 文件檢查
 
