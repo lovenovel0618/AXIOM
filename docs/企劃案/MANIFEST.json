@@ -13,13 +13,13 @@
     },
     {
       "path": "00-總覽/01-閱讀導航與文件地圖.md",
-      "bytes": 7839,
-      "sha256": "8d02ce8555f7deb7107ccf481fd8550a4ee21ae35772a4ce360ea3a2da6d8964"
+      "bytes": 8093,
+      "sha256": "2b4d52214836c5e3fec62cfab8893712f478eb07ef8c24e82a4072e4964d514f"
     },
     {
       "path": "00-總覽/48-共用契約與文件治理.md",
-      "bytes": 8724,
-      "sha256": "e5610167ab73b091057014c30a116e1fbddbee29db0d59704a33a11049fd885d"
+      "bytes": 8734,
+      "sha256": "dd2730a3fab9ec781661d2bb599ca64d42372b278df74b5c7a257f0095be49f6"
     },
     {
       "path": "01-需求/02-需求規格與使用情境.md",
@@ -183,13 +183,13 @@
     },
     {
       "path": "11-交付/30-里程碑與分階段開發計畫.md",
-      "bytes": 3545,
-      "sha256": "7d98564abdf0e31a7e93680c2e01bbec791cf5d6e5de79bc6602b9781ee65b09"
+      "bytes": 3852,
+      "sha256": "a1f6b1c29c304fc6b20cbc344254a4297ae92bf351d621d1fc8170cbfc254e51"
     },
     {
       "path": "11-交付/31-工作拆解WBS與依賴.md",
-      "bytes": 3374,
-      "sha256": "1da72624cc2b3132fdd618d2294217528d439873f6005ab63626f30b2c4287a0"
+      "bytes": 19917,
+      "sha256": "91bf5323fa7adb55ec5d4ffaecc18cc6b1d3e112cb40d521760514fa338fd1d2"
     },
     {
       "path": "11-交付/32-風險登錄與決策紀錄.md",
@@ -244,7 +244,7 @@
     {
       "path": "13-專題深化/46-發布驗收矩陣與交付證據.md",
       "bytes": 14530,
-      "sha256": "7eaa4306868c250c74479bad22f54e6beb5808d23494776ceefe139d8103212e"
+      "sha256": "0c3289da78a3f0520f9ad73fa579597a559bcf6031e423a62b460380381bc054"
     },
     {
       "path": "13-專題深化/47-完整研究物件契約.md",
@@ -293,23 +293,23 @@
     },
     {
       "path": "15-工程/53-工程治理與開發者工作流.md",
-      "bytes": 7516,
-      "sha256": "a718d2e8a49162aea937994e5c0a70e3bf25a7b484d6c9e59fa0a5349256af79"
+      "bytes": 7837,
+      "sha256": "68036bf896c5f6c50096435a49e991dda2112331f4cf5c07f3a6244314b3df95"
     },
     {
       "path": "INTEGRATION.md",
-      "bytes": 12289,
-      "sha256": "d57c8ed81d4dccd2b09cbe3213d27d2088c6d86be86f6c79c04d318b7d957ae9"
+      "bytes": 12702,
+      "sha256": "ae6b648c40cbf6c3c49f1f64479d6fbb2cb5dc7c303170c9cfb3e312e6022e0e"
     },
     {
       "path": "README.md",
-      "bytes": 17358,
-      "sha256": "a67da527b7271eb16a9db2ee3e8da1a2cad36b8899848eba295692828026dba8"
+      "bytes": 17578,
+      "sha256": "4de7aa120cf23dcc5beb0dc1d56b1ddc514ebbdb2733aa71dc3c2189fb4afe88"
     },
     {
       "path": "REVIEW.md",
-      "bytes": 16278,
-      "sha256": "16b8f896cd89fadd54f36e891e3da5be58a7b8c6d3f3438245f7bd96c9a725b9"
+      "bytes": 16319,
+      "sha256": "0dda56e971b7c94f12631eb3a22ee18199a53559a2a3c3bf3f2ca79ec09be8fc"
     },
     {
       "path": "contracts/api-v2.examples.json",
@@ -393,8 +393,8 @@
     },
     {
       "path": "contracts/review-coverage-v1.json",
-      "bytes": 46554,
-      "sha256": "b7bdddacbca0be94b497f3a27b2f537bc7efe041ddfa8c3b3b2b27342df964bd"
+      "bytes": 46629,
+      "sha256": "c05c38f264cbbb8647f8c2e4ba94cbc7714232e1014ea21cf2b2c079aaa75540"
     },
     {
       "path": "contracts/runtime-v2.examples.json",

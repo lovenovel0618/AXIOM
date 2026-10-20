@@ -8,6 +8,8 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 
 企劃與設計規格位於 [docs/企劃案](docs/企劃案/README.md)：54 篇編號章節（AX-00～53）、整合紀錄、來源採納／全量審查清單、contracts與文件檢查工具。新增自主表徵、錯誤重審、正逆向驗證與AI紀錄／經驗演化規格，按里程碑分段交付。閱讀順序與角色路徑見 [docs/企劃案/README.md](docs/企劃案/README.md)。
 
+開發流程與第一輪開工清單見 [AX-31](docs/企劃案/11-交付/31-工作拆解WBS與依賴.md#依企劃案落地的開發流程)。
+
 ## 文件檢查
 
 ```sh

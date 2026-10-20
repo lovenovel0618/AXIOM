@@ -113,3 +113,7 @@
 ## v2.9 治理補強：錯誤碼、能力與政策登錄（2026-10-20）
 
 承接 v2.9 缺口審查，新增 contracts/error-codes-v1.json、capability-registry-v1.json 與 policy-registry-v1.json 三份單一真實來源，並新增 AX-53 工程治理與開發者工作流，定義權威、能力閘門、政策 Fail-Closed、目錄結構與 DoD。工具雙向校驗錯誤碼與 OpenAPI Error.code enum、能力與保留端點、政策與預設 BLOCKED，並將 OpenAPI 各操作的錯誤回應宣告統一。同步補全 AX-01 文件地圖與 AX-48 權威順序。文件現有54篇編號章節、57份Markdown，產品仍NOT_RUN。
+
+## 開發流程補充
+
+擴充 AX-31，將企劃轉為 M0～M7 的實作順序、WBS 對應、各階段交付／驗收、T01～T08 首輪工作票、並行依賴、交接模板與失敗回退。AX-30／53 與索引增加開工入口，AX-46 補 AC-31-05～08 追溯。修正移至 docs/企劃案 後 AX-48／53 的契約與工具路徑；未新增產品服務、未替決策簽核，產品案例維持 NOT_RUN。

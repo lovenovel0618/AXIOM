@@ -1562,7 +1562,7 @@
     {
       "chapter_id": "AX-31",
       "path": "11-交付/31-工作拆解WBS與依賴.md",
-      "review_focus": "WBS跨層依賴與交付主責",
+      "review_focus": "WBS跨層依賴與交付主責；依企劃開發步驟、首輪工作票、依賴、交付驗收與回退",
       "finding_ids": [
         "RG-20",
         "RG-24",
