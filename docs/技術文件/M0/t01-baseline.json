@@ -1,0 +1,431 @@
+{
+  "schema_version": "1.0",
+  "milestone": "M0",
+  "product_status": "NOT_RUN",
+  "sources": [
+    {
+      "path": "docs/企劃案/01-需求/02-需求規格與使用情境.md",
+      "sha256": "b0f7c25527aa78f7441fbc16952f47a33a79829c7e2add3ab21f8f282c95b113"
+    },
+    {
+      "path": "docs/企劃案/11-交付/30-里程碑與分階段開發計畫.md",
+      "sha256": "a1f6b1c29c304fc6b20cbc344254a4297ae92bf351d621d1fc8170cbfc254e51"
+    },
+    {
+      "path": "docs/企劃案/11-交付/31-工作拆解WBS與依賴.md",
+      "sha256": "91bf5323fa7adb55ec5d4ffaecc18cc6b1d3e112cb40d521760514fa338fd1d2"
+    },
+    {
+      "path": "docs/企劃案/12-附錄/37-決策待確認清單.md",
+      "sha256": "d506741bba11d215f445903add28fbcfe47c9168a9ed62a6576b685c06864fbb"
+    },
+    {
+      "path": "docs/企劃案/13-專題深化/46-發布驗收矩陣與交付證據.md",
+      "sha256": "0c3289da78a3f0520f9ad73fa579597a559bcf6031e423a62b460380381bc054"
+    },
+    {
+      "path": "docs/企劃案/15-工程/53-工程治理與開發者工作流.md",
+      "sha256": "e9bb3795eb2f5c99885b4554db9988c2d413ac86ae36d8706b24507da9759a8e"
+    },
+    {
+      "path": "docs/企劃案/contracts/capability-registry-v1.json",
+      "sha256": "c292806edc081cb1ceb9b3455abd9ded7a8d409c312d0b563f8daae2926f0415"
+    },
+    {
+      "path": "docs/企劃案/contracts/policy-registry-v1.json",
+      "sha256": "af86e5cf714ae69f70f4546af011b7ec6ce4f2109d6b8ed8ed01dc006196f74f"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "scope": "MVP_BASELINE",
+      "delivery": "M1／P0",
+      "documents": "AX-09／21／47",
+      "acceptance": "AC-09-01～04、AC-21-04～08、AC-43-03",
+      "gates": "G1/G4/G5"
+    },
+    {
+      "id": "REQ-002",
+      "scope": "MVP_BASELINE",
+      "delivery": "M2／P0",
+      "documents": "AX-10／11／38",
+      "acceptance": "AC-10-01～04、AC-11-01～04、AC-36-01",
+      "gates": "G2"
+    },
+    {
+      "id": "REQ-003",
+      "scope": "MVP_BASELINE",
+      "delivery": "M1～M2／P0",
+      "documents": "AX-05／13／28／34",
+      "acceptance": "AC-05-01～11、AC-13-01～04、AC-28-01～12",
+      "gates": "G2"
+    },
+    {
+      "id": "REQ-004",
+      "scope": "FUTURE",
+      "delivery": "M4／P1",
+      "documents": "AX-16／17／26",
+      "acceptance": "AC-16-01～04、AC-17-01～04、AC-26-04",
+      "gates": "G3/G4"
+    },
+    {
+      "id": "REQ-005",
+      "scope": "FUTURE",
+      "delivery": "M4／P1",
+      "documents": "AX-18／26",
+      "acceptance": "AC-18-01～04、AC-26-02",
+      "gates": "G3/G5"
+    },
+    {
+      "id": "REQ-006",
+      "scope": "FUTURE",
+      "delivery": "M5／P2",
+      "documents": "AX-14／39",
+      "acceptance": "AC-14-01～04、AC-39-01～04",
+      "gates": "G2/G5"
+    },
+    {
+      "id": "REQ-007",
+      "scope": "FUTURE",
+      "delivery": "M6／P3",
+      "documents": "AX-15／36",
+      "acceptance": "AC-15-01～02",
+      "gates": "G2"
+    },
+    {
+      "id": "REQ-008",
+      "scope": "FUTURE",
+      "delivery": "M7／P4",
+      "documents": "AX-15／19",
+      "acceptance": "AC-15-03～04、AC-19-01～04",
+      "gates": "G2/G3/G7"
+    },
+    {
+      "id": "REQ-009",
+      "scope": "MVP_BASELINE",
+      "delivery": "M3／P0",
+      "documents": "AX-22／23／24／35／44",
+      "acceptance": "AC-22-01～04、AC-23-01～04、AC-24-01～04、AC-35-01～04、AC-44-01～04、AC-21-09～12、AC-26-05～07",
+      "gates": "G6"
+    },
+    {
+      "id": "REQ-010",
+      "scope": "MVP_BASELINE",
+      "delivery": "M1／P0",
+      "documents": "AX-04／20／27／38／43／47",
+      "acceptance": "AC-04-01～07、AC-20-01～04、AC-27-01～04、AC-38-01～13、AC-43-01～07、AC-47-01～08",
+      "gates": "G4/G7"
+    },
+    {
+      "id": "NFR-001",
+      "scope": "MVP_BASELINE",
+      "delivery": "M1～M3／P0",
+      "documents": "AX-25／45",
+      "acceptance": "AC-25-01～04、AC-45-01～04",
+      "gates": "G7"
+    },
+    {
+      "id": "NFR-002",
+      "scope": "MVP_BASELINE",
+      "delivery": "M1～M3／P0",
+      "documents": "AX-27／45",
+      "acceptance": "AC-27-01～04、AC-45-03",
+      "gates": "G7"
+    },
+    {
+      "id": "NFR-003",
+      "scope": "MVP_BASELINE",
+      "delivery": "M1～M3／P0",
+      "documents": "AX-06／26",
+      "acceptance": "AC-06-01～03、AC-26-01～03",
+      "gates": "G5"
+    },
+    {
+      "id": "NFR-004",
+      "scope": "MVP_BASELINE",
+      "delivery": "M2／P1",
+      "documents": "AX-25",
+      "acceptance": "AC-25-02、AC-25-04",
+      "gates": "G7"
+    },
+    {
+      "id": "NFR-005",
+      "scope": "MVP_BASELINE",
+      "delivery": "M3／P1",
+      "documents": "AX-22／24／35／44",
+      "acceptance": "AC-22-01～04、AC-24-01～04、AC-35-01～04、AC-44-01～04",
+      "gates": "G6"
+    },
+    {
+      "id": "NFR-006",
+      "scope": "MVP_BASELINE",
+      "delivery": "M0／P0",
+      "documents": "AX-08／41",
+      "acceptance": "AC-08-01～04、AC-41-01～04",
+      "gates": "G7"
+    },
+    {
+      "id": "NFR-007",
+      "scope": "MVP_BASELINE",
+      "delivery": "M1／P1",
+      "documents": "AX-40",
+      "acceptance": "AC-40-01～04",
+      "gates": "G4"
+    },
+    {
+      "id": "REQ-011",
+      "scope": "MVP_BASELINE",
+      "delivery": "M1結構確認；M4／M6～M7表徵／多維",
+      "documents": "AX-09／15／49",
+      "acceptance": "AC-49-01～08",
+      "gates": "G1/G2/G4/G5/G6/G7"
+    },
+    {
+      "id": "REQ-012",
+      "scope": "MVP_BASELINE",
+      "delivery": "M1軌跡；M4 HRR／策略",
+      "documents": "AX-38／43／50",
+      "acceptance": "AC-50-01～08",
+      "gates": "G1/G2/G4/G5/G7"
+    },
+    {
+      "id": "REQ-013",
+      "scope": "MVP_BASELINE",
+      "delivery": "M1證據；M5～M7 proof／反演",
+      "documents": "AX-13／14／34／51",
+      "acceptance": "AC-51-01～08",
+      "gates": "G1/G2/G4/G5/G6"
+    },
+    {
+      "id": "REQ-014",
+      "scope": "FUTURE",
+      "delivery": "M4 capture／整理；M7訓練",
+      "documents": "AX-18／19／27／52",
+      "acceptance": "AC-52-01～08",
+      "gates": "G2/G3/G4/G5/G7"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D-01",
+      "description": "資料行數／檔案大小／並發及硬體：公開 fixture 後壓測",
+      "owner_role": "Backend/SRE",
+      "deadline": "M0 結束前凍結 M1 測試環境；M3 前凍結正式上限",
+      "restriction": "開發單檔 50 MiB、1 研究／租戶；無正式容量聲明",
+      "status": "OPEN",
+      "approved_by": null,
+      "evidence_uri": null
+    },
+    {
+      "id": "D-02",
+      "description": "Windows GPU、VRAM、模型及授權",
+      "owner_role": "平台/AI",
+      "deadline": "啟用 GPU／M4 前",
+      "restriction": "GPU 佇列停用，本地 CPU／規則；不自動外送",
+      "status": "OPEN",
+      "approved_by": null,
+      "evidence_uri": null
+    },
+    {
+      "id": "D-03",
+      "description": "正式 blind generator、題數、成功率／拒答／成本門檻",
+      "owner_role": "Math/QA",
+      "deadline": "M0 數學基準審查前",
+      "restriction": "公開 fixture 可開發；G2 正式發布 BLOCKED",
+      "status": "OPEN",
+      "approved_by": null,
+      "evidence_uri": null
+    },
+    {
+      "id": "D-04",
+      "description": "外部模型供應商條款、資料目的與例外批准",
+      "owner_role": "資料 owner/安全/AI",
+      "deadline": "任一外部請求前",
+      "restriction": "全部外部 LLM 關閉，MVP 走本地規則",
+      "status": "OPEN",
+      "approved_by": null,
+      "evidence_uri": null
+    },
+    {
+      "id": "D-05",
+      "description": "資料保留、刪除SLA、備份到期、授權、publication／disclosure政策及例外",
+      "owner_role": "資料 owner/安全/Math",
+      "deadline": "接收真實敏感資料或對外發布／釋出前",
+      "restriction": "僅公開／合成且有使用權資料；不接敏感資料；正式發布／摘要釋出及刪除維持BLOCKED",
+      "status": "OPEN",
+      "approved_by": null,
+      "evidence_uri": null
+    },
+    {
+      "id": "D-06",
+      "description": "RPO/RTO、正式錯誤率／告警／SLO 窗口",
+      "owner_role": "SRE/PM",
+      "deadline": "M3 G7 前",
+      "restriction": "每日開發備份 7 集；無正式可用性承諾；G7 正式發布 BLOCKED",
+      "status": "OPEN",
+      "approved_by": null,
+      "evidence_uri": null
+    },
+    {
+      "id": "D-07",
+      "description": "證明器與受信任公理／版本清單",
+      "owner_role": "Math/Security",
+      "deadline": "M5 前",
+      "restriction": "proof 功能停用、P0；不標 PROVEN_FORMAL",
+      "status": "OPEN",
+      "approved_by": null,
+      "evidence_uri": null
+    },
+    {
+      "id": "D-08",
+      "description": "具名人力、預算、領域與排程",
+      "owner_role": "專案負責人",
+      "deadline": "M0 承諾排程前",
+      "restriction": "週數只作估算，不產生承諾日期",
+      "status": "OPEN",
+      "approved_by": null,
+      "evidence_uri": null
+    },
+    {
+      "id": "D-09",
+      "description": "正式對外架設、域名／憑證／存取控管",
+      "owner_role": "平台/Security",
+      "deadline": "對外開放前",
+      "restriction": "本機 loopback；禁止公開部署",
+      "status": "OPEN",
+      "approved_by": null,
+      "evidence_uri": null
+    }
+  ],
+  "tickets": [
+    {
+      "id": "T01",
+      "summary": "建當期 MUST、owner／reviewer、決策與風險表",
+      "owner_role": "專案負責人／Tech Lead",
+      "owner": null,
+      "reviewer": null,
+      "wbs": [
+        "WBS-01"
+      ],
+      "depends_on": [],
+      "deliverable": "AX-02／37／46 追溯完整，未決及待估明列",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "id": "T02",
+      "summary": "選型相容性驗證、鎖依賴、授權盤點",
+      "owner_role": "Backend／Platform",
+      "owner": null,
+      "reviewer": null,
+      "wbs": [
+        "WBS-01",
+        "WBS-16"
+      ],
+      "depends_on": [
+        "T01"
+      ],
+      "deliverable": "鎖檔、SBOM、兩平台測試計畫；未測架構不標通過",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "T03",
+      "summary": "設計 fixture、oracle、正式盲測隔離與證據格式",
+      "owner_role": "Math／QA",
+      "owner": null,
+      "reviewer": null,
+      "wbs": [
+        "WBS-04",
+        "WBS-08"
+      ],
+      "depends_on": [
+        "T01"
+      ],
+      "deliverable": "公開與封存來源分開，QA 權限與 D-03 待決可見",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "T04",
+      "summary": "建工程骨架、CI、Compose、健康檢查與最小 Run／worker 派送",
+      "owner_role": "Backend／SRE",
+      "owner": null,
+      "reviewer": null,
+      "wbs": [
+        "WBS-02",
+        "WBS-15",
+        "WBS-16"
+      ],
+      "depends_on": [
+        "T02"
+      ],
+      "deliverable": "全新環境可啟動基礎服務、空庫遷移及合成任務；測重複派送與舊 attempt 拒絕",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "T05",
+      "summary": "實作租戶、物件版本、DB 約束與 upload adapter",
+      "owner_role": "Backend／Security",
+      "owner": null,
+      "reviewer": null,
+      "wbs": [
+        "WBS-02",
+        "WBS-15"
+      ],
+      "depends_on": [
+        "T04"
+      ],
+      "deliverable": "兩租戶隔離及檔案置換反例通過",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "T06",
+      "summary": "實作最小 DSL 求值與獨立 oracle 測試",
+      "owner_role": "Math／QA",
+      "owner": null,
+      "reviewer": null,
+      "wbs": [
+        "WBS-03",
+        "WBS-04"
+      ],
+      "depends_on": [
+        "T02",
+        "T03"
+      ],
+      "deliverable": "正例、惡意輸入、域錯誤及 canonical hash 報告",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "T07",
+      "summary": "打通合成資料 INGEST→確認→研究版本→已知公式求值",
+      "owner_role": "Backend／Math／QA",
+      "owner": null,
+      "reviewer": null,
+      "wbs": [
+        "WBS-02",
+        "WBS-03",
+        "WBS-08"
+      ],
+      "depends_on": [
+        "T05",
+        "T06"
+      ],
+      "deliverable": "真實 API／DB／worker 整合與重現記錄；只屬 M1 的局部切片",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "T08",
+      "summary": "審查缺口並建立下一輪搜尋／Evaluator 工作票",
+      "owner_role": "Tech Lead／QA",
+      "owner": null,
+      "reviewer": null,
+      "wbs": [
+        "WBS-01"
+      ],
+      "depends_on": [
+        "T07"
+      ],
+      "deliverable": "未完成條目、決策與估算更新，不因展示成功關閉整個 M1",
+      "status": "NOT_STARTED"
+    }
+  ]
+}

@@ -10,6 +10,17 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 
 開發流程與第一輪開工清單見 [AX-31](docs/企劃案/11-交付/31-工作拆解WBS與依賴.md#依企劃案落地的開發流程)。
 
+## 技術實作與檢查
+
+開發採「技術文件→代碼→測試→代碼檢測→commit／push」。目前已實作 T01 的離線開工基線檢查；技術設計與執行方式見 [技術文件](docs/技術文件/README.md)，產品服務尚未建立。
+
+```sh
+.venv/bin/python tools/development_baseline.py
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+基線有效與 M0 就緒分開回報；未決政策與人員不自動核准。環境安裝及型別檢查方式如下。
+
 ## 文件檢查
 
 ```sh

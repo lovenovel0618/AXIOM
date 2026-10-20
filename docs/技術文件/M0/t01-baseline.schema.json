@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "milestone",
+    "product_status",
+    "sources",
+    "requirements",
+    "decisions",
+    "tickets"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "milestone": {
+      "const": "M0"
+    },
+    "product_status": {
+      "const": "NOT_RUN"
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "enum": [
+              "docs/企劃案/01-需求/02-需求規格與使用情境.md",
+              "docs/企劃案/11-交付/30-里程碑與分階段開發計畫.md",
+              "docs/企劃案/11-交付/31-工作拆解WBS與依賴.md",
+              "docs/企劃案/12-附錄/37-決策待確認清單.md",
+              "docs/企劃案/13-專題深化/46-發布驗收矩陣與交付證據.md",
+              "docs/企劃案/15-工程/53-工程治理與開發者工作流.md",
+              "docs/企劃案/contracts/capability-registry-v1.json",
+              "docs/企劃案/contracts/policy-registry-v1.json"
+            ]
+          },
+          "sha256": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 21,
+      "maxItems": 21,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "scope",
+          "delivery",
+          "documents",
+          "acceptance",
+          "gates"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?:REQ-0(?:0[1-9]|1[0-4])|NFR-00[1-7])$"
+          },
+          "scope": {
+            "enum": [
+              "MVP_BASELINE",
+              "FUTURE"
+            ]
+          },
+          "delivery": {
+            "type": "string",
+            "minLength": 1
+          },
+          "documents": {
+            "type": "string",
+            "minLength": 1
+          },
+          "acceptance": {
+            "type": "string",
+            "minLength": 1
+          },
+          "gates": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "description",
+          "owner_role",
+          "deadline",
+          "restriction",
+          "status",
+          "approved_by",
+          "evidence_uri"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^D-0[1-9]$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owner_role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "deadline": {
+            "type": "string",
+            "minLength": 1
+          },
+          "restriction": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "const": "OPEN"
+          },
+          "approved_by": {
+            "type": "null"
+          },
+          "evidence_uri": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    "tickets": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "summary",
+          "owner_role",
+          "owner",
+          "reviewer",
+          "wbs",
+          "depends_on",
+          "deliverable",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^T0[1-8]$"
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owner_role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^\\S(?:.*\\S)?$"
+              }
+            ]
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^\\S(?:.*\\S)?$"
+              }
+            ]
+          },
+          "wbs": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^WBS-(?:0[1-9]|1[0-6])$"
+            }
+          },
+          "depends_on": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^T0[1-8]$"
+            }
+          },
+          "deliverable": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "IN_PROGRESS",
+              "NOT_STARTED"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

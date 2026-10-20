@@ -1,6 +1,12 @@
 {
-  "include": ["docs/企劃案/tools"],
-  "exclude": [".venv"],
+  "include": [
+    "docs/企劃案/tools",
+    "tools",
+    "tests"
+  ],
+  "exclude": [
+    ".venv"
+  ],
   "venvPath": ".",
   "venv": ".venv",
   "pythonVersion": "3.14",

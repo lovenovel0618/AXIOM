@@ -15,7 +15,11 @@ jobs:
           python-version: "3.14"
       - name: Install dev dependencies
         run: python -m pip install -r docs/企劃案/tools/requirements-dev.txt
-      - name: Type check docs tools
+      - name: Test development baseline tooling
+        run: python -m unittest discover -s tests -v
+      - name: Validate development baseline
+        run: python tools/development_baseline.py
+      - name: Type check Python tools and tests
         run: pyright
       - name: Validate documentation and contracts
         run: python docs/企劃案/tools/check_docs.py
