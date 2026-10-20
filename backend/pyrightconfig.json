@@ -5,7 +5,8 @@
     "manage.py",
     "runtime",
     "catalog",
-    "mathematics"
+    "mathematics",
+    "ingestion"
   ],
   "venvPath": "..",
   "venv": ".venv-backend",

@@ -103,3 +103,18 @@ docker compose exec -T web python manage.py catalog_smoke --frontend
 ```
 
 兩者均經真實HTTP登入、建資料集、PUT、查固定版本、測另一租戶與撤權，最後 business_ingest_status=NOT_RUN。--frontend另外走Vite同源代理（僅額外允許Compose內部frontend hostname，不使用萬用Host allowlist）。parser／掃描、DatasetVersion、真正Run結果提交、總租戶配額、GC／備份及公網政策尚待後續工作；不以檔案傳輸通過宣稱資料已安全解析。
+
+
+## 有界結構預覽（T07前置切片）
+
+Linux容器可針對已授權且未過期的原始upload執行預覽，五項limits必填：
+
+```sh
+docker compose exec -T web python manage.py ingest_preview ACTOR_UUID UPLOAD_UUID --max-rows 10000 --max-columns 32 --max-cell-utf8-bytes 65536 --max-decoded-bytes 8388608 --max-parse-seconds 10
+```
+
+重新查現行actor／tenant／Dataset寫入ACL，核對固定版本SHA後，清除繼承環境並交獨立Python程序解析。CSV／JSON／Parquet皆只回欄名、格式型別及列數，沒有樣本或標籤統計。程式不猜單位／特徵／時間語意。原始row序不改、空值不補、問題列不靜默丟棄。這是受信任本機CLI，不可把actor UUID當遠端登入憑證。
+
+子程序有1GiB address-space、CPU、wall deadline及輸出限制；同UID並非檔案系統／網路沙箱，不能用來跑插件。只有Linux實測，宿主macOS會拒絕此入口。原檔不可變，temporary copy在正常／解析失敗時清除；父程序crash遺留、總配額與GC仍待後續。詳細限制見[技術設計](<../docs/技術文件/M0/T07-有界匯入解析設計.md>)。
+
+可丟棄環境另執行 `docker compose exec -T web python manage.py ingest_preview_smoke`，會經真實HTTP建立三格式合成上傳再預覽。T07整張票尚未完成，complete仍503，無DatasetVersion／Artifact／業務Run；後續接完整交易及研究版本。

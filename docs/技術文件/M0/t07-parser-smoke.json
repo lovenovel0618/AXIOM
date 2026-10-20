@@ -1,0 +1,91 @@
+{
+  "scope": "T07_AUTHORIZED_METADATA_PREVIEW",
+  "status": "PASS",
+  "business_ingest_status": "NOT_RUN",
+  "results": [
+    {
+      "scope": "T07_METADATA_ONLY_PREVIEW",
+      "source_sha256": "278481a91ae8d509e7cc9dc55cf71151dcda647c6d185fb462bfc9aaeb095563",
+      "format": "CSV",
+      "limits": {
+        "max_rows": 100,
+        "max_columns": 8,
+        "max_cell_utf8_bytes": 4096,
+        "max_decoded_bytes": 65536,
+        "max_parse_seconds": 10
+      },
+      "metadata": {
+        "row_count": 2,
+        "columns": [
+          {
+            "name": "x",
+            "physical_type": "CSV_TEXT"
+          },
+          {
+            "name": "y",
+            "physical_type": "CSV_TEXT"
+          }
+        ]
+      },
+      "tenant_id": "8762dc0d-7e05-4d1a-8856-5bc089405375",
+      "upload_id": "97d2df02-8763-4f81-9661-0d1715ceceda",
+      "object_version": "cd75f3af-705b-4cf2-b437-6a3058df0580"
+    },
+    {
+      "scope": "T07_METADATA_ONLY_PREVIEW",
+      "source_sha256": "284f67204a6e9b22d4d6684ac07639379aafa410d1ed25aee734bf90596540df",
+      "format": "JSON",
+      "limits": {
+        "max_rows": 100,
+        "max_columns": 8,
+        "max_cell_utf8_bytes": 4096,
+        "max_decoded_bytes": 65536,
+        "max_parse_seconds": 10
+      },
+      "metadata": {
+        "row_count": 2,
+        "columns": [
+          {
+            "name": "x",
+            "physical_type": "JSON_SCALAR"
+          },
+          {
+            "name": "y",
+            "physical_type": "JSON_SCALAR"
+          }
+        ]
+      },
+      "tenant_id": "8762dc0d-7e05-4d1a-8856-5bc089405375",
+      "upload_id": "58b4af41-8ab6-4453-a9b6-3a1462be6ddb",
+      "object_version": "ed83d289-f3d7-4482-a8d5-7a9844199f51"
+    },
+    {
+      "scope": "T07_METADATA_ONLY_PREVIEW",
+      "source_sha256": "59174843b53a0b02104bcf9654922848295168f7f28dcb032675d907a48ba8c7",
+      "format": "PARQUET",
+      "limits": {
+        "max_rows": 100,
+        "max_columns": 8,
+        "max_cell_utf8_bytes": 4096,
+        "max_decoded_bytes": 65536,
+        "max_parse_seconds": 10
+      },
+      "metadata": {
+        "row_count": 2,
+        "columns": [
+          {
+            "name": "x",
+            "physical_type": "Int64"
+          },
+          {
+            "name": "y",
+            "physical_type": "Int64"
+          }
+        ]
+      },
+      "tenant_id": "8762dc0d-7e05-4d1a-8856-5bc089405375",
+      "upload_id": "9e2f4915-7411-4f7e-b157-65c4eb185c0e",
+      "object_version": "70eb7b20-8752-4f2d-8f96-5c0d08d588dd"
+    }
+  ]
+}

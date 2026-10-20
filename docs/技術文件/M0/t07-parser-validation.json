@@ -1,0 +1,233 @@
+{
+  "date": "2026-10-20",
+  "scope": "T07_BOUNDED_PARSER_PREREQUISITE_SLICE",
+  "ticket_t07_status": "IN_PROGRESS",
+  "review_method": "SELF_REVIEW",
+  "business_ingest_status": "NOT_RUN",
+  "product_gate_status": "NOT_RUN",
+  "tests": {
+    "postgresql_backend": 175,
+    "new_parser_and_process": 36,
+    "new_catalog": 8,
+    "engineering_tools": 74,
+    "frontend": 8,
+    "total": 257,
+    "linux_process_tests": 9,
+    "linux_skips": 0,
+    "status": "PASS"
+  },
+  "strict_pyright": {
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0
+  },
+  "sonar_python": {
+    "files": 86,
+    "diagnostics": {
+      "backend/catalog/__init__.py": [],
+      "backend/catalog/http.py": [],
+      "backend/catalog/management/__init__.py": [],
+      "backend/catalog/management/commands/__init__.py": [],
+      "backend/catalog/management/commands/catalog_smoke.py": [],
+      "backend/catalog/management/commands/grant_dataset.py": [],
+      "backend/catalog/management/commands/ingest_preview.py": [],
+      "backend/catalog/management/commands/ingest_preview_smoke.py": [],
+      "backend/catalog/management/commands/provision_account.py": [],
+      "backend/catalog/migrations/0001_initial.py": [],
+      "backend/catalog/migrations/0002_tenant_guards.py": [],
+      "backend/catalog/migrations/__init__.py": [],
+      "backend/catalog/models.py": [],
+      "backend/catalog/services.py": [],
+      "backend/catalog/storage.py": [],
+      "backend/catalog/tests/__init__.py": [],
+      "backend/catalog/tests/test_api.py": [],
+      "backend/catalog/tests/test_concurrency.py": [],
+      "backend/catalog/tests/test_preview.py": [],
+      "backend/catalog/tests/test_storage.py": [],
+      "backend/catalog/validation.py": [],
+      "backend/config/__init__.py": [],
+      "backend/config/celery.py": [],
+      "backend/config/settings.py": [],
+      "backend/config/urls.py": [],
+      "backend/config/wsgi.py": [],
+      "backend/foundation/__init__.py": [],
+      "backend/foundation/dispatch.py": [],
+      "backend/foundation/health.py": [],
+      "backend/foundation/management/__init__.py": [],
+      "backend/foundation/management/commands/__init__.py": [],
+      "backend/foundation/management/commands/dispatch_probes.py": [],
+      "backend/foundation/management/commands/probe_smoke.py": [],
+      "backend/foundation/migrations/0001_initial.py": [],
+      "backend/foundation/migrations/__init__.py": [],
+      "backend/foundation/models.py": [],
+      "backend/foundation/tasks.py": [],
+      "backend/foundation/tests/__init__.py": [],
+      "backend/foundation/tests/test_dispatch.py": [],
+      "backend/ingestion/__init__.py": [],
+      "backend/ingestion/limits.py": [],
+      "backend/ingestion/parquet_format.py": [],
+      "backend/ingestion/parser.py": [],
+      "backend/ingestion/supervisor.py": [],
+      "backend/ingestion/tabular.py": [],
+      "backend/ingestion/tests.py": [],
+      "backend/ingestion/text_formats.py": [],
+      "backend/ingestion/worker.py": [],
+      "backend/manage.py": [],
+      "backend/mathematics/__init__.py": [],
+      "backend/mathematics/compiler.py": [],
+      "backend/mathematics/evaluator.py": [],
+      "backend/mathematics/normalization.py": [],
+      "backend/mathematics/smoke.py": [],
+      "backend/mathematics/syntax.py": [],
+      "backend/mathematics/tests.py": [],
+      "backend/runtime/__init__.py": [],
+      "backend/runtime/contracts.py": [],
+      "backend/runtime/control.py": [],
+      "backend/runtime/control_fixture.py": [],
+      "backend/runtime/management/__init__.py": [],
+      "backend/runtime/management/commands/__init__.py": [],
+      "backend/runtime/management/commands/runtime_smoke.py": [],
+      "backend/runtime/migrations/0001_initial.py": [],
+      "backend/runtime/migrations/0002_document_guards.py": [],
+      "backend/runtime/migrations/0003_runtimerun_runtime_run_tenant_identity.py": [],
+      "backend/runtime/migrations/__init__.py": [],
+      "backend/runtime/models.py": [],
+      "backend/runtime/records.py": [],
+      "backend/runtime/tasks.py": [],
+      "backend/runtime/tests/__init__.py": [],
+      "backend/runtime/tests/test_control.py": [],
+      "docs/%E4%BC%81%E5%8A%83%E6%A1%88/tools/check_docs.py": [],
+      "docs/%E4%BC%81%E5%8A%83%E6%A1%88/tools/contract_scenarios.py": [],
+      "tests/test_benchmark_partition.py": [],
+      "tests/test_compatibility_probe.py": [],
+      "tests/test_development_baseline.py": [],
+      "tests/test_isolation_probe.py": [],
+      "tests/test_public_oracle.py": [],
+      "tools/benchmark/access_child.py": [],
+      "tools/benchmark/isolation_probe.py": [],
+      "tools/benchmark/partition.py": [],
+      "tools/benchmark/public_oracle.py": [],
+      "tools/compatibility/celery_app.py": [],
+      "tools/compatibility/python_probe.py": [],
+      "tools/development_baseline.py": []
+    }
+  },
+  "environment": {
+    "host_python": "3.13.15",
+    "compose_python": "3.13.16",
+    "compose_platform": "Linux arm64",
+    "polars": "1.44.2",
+    "node": "24.22.0"
+  },
+  "runtime_boundaries": {
+    "address_space_bytes": 1073741824,
+    "address_space_is_rss": false,
+    "stdout_bytes": 524288,
+    "cpu_limit": "max_parse_seconds + 1",
+    "parent_wall_seconds": "max_parse_seconds",
+    "file_size_limit": 0,
+    "core_limit": 0,
+    "file_descriptors_limit": 64,
+    "input_bytes": 52428800,
+    "file_mode": "0400",
+    "directory_mode": "0700",
+    "inherited_secrets": false,
+    "filesystem_sandbox": false,
+    "network_sandbox": false,
+    "arbitrary_plugin_execution": false,
+    "crash_gc": "NOT_IMPLEMENTED"
+  },
+  "smokes": {
+    "authorized_http_upload_then_preview": [
+      "CSV",
+      "JSON",
+      "PARQUET"
+    ],
+    "foundation": "PASS",
+    "runtime": "PASS_CONTROL_ONLY",
+    "catalog_direct": "PASS",
+    "catalog_frontend": "PASS",
+    "complete_http_status": 503
+  },
+  "sources": [
+    {
+      "path": ".github/workflows/product-check.yml",
+      "sha256": "3cdf701dfcdd107f7cd416ffa785fbdb81994b6a6ab7d4cd977c4e495460476a"
+    },
+    {
+      "path": "backend/catalog/management/commands/ingest_preview.py",
+      "sha256": "11595ca183e4b80d2c181d547e99809db59e4516a91ab29ed01e9c5dedff0176"
+    },
+    {
+      "path": "backend/catalog/management/commands/ingest_preview_smoke.py",
+      "sha256": "974791b21c89e69dd7b2a0b98fa5e3709e3011c14b31f2d2d1069611104e4828"
+    },
+    {
+      "path": "backend/catalog/models.py",
+      "sha256": "568339e6f5a83808fd51f99303fd4bbda66d65623f7f92bd7c217b8d23547b4b"
+    },
+    {
+      "path": "backend/catalog/services.py",
+      "sha256": "1a254552e4a5d9d0a88c2581d16464d34442640c4093f5cd443c5a21b48de24b"
+    },
+    {
+      "path": "backend/catalog/storage.py",
+      "sha256": "af5d2f2dbc350f82a19215a5971e6c192d45b6ba5c531327862b1de3a6961032"
+    },
+    {
+      "path": "backend/catalog/tests/test_preview.py",
+      "sha256": "0eeeda64223b077d8a0a1f6c0554e601d3e5c549d170b2b963fcfbb1cef1a98b"
+    },
+    {
+      "path": "backend/ingestion/__init__.py",
+      "sha256": "9ffe766a9a0b543bff0ad32adf9e2776edc6baa1a535c590f759123b73b09617"
+    },
+    {
+      "path": "backend/ingestion/limits.py",
+      "sha256": "3f7de26cc1fba1ef23b811b61f88d7f8e654d4df8c03cf0f83bd1b555f89e886"
+    },
+    {
+      "path": "backend/ingestion/parquet_format.py",
+      "sha256": "f8ffd3712a897cde0da8887ffdcbffdba10674f12262a996ed06e37f7908577e"
+    },
+    {
+      "path": "backend/ingestion/parser.py",
+      "sha256": "009ecd477bb0b28a729152d529b3b6efd6f7915fa6acb42ddeb90b0f35a99761"
+    },
+    {
+      "path": "backend/ingestion/supervisor.py",
+      "sha256": "5090745d5a23f03181227860ce59db871fd021bd907eb326e20b4b57ee1ac60e"
+    },
+    {
+      "path": "backend/ingestion/tabular.py",
+      "sha256": "6ac6453cca7763fc84b43c86ad7fa8e57ffe879953afe9786c61bfdbeb5a8096"
+    },
+    {
+      "path": "backend/ingestion/tests.py",
+      "sha256": "8af98149eaa904f4ebe1454b5f9675adabc44d4d1e23f4b1c8578835ea729a5a"
+    },
+    {
+      "path": "backend/ingestion/text_formats.py",
+      "sha256": "47c181e57cb61fd342509fb6e3c3ef205bbb8606d1368fbd47c4402d431501ae"
+    },
+    {
+      "path": "backend/ingestion/worker.py",
+      "sha256": "fee540ae8ee6cf9ec48ae888d8eecb3a13ae6512e94d94731eb53372f04d73eb"
+    },
+    {
+      "path": "backend/pyrightconfig.json",
+      "sha256": "78087217a119c66a238d00f97525fed70dbf3babc050dd1cffe076de329a204b"
+    },
+    {
+      "path": "backend/requirements.lock",
+      "sha256": "c676c50c8a73a7c5a2048621f4f9a1e4af65f26be43b7df043469dffc7610658"
+    },
+    {
+      "path": "docs/技術文件/M0/T07-有界匯入解析設計.md",
+      "sha256": "06d8f36ab9f1663f1263cd3802c58aa0e794acfcb0c39daf4d9465eeb2ea9b17"
+    }
+  ]
+}
