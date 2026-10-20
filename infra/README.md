@@ -18,6 +18,7 @@ docker compose up --build -d --wait --wait-timeout 120
 curl --fail http://127.0.0.1:18000/health/ready/
 curl --fail http://127.0.0.1:15173/health/ready/
 docker compose run --rm web python manage.py probe_smoke
+docker compose run --rm web python manage.py runtime_smoke
 ```
 
 開啟 <http://127.0.0.1:15173>；前端 ready 經 Vite 代理回 web。ready 檢查資料表及 Redis；probe_smoke 必須由常駐 relay 首次派送、worker 完成後再故意重播兩次訊息，完成計數仍為一。沒有 worker／relay 時 smoke 會逾時失敗。
@@ -25,12 +26,12 @@ docker compose run --rm web python manage.py probe_smoke
 ## 測試與代碼檢測
 
 ```sh
-docker compose run --rm web python manage.py test foundation.tests -v 2
+docker compose run --rm web python manage.py test foundation.tests runtime.tests -v 2
 docker compose run --rm web python manage.py makemigrations --check --dry-run
 docker compose run --rm frontend sh -c 'npm run typecheck && npm test && npm run build'
 ```
 
-Python 測試使用實際 PostgreSQL 的 `test_axiom`，需要開發帳號有建立測試資料庫權限；只在這組本機專用資料庫執行。不要把 Compose 指向正式資料庫。依賴版本、hash 與映像 digest 由 T02 沿用；backend 的 dev lock 引用 T02 runtime lock 及文件 dev requirements，再加入 Django／Celery／Redis 型別套件，CI 安裝時校驗 hash。
+Python 測試使用實際 PostgreSQL 的 `test_axiom`，需要開發帳號有建立測試資料庫權限；只在這組本機專用資料庫執行。不要把 Compose 指向正式資料庫。依賴版本、hash 與映像 digest 由 T02 沿用；backend runtime lock 引用 T02 runtime lock 並加入 offline schema 驗證器；dev lock 引用 backend runtime lock 及文件 dev requirements，再加入 Django／Celery／Redis 型別套件，CI 安裝時校驗 hash。
 
 本機編輯器與根目錄 Pyright 共用 `.venv-backend`（VS Code 已提供 defaultInterpreterPath，既有手動選取的解譯器需切換一次）：
 
@@ -59,3 +60,9 @@ docker compose down
 一般 `down` 保留資料。`down --volumes` 會刪除本 Compose 專案資料，只能用於確定可丟棄的測試環境。變更既有 volume 的 DB 密碼時需另做資料庫帳號密碼更新，不能只改 .env。測試可用 `-p axiom-t04-check` 建獨立專案，結束後只清除此專案。
 
 private 網路不提供外連；只有 web／frontend 額外接 edge bridge 以提供 loopback 入口。edge 不等於正式 Solver 出站沙箱；web 開發程序仍具有此 bridge 的外連能力。worker 非 root、只聽 foundation queue，尚未達到正式任務權限隔離。正式部署、TLS、備份恢復、SLO 與 WSL2 仍待驗收。
+
+## Run／Attempt 控制核心
+
+`runtime_smoke` 透過同一常駐 relay／worker 跑合成 INGEST 根控制流程，最後 CANCELLED，明確回 business_ingest_status=NOT_RUN。它不讀 upload，不產 DatasetVersion；只有控制基線，不提供 HTTP API。輸入與政策快照為 DB immutable，Attempt 保留重試歷史；根期限與 queue timeout 由 DB 時間及協調器裁決。技術設計見 [Run／Attempt 控制核心](<../docs/技術文件/M0/T04-Run與Attempt控制核心.md>)。
+
+ready 另確認 foundation 與 runtime 兩個 migration（含不可變 trigger）已套用。尚無 tenant 認證；服務函式的 tenant UUID 必須由可信呼叫者提供，不能當成正式 ACL。控制 worker 與未來實際 INGEST handler 分開，本輪 DB 約束禁止將 control_only 直接關閉。

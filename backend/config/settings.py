@@ -6,7 +6,7 @@ if len(SECRET_KEY) < 50:
     raise ValueError("AXIOM_SECRET_KEY must contain at least 50 characters")
 DEBUG = False
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "web", "testserver"]
-INSTALLED_APPS = ["foundation"]
+INSTALLED_APPS = ["foundation", "runtime"]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",

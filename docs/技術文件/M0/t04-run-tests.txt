@@ -1,0 +1,83 @@
+ Container axiom-t04-run-postgres-1 Running
+ Container axiom-t04-run-redis-1 Running
+ Container axiom-t04-run-postgres-1 Waiting
+ Container axiom-t04-run-postgres-1 Healthy
+ Container axiom-t04-run-migrate-1 Starting
+ Container axiom-t04-run-migrate-1 Started
+ Container axiom-t04-run-migrate-1 Waiting
+ Container axiom-t04-run-redis-1 Waiting
+ Container axiom-t04-run-redis-1 Healthy
+ Container axiom-t04-run-migrate-1 Exited
+ Container axiom-t04-run-web-run-d8f5e15cdcba Creating
+ Container axiom-t04-run-web-run-d8f5e15cdcba Created
+Creating test database for alias 'default' ('test_axiom')...
+Found 56 test(s).
+Operations to perform:
+  Apply all migrations: foundation, runtime
+Running migrations:
+  Applying foundation.0001_initial... OK
+  Applying runtime.0001_initial... OK
+  Applying runtime.0002_document_guards... OK
+System check identified no issues (0 silenced).
+test_completed_probe_not_redispatched (foundation.tests.test_dispatch.DispatchTests.test_completed_probe_not_redispatched) ... ok
+test_database_rejects_done_without_effect (foundation.tests.test_dispatch.DispatchTests.test_database_rejects_done_without_effect) ... ok
+test_database_rejects_running_without_lease (foundation.tests.test_dispatch.DispatchTests.test_database_rejects_running_without_lease) ... ok
+test_database_rejects_second_completion (foundation.tests.test_dispatch.DispatchTests.test_database_rejects_second_completion) ... ok
+test_duplicate_delivery_has_one_effect (foundation.tests.test_dispatch.DispatchTests.test_duplicate_delivery_has_one_effect) ... ok
+test_expired_result_rejected_before_and_after_requeue (foundation.tests.test_dispatch.DispatchTests.test_expired_result_rejected_before_and_after_requeue) ... ok
+test_failed_readiness_hides_exception_details (foundation.tests.test_dispatch.DispatchTests.test_failed_readiness_hides_exception_details) ... ok
+test_health_checks_live_dependencies (foundation.tests.test_dispatch.DispatchTests.test_health_checks_live_dependencies) ... ok
+test_health_endpoints_reject_mutation (foundation.tests.test_dispatch.DispatchTests.test_health_endpoints_reject_mutation) ... ok
+test_multiple_relay_passes_are_idempotent (foundation.tests.test_dispatch.DispatchTests.test_multiple_relay_passes_are_idempotent) ... ok
+test_parallel_claims_have_one_winner (foundation.tests.test_dispatch.DispatchTests.test_parallel_claims_have_one_winner) ... ok
+test_publish_failure_retains_pending_record (foundation.tests.test_dispatch.DispatchTests.test_publish_failure_retains_pending_record) ... ok
+test_readiness_rejects_missing_control_migration (foundation.tests.test_dispatch.DispatchTests.test_readiness_rejects_missing_control_migration) ... ok
+test_rolled_back_creation_not_visible_to_relay (foundation.tests.test_dispatch.DispatchTests.test_rolled_back_creation_not_visible_to_relay) ... ok
+test_valid_lease_not_requeued (foundation.tests.test_dispatch.DispatchTests.test_valid_lease_not_requeued) ... ok
+test_wrong_generation_cannot_claim (foundation.tests.test_dispatch.DispatchTests.test_wrong_generation_cannot_claim) ... ok
+test_wrong_generation_cannot_complete (foundation.tests.test_dispatch.DispatchTests.test_wrong_generation_cannot_complete) ... ok
+test_wrong_token_cannot_complete (foundation.tests.test_dispatch.DispatchTests.test_wrong_token_cannot_complete) ... ok
+test_depth_and_bytes_are_bounded (runtime.tests.test_control.CanonicalTests.test_depth_and_bytes_are_bounded) ... ok
+test_fixed_unicode_byte_vector (runtime.tests.test_control.CanonicalTests.test_fixed_unicode_byte_vector) ... ok
+test_float_nonfinite_large_integer_and_surrogate_rejected (runtime.tests.test_control.CanonicalTests.test_float_nonfinite_large_integer_and_surrogate_rejected) ... ok
+test_attempt_projection_requires_both_tenant_and_run (runtime.tests.test_control.ControlTests.test_attempt_projection_requires_both_tenant_and_run) ... ok
+test_broker_failure_cannot_skip_other_queue_deadlines (runtime.tests.test_control.ControlTests.test_broker_failure_cannot_skip_other_queue_deadlines) ... ok
+test_cancel_fences_before_stop_confirmation (runtime.tests.test_control.ControlTests.test_cancel_fences_before_stop_confirmation) ... ok
+test_cancel_queued_then_late_delivery_cannot_claim (runtime.tests.test_control.ControlTests.test_cancel_queued_then_late_delivery_cannot_claim) ... ok
+test_cancel_revision_and_terminal_rejections (runtime.tests.test_control.ControlTests.test_cancel_revision_and_terminal_rejections) ... ok
+test_child_input_stays_disabled (runtime.tests.test_control.ControlTests.test_child_input_stays_disabled) ... ok
+test_claim_cancel_race_never_resurrects (runtime.tests.test_control.ControlTests.test_claim_cancel_race_never_resurrects) ... ok
+test_control_scope_cannot_enable_business_execution_in_database (runtime.tests.test_control.ControlTests.test_control_scope_cannot_enable_business_execution_in_database) ... ok
+test_coordinator_expires_queue_without_worker (runtime.tests.test_control.ControlTests.test_coordinator_expires_queue_without_worker) ... ok
+test_cross_tenant_claim_and_read_rejected (runtime.tests.test_control.ControlTests.test_cross_tenant_claim_and_read_rejected) ... ok
+test_cross_tenant_create_rejected (runtime.tests.test_control.ControlTests.test_cross_tenant_create_rejected) ... ok
+test_database_blocks_event_update (runtime.tests.test_control.ControlTests.test_database_blocks_event_update) ... ok
+test_database_blocks_run_identity_mutation (runtime.tests.test_control.ControlTests.test_database_blocks_run_identity_mutation) ... ok
+test_database_blocks_snapshot_update_and_delete (runtime.tests.test_control.ControlTests.test_database_blocks_snapshot_update_and_delete) ... ok
+test_duplicate_delivery_has_one_attempt (runtime.tests.test_control.ControlTests.test_duplicate_delivery_has_one_attempt) ... ok
+test_enqueue_conflicting_input_rejected (runtime.tests.test_control.ControlTests.test_enqueue_conflicting_input_rejected) ... ok
+test_enqueue_replay_preserves_one_run_and_event (runtime.tests.test_control.ControlTests.test_enqueue_replay_preserves_one_run_and_event) ... ok
+test_event_failure_rolls_back_attempt_and_run (runtime.tests.test_control.ControlTests.test_event_failure_rolls_back_attempt_and_run) ... ok
+test_expired_attempt_is_fenced_before_recovery (runtime.tests.test_control.ControlTests.test_expired_attempt_is_fenced_before_recovery) ... ok
+test_full_records_and_public_projection_match_contracts (runtime.tests.test_control.ControlTests.test_full_records_and_public_projection_match_contracts) ... ok
+test_heartbeat_keeps_revision_and_event_cursor (runtime.tests.test_control.ControlTests.test_heartbeat_keeps_revision_and_event_cursor) ... ok
+test_heartbeats_cannot_extend_root_deadline (runtime.tests.test_control.ControlTests.test_heartbeats_cannot_extend_root_deadline) ... ok
+test_input_hash_mismatch_rejected (runtime.tests.test_control.ControlTests.test_input_hash_mismatch_rejected) ... ok
+test_mutating_callers_input_does_not_mutate_saved_snapshot (runtime.tests.test_control.ControlTests.test_mutating_callers_input_does_not_mutate_saved_snapshot) ... ok
+test_outer_transaction_rollback_leaves_no_queue_or_event (runtime.tests.test_control.ControlTests.test_outer_transaction_rollback_leaves_no_queue_or_event) ... ok
+test_parallel_claim_has_one_winner (runtime.tests.test_control.ControlTests.test_parallel_claim_has_one_winner) ... ok
+test_plugin_config_and_backoff_are_verified (runtime.tests.test_control.ControlTests.test_plugin_config_and_backoff_are_verified) ... ok
+test_queue_timeout_is_terminal_without_attempt (runtime.tests.test_control.ControlTests.test_queue_timeout_is_terminal_without_attempt) ... ok
+test_retry_exhaustion_closes_root (runtime.tests.test_control.ControlTests.test_retry_exhaustion_closes_root) ... ok
+test_retry_keeps_first_start_and_snapshot (runtime.tests.test_control.ControlTests.test_retry_keeps_first_start_and_snapshot) ... ok
+test_retry_retains_history_and_rejects_old_attempt (runtime.tests.test_control.ControlTests.test_retry_retains_history_and_rejects_old_attempt) ... ok
+test_schema_rejects_extra_field (runtime.tests.test_control.ControlTests.test_schema_rejects_extra_field) ... ok
+test_unrepresentable_timing_rejected_before_creation (runtime.tests.test_control.ControlTests.test_unrepresentable_timing_rejected_before_creation) ... ok
+test_wrong_worker_and_generation_are_fenced (runtime.tests.test_control.ControlTests.test_wrong_worker_and_generation_are_fenced) ... ok
+test_zero_wall_budget_never_means_unlimited (runtime.tests.test_control.ControlTests.test_zero_wall_budget_never_means_unlimited) ... ok
+
+----------------------------------------------------------------------
+Ran 56 tests in 3.587s
+
+OK
+Destroying test database for alias 'default' ('test_axiom')...

@@ -2,7 +2,7 @@
 
 AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探索）是數據驅動的公式發現、獨立驗證、推演與經驗學習平台。
 
-目前已有設計規格、工程工具與 T04 本機 Django／Vue／Compose 基礎切片，可測健康檢查及合成任務派送。正式研究 API／Run 尚未完成；企劃驗收案例維持 NOT_RUN，工程測試通過不等同產品整體驗收。
+目前已有設計規格、工程工具與 T04 本機 Django／Vue／Compose 基礎切片，可測健康檢查及合成任務派送。已加入持久 Run／Attempt 的 INGEST 根控制流程；完整研究 API／Run 任務樹尚未完成；企劃驗收案例維持 NOT_RUN，工程測試通過不等同產品整體驗收。
 
 ## 企劃案
 
@@ -43,12 +43,13 @@ macOS（開發）與 Windows 11 + WSL2（架設）共用同一份 Docker Compose
 ```sh
 docker compose up --build -d --wait --wait-timeout 120
 docker compose run --rm web python manage.py probe_smoke
+docker compose run --rm web python manage.py runtime_smoke
 ```
 
 開啟 <http://127.0.0.1:15173>。產品交易測試與前端檢查：
 
 ```sh
-docker compose run --rm web python manage.py test foundation.tests -v 2
+docker compose run --rm web python manage.py test foundation.tests runtime.tests -v 2
 docker compose run --rm frontend sh -c 'npm run typecheck && npm test && npm run build'
 ```
 

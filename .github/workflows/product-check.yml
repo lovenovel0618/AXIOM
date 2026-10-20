@@ -20,9 +20,10 @@ jobs:
           .venv-backend/bin/python -m pip install --require-hashes -r backend/requirements-dev.lock
       - run: .venv-backend/bin/pyright -p backend
       - run: docker compose -p axiom-ci up --build -d --wait --wait-timeout 120
-      - run: docker compose -p axiom-ci run --rm web python manage.py test foundation.tests -v 2
+      - run: docker compose -p axiom-ci run --rm web python manage.py test foundation.tests runtime.tests -v 2
       - run: docker compose -p axiom-ci run --rm web python manage.py makemigrations --check --dry-run
       - run: docker compose -p axiom-ci run --rm web python manage.py probe_smoke
+      - run: docker compose -p axiom-ci run --rm web python manage.py runtime_smoke
       - name: Loopback HTTP and frontend proxy smoke
         run: |
           curl --silent --show-error --output /dev/null --connect-timeout 5 --max-time 15 --fail http://127.0.0.1:18000/health/ready/

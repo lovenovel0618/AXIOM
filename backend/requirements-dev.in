@@ -1,4 +1,4 @@
--r ../tools/compatibility/requirements.lock
+-r requirements.lock
 django-stubs>=5.2,<5.3
 -r ../docs/企劃案/tools/requirements-dev.txt
 celery-types

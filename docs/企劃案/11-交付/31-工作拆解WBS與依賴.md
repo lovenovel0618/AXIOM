@@ -173,7 +173,7 @@ uv pip sync --python .venv-backend/bin/python --require-hashes backend/requireme
 .venv-backend/bin/python docs/企劃案/tools/check_docs.py
 ```
 
-首次建立 `.venv` 的方式見 [索引](<../README.md>)。T04 本機 Compose、migration、健康檢查與合成派送 smoke 已補入根目錄 README 及 infra/README.md。T04 目前交付基礎切片；內部 DispatchProbe 只驗證派送／世代 fencing，不是正式 Run／Attempt，正式 Run 契約與 API／E2E 尚待完成，不因基礎切片通過關閉整張 T04 或 M0。
+首次建立 `.venv` 的方式見 [索引](<../README.md>)。T04 本機 Compose、migration、健康檢查與合成派送 smoke 已補入根目錄 README 及 infra/README.md。T04 目前交付基礎切片；內部 DispatchProbe 只驗證派送／世代 fencing，不是正式 Run／Attempt，後續已在 backend/runtime 補上契約一致的 INGEST 根 Run／Attempt 控制基線（不可變輸入、有限重試、心跳、epoch 取消與事件）；真正 INGEST／租戶及 API／E2E 依 T05／T07 接入。T04 工程基線可銜接 T05，但完整 AX-38 與 M0 尚未關閉。
 
 ## 每張開發工作票與交接程序
 

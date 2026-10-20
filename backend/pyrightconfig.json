@@ -1,5 +1,12 @@
 {
-  "include": ["config", "foundation", "manage.py"],
-  "venvPath": "..", "venv": ".venv-backend",
-  "pythonVersion": "3.13", "typeCheckingMode": "strict"
+  "include": [
+    "config",
+    "foundation",
+    "manage.py",
+    "runtime"
+  ],
+  "venvPath": "..",
+  "venv": ".venv-backend",
+  "pythonVersion": "3.13",
+  "typeCheckingMode": "strict"
 }

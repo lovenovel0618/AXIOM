@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand
 from kombu.exceptions import OperationalError
 from foundation.dispatch import relay
 from foundation.tasks import publish_probe
+from runtime.tasks import relay_control
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         while True:
             try:
+                relay_control()
                 relay(publish_probe)
             except OperationalError:
                 if options["once"]:

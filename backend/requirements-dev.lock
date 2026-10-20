@@ -4,31 +4,32 @@ amqp==5.4.1 \
     --hash=sha256:79a9c0ab70e71745667f127ff80666894a734c26236b6f33149c964b096f0b20 \
     --hash=sha256:ac2b816a14a380ed10c5ebbf85a334fd68111fa476496867a5ccd2fd09926d5e
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   kombu
 asgiref==3.12.1 \
     --hash=sha256:59dcb51c272ad209d59bed5708a64a333083e86017d7fcdd67498eeab7784340 \
     --hash=sha256:fe386d1c2bff7259ea95929266d12a8cf9a8b5a1c2598402967d8792e7a7c094
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   django
 attrs==26.1.0 \
     --hash=sha256:c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309 \
     --hash=sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32
     # via
     #   -r backend/../docs/企劃案/tools/requirements.txt
+    #   -r backend/requirements.lock
     #   jsonschema
     #   referencing
 billiard==4.3.1 \
     --hash=sha256:2c7075283191d9c0add66cf8fca8e06ba599e75fe7319b67186759f8877dfdaf \
     --hash=sha256:c88559b306ee5dc93f8d5f843d07da15d795d67af26720d14ee9d09f09eb0b22
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   celery
 celery==5.6.3 \
     --hash=sha256:0808f42f80909c4d5833202360ffafb2a4f83f4d8e23e1285d926610e9a7afa6 \
     --hash=sha256:177006bd2054b882e9f01be59abd8529e88879ef50d7918a7050c5a9f4e12912
-    # via -r backend/../tools/compatibility/requirements.lock
+    # via -r backend/requirements.lock
 celery-types==0.26.0 \
     --hash=sha256:eb9da76f461786091970df466ec647d9a27956399852542cb6cab9309970f950 \
     --hash=sha256:fa318136fdad83f83f1531deecd9fe664b5dfffff29f3c31e9120a46b8e3908f
@@ -321,7 +322,7 @@ click==8.5.0 \
     --hash=sha256:255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360 \
     --hash=sha256:ba0d2089de75ea0310e2dde03160e6ca10009947fb95a182f9b54021bb272e34
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   celery
     #   click-didyoumean
     #   click-plugins
@@ -330,19 +331,19 @@ click-didyoumean==0.3.1 \
     --hash=sha256:4f82fdff0dbe64ef8ab2279bd6aa3f6a99c3b28c05aa09cbfc07c9d7fbb5a463 \
     --hash=sha256:5c4bb6007cfea5f2fd6583a2fb6701a22a41eb98957e63d0fac41c10e7c3117c
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   celery
 click-plugins==1.1.1.2 \
     --hash=sha256:008d65743833ffc1f5417bf0e78e8d2c23aab04d9745ba817bd3e71b0feb6aa6 \
     --hash=sha256:d7af3984a99d243c131aa1a828331e7630f4a88a9741fd05c927b204bcf92261
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   celery
 click-repl==0.4.1 \
     --hash=sha256:5cb10881d4c5ebaa8695eceb69911af3062ee78342812b713564b17aad333eb5 \
     --hash=sha256:c32a1cf6f95e5bd6e92076f81ce24eafd33f2f0ffb0135887e335b8e446d1c0b
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   celery
 cryptography==50.0.2 \
     --hash=sha256:0ddc924c04591c2811ca024d62ecad4f7f6f08af8939c211438f48a16bd23602 \
@@ -411,7 +412,7 @@ django==5.2.18 \
     --hash=sha256:461c5dd06d2ea16bd5ca37d3f46e4def1d6b0fe7588c6f4e2119517bb0af8b2d \
     --hash=sha256:92ed81d500be6408ecd704d7bd1366c534f30427bffcc63c5fefb129561aec7c
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   django-stubs
     #   django-stubs-ext
     #   djangorestframework
@@ -426,7 +427,7 @@ django-stubs-ext==6.1.2 \
 djangorestframework==3.18.3 \
     --hash=sha256:446a9b352e7eff630421ab3f2328bd2401b109a9470afa4a31189994911ed030 \
     --hash=sha256:8544bb674846731b1e3c9b309236ee1dc412905a0aa725be2ec193ca950a7d12
-    # via -r backend/../tools/compatibility/requirements.lock
+    # via -r backend/requirements.lock
 idna==3.20 \
     --hash=sha256:a7db850025b95ded1eae8a46181a1a6c56c92c96f0e2b005d9ff8dc0210cab44 \
     --hash=sha256:ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c
@@ -438,6 +439,7 @@ jsonschema==4.23.0 \
     --hash=sha256:fbadb6f8b144a8f8cf9f0b89ba94501d143e50411a1278633f56a7acf7fd5566
     # via
     #   -r backend/../docs/企劃案/tools/requirements.txt
+    #   -r backend/requirements.lock
     #   openapi-schema-validator
     #   openapi-spec-validator
 jsonschema-path==0.3.4 \
@@ -451,13 +453,14 @@ jsonschema-specifications==2025.9.1 \
     --hash=sha256:b540987f239e745613c7a9176f3edb72b832a4ac465cf02712288397832b5e8d
     # via
     #   -r backend/../docs/企劃案/tools/requirements.txt
+    #   -r backend/requirements.lock
     #   jsonschema
     #   openapi-schema-validator
 kombu==5.6.2 \
     --hash=sha256:8060497058066c6f5aed7c26d7cd0d3b574990b09de842a8c5aaed0b92cc5a55 \
     --hash=sha256:efcfc559da324d41d61ca311b0c64965ea35b4c55cc04ee36e55386145dace93
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   celery
 lazy-object-proxy==1.13.0 \
     --hash=sha256:042284eea98fc08b9d347e43b7c258e6c862b4c03d5881d536bc61d48e6be88e \
@@ -531,7 +534,7 @@ mpmath==1.3.0 \
     --hash=sha256:7a28eb2a9774d00c7bc92411c19a89209d5da7c4c9a9e227be8330a23a25b91f \
     --hash=sha256:a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   sympy
 nodeenv==1.11.0 \
     --hash=sha256:3ce8fe5b71d16e8af7039ca65257354100bc772965d6bc549070649e53b1b146 \
@@ -607,7 +610,7 @@ numpy==2.5.4 \
     --hash=sha256:fe4d21ab149f15e4e6043dfb0de87e6e5f34ac176cde83060e9802981fca2ac2 \
     --hash=sha256:ffa6ce09a1c6a08e9667dd9c97aa0b14184e8d18f2a14b78b2a2328c9147f076
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   scipy
 openapi-schema-validator==0.6.3 \
     --hash=sha256:f37bace4fc2a5d96692f4f8b31dc0f8d7400fd04f3a937798eaf880d425de6ee \
@@ -623,7 +626,7 @@ packaging==26.3 \
     --hash=sha256:94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79 \
     --hash=sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   kombu
 pathable==0.4.4 \
     --hash=sha256:5ae9e94793b6ef5a4cbe0a7ce9dbbefc1eec38df253763fd0aeeacf2762dbbc2 \
@@ -634,7 +637,7 @@ pathable==0.4.4 \
 polars==1.44.2 \
     --hash=sha256:1bb331f17a40d9d931101533dcd33637b66edc61eb377b07020dac16a0f0377b \
     --hash=sha256:86c8e26b6c2de8c8d344bb910b74dfc47b118ac3fe0f19b44909467990a0b281
-    # via -r backend/../tools/compatibility/requirements.lock
+    # via -r backend/requirements.lock
 polars-runtime-32==1.44.2 \
     --hash=sha256:10c0c695a418407617b5159db7d9a21074a733e4c6d61275b6762f25cb31ca99 \
     --hash=sha256:1fd536720668ba203a16a20b08cd6b23057e407a0279cf36b2f35f879d6e3208 \
@@ -646,18 +649,18 @@ polars-runtime-32==1.44.2 \
     --hash=sha256:d51040d3ab40157f6db3c62be59cab5b80fb3c8d158924769c4982a1c8eef730 \
     --hash=sha256:e0fd43720c8222ae39919c8ff891636d53b352706087120e62f83544dd3ff782
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   polars
 prompt-toolkit==3.0.53 \
     --hash=sha256:01c0891d7f9237d5e339f7d3e42cdae80b7534abb1c7c0e3352efba6231492f2 \
     --hash=sha256:9ec8a0ad96d5c56148b3f914aa79c1564c3fde5d2e6b876e7bc327e353cf8fa6
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   click-repl
 psycopg==3.3.6 \
     --hash=sha256:a1db9f7148b06a28606767efaca51fa6f9398c5c0a3810519be69d7000bdb631 \
     --hash=sha256:c081f2250df751a943036e42db6df4571c66cd0aabe8291a7a506512b12007d2
-    # via -r backend/../tools/compatibility/requirements.lock
+    # via -r backend/requirements.lock
 psycopg-binary==3.3.6 ; implementation_name != 'pypy' \
     --hash=sha256:05a83ac9fd52b9bca7cb5ab04b3691163170bd16f53defa27216ea3aa07ee781 \
     --hash=sha256:0a52991594ac4db888c7d39bccef331797e30cb31a95cae02cf2607f83a42dc2 \
@@ -725,7 +728,7 @@ psycopg-binary==3.3.6 ; implementation_name != 'pypy' \
     --hash=sha256:f87dbdc42e78ee0f7ea180c03f8c78e80a949e373066629bd90fefff10552dff \
     --hash=sha256:fa34eb47969297471db7b7f193622c7e3ee839ec05abd05f1fe104d5b1b1dcf4 \
     --hash=sha256:fdccb3a0e184b03e9baa673b15a809cf36c339c85dbda0ebc25a698846dfbee8
-    # via -r backend/../tools/compatibility/requirements.lock
+    # via -r backend/requirements.lock
 pycparser==3.11 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy' \
     --hash=sha256:51d5a8ba2be0bbe440b99d2112604c95bbbc3c2748a64260186c541e1729cd80 \
     --hash=sha256:d875f09c3507d00e1aba0eecc6dcadc1352f30fff09dc6bff2f1c2935e97c2bc
@@ -738,7 +741,7 @@ python-dateutil==2.9.0.post0 \
     --hash=sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3 \
     --hash=sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   celery
 pyyaml==6.0.3 \
     --hash=sha256:00c4bdeba853cc34e7dd471f16b4114f4162dc03e6b7afcc2128711f0eca823c \
@@ -820,12 +823,13 @@ pyyaml==6.0.3 \
 redis==6.4.0 \
     --hash=sha256:b01bc7282b8444e28ec36b261df5375183bb47a07eb9c603f284e89cbc5ef010 \
     --hash=sha256:f0544fa9604264e9464cdf4814e7d4830f74b165d52f2a330a760a88dd248b7f
-    # via -r backend/../tools/compatibility/requirements.lock
+    # via -r backend/requirements.lock
 referencing==0.36.2 \
     --hash=sha256:df2e89862cd09deabbdba16944cc3f10feb6b3e6f18e902f7cc25609a34775aa \
     --hash=sha256:e8699adbbf8b5c7de96d8ffa0eb5c158b3beafce084968e2ea8bb08c6794dcd0
     # via
     #   -r backend/../docs/企劃案/tools/requirements.txt
+    #   -r backend/requirements.lock
     #   jsonschema
     #   jsonschema-path
     #   jsonschema-specifications
@@ -973,6 +977,7 @@ rpds-py==2026.9.1 \
     --hash=sha256:fe5ad0664ec772b02c45859041aa17655709cced7a31005817fbbbd988c25567
     # via
     #   -r backend/../docs/企劃案/tools/requirements.txt
+    #   -r backend/requirements.lock
     #   jsonschema
     #   referencing
 scipy==1.18.1 \
@@ -1037,25 +1042,25 @@ scipy==1.18.1 \
     --hash=sha256:f29633129f9fa7e88a3f0fca835de2d030bfc9643f7799e1a0c46cee24d38fc7 \
     --hash=sha256:f55fa87b6c612ecd6b058f167c53231b1d14e412efe361d3d6e38b3631c73218 \
     --hash=sha256:fdaf5ea890a6183d0565f51a61799d67081bd5b1cf03c5f4b3fd3732108625c9
-    # via -r backend/../tools/compatibility/requirements.lock
+    # via -r backend/requirements.lock
 six==1.17.0 \
     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
     --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
     # via
     #   -r backend/../docs/企劃案/tools/requirements.txt
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   python-dateutil
     #   rfc3339-validator
 sqlparse==0.6.0 \
     --hash=sha256:113c35c75365ab9cc9c7231d68c6428fb11c085fc8e9eb1ad659b7ddbf6cd2b9 \
     --hash=sha256:b861c0288ce2fa56209a9a6412d2e066ac664b3873b89c26c9d8415e8e32996f
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   django
 sympy==1.14.0 \
     --hash=sha256:d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517 \
     --hash=sha256:e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5
-    # via -r backend/../tools/compatibility/requirements.lock
+    # via -r backend/requirements.lock
 types-cffi==2.1.0.20260827 \
     --hash=sha256:53d1604771ad4ff09a1a90d6f6980ab36bebb6c39476dcc5bbf4896fa510d736 \
     --hash=sha256:851b6ffa5b962c577a2330b98ac0b60c56c904d086726276946388f58a0cffaf
@@ -1085,7 +1090,7 @@ typing-extensions==4.16.0 \
     --hash=sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5
     # via
     #   -r backend/../docs/企劃案/tools/requirements-dev.txt
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   celery-types
     #   click-repl
     #   django-stubs
@@ -1095,7 +1100,7 @@ tzdata==2026.5 \
     --hash=sha256:8cc73c0a0bfca7dbfa59235d60b2eff82231dee33f53d206db1acd9173cfc0a7 \
     --hash=sha256:b683bd1b6659ddcd810ff02ad09ba821d4bf1065072805063eb35c49617905ac
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   django
     #   kombu
     #   psycopg
@@ -1104,7 +1109,7 @@ tzlocal==5.4.4 \
     --hash=sha256:8dbb8660838688a7b6ba4fed31d18dedf842afb4d47ca050d6d891c2c15f3be4 \
     --hash=sha256:aae09f0126a8a86fa736be266eb4a471380d26a0de3bc14844e7821fee3e2a15
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   celery
 urllib3==2.8.0 \
     --hash=sha256:0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3 \
@@ -1116,7 +1121,7 @@ vine==5.1.0 \
     --hash=sha256:40fdf3c48b2cfe1c38a49e9ae2da6fda88e4794c810050a728bd7413811fb1dc \
     --hash=sha256:8b62e981d35c41049211cf62a0a1242d8c1ee9bd15bb196ce38aefd6799e61e0
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   amqp
     #   celery
     #   kombu
@@ -1151,5 +1156,5 @@ wcwidth==0.9.2 \
     --hash=sha256:ee1fd0db9d9fd711a70f3e7765e0e04c05d26982fa05361456163062549d7da4 \
     --hash=sha256:f2f7b3bba5a5d5f31fc350fd36ce5b84b693c83b7eb95ee630b720da5a5ce06f
     # via
-    #   -r backend/../tools/compatibility/requirements.lock
+    #   -r backend/requirements.lock
     #   prompt-toolkit

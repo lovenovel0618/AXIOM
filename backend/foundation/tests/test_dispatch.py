@@ -116,3 +116,8 @@ class DispatchTests(TransactionTestCase):
     def test_health_endpoints_reject_mutation(self) -> None:
         self.assertEqual(self.client.post("/health/live/").status_code, 405)
         self.assertEqual(self.client.post("/health/ready/").status_code, 405)
+
+    def test_readiness_rejects_missing_control_migration(self) -> None:
+        with patch("foundation.health.MigrationRecorder.applied_migrations", return_value={}):
+            response = self.client.get("/health/ready/")
+        self.assertEqual(response.status_code, 503)
