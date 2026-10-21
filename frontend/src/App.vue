@@ -1,36 +1,85 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { checkReadiness, type HealthStatus } from './health'
+import { isAuthenticated, logOut } from './lib/session'
 
-const status = ref<HealthStatus | 'loading'>('loading')
-async function refresh(): Promise<void> {
-  status.value = 'loading'
-  status.value = await checkReadiness()
+const router = useRouter()
+const readiness = ref<HealthStatus | 'loading'>('loading')
+
+async function refreshReadiness(): Promise<void> {
+  readiness.value = 'loading'
+  readiness.value = await checkReadiness()
 }
-onMounted(refresh)
+
+async function handleLogout(): Promise<void> {
+  await logOut()
+  await router.push({ name: 'login' })
+}
+
+onMounted(refreshReadiness)
 </script>
 
 <template>
-  <main>
-    <p class="eyebrow">AXIOM · 本機開發環境</p>
-    <h1>研究工作台</h1>
-    <p>工程基礎已建立，研究功能將依開發流程逐步開放。</p>
-    <section aria-label="服務狀態" aria-live="polite" :aria-busy="status === 'loading'">
-      <h2>服務狀態</h2>
-      <p v-if="status === 'loading'">正在檢查服務…</p>
-      <p v-else-if="status === 'ready'">服務已就緒</p>
-      <p v-else>服務暫時無法使用，請稍後重試。</p>
-      <button :disabled="status === 'loading'" @click="refresh">重新檢查</button>
-    </section>
-  </main>
+  <div class="shell">
+    <header>
+      <div class="brand">AXIOM 研究工作台</div>
+      <nav aria-label="主要導覽">
+        <RouterLink v-if="isAuthenticated" :to="{ name: 'datasets' }">資料集</RouterLink>
+        <button v-if="isAuthenticated" type="button" @click="handleLogout">登出</button>
+      </nav>
+    </header>
+    <main>
+      <RouterView />
+    </main>
+    <footer aria-live="polite" :aria-busy="readiness === 'loading'">
+      <span class="mono">服務狀態：</span>
+      <span v-if="readiness === 'loading'">檢查中…</span>
+      <span v-else-if="readiness === 'ready'">已就緒</span>
+      <span v-else>暫時無法使用</span>
+      <button type="button" :disabled="readiness === 'loading'" @click="refreshReadiness">重新檢查</button>
+    </footer>
+  </div>
 </template>
 
 <style scoped>
-main { max-width: 44rem; margin: 10vh auto; padding: 2rem; font-family: system-ui, sans-serif; color: #18332e; }
-.eyebrow { font-size: 0.85rem; letter-spacing: 0.08em; color: #47685d; }
-h1 { font-size: 2.5rem; }
-section { margin-top: 3rem; padding: 1.5rem; background: #eef5f1; border-radius: 1rem; }
-h2 { font-size: 1.1rem; }
-button { padding: 0.65rem 1rem; border: 1px solid #47685d; border-radius: 0.4rem; background: white; cursor: pointer; }
-button:disabled { cursor: wait; opacity: 0.6; }
+.shell {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+}
+.brand {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+main {
+  flex: 1;
+  padding: 1.5rem 0;
+}
+footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
 </style>

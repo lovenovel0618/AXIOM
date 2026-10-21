@@ -86,6 +86,8 @@ docker compose exec web python manage.py provision_account dino local --role ADM
 | UploadSession.put_url | 只可PUT原bytes，攜帶required_headers及session／CSRF；簽章不放URL query |
 | POST /api/v2/uploads/{id}/complete | 驗目前ACL、checksum與固定版本；預設503，明確啟用後依下節建立真正Run |
 
+前台已提供可用 MVP（`frontend/src/views/DatasetsView.vue`）：於 <http://127.0.0.1:15173/datasets> 登入後建立資料集、以檔案選擇器上傳 CSV／JSON／PARQUET 並查看版本列表。前端自行以 `crypto.subtle` 計算 SHA-256，將 `put_url` 轉為相對路徑沿用同源 proxy，並在每個 POST／PUT 帶 `X-CSRFToken`。complete 回503時畫面顯示「匯入功能可能尚未啟用」，不以假資料填充版本；版本由非同步 worker 產生，完成後按「重新載入」即可看到。
+
 Dataset／Upload建立回應可依相同key與payload重讀；不同payload回409，撤權後不回放舊回應。逾期簽章需新session，不能藉重播延長。列表cursor綁actor／租戶並重新查ACL。管理員需明確grant才能讀他人的資料集，可用受控命令：
 
 ```sh
@@ -233,6 +235,6 @@ docker compose exec -T web python manage.py profile_smoke
 
 ## 開發服務保留與型別註解規範
 
-預設專案為 axiom-dev；提供使用者操作的服務完成工作後保留運行與資料 volume，不使用 down --volumes 清理。只有明確命名的可丟棄測試專案可以清理。`docker compose ps`、`curl --fail http://127.0.0.1:18000/health/ready/` 與 `curl --fail http://127.0.0.1:15173/health/ready/` 必須實際成功。前端目前為工程骨架，尚無完整研究工作台；健康檢查成功不表示所有企劃功能已完成。
+預設專案為 axiom-dev；提供使用者操作的服務完成工作後保留運行與資料 volume，不使用 down --volumes 清理。只有明確命名的可丟棄測試專案可以清理。`docker compose ps`、`curl --fail http://127.0.0.1:18000/health/ready/` 與 `curl --fail http://127.0.0.1:15173/health/ready/` 必須實際成功。前端已有可用 MVP（登入、建立資料集、上傳檔案、版本列表）；完整研究工作台仍屬後續里程碑，健康檢查成功不表示所有企劃功能已完成。
 
 要讓重建後仍啟用本機 INGEST／PROFILE，將上述四個 AXIOM_INGEST_ENABLED／AXIOM_IMPORT_LIMITS／AXIOM_PROFILE_ENABLED／AXIOM_PROFILE_LIMITS 寫入既有未追蹤 .env，另設 `COMPOSE_PROFILES=ingest,profile`，即可用一般 `docker compose up --build -d --wait` 同時啟動兩個 worker。不要輸出或提交 .env。詳細型別邊界與中文註解要求見 [本輪規範](<../docs/技術文件/M0/T07-服務常駐與型別註解規範.md>)；本機及 CI 皆執行 `python tools/typing_policy.py` 與 Pyright strict，既有 Any 額度不會自動授予新檔。
