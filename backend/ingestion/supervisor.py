@@ -55,8 +55,8 @@ def collect_output(process: subprocess.Popen[bytes], seconds: int) -> bytes:
     return bytes(output)
 
 
-def _run(directory: Path, format_name: str, limits: ImportLimits) -> bytes:
-    worker = Path(__file__).with_name("worker.py").resolve()
+def _run(directory: Path, format_name: str, limits: ImportLimits, *, research: bool = False) -> bytes:
+    worker = Path(__file__).with_name("research_worker.py" if research else "worker.py").resolve()
     environment = {"POLARS_MAX_THREADS": "1", "LANG": "C.UTF-8"}
     with subprocess.Popen([sys.executable, "-I", "-B", str(worker), format_name, json.dumps(limits.document())],
                           cwd=directory, env=environment, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
@@ -112,3 +112,24 @@ def inspect_bytes(content: bytes, format_name: str, limits: ImportLimits) -> dic
         raw = _run(directory, format_name, limits)
     return {"scope": "T07_METADATA_ONLY_PREVIEW", "source_sha256": hashlib.sha256(content).hexdigest(),
             "format": format_name, "limits": limits.document(), "metadata": decode_result(raw, limits)}
+
+
+def inspect_research(content: bytes, format_name: str, limits: ImportLimits, config: dict[str, Any]) -> dict[str, Any]:
+    from ingestion.research import MAX_ROWS, model_for
+    from ingestion.research_protocol import decode_report
+    from runtime.contracts import canonical_bytes
+    require(sys.platform == "linux", DEPENDENCY)
+    require(1 <= len(content) <= MAX_INPUT, LIMIT_CODE)
+    require(format_name in {"CSV", "JSON", "PARQUET"}, "UNSUPPORTED_MEDIA_TYPE")
+    require(config["metadata"]["row_count"] <= min(MAX_ROWS, limits.max_rows), LIMIT_CODE)
+    model_for(config)
+    request = canonical_bytes(config)
+    require(len(request) <= MAX_OUTPUT, LIMIT_CODE)
+    with tempfile.TemporaryDirectory(prefix="axiom-research-") as temporary:
+        directory = Path(temporary)
+        for name, value in (("input", content), ("request", request)):
+            path = directory / name
+            path.write_bytes(value)
+            path.chmod(0o400)
+        raw = _run(directory, format_name, limits, research=True)
+    return decode_report(raw, config)

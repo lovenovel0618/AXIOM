@@ -44,6 +44,7 @@ jobs:
           docker compose -p axiom-ci --profile ingest up -d --wait --wait-timeout 120
           docker compose -p axiom-ci exec -T web python manage.py business_ingest_smoke
           docker compose -p axiom-ci exec -T web python manage.py research_draft_smoke
+          docker compose -p axiom-ci exec -T web python manage.py research_inspection_smoke
       - name: Logs and cleanup
         if: always()
         run: |

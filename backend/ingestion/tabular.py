@@ -1,10 +1,13 @@
 """Shared bounded counters; metadata contains no observed cell values."""
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from typing import Any
 from ingestion.limits import ImportLimits, LIMIT_CODE, require
+
+
+RowObserver = Callable[[int, list[str], Sequence[object]], None]
 
 
 @dataclass
@@ -14,6 +17,7 @@ class Table:
     physical_types: list[str]
     rows: int = 0
     decoded: int = 0
+    observer: RowObserver | None = None
 
     def __post_init__(self) -> None:
         require(bool(self.names))
@@ -35,6 +39,8 @@ class Table:
         require(self.rows < self.limits.max_rows, LIMIT_CODE)
         for value in values:
             self.account(scalar_text(value))
+        if self.observer is not None:
+            self.observer(self.rows, self.names, values)
         self.rows += 1
 
     def metadata(self) -> dict[str, Any]:

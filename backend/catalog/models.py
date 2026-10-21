@@ -217,3 +217,20 @@ class ResearchVersion(models.Model):
     class Meta:
         indexes = [models.Index(fields=["research", "-created_at", "-id"], name="research_version_page")]
         constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="research_version_tenant_identity")]
+
+
+class ResearchInspection(models.Model):
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    research_version: models.ForeignKey[ResearchVersion, ResearchVersion] = models.ForeignKey(ResearchVersion, on_delete=models.PROTECT)
+    research_version_id: UUID
+    actor: models.ForeignKey[Account, Account] = models.ForeignKey(Account, on_delete=models.PROTECT)
+    actor_id: UUID
+    request_hash: models.CharField[str, str] = models.CharField(max_length=64)
+    configuration: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["research_version", "request_hash"], name="research_inspection_request_unique")]

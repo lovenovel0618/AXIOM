@@ -169,3 +169,32 @@ docker compose exec -T web python manage.py research_draft_smoke
 它會經真實 HTTP 上傳含中文欄名的合成資料，等待 queue／worker 成功，確認語意與 cm→m 宣告、建立及重開 DRAFT、重送同 key、驗證 PROFILE 503 及撤權後 404。它不驗證物理單位宣告的真實性，也不宣稱資料品質或研究結論通過。
 
 升級需先排空舊程序，再執行 catalog 0005／0006 migration 並重新啟動同一版本的 web／worker／relay；readiness 要求 0006。新增表不修改既有版本內容。當期 Research／ResearchVersion 整列不可變，後續狀態機需專屬 migration。若要降級，先停寫並備份，將相關草稿與 provenance／冪等關係納入恢復；直接 reverse 到 0004 會移除新增研究表，不能當無損回退。
+
+
+## 研究預檢與已知公式（T07第四切片）
+
+既有 DRAFT 可由受信任本機 CLI 檢查：
+
+```sh
+docker compose exec -T web python manage.py research_inspect ACTOR_UUID RESEARCH_VERSION_UUID --max-rows 100 --max-columns 8 --max-cell-utf8-bytes 4096 --max-decoded-bytes 65536 --max-parse-seconds 10
+```
+
+可另加 `--dsl-file /tmp/known-formula.json --parameters '{"a":"2","b":"1"}'`；檔案路徑位於容器內，沒有任意程式／shell 執行。DSL 形狀沿既有 dsl-v1 schema；模型變數、七維單位、輸出量綱及 domain 必須完全對應研究，參數是固定十進位字串且不得缺漏或多出。模型不做擬合或搜尋，請提供已固定的已知公式。
+
+只接受當期支援的 IID／EXPLICIT DRAFT、owner 身分與目前 Dataset 寫授權，User／Account 必須啟用。actor UUID 僅供本機可信操作，不是 HTTP 認證。4096 列為此預檢硬上限，ImportLimits 可再縮小。各格式重讀不可變 raw、校驗 SHA 及固定 metadata，先切分後轉 canonical SI，不補值、不丟列；只有 fit 統計與 fit／development 模型評分。任一 selected input／target 不合法或不在域內，回 quality=BLOCKED、通用碼，統計／評分均 null，沒有 final 列號、原值或分區錯誤計數。
+
+CSV／JSON 十進位觀測以精確值轉換；Parquet float 保留二進位原值。canonical 值再轉 float64（53 bits），溢位、非零下溢及域邊界捨入越界皆阻擋，不放寬有理邊界。fit 的 unique_x 指實際 float64 輸入的不同值數；target min/max/mean/IQR 為轉換後精確有理數字串。模型錯誤列保留在 selected_count／failed_count，coverage 降低且 MAE／RMSE 為 null，不能用成功子集冒充完整通過。
+
+結果與設定／模型／參數、研究快照、source／environment hash 保存於私有不可變 ResearchInspection 表。相同環境／設定重送回同記錄，仍重新授權、驗 raw；執行後撤權、source 掉包、environment 改變都不能提交。並行相同設定可能重複做有界計算，但唯一鍵只保存一筆；這不構成 exactly-once 計算或累計成本帳本。measured_execution_usage 為當次 CLI 子程序與父程序執行期間的 CPU／wall 上取整及 process high-water 保守和，不含前置 source I/O、compiler 與 DB 提交；cache 回既有實測，不表示重新執行耗用零成本。
+
+沒有新增普通 HTTP 報告入口或 Artifact，避免繞過 owner 私有研究。CLI 輸出不是完整 PROFILE Run／QualityReport／FIT_ONLY StructureAssessment，不更新 DRAFT、quality_report_id 或研究任務用量。正式 validate 仍 503，研究帳本、正式封存、fit-only 結構與事件／任務狀態機仍需後續接入。固定 worker 只有資源限制，尚非多租戶 FS／網路 sandbox，不用於未核准的敏感或正式 blind 來源。
+
+可丟棄且已啟用 ingest profile 的環境可執行：
+
+```sh
+docker compose exec -T web python manage.py research_inspection_smoke
+```
+
+它會走真 HTTP 建立三格式合成上傳及研究，執行本機 CLI，獨立核對 y=2x+1 經比例轉換後在 fit／development 的 coverage=1、MAE／RMSE=0，另測品質遮罩、快取重送與撤權。測試仍不是正式 blind 或產品驗收。
+
+升級需套 catalog 0007／0008 並重建同版本程序，readiness 要求 0008。新表經同租戶複合 FK、研究／來源快照 guard 及 UPDATE／DELETE 阻擋保護。回退先停寫、備份；reverse 移除 Inspection 表會失去本批記錄，不能當無損回退。

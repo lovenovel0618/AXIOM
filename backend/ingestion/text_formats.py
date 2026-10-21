@@ -1,12 +1,13 @@
 """Streaming CSV and flat JSON records with strict shape and JSON semantics."""
 from collections.abc import Iterator
+from decimal import Decimal
 import csv
 import io
 import json
 import math
 from typing import Any, TextIO
 from ingestion.limits import ImportLimits, LIMIT_CODE, require, ImportRejected
-from ingestion.tabular import Table
+from ingestion.tabular import RowObserver, Table
 
 
 def _lines(source: TextIO, limits: ImportLimits) -> Iterator[str]:
@@ -19,13 +20,13 @@ def _lines(source: TextIO, limits: ImportLimits) -> Iterator[str]:
         yield line
 
 
-def csv_table(source: io.BufferedReader, limits: ImportLimits) -> Table:
+def csv_table(source: io.BufferedReader, limits: ImportLimits, observer: RowObserver | None = None) -> Table:
     csv.field_size_limit(limits.max_cell_utf8_bytes)
     reader = csv.reader(_lines(io.TextIOWrapper(source, encoding="utf-8", newline=""), limits), strict=True)
     header = next(reader, None)
     if header is None:
         raise ImportRejected("INVALID_SCHEMA")
-    table = Table(limits, header, ["CSV_TEXT"] * len(header))
+    table = Table(limits, header, ["CSV_TEXT"] * len(header), observer=observer)
     for values in reader:
         table.append(values)
     return table
@@ -49,6 +50,11 @@ def _float(text: str) -> float:
     return result
 
 
+def _decimal(text: str) -> Decimal:
+    _float(text)  # Preserve the accepted finite range of the original JSON parser.
+    return Decimal(text)
+
+
 def _characters(source: TextIO) -> Iterator[str]:
     while block := source.read(4096):
         yield from block
@@ -58,7 +64,7 @@ def _nonspace(characters: Iterator[str]) -> str:
     return next((char for char in characters if char not in " \t\r\n"), "")
 
 
-def _record(characters: Iterator[str], limits: ImportLimits) -> dict[str, Any]:
+def _record(characters: Iterator[str], limits: ImportLimits, exact_json: bool) -> dict[str, Any]:
     parts = io.StringIO()
     parts.write("{")
     quoted, escaped, size = False, False, 1
@@ -76,20 +82,20 @@ def _record(characters: Iterator[str], limits: ImportLimits) -> dict[str, Any]:
         elif not quoted and char in "[{":
             raise ImportRejected("INVALID_SCHEMA")
         elif not quoted and char == "}":
-            result: dict[str, Any] = json.loads(parts.getvalue(), object_pairs_hook=_pairs, parse_float=_float, parse_constant=_constant)
+            result: dict[str, Any] = json.loads(parts.getvalue(), object_pairs_hook=_pairs, parse_float=_decimal if exact_json else _float, parse_constant=_constant)
             return result
     raise ImportRejected("INVALID_SCHEMA")
 
 
-def json_table(source: io.BufferedReader, limits: ImportLimits) -> Table:
+def json_table(source: io.BufferedReader, limits: ImportLimits, observer: RowObserver | None = None, exact_json: bool = False) -> Table:
     characters = _characters(io.TextIOWrapper(source, encoding="utf-8"))
     require(_nonspace(characters) == "[")
     table: Table | None = None
     while True:
         require(_nonspace(characters) == "{")
-        row = _record(characters, limits)
+        row = _record(characters, limits, exact_json)
         if table is None:
-            table = Table(limits, list(row), ["JSON_SCALAR"] * len(row))
+            table = Table(limits, list(row), ["JSON_SCALAR"] * len(row), observer=observer)
         require(row.keys() == set(table.names))
         table.append([row[name] for name in table.names])
         separator = _nonspace(characters)
