@@ -16,8 +16,16 @@ import {
   type ResearchVersion,
   type ResearchVersionStatus,
 } from '../api/research'
-import { isTerminal, type Run, type RunStatus } from '../api/runs'
+import { type Run, type RunStatus } from '../api/runs'
 import ResearchVersionForm from '../components/ResearchVersionForm.vue'
+import { getArtifactContent } from '../api/artifacts'
+import {
+  describeRemaining,
+  parseQualityReport,
+  QUALITY_LABELS,
+  READINESS_LABELS,
+  type QualityReport,
+} from '../lib/evidence'
 import { describeError } from '../lib/messages'
 import { client } from '../lib/session'
 
@@ -29,6 +37,8 @@ const versions = ref<ResearchVersion[]>([])
 const selected = ref<Research | null>(null)
 const selectedVersion = ref<ResearchVersion | null>(null)
 const runs = ref<Run[]>([])
+const quality = ref<QualityReport | null>(null)
+const qualityLoading = ref(false)
 const name = ref('')
 const loading = ref(false)
 const triggering = ref(false)
@@ -116,9 +126,11 @@ async function reloadVersions(): Promise<void> {
 async function pickVersion(version: ResearchVersion): Promise<void> {
   selectedVersion.value = version
   runs.value = []
+  quality.value = null
   error.value = ''
   notice.value = ''
   await reloadRuns()
+  await loadQuality()
 }
 
 async function reloadRuns(): Promise<void> {
@@ -131,12 +143,35 @@ async function reloadRuns(): Promise<void> {
   }
 }
 
+/** 品質報告是遮罩產物；未產生時不顯示任何推測內容。 */
+async function loadQuality(): Promise<void> {
+  const version = selectedVersion.value
+  quality.value = null
+  const report = version?.quality_report_id ?? null
+  if (report === null) return
+  qualityLoading.value = true
+  try {
+    const content = await getArtifactContent<unknown>(client, report)
+    const parsed = parseQualityReport(content)
+    if (parsed === null) {
+      error.value = '品質報告產物格式不符，無法顯示；請重新載入。'
+      return
+    }
+    quality.value = parsed
+  } catch (cause) {
+    error.value = describeError(cause)
+  } finally {
+    qualityLoading.value = false
+  }
+}
+
 async function refreshVersion(): Promise<void> {
   const version = selectedVersion.value
   if (version === null) return
   try {
     selectedVersion.value = await getResearchVersion(client, version.id)
     await reloadRuns()
+    await loadQuality()
   } catch (cause) {
     error.value = describeError(cause)
   }
@@ -152,8 +187,8 @@ async function trigger(): Promise<void> {
     const fresh = await getResearchVersion(client, version.id)
     selectedVersion.value = fresh
     const run = await validateDraft(client, fresh.id, fresh.revision)
-    notice.value = `已排入 PROFILE 任務（狀態 ${runStatusLabel[run.status]}）。`
-    await reloadRuns()
+    notice.value = `已排入 PROFILE 任務（狀態 ${runStatusLabel[run.status]}）；完成後按「重新載入」可看到品質報告與封存登記。`
+    await refreshVersion()
   } catch (cause) {
     error.value = describeError(cause)
     await refreshVersion()
@@ -273,6 +308,51 @@ onMounted(async () => {
             <dd class="mono">{{ selectedVersion.evaluation_policy_hash }}</dd>
           </dl>
 
+          <div class="panel-head">
+            <h3>證據</h3>
+            <button type="button" :disabled="qualityLoading" @click="loadQuality">重新載入品質報告</button>
+          </div>
+          <dl class="facts">
+            <dt>正式封存測試</dt>
+            <dd class="mono">
+              {{ selectedVersion.observation_split.sealed_test_id ?? '尚未登記（版本只能停在草稿）' }}
+            </dd>
+            <dt>品質報告產物</dt>
+            <dd class="mono">{{ selectedVersion.quality_report_id ?? '尚未產生' }}</dd>
+            <dt>結構評估產物</dt>
+            <dd class="mono">{{ selectedVersion.structure_assessment_artifact_id ?? '尚未產生（品質未通過時不產生）' }}</dd>
+          </dl>
+          <p v-if="selectedVersion.quality_report_id === null" class="muted">
+            尚未執行 PROFILE，因此沒有品質報告與封存登記。
+          </p>
+          <p v-else-if="qualityLoading" class="muted">讀取品質報告中…</p>
+          <p v-else-if="quality === null" class="muted">品質報告內容無法解析或無法取得。</p>
+          <dl v-else class="facts">
+            <dt>品質</dt>
+            <dd>
+              {{ QUALITY_LABELS[quality.quality] }}（{{ quality.quality }}）
+              <span v-if="quality.blockingCode !== null" class="muted">／代碼 {{ quality.blockingCode }}</span>
+            </dd>
+            <dt>就緒狀態</dt>
+            <dd>{{ READINESS_LABELS[quality.readiness] }}（{{ quality.readiness }}）</dd>
+            <dt>待完成事項</dt>
+            <dd v-if="quality.remaining.length === 0">無</dd>
+            <dd v-else>
+              <ul class="remaining">
+                <li v-for="code in quality.remaining" :key="code">
+                  {{ describeRemaining(code) }}<span class="muted mono">（{{ code }}）</span>
+                </li>
+              </ul>
+            </dd>
+            <dt>fit 摘要</dt>
+            <dd v-if="quality.fitSummary === null" class="muted">後端未提供（品質未通過時不揭露）</dd>
+            <dd v-else>
+              選用 {{ quality.fitSummary.selectedCount }} 列／唯一輸入 {{ quality.fitSummary.uniqueX }} 個／目標範圍
+              {{ quality.fitSummary.targetMin }}～{{ quality.fitSummary.targetMax }}／平均
+              {{ quality.fitSummary.targetMean }}／IQR {{ quality.fitSummary.targetIqr }}
+            </dd>
+          </dl>
+
           <h3>觸發 PROFILE 驗證</h3>
           <p class="muted">
             版本為草稿時才能觸發；送出會帶目前控制版本 {{ selectedVersion.revision }}。後端未啟用 PROFILE 時回 503，狀態已變更則回 412。
@@ -381,6 +461,10 @@ h3 {
 .facts dd {
   margin: 0;
   word-break: break-all;
+}
+.remaining {
+  margin: 0;
+  padding-left: 1.1rem;
 }
 .muted {
   color: var(--text-muted);
