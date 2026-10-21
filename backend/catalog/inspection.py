@@ -6,7 +6,7 @@ from django.conf import settings
 from django.db import transaction
 from catalog.ingest import Meter
 from catalog.ingest_manifest import environment
-from catalog.models import Account, Audit, ResearchInspection, ResearchVersion
+from catalog.models import Account, Audit, ResearchInspection, ResearchState, ResearchVersion
 from catalog.research import available_version, version_for, writable
 from catalog.services import actor_for
 from catalog.storage import LocalVersionStore, ObjectRef
@@ -21,7 +21,7 @@ from runtime.records import db_now
 import json
 
 
-def current(actor_id: UUID, version_id: UUID) -> tuple[Account, ResearchVersion, ObjectRef]:
+def current(actor_id: UUID, version_id: UUID, *, allow_validating: bool = False) -> tuple[Account, ResearchVersion, ObjectRef]:
     account = Account.objects.filter(pk=actor_id).first()
     if account is None:
         raise ApiError("FORBIDDEN", 403)
@@ -31,7 +31,7 @@ def current(actor_id: UUID, version_id: UUID) -> tuple[Account, ResearchVersion,
     writable(actor)
     version = version_for(actor, version_id)
     dataset = available_version(actor, version.dataset_version_id)
-    if version.document["status"] != "DRAFT":
+    if version.document["status"] != "DRAFT" or (not allow_validating and ResearchState.objects.filter(research_version=version,status="VALIDATING").exists()):
         raise ApiError("INVALID_TRANSITION", 409)
     stored = dataset.raw.object
     if stored is None or stored.sha256 != dataset.sha256:

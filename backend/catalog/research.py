@@ -86,6 +86,8 @@ def create_version(actor: Account, research: Research, data: JsonObject) -> Json
     origin = Provenance.objects.get(pk=dataset.provenance_id, tenant_id=actor.tenant_id)
     provenance(actor, "ResearchVersion", identity, source, origin)
     ResearchVersion.objects.create(id=identity, tenant_id=actor.tenant_id, research=research, dataset_version=dataset, document=document, provenance_id=source, created_at=created)
+    from catalog.budget import initialize
+    initialize(ResearchVersion.objects.get(pk=identity))
     Audit.objects.create(tenant_id=actor.tenant_id, actor_id=actor.id, action="CREATE_RESEARCH_VERSION", code="OK")
     return document
 

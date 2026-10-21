@@ -14,8 +14,9 @@
 | M0→M1／T07（INGEST／Artifact） | [提交設計](<M0/T07-INGEST與Artifact提交設計.md>) | [驗證紀錄](<M0/T07-INGEST與Artifact提交驗證紀錄.md>) | 明確啟用的真實Run／專用queue／原子版本及metadata Artifact，三格式HTTP實測；已續交研究草稿；PROFILE／已知公式整合仍待後續 |
 | M0→M1／T07（研究草稿） | [語意確認設計](<M0/T07-研究草稿與語意確認設計.md>) | [驗證紀錄](<M0/T07-研究草稿與語意確認驗證紀錄.md>) | owner 私有研究、現行 Dataset ACL、精確語意／域／切分及不可變 DRAFT；PROFILE／正式封存／評估待後續 |
 | M0→M1／T07（研究預檢與已知公式） | [整合設計](<M0/T07-研究預檢與已知公式整合設計.md>) | [驗證紀錄](<M0/T07-研究預檢與已知公式整合驗證紀錄.md>) | 三格式有界品質／精確單位轉換、fit 統計與已知 DSL 的 fit／development 評分、遮罩與不可變記錄；正式 PROFILE／帳本／封存仍待後續 |
+| M0→M1／T07（研究帳本與 PROFILE） | [任務設計](<M0/T07-研究帳本與PROFILE任務設計.md>) | [驗證紀錄](<M0/T07-研究帳本與PROFILE任務驗證紀錄.md>) | 兩層預留與不可變用量收據、真 HTTP／專用 worker、遮罩品質與 fit-only 結構、取消／恢復與私有事件；正式封存及 READY 尚未開放 |
 
-企劃中的產品驗收維持 NOT_RUN。T04 控制設計見 [Run／Attempt 控制核心](<M0/T04-Run與Attempt控制核心.md>)，實測見 [控制核心驗證](<M0/T04-Run與Attempt驗證紀錄.md>)。T05 已完成本機租戶／物件版本／上傳授權基線；T06 已提供本機有界安全 DSL 求值；T07 已交有界解析及明確啟用的真正 INGEST／Artifact；已續交人工語意與 ResearchVersion 草稿，已續交本機可信品質預檢與已知公式整合，下一步接正式 PROFILE 任務、研究帳本與封存。不因骨架測試通過就啟用 AI、正式盲測或對外發布。
+企劃中的產品驗收維持 NOT_RUN。T04 控制設計見 [Run／Attempt 控制核心](<M0/T04-Run與Attempt控制核心.md>)，實測見 [控制核心驗證](<M0/T04-Run與Attempt驗證紀錄.md>)。T05 已完成本機租戶／物件版本／上傳授權基線；T06 已提供本機有界安全 DSL 求值；T07 已交有界解析及明確啟用的真正 INGEST／Artifact；已續交人工語意與 ResearchVersion 草稿，已續交本機可信品質預檢與已知公式整合，已續交明確啟用的 PROFILE 任務與研究帳本，下一步接正式封存／曝光資格及工作台。不因骨架測試通過就啟用 AI、正式盲測或對外發布。
 
 人員基線：只有使用者本人開發；Backend／Frontend／Math／QA／SRE 為兼任責任，不是招募需求。工作票預設依序執行，不把自我檢查標為獨立研究成果審核。
 

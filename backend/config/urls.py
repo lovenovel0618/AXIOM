@@ -1,10 +1,14 @@
 from django.urls import path
 from foundation.health import live, ready
-from catalog import http, read_http, research_http
+from catalog import http, read_http, research_http, control_http
 
 urlpatterns = [path("health/live/", live), path("health/ready/", ready)]
 
 urlpatterns += [
+    path("api/v2/runs/<uuid:identity>/cancel", control_http.cancel_run),
+    path("api/v2/runs/<uuid:identity>/events", control_http.run_events),
+    path("api/v2/research-versions/<uuid:identity>/events", control_http.research_events),
+    path("api/v2/research-versions/<uuid:identity>/runs", research_http.runs),
     path("api/v2/researches", research_http.researches),
     path("api/v2/researches/<uuid:identity>", research_http.research_detail),
     path("api/v2/researches/<uuid:identity>/versions", research_http.versions),

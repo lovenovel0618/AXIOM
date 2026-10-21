@@ -92,4 +92,4 @@ class Command(BaseCommand):
         else:
             raise CommandError("Cached inspection bypassed revocation")
         for result in [*results,masked]: result.pop("model")
-        self.stdout.write(json.dumps({"scope":"T07_LOCAL_RESEARCH_INSPECTION","status":"PASS","results":results,"masked":masked,"final_evaluation":"NOT_RUN","profile_run":"NOT_IMPLEMENTED","research_status":"DRAFT","product_gate_status":"NOT_RUN"},indent=2))
+        self.stdout.write(json.dumps({"scope":"T07_LOCAL_RESEARCH_INSPECTION","status":"PASS","results":results,"masked":masked,"final_evaluation":"NOT_RUN","profile_run":"NOT_EXECUTED_BY_CLI","research_status":"DRAFT","product_gate_status":"NOT_RUN"},indent=2))

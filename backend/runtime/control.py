@@ -25,10 +25,10 @@ class Lease:
 
 
 def _initial(record: JsonObject, budget: JsonObject) -> None:
-    required: JsonObject = {"status": QUEUED, "revision": 0, "active_attempt_id": None, "lease_generation": 0, "cancellation_epoch": 0, "root_epoch_at_dispatch": 0, "cancel_requested_at": None, "dispatch_stage": "SEARCH_OPEN", "phase": None, "stop_reason": None, "evidence_bundle_ids": [], "diagnostic_artifact_ids": [], "research_trace_artifact_ids": [], "skipped_phases": [], "outcome_status": None, "current_event_cursor": f"RUN:{record['id']}:0"}
+    required: JsonObject = {"status": QUEUED, "revision": 0, "active_attempt_id": None, "lease_generation": 0, "cancellation_epoch": 0, "root_epoch_at_dispatch": 0, "cancel_requested_at": None, "dispatch_stage": "SEARCH_OPEN", "phase": None, "stop_reason": None, "evidence_bundle_ids": [], "diagnostic_artifact_ids": [], "research_trace_artifact_ids": [], "skipped_phases": [], "outcome_status": None, "current_event_cursor": f"RUN:{record['id']}:0", "budget_reservations": []}
     if any(record[key] != value for key, value in required.items()):
         raise ValueError("New root must have pristine queued state")
-    if budget["status"] != "OPEN" or budget["research_budget_account_id"] is not None or budget["reservations"]:
+    if budget["status"] != "OPEN" or budget["research_budget_account_id"] != record["research_budget_account_id"] or budget["reservations"]:
         raise ValueError("New INGEST budget must be open and unreserved")
     if any(value != 0 for value in budget["usage"].values()) or record["budget_usage"] != budget["usage"]:
         raise ValueError("New root usage must be zero")
@@ -135,6 +135,8 @@ def _start_attempt(run: RuntimeRun, worker_id: str, now: datetime) -> Lease:
     }
     save_attempt(RuntimeAttempt(id=attempt_id, run=run, generation=generation, document=document))
     record.update(status=RUNNING, active_attempt_id=str(attempt_id), lease_generation=generation)
+    if record["type"]=="PROFILE":
+        record["phase"] = "PROFILING"
     record["revision"] += 1
     if run.first_started_at is None:
         run.first_started_at = now

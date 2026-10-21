@@ -1,14 +1,19 @@
 """Immutable registry and authorized metadata-only content projection."""
 import hashlib
+from typing import Protocol
 from uuid import UUID, uuid4
-from catalog.models import Account, Artifact, DatasetVersion, IngestBinding, Provenance, StoredObject
+from catalog.models import Account, Artifact, DatasetVersion, IngestBinding, Provenance, ResearchVersion, StoredObject
 from catalog.services import dataset_for, provenance
 from catalog.validation import ApiError
 from runtime.contracts import JsonObject, canonical_bytes, validate
 from runtime.records import db_now
 
 
-def register(actor: Account, binding: IngestBinding, identity: UUID, content: JsonObject | None, source: Provenance, raw: StoredObject | None = None) -> Artifact:
+class DatasetScope(Protocol):
+    dataset_id: UUID
+
+
+def register(actor: Account, binding: DatasetScope, identity: UUID, content: JsonObject | None, source: Provenance, raw: StoredObject | None = None, *, research_version: ResearchVersion | None = None) -> Artifact:
     data = canonical_bytes(content) if content is not None else b""
     source_id = uuid4()
     provenance(actor, "Artifact", identity, source_id, source)
@@ -16,9 +21,9 @@ def register(actor: Account, binding: IngestBinding, identity: UUID, content: Js
         "artifact_uri": f"/api/v2/artifacts/{identity}/content", "sha256": hashlib.sha256(data).hexdigest() if raw is None else raw.sha256,
         "status": "AVAILABLE", "owner_id": str(actor.id), "size_bytes": len(data) if raw is None else raw.size_bytes,
         "media_type": "application/json" if raw is None else "application/octet-stream",
-        "access_class": "PROJECT" if content is not None and content.get("kind") in {"StructureAssessment", "ImportDiagnostic"} else "SEALED_DETAIL"}
+        "access_class": "PROJECT" if content is not None and content.get("kind") in {"StructureAssessment", "ImportDiagnostic", "QualityReport"} else "SEALED_DETAIL"}
     validate(document, "runtime-v2.schema.json", "Artifact")
-    return Artifact.objects.create(id=identity, tenant_id=actor.tenant_id, dataset_id=binding.dataset_id, owner=actor, object=raw, content=content, document=document, provenance_id=source_id)
+    return Artifact.objects.create(id=identity, tenant_id=actor.tenant_id, dataset_id=binding.dataset_id, owner=actor, object=raw, content=content, document=document, provenance_id=source_id, research_version=research_version)
 
 
 def assessment(binding: IngestBinding, version_id: UUID, identity: UUID, metadata: JsonObject, manifest: UUID) -> JsonObject:
@@ -63,6 +68,9 @@ def authorized(actor: Account, identity: UUID) -> Artifact:
     if row is None or row.document["access_class"] != "PROJECT":
         raise ApiError("NOT_FOUND", 404)
     dataset_for(actor, row.dataset_id)
+    if row.research_version_id is not None:
+        from catalog.research import version_for
+        version_for(actor,row.research_version_id)
     if row.document["status"] != "AVAILABLE":
         raise ApiError("ARTIFACT_UNAVAILABLE", 409)
     return row

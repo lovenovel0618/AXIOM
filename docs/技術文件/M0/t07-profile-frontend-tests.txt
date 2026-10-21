@@ -1,0 +1,52 @@
+ Container axiom-t07e-check-postgres-1 Running
+ Container axiom-t07e-check-web-1 Running
+ Container axiom-t07e-check-redis-1 Running
+ Container axiom-t07e-check-postgres-1 Waiting
+ Container axiom-t07e-check-postgres-1 Healthy
+ Container axiom-t07e-check-migrate-1 Starting
+ Container axiom-t07e-check-migrate-1 Started
+ Container axiom-t07e-check-migrate-1 Waiting
+ Container axiom-t07e-check-redis-1 Waiting
+ Container axiom-t07e-check-migrate-1 Exited
+ Container axiom-t07e-check-redis-1 Healthy
+ Container axiom-t07e-check-web-1 Waiting
+ Container axiom-t07e-check-web-1 Healthy
+ Container axiom-t07e-check-frontend-run-fb6e72e39f54 Creating
+ Container axiom-t07e-check-frontend-run-fb6e72e39f54 Created
+
+> axiom-frontend@0.0.0 typecheck
+> vue-tsc --noEmit
+
+npm notice
+npm notice New major version of npm available! 11.19.1 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+> axiom-frontend@0.0.0 test
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/app[39m
+
+ [32m✓[39m tests/health.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m8 passed[39m[22m[90m (8)[39m
+[2m   Start at [22m 02:23:49
+[2m   Duration [22m 244ms[2m (transform 38ms, setup 0ms, import 54ms, tests 34ms, environment 1ms)[22m
+
+
+> axiom-frontend@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.37 kB │ gzip:  0.29 kB
+dist/assets/index-BpI2dZEI.css   0.53 kB │ gzip:  0.29 kB
+dist/assets/index-CMjKMLIj.js   63.15 kB │ gzip: 25.06 kB
+
+✓ built in 152ms

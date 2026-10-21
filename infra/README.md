@@ -140,7 +140,7 @@ AXIOM_INGEST_ENABLED=1 AXIOM_IMPORT_LIMITS='{"max_rows":10000,"max_columns":32,"
 
 可丟棄環境可執行 `docker compose exec -T web python manage.py business_ingest_smoke`，會建立三格式合成資料，實際等待relay／worker並讀metadata、測去重／非法資料與撤權。停止新匯入時先停ingest worker，設定AXIOM_INGEST_ENABLED=0並重建web／relay；既有queued Run依期限裁決，不刪除或改成control probe。
 
-metadata中的source_metadata只含欄名／格式型別／row_count，不猜語意、不取labels統計；人工語意與 ResearchVersion 草稿依下節操作；PROFILE仍未開放。執行環境／hash、遷移與限制見[技術設計](<../docs/技術文件/M0/T07-INGEST與Artifact提交設計.md>)。
+metadata中的source_metadata只含欄名／格式型別／row_count，不猜語意、不取labels統計；人工語意與 ResearchVersion 草稿依下節操作；PROFILE 依第五切片明確啟用。執行環境／hash、遷移與限制見[技術設計](<../docs/技術文件/M0/T07-INGEST與Artifact提交設計.md>)。
 
 
 ## 人工語意與研究草稿（T07第三切片）
@@ -150,7 +150,7 @@ metadata中的source_metadata只含欄名／格式型別／row_count，不猜語
 - POST／GET /api/v2/researches，GET /api/v2/researches/{id}：建立、分頁及重開 owner 私有研究，POST body 為 {"name":"研究名稱"}。
 - POST／GET /api/v2/researches/{id}/versions：提交 CreateResearchVersion 或查目前可讀草稿列表。
 - GET /api/v2/research-versions/{id}：重開固定快照。修改設定需建立新版本，沒有 PATCH。
-- POST /api/v2/research-versions/{id}/validate：目前通過授權後回 503，未啟用可信 PROFILE。
+- POST /api/v2/research-versions/{id}/validate：預設通過授權後回 503；明確啟用見第五切片。
 
 版本請求必須提供 dataset_version_id、semantic_profile、budget、purpose、observation_split、domain、evaluation_policy，完整形狀沿企劃案 contracts/openapi-v2.json。可執行的合成範例見 backend/catalog/management/commands/research_draft_smoke.py 的 configuration。原始欄名精確比對，單位比例／偏移及誤差界以十進位字串確認，domain 使用已約分的有理數。domain／解析度／界限以 canonical SI 計；本步只固定宣告，尚未讀值或執行數值轉換。
 
@@ -158,7 +158,7 @@ metadata中的source_metadata只含欄名／格式型別／row_count，不猜語
 
 研究僅 owner 可見，ADMIN 無隱含讀權。版本另需目前 Dataset grant；建立／冪等重送需寫權限，只有 READER 時仍可讀取。撤權後單筆 404、版本清單過濾、冪等重送 404。Research 容器本身仍屬 owner，撤銷資料權限不刪研究。
 
-草稿固定為 DRAFT／revision=0，沒有品質結果或 fit 結構報告。sealed_final_test=true 是禁止一般讀取最終原始資料的政策；sealed_test_id 為 null，不代表正式盲測或曝光 ledger 已登記。普通 raw Artifact 仍一律 404，沒有輸出觀測值、Solver 投影、最終評估或發布。研究額度只保存設定與零初始用量，尚無帳本可執行研究任務。
+新草稿為 DRAFT／revision=0，尚無品質結果或 fit 結構報告；PROFILE 執行後投影見第五切片。sealed_final_test=true 是禁止一般讀取最終原始資料的政策；sealed_test_id 為 null，不代表正式盲測或曝光 ledger 已登記。普通 raw Artifact 仍一律 404，沒有輸出觀測值、Solver 投影、最終評估或發布。研究額度與零起始帳本於同一交易建立，PROFILE 正式用量依第五切片累計。
 
 啟用 ingest profile 的可丟棄環境可執行：
 
@@ -187,7 +187,7 @@ CSV／JSON 十進位觀測以精確值轉換；Parquet float 保留二進位原�
 
 結果與設定／模型／參數、研究快照、source／environment hash 保存於私有不可變 ResearchInspection 表。相同環境／設定重送回同記錄，仍重新授權、驗 raw；執行後撤權、source 掉包、environment 改變都不能提交。並行相同設定可能重複做有界計算，但唯一鍵只保存一筆；這不構成 exactly-once 計算或累計成本帳本。measured_execution_usage 為當次 CLI 子程序與父程序執行期間的 CPU／wall 上取整及 process high-water 保守和，不含前置 source I/O、compiler 與 DB 提交；cache 回既有實測，不表示重新執行耗用零成本。
 
-沒有新增普通 HTTP 報告入口或 Artifact，避免繞過 owner 私有研究。CLI 輸出不是完整 PROFILE Run／QualityReport／FIT_ONLY StructureAssessment，不更新 DRAFT、quality_report_id 或研究任務用量。正式 validate 仍 503，研究帳本、正式封存、fit-only 結構與事件／任務狀態機仍需後續接入。固定 worker 只有資源限制，尚非多租戶 FS／網路 sandbox，不用於未核准的敏感或正式 blind 來源。
+沒有新增普通 HTTP 報告入口或 Artifact，避免繞過 owner 私有研究。CLI 輸出不是完整 PROFILE Run／QualityReport／FIT_ONLY StructureAssessment，不更新 DRAFT、quality_report_id 或研究任務用量。本 CLI 不更動正式帳本；另啟用第五切片後可經 validate 建立 PROFILE／報告及事件，正式封存仍待後續。固定 worker 只有資源限制，尚非多租戶 FS／網路 sandbox，不用於未核准的敏感或正式 blind 來源。
 
 可丟棄且已啟用 ingest profile 的環境可執行：
 
@@ -198,3 +198,34 @@ docker compose exec -T web python manage.py research_inspection_smoke
 它會走真 HTTP 建立三格式合成上傳及研究，執行本機 CLI，獨立核對 y=2x+1 經比例轉換後在 fit／development 的 coverage=1、MAE／RMSE=0，另測品質遮罩、快取重送與撤權。測試仍不是正式 blind 或產品驗收。
 
 升級需套 catalog 0007／0008 並重建同版本程序，readiness 要求 0008。新表經同租戶複合 FK、研究／來源快照 guard 及 UPDATE／DELETE 阻擋保護。回退先停寫、備份；reverse 移除 Inspection 表會失去本批記錄，不能當無損回退。
+
+
+## 研究帳本與PROFILE任務（T07第五切片）
+
+先完成 INGEST 及人工語意草稿；PROFILE 預設關閉。僅在可丟棄的本機公開／合成資料環境明確啟用，兩組五項 limits 都需完整提供：
+
+```sh
+AXIOM_INGEST_ENABLED=1 AXIOM_IMPORT_LIMITS='{"max_rows":100,"max_columns":8,"max_cell_utf8_bytes":4096,"max_decoded_bytes":65536,"max_parse_seconds":10}' AXIOM_PROFILE_ENABLED=1 AXIOM_PROFILE_LIMITS='{"max_rows":100,"max_columns":8,"max_cell_utf8_bytes":4096,"max_decoded_bytes":65536,"max_parse_seconds":10}' docker compose --profile ingest --profile profile up --build -d --wait --wait-timeout 120
+```
+
+PROFILE 專用 worker 只聽 profile queue，concurrency=1、每 task 重建 child；raw volume 唯讀，container memory=2GiB、CPU=1、pids=64。每 root 必須預留至少 2GiB memory、parser deadline+3 秒 CPU、deadline+10 秒 wall；CPU／wall 限額最高 300 秒。省略 run_budget 時依剩餘額度與固定容量計算，研究餘額不足回 429，不建立半份任務。這是本機固定容量政策，不是正式 D-01 配額或多租戶 sandbox。
+
+已登入且具研究 owner／Dataset 寫權限的 RESEARCHER／ADMIN：
+
+1. GET /api/v2/research-versions/{id} 取得 revision／X-Control-Revision。
+2. POST /api/v2/research-versions/{id}/validate，body 為 `{}` 或 `{"run_budget":完整BudgetLimit}`，帶 session／CSRF、Idempotency-Key 及 If-Control-Revision。成功回 202 原始 Run；同 key 重送回同一操作回應，另以 GET Run 查最新狀態。缺 revision 回 428，過時回 412。
+3. GET /api/v2/research-versions/{id}/runs 可在重開後找回 PROFILE；limit 1～200、簽章 cursor 15 分鐘，綁 actor／tenant／研究版本。GET /api/v2/runs/{id} 取得最新 revision 與 X-Usage-Status。
+4. GET /api/v2/runs/{id}/events、/api/v2/research-versions/{id}/events 為有界 SSE 批次，每次最多 100 個事件並關閉；以 Last-Event-ID 續接，空批次 keepalive，沒有 query 篩選。每次重連重新驗權，非持續連線。研究用量變動不增加 control revision；需重讀版本取得帳本投影。
+5. POST /api/v2/runs/{id}/cancel，body `{}`，帶該 Run 的 If-Control-Revision、Idempotency-Key／CSRF。排隊中可確認未啟動而立即 CANCELLED；已啟動須等固定 child 結束／回收後確認，不宣稱即時中斷 SLO。
+
+每個研究同時只一個 PROFILE。品質成功產生 PROJECT QualityReport 與 FIT_ONLY StructureAssessment，僅 fit 統計，結構／週期可為 UNKNOWN；任一分區資料品質不合格只回遮罩 BLOCKED、統計 null、不建立結構報告。一般 Artifact 存取仍驗 owner 與目前 Dataset grant，其他 ADMIN 不因 Dataset grant 取得私有研究；raw／TaskInput 仍 404。品質通過後研究仍 DRAFT，報告 readiness=BLOCKED／SEALED_TEST_NOT_REGISTERED；沒有正式封存、曝光 ledger、SEARCH 或最終評估。
+
+研究帳本跨 root 累計 CPU／GPU／token／wall／candidate，root 與研究帳本由同一不可變 receipt 增量更新；記憶體以 max peak 和 active 預留分開計算。重送不重扣，舊序號不覆蓋新值，真正超支保留實際量並阻擋新 root。失聯且已開始的預留標 UNCERTAIN、不當成零成本釋放，X-Usage-Status=UNKNOWN；只有原 attempt owning handler 確認 child 停止後可遲到結算，終態 Run 不因此補事件。不得手改帳本或用新 root 洗掉未知成本。
+
+CPU／wall 向上取整、RSS 為 process high-water 保守和；量測涵蓋 owning handler 的主要執行區間及子程序，wall 至提交結算前，未含最後 DB commit／broker／跨程序基礎設施成本。不是精確費用帳單或完整租戶配額。可信 CLI Inspection 歷史成本保留原記錄，不追溯冒充已扣正式研究帳本；正式 PROFILE 執行中拒絕本機預檢。
+
+```sh
+docker compose exec -T web python manage.py profile_smoke
+```
+
+此示範經真 HTTP／INGEST／DRAFT／PROFILE queue，驗三格式、跨 root 累計、品質遮罩、餘額拒絕、事件續接與撤權。僅在可丟棄資料庫執行。停止新 PROFILE 時先停止 profile worker，將 AXIOM_PROFILE_ENABLED=0 並重建 web／relay；排隊及失聯任務依持久狀態恢復，不刪帳本。升級須排空程序、備份並套 catalog 0009／0010、runtime 0005，再啟動同版服務；readiness 驗這些 migration。已有 PROFILE root 後不可直接 reverse 至 INGEST-only guards。設計與限制見 [任務設計](<../docs/技術文件/M0/T07-研究帳本與PROFILE任務設計.md>)。

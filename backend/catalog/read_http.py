@@ -7,8 +7,9 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from catalog.artifacts import authorized
 from catalog.http import api, allowed_methods
-from catalog.models import Account, DatasetVersion, IngestBinding
+from catalog.models import Account, DatasetVersion, IngestBinding, ProfileBinding, Reservation
 from catalog.services import dataset_for
+from catalog.research import version_for
 from catalog.validation import ApiError, validate_api
 from runtime.contracts import canonical_bytes, project
 from runtime.models import RuntimeRun
@@ -47,21 +48,34 @@ def versions(request: HttpRequest, actor: Account, identity: UUID) -> JsonRespon
     return JsonResponse(result)
 
 
+def run_for(actor: Account, identity: UUID) -> RuntimeRun:
+    row = RuntimeRun.objects.filter(pk=identity,tenant_id=actor.tenant_id,control_only=False).first()
+    if row is None:
+        raise ApiError("NOT_FOUND",404)
+    if row.document["type"]=="PROFILE":
+        binding = ProfileBinding.objects.get(run=row)
+        version_for(actor,binding.research_version_id)
+    else:
+        dataset_for(actor,UUID(row.document["dataset_id"]))
+    return row
+
+
 @allowed_methods(["GET"])
 @api
 def run_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
-    row = RuntimeRun.objects.filter(pk=identity, tenant_id=actor.tenant_id, control_only=False).first()
-    if row is None:
-        raise ApiError("NOT_FOUND", 404)
-    dataset_for(actor, UUID(row.document["dataset_id"]))
-    response = JsonResponse(project(row.document, "Run"))
+    row = run_for(actor,identity)
+    response = JsonResponse(project(row.document,"Run"))
     response["X-Control-Revision"] = str(row.document["revision"])
-    binding = IngestBinding.objects.get(run=row)
     usage_status = "UNKNOWN"
     if row.first_started_at is None:
         usage_status = "NOT_STARTED"
-    elif row.document["status"] in {"SUCCEEDED", "CANCELLED"} or (row.document["status"] == "FAILED" and binding.error_code is not None):
-        usage_status = "MEASURED_UPPER_BOUND"
+    elif row.document["type"]=="PROFILE":
+        if Reservation.objects.get(root__run=row).state=="RELEASED":
+            usage_status = "MEASURED_UPPER_BOUND"
+    else:
+        binding = IngestBinding.objects.get(run=row)
+        if row.document["status"] in {"SUCCEEDED","CANCELLED"} or (row.document["status"]=="FAILED" and binding.error_code is not None):
+            usage_status = "MEASURED_UPPER_BOUND"
     response["X-Usage-Status"] = usage_status
     return response
 

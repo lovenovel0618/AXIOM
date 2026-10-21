@@ -44,15 +44,23 @@ def save_attempt(attempt: RuntimeAttempt) -> None:
     attempt.save()
 
 
+def producer_for(run: RuntimeRun) -> str:
+    if run.control_only:
+        return "t04-control-v1"
+    if run.document["type"]=="PROFILE":
+        return "t07-profile-v1"
+    return "t07-ingest-v1"
+
+
 def emit(run: RuntimeRun, event_type: str, payload: JsonObject, now: datetime) -> None:
     cursor = run.document["current_event_cursor"]
     sequence = int(cursor.rsplit(":", 1)[1]) + 1
     event_id = uuid4()
     event: JsonObject = {
         "event_id": str(event_id), "schema_version": "2.0", "event_type": event_type,
-        "tenant_id": str(run.tenant_id), "research_version_id": None, "run_id": str(run.id),
+        "tenant_id": str(run.tenant_id), "research_version_id": run.document["research_version_id"], "run_id": str(run.id),
         "stream_scope": "RUN", "stream_id": str(run.id), "sequence": sequence,
-        "occurred_at": now.isoformat(), "trace_id": str(run.id), "producer_version": "t04-control-v1" if run.control_only else "t07-ingest-v1", "payload": payload,
+        "occurred_at": now.isoformat(), "trace_id": str(run.id), "producer_version": producer_for(run), "payload": payload,
     }
     validate(event, "event-v2.schema.json")
     RunEvent.objects.create(id=event_id, run=run, sequence=sequence, document=event)
@@ -67,17 +75,29 @@ def task_input_hash(task: JsonObject) -> str:
     return identity_hash({key: value for key, value in task.items() if key != "execution_manifest_id"})
 
 
+def research_bindings(record: JsonObject, task: JsonObject, execution: JsonObject, budget: JsonObject) -> None:
+    if record["type"] == "INGEST" and (record["research_version_id"] is not None or record["research_budget_account_id"] is not None):
+        raise ValueError("Invalid INGEST research binding")
+    if task["research_version_id"] != record["research_version_id"] or budget["research_budget_account_id"] != record["research_budget_account_id"]:
+        raise ValueError("Research account/input mismatch")
+    if record["type"] == "PROFILE":
+        if execution["retry_policy"]["max_attempts"] != 1:
+            raise ValueError("PROFILE retry policy must preserve unknown-cost fencing")
+        if task["observation_split_id"] != task["payload"]["observation_split"]["id"] or execution["semantic_profile_hash"] != identity_hash(task["payload"]["semantic_profile"]):
+            raise ValueError("PROFILE semantic/split binding mismatch")
+
+
 def validate_bindings(record: JsonObject, task: JsonObject, execution: JsonObject, budget: JsonObject) -> None:
     for document, filename, definition in [(record, RUNTIME_SCHEMA, "RunRecord"), (task, "task-input-v2.schema.json", None), (execution, RUNTIME_SCHEMA, "ExecutionManifest"), (budget, RUNTIME_SCHEMA, "BudgetAccount")]:
         validate(document, filename, definition)
-    if record["type"] != "INGEST" or not record["is_root"] or record["parent_run_id"] is not None:
+    if record["type"] not in {"INGEST", "PROFILE"} or not record["is_root"] or record["parent_run_id"] is not None:
         raise ControlError("FEATURE_DISABLED")
     expected: JsonObject = {
-        "root_run_id": record["id"], "research_version_id": None, "research_budget_account_id": None,
-        "child_run_ids": [], "budget_reservations": [],
+        "root_run_id": record["id"], "child_run_ids": [],
     }
     if any(record[key] != value for key, value in expected.items()):
-        raise ValueError("Invalid INGEST root bindings")
+        raise ValueError("Invalid root bindings")
+    research_bindings(record,task,execution,budget)
     input_digest = identity_hash(task) if all(plugin["plugin_id"] == "t04-control-only" for plugin in execution["plugins"]) else task_input_hash(task)
     pairs = [(task["run_id"], record["id"]), (task["type"], record["type"]), (execution["id"], record["execution_manifest_id"]), (task["execution_manifest_id"], execution["id"]), (execution["tenant_id"], record["tenant_id"]), (execution["environment_digest"], record["environment_digest"]), (execution["seed"], record["seed"]), (execution["input_hash"], input_digest), (budget["id"], record["budget_account_id"]), (budget["tenant_id"], record["tenant_id"]), (budget["root_run_id"], record["id"])]
     if any(left != right for left, right in pairs):

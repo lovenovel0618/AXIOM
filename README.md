@@ -2,7 +2,7 @@
 
 AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探索）是數據驅動的公式發現、獨立驗證、推演與經驗學習平台。
 
-目前已有設計規格、工程工具與 T04 本機 Django／Vue／Compose 基礎切片，可測健康檢查及合成任務派送。T05 已提供 session／CSRF、租戶隔離的資料集與上傳 API，以及私有不可變本機物件；已加入持久 Run／Attempt 的 INGEST 根控制流程；T06 已加入有界純量 DSL 編譯與求值、量綱／域檢查及獨立 oracle；T07 已提供 Linux 有界解析及明確啟用的真正 INGEST／DatasetVersion／Artifact 提交，及人工語意確認／不可變研究草稿 API、本機有界品質與已知公式預檢；完整研究 API／Run 任務樹尚未完成；企劃驗收案例維持 NOT_RUN，工程測試通過不等同產品整體驗收。
+目前已有設計規格、工程工具與 T04 本機 Django／Vue／Compose 基礎切片，可測健康檢查及合成任務派送。T05 已提供 session／CSRF、租戶隔離的資料集與上傳 API，以及私有不可變本機物件；已加入持久 Run／Attempt 的 INGEST 根控制流程；T06 已加入有界純量 DSL 編譯與求值、量綱／域檢查及獨立 oracle；T07 已提供 Linux 有界解析及明確啟用的真正 INGEST／DatasetVersion／Artifact 提交，及人工語意確認／不可變研究草稿 API、本機有界品質與已知公式預檢，以及明確啟用的 PROFILE 任務、兩層預算帳本與私有品質／fit 結構報告；完整研究 API／Run 任務樹尚未完成；企劃驗收案例維持 NOT_RUN，工程測試通過不等同產品整體驗收。
 
 ## 企劃案
 
@@ -61,7 +61,7 @@ docker compose run --rm frontend sh -c 'npm run typecheck && npm test && npm run
 
 ## 本機帳號與上傳
 
-沒有預設帳密或公開註冊。依 [帳號與上傳操作說明](infra/README.md#帳號與上傳操作t05) 預先建立帳號，從 <http://127.0.0.1:15173/auth/login> 登入。同源 /api/v2/datasets 與上傳 API 已可測試；工作台上傳介面尚未實作。上傳僅保存私有原始 bytes，complete 預設回503；依 infra/README.md 明確啟用 ingest profile 及完整限制後，回202並由專用worker產生版本與純結構預覽。已支援人工語意確認與不可變 ResearchVersion 草稿；已有本機品質與已知公式預檢，正式 PROFILE 任務／研究帳本及封存仍待後續。
+沒有預設帳密或公開註冊。依 [帳號與上傳操作說明](infra/README.md#帳號與上傳操作t05) 預先建立帳號，從 <http://127.0.0.1:15173/auth/login> 登入。同源 /api/v2/datasets 與上傳 API 已可測試；工作台上傳介面尚未實作。上傳僅保存私有原始 bytes，complete 預設回503；依 infra/README.md 明確啟用 ingest profile 及完整限制後，回202並由專用worker產生版本與純結構預覽。已支援人工語意確認與不可變 ResearchVersion 草稿；已有本機品質與已知公式預檢，另可明確啟用 PROFILE 任務／研究帳本，依 [操作說明](infra/README.md#研究帳本與profile任務t07第五切片) 取得品質及 fit-only 報告。正式封存／曝光尚未完成，研究保持 DRAFT。
 
 ## 未決事項
 
