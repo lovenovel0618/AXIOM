@@ -88,6 +88,8 @@ docker compose exec web python manage.py provision_account dino local --role ADM
 
 前台已提供可用 MVP（`frontend/src/views/DatasetsView.vue`）：於 <http://127.0.0.1:15173/datasets> 登入後建立資料集、以檔案選擇器上傳 CSV／JSON／PARQUET 並查看版本列表。前端自行以 `crypto.subtle` 計算 SHA-256，將 `put_url` 轉為相對路徑沿用同源 proxy，並在每個 POST／PUT 帶 `X-CSRFToken`。complete 回503時畫面顯示「匯入功能可能尚未啟用」，不以假資料填充版本；版本由非同步 worker 產生，完成後按「重新載入」即可看到。
 
+上傳後的任務可由「查看任務」進入 <http://127.0.0.1:15173/runs/{id}>（`RunView.vue`）：顯示後端 Run 公開投影、以 `Last-Event-ID` 每批續接最多 100 筆事件直到終態，並對 PROFILE 任務提供取消（帶現行 `revision` 作 `If-Control-Revision` 與 `Idempotency-Key`）；非 PROFILE 任務畫面明示後端只回 503，不假裝支援。產物連結走 <http://127.0.0.1:15173/artifacts/{id}>（`ArtifactView.vue`）；後端只對存取等級 PROJECT 的產物提供 metadata 與內容，版本表格裡的原始 bytes 屬非 PROJECT，因此不提供連結。
+
 Dataset／Upload建立回應可依相同key與payload重讀；不同payload回409，撤權後不回放舊回應。逾期簽章需新session，不能藉重播延長。列表cursor綁actor／租戶並重新查ACL。管理員需明確grant才能讀他人的資料集，可用受控命令：
 
 ```sh

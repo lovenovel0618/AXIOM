@@ -51,6 +51,7 @@ export interface RequestOptions {
 
 export interface ApiClient {
   request<T>(method: string, path: string, options?: RequestOptions): Promise<T>
+  text(method: string, path: string, options?: RequestOptions): Promise<string>
   csrfToken(): Promise<string>
 }
 
@@ -91,7 +92,7 @@ export function createApiClient(fetcher: Fetcher = fetch, cookieSource: (name: s
     return token
   }
 
-  async function request<T>(method: string, path: string, options: RequestOptions = {}): Promise<T> {
+  async function send(method: string, path: string, options: RequestOptions): Promise<Response> {
     const upper = method.toUpperCase()
     const headers = new Headers(options.headers ?? {})
     headers.set('Accept', 'application/json')
@@ -103,8 +104,17 @@ export function createApiClient(fetcher: Fetcher = fetch, cookieSource: (name: s
     if (UNSAFE_METHODS.has(upper)) headers.set('X-CSRFToken', options.csrf ?? (await csrfToken()))
     const response = await fetcher(path, { method: upper, headers, body, credentials: 'same-origin' })
     if (!response.ok) throw await toApiError(response)
-    return parseBody<T>(response)
+    return response
   }
 
-  return { request, csrfToken }
+  async function request<T>(method: string, path: string, options: RequestOptions = {}): Promise<T> {
+    return parseBody<T>(await send(method, path, options))
+  }
+
+  /** SSE 等非 JSON 回應走這條路徑，錯誤仍統一轉成 ApiError。 */
+  async function text(method: string, path: string, options: RequestOptions = {}): Promise<string> {
+    return (await send(method, path, options)).text()
+  }
+
+  return { request, text, csrfToken }
 }

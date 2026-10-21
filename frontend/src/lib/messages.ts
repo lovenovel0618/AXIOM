@@ -9,6 +9,8 @@ const MESSAGES: Record<string, string> = {
   INVALID_JSON: '請求內容不是有效的 JSON。',
   INVALID_CURSOR: '分頁資料已失效，請重新載入。',
   INVALID_TRANSITION: '目前狀態不允許這個操作（可能已逾期或已完成）。',
+  REVISION_CONFLICT: '任務狀態已被其他操作改變，請重新載入後再試。',
+  PRECONDITION_REQUIRED: '缺少控制版本資訊，請重新載入後再試。',
   UNSUPPORTED_MEDIA_TYPE: '不支援的檔案格式，請使用 CSV、JSON 或 PARQUET。',
   UPLOAD_TOO_LARGE: '檔案超過大小上限（50 MiB）。',
   UPLOAD_OBJECT_CHANGED: '已上傳的內容與登記的雜湊不一致。',

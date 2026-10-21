@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import {
   createDataset,
   listDatasets,
@@ -7,6 +8,7 @@ import {
   type Dataset,
   type DatasetVersion,
   type DatasetVersionStatus,
+  type RunRecord,
 } from '../api/datasets'
 import { describeError } from '../lib/messages'
 import { client } from '../lib/session'
@@ -21,6 +23,7 @@ const uploading = ref(false)
 const stage = ref<UploadStage | null>(null)
 const error = ref('')
 const notice = ref('')
+const lastRun = ref<RunRecord | null>(null)
 
 const stageLabel: Record<UploadStage, string> = {
   hashing: '計算內容雜湊…',
@@ -101,11 +104,13 @@ async function onFile(event: Event): Promise<void> {
   uploading.value = true
   error.value = ''
   notice.value = ''
+  lastRun.value = null
   try {
     const outcome = await uploadDatasetFile(client, dataset.id, file, (next) => {
       stage.value = next
     })
     versions.value = outcome.versions
+    lastRun.value = outcome.run
     notice.value = `已上傳 ${file.name}（SHA-256 ${outcome.checksum.slice(0, 12)}…），匯入任務狀態：${outcome.run.status}。版本會在任務完成後出現，可重新載入。`
   } catch (cause) {
     error.value = describeError(cause)
@@ -167,7 +172,7 @@ onMounted(loadDatasets)
         <p v-if="versions.length === 0" class="muted">此資料集尚無版本。</p>
         <table v-else>
           <thead>
-            <tr><th>建立時間</th><th>格式</th><th>列數</th><th>狀態</th><th>SHA-256</th></tr>
+            <tr><th>建立時間</th><th>格式</th><th>列數</th><th>狀態</th><th>SHA-256</th><th>結構預覽</th></tr>
           </thead>
           <tbody>
             <tr v-for="row in versions" :key="row.id">
@@ -176,15 +181,29 @@ onMounted(loadDatasets)
               <td>{{ row.row_count }}</td>
               <td>{{ statusLabel[row.status] }}</td>
               <td class="mono">{{ row.sha256.slice(0, 16) }}…</td>
+              <td>
+                <template v-if="row.structure_preview_artifact_id !== null">
+                  <RouterLink :to="{ name: 'artifact', params: { id: row.structure_preview_artifact_id } }">結構預覽</RouterLink>
+                </template>
+                <span v-else class="muted">無結構預覽</span>
+              </td>
             </tr>
           </tbody>
         </table>
+        <p v-if="versions.length > 0" class="muted">
+          原始位元組以非 PROJECT 存取等級保存，後端不對 API 開放讀取；表格只連到純結構預覽產物。
+        </p>
       </template>
     </section>
   </div>
 
   <p v-if="error" class="alert" role="alert">{{ error }}</p>
-  <p v-if="notice" class="notice" role="status">{{ notice }}</p>
+  <p v-if="notice" class="notice" role="status">
+    {{ notice }}
+    <template v-if="lastRun !== null">
+      <RouterLink :to="{ name: 'run', params: { id: lastRun.id } }">查看任務</RouterLink>
+    </template>
+  </p>
 
   <section class="pending" aria-label="尚未啟用功能">
     <h2>尚未啟用</h2>
