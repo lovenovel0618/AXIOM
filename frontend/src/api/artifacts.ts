@@ -1,4 +1,4 @@
-/** 產物（Artifact）metadata 與內容路徑；內容為同源附件下載，不經 JS 解析。 */
+/** 產物（Artifact）metadata 與內容取得；二進位附件走網址下載，結構預覽等 JSON 才在此解析。 */
 import type { ApiClient } from './client'
 
 export type ArtifactStatus = 'AVAILABLE' | 'QUARANTINED' | 'DELETED'
@@ -25,4 +25,9 @@ export async function getArtifact(client: ApiClient, id: string): Promise<Artifa
 /** 下載走瀏覽器原生導覽，沿用同源 cookie 與後端的 attachment 標頭。 */
 export function artifactContentPath(id: string): string {
   return `/api/v2/artifacts/${id}/content`
+}
+
+/** JSON 內容產物（如結構預覽）；後端回應前會重驗 sha256 與大小。 */
+export async function getArtifactContent<T>(client: ApiClient, id: string): Promise<T> {
+  return client.request<T>('GET', `/api/v2/artifacts/${id}/content`)
 }

@@ -90,6 +90,8 @@ docker compose exec web python manage.py provision_account dino local --role ADM
 
 上傳後的任務可由「查看任務」進入 <http://127.0.0.1:15173/runs/{id}>（`RunView.vue`）：顯示後端 Run 公開投影、以 `Last-Event-ID` 每批續接最多 100 筆事件直到終態，並對 PROFILE 任務提供取消（帶現行 `revision` 作 `If-Control-Revision` 與 `Idempotency-Key`）；非 PROFILE 任務畫面明示後端只回 503，不假裝支援。產物連結走 <http://127.0.0.1:15173/artifacts/{id}>（`ArtifactView.vue`）；後端只對存取等級 PROJECT 的產物提供 metadata 與內容，版本表格裡的原始 bytes 屬非 PROJECT，因此不提供連結。
 
+研究工作台在 <http://127.0.0.1:15173/researches>（`ResearchView.vue`／`ResearchVersionForm.vue`）：建立研究容器後，表單由所選版本的結構預覽（`GET /api/v2/artifacts/{id}/content`）帶入欄名與列數，再由使用者指定輸入／目標來源欄位、七維單位與換算、值域、固定 60／20／20 依列序 EXPLICIT 切分與評估政策；送出前顯示完整請求 JSON，卡片與 `lib/semantics.ts` 只重述文件化規則，後端仍為唯一權威。版本為不可變 DRAFT；「觸發 PROFILE 驗證」會先重讀版本取得現行 `revision`，再以 `If-Control-Revision` 與 `Idempotency-Key` 呼叫 validate，成功後版本任務列表連回 RunView。後端 `AXIOM_PROFILE_ENABLED` 關閉時回 503，畫面明示未啟用；時間序、群組依賴與 refit 後端未實作，因此表單一律不宣告。
+
 Dataset／Upload建立回應可依相同key與payload重讀；不同payload回409，撤權後不回放舊回應。逾期簽章需新session，不能藉重播延長。列表cursor綁actor／租戶並重新查ACL。管理員需明確grant才能讀他人的資料集，可用受控命令：
 
 ```sh
@@ -149,7 +151,7 @@ metadata中的source_metadata只含欄名／格式型別／row_count，不猜語
 
 ## 人工語意與研究草稿（T07第三切片）
 
-完成前述真實 INGEST 後，已登入的 RESEARCHER／ADMIN 可呼叫現行 v2 API；沒有網頁建立表單，現階段使用同源 HTTP client。POST 皆帶 session、CSRF 及 Idempotency-Key：
+完成前述真實 INGEST 後，已登入的 RESEARCHER／ADMIN 可呼叫現行 v2 API；前台提供研究頁表單（見上節），也可用同源 HTTP client。POST 皆帶 session、CSRF 及 Idempotency-Key：
 
 - POST／GET /api/v2/researches，GET /api/v2/researches/{id}：建立、分頁及重開 owner 私有研究，POST body 為 {"name":"研究名稱"}。
 - POST／GET /api/v2/researches/{id}/versions：提交 CreateResearchVersion 或查目前可讀草稿列表。
@@ -237,6 +239,6 @@ docker compose exec -T web python manage.py profile_smoke
 
 ## 開發服務保留與型別註解規範
 
-預設專案為 axiom-dev；提供使用者操作的服務完成工作後保留運行與資料 volume，不使用 down --volumes 清理。只有明確命名的可丟棄測試專案可以清理。`docker compose ps`、`curl --fail http://127.0.0.1:18000/health/ready/` 與 `curl --fail http://127.0.0.1:15173/health/ready/` 必須實際成功。前端已有可用 MVP（登入、建立資料集、上傳檔案、版本列表）；完整研究工作台仍屬後續里程碑，健康檢查成功不表示所有企劃功能已完成。
+預設專案為 axiom-dev；提供使用者操作的服務完成工作後保留運行與資料 volume，不使用 down --volumes 清理。只有明確命名的可丟棄測試專案可以清理。`docker compose ps`、`curl --fail http://127.0.0.1:18000/health/ready/` 與 `curl --fail http://127.0.0.1:15173/health/ready/` 必須實際成功。前端已有可用 MVP（登入、建立資料集、上傳檔案、版本列表、研究工作台語意確認與 PROFILE 觸發）；候選比較、證據檢視與審核發布仍屬後續里程碑，健康檢查成功不表示所有企劃功能已完成。
 
 要讓重建後仍啟用本機 INGEST／PROFILE，將上述四個 AXIOM_INGEST_ENABLED／AXIOM_IMPORT_LIMITS／AXIOM_PROFILE_ENABLED／AXIOM_PROFILE_LIMITS 寫入既有未追蹤 .env，另設 `COMPOSE_PROFILES=ingest,profile`，即可用一般 `docker compose up --build -d --wait` 同時啟動兩個 worker。不要輸出或提交 .env。詳細型別邊界與中文註解要求見 [本輪規範](<../docs/技術文件/M0/T07-服務常駐與型別註解規範.md>)；本機及 CI 皆執行 `python tools/typing_policy.py` 與 Pyright strict，既有 Any 額度不會自動授予新檔。

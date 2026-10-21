@@ -4,12 +4,14 @@ import { sessionStatus } from './lib/session'
 import ArtifactView from './views/ArtifactView.vue'
 import DatasetsView from './views/DatasetsView.vue'
 import LoginView from './views/LoginView.vue'
+import ResearchView from './views/ResearchView.vue'
 import RunView from './views/RunView.vue'
 
 const routes: RouteRecordRaw[] = [
   { path: '/', redirect: { name: 'datasets' } },
   { path: '/login', name: 'login', component: LoginView },
   { path: '/datasets', name: 'datasets', component: DatasetsView },
+  { path: '/researches/:id?', name: 'researches', component: ResearchView },
   { path: '/runs/:id', name: 'run', component: RunView },
   { path: '/artifacts/:id', name: 'artifact', component: ArtifactView },
 ]

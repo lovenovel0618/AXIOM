@@ -26,6 +26,7 @@ onMounted(refreshReadiness)
       <div class="brand">AXIOM 研究工作台</div>
       <nav aria-label="主要導覽">
         <RouterLink v-if="isAuthenticated" :to="{ name: 'datasets' }">資料集</RouterLink>
+        <RouterLink v-if="isAuthenticated" :to="{ name: 'researches' }">研究</RouterLink>
         <button v-if="isAuthenticated" type="button" @click="handleLogout">登出</button>
       </nav>
     </header>

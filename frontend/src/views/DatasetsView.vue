@@ -209,9 +209,9 @@ onMounted(loadDatasets)
     <h2>尚未啟用</h2>
     <p class="muted">下列功能屬後續里程碑，介面不提供操作也不以假資料填充：</p>
     <ul>
-      <li>研究工作台與語意確認（建立研究版本）</li>
       <li>候選公式、推演與證據檢視</li>
       <li>基準測試、模型管理與封存評分</li>
+      <li>搜尋進度與候選凍結</li>
     </ul>
   </section>
 </template>
