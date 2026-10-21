@@ -65,10 +65,12 @@
   "sonar": {
     "source": "remote SonarQube 26.7.0.124771 at https://sonarqube.gogotdi.com via sonar-scanner CLI 8.1.0.6389",
     "project_key": "axion",
-    "analysis_id": "abe3c32d-04e1-4e27-a3d7-a5928dc61788",
-    "ce_task": "d572c106-9b35-43ad-b35e-322e239bc6bc",
-    "scm_revision": "6147f1ffc05bc6e7389d98951a67be14e019987f",
-    "scanned_at": "2026-10-21T20:02:12+08:00",
+    "analysis_id": "050a6f13-924e-4dfd-b002-e9d626e22472",
+    "ce_task": "4b707882-e4ed-4bed-b9fe-3512e2e4d87e",
+    "scm_revision": "ccec231205f7f445462fda4c38161508f400cdcc",
+    "scanned_at": "2026-10-21T20:14:10+08:00",
+    "superseded_analysis_id": "abe3c32d-04e1-4e27-a3d7-a5928dc61788",
+    "superseded_note": "第一次重掃在提交前取得同樣的零項目結果；提交後於乾淨工作區重掃，使 analysis 的 scm revision 與提交一致",
     "verified_via": "/api/measures/component 與 /api/issues/search（resolved=false，types 全列）",
     "files": 171,
     "ncloc": 15136,
@@ -151,7 +153,7 @@
     "tools/compatibility/compose.yaml": "13cf01f215fffd67dc9210da94697f67727a03911bc475fc0f0a2c01284412d7"
   },
   "known_limits": [
-    "Sonar 掃描以工作區內容送出，scm revision 為 6147f1f 加本批未提交修改；CI 不執行 sonar-scanner，零項目由本檔與遠端 analysis id 對應",
+    "Sonar 掃描在提交 ccec231 的乾淨工作區執行，analysis 的 scm revision 與提交一致；本檔紀錄檔本身不在分析語言內，故不改變分析內容",
     "scanner 不索引點開頭目錄，.github、.venv-backend 不在分析範圍；此為 scanner 既有行為，非本批新增排除",
     "本機 .env 啟用 INGEST／PROFILE，catalog_smoke 需 gate 關閉，故以可丟棄堆疊驗證，不以 axiom-dev 的結果冒充",
     "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
