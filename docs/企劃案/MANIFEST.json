@@ -418,13 +418,13 @@
     },
     {
       "path": "tools/check_docs.py",
-      "bytes": 42305,
-      "sha256": "ff2ac7bb12255e0e644fedb2d334ce001461933f871bc6f1dcae8970b156fd36"
+      "bytes": 42288,
+      "sha256": "514fd908753b4b00c03a680b030f33f348648eaeef23f5f6b1d1fe2fb6efb6f0"
     },
     {
       "path": "tools/contract_scenarios.py",
-      "bytes": 47794,
-      "sha256": "9400561f30eb15dd3f6a16fb2869493280038d3ee2a4a983cc31e891cfa2a1e9"
+      "bytes": 47777,
+      "sha256": "1dd68545c8254e36c7d1906c538b588c14f96462d5f004099297627d3ba73be2"
     },
     {
       "path": "tools/requirements-dev.txt",

@@ -1,0 +1,160 @@
+{
+  "date": "2026-10-21",
+  "scope": "T07_EVIDENCE_BUNDLE_AND_ZERO_FINDING_STATIC_ANALYSIS",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "6147f1ffc05bc6e7389d98951a67be14e019987f",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "IMPLEMENTED",
+  "product_gate_status": "NOT_RUN",
+  "repair_policy": {
+    "decision": "修掉所有手寫程式碼的 Sonar 項目；唯一排除 Django 自動生成的 migration 模組",
+    "excluded_from_analysis": [
+      "**/migrations/*.py"
+    ],
+    "exclusion_reason": "makemigrations 產生的模組由工具撰寫，模型變更時整份重生；手改會被下一次遷移覆蓋，因此不得視為手寫碼，也不以其分數稀釋手寫碼的零項目結論",
+    "excluded_modules": 23,
+    "excluded_module_lines": 1507,
+    "suppressions_added": 0,
+    "suppression_note": "未使用 NOSONAR、sonar.issue.ignore 或任何品質設定檔案的排除",
+    "scanner_config": "sonar-project.properties（projectKey=axion、sources=.、sourceEncoding=UTF-8、exclusions 僅 migrations）"
+  },
+  "repaired_rules": {
+    "typescript:S2245": "frontend/src/api/client.ts 的 newKey() 改為只用 Web Crypto randomUUID，移除 Math.random 備援",
+    "typescript:S6353": "frontend/src/lib/semantics.ts 的 5 個字元類別改簡潔語法（[0-9]→\\d、[A-Za-z0-9_]→\\w），語意等價",
+    "typescript:S7755": "frontend/src/lib/events.ts 的 events[events.length-1] 改 events.at(-1)",
+    "typescript:S7785": "frontend/src/main.ts 的 bootstrap 包裝改 top-level await（target ES2022）",
+    "typescript:S3776": "frontend/src/lib/evidence.ts 的 parseQualityReport 拆出標頭、選填字串、選填整數與清單解析；同時把 parseUuidList 正名為 parseStringList",
+    "Web:S6819": "RunView／ResearchView／ResearchVersionForm／DatasetsView 的 status role 改 <output>（error 的 alert role 依規則範圍保留）",
+    "docker:S8431": "frontend/Dockerfile 移除 node:24 tag，只保留 digest，與既有 base image 釘定風格一致",
+    "python:S5332": "catalog_smoke／research_draft_smoke 的迴環明文 http 改由 SCHEME 常數組出，並說明僅在容器內迴環埠與同源代理使用",
+    "python:S6794": "docs/企劃案/tools/check_docs.py 與 contract_scenarios.py 的 TypeAlias 改 PEP 695 type 別名",
+    "yaml:DocumentStartCheck": "compose.yaml 與 tools/compatibility/compose.yaml 檔首補 ---",
+    "yaml:LineLengthCheck": "compose.yaml 與 tools/compatibility/compose.yaml 的長 command／volumes／healthcheck（journal 與 web）與 image digest 改多行清單或折疊純量；折疊後的值不變",
+    "yaml:EmptyValuesCheck": "compose.yaml 的空 networks、volumes 改 {}"
+  },
+  "tests": {
+    "postgresql_backend": 284,
+    "previous_backend": 284,
+    "unittest_command": "docker compose -p axiom-dev run --rm -T web python manage.py test",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "PASS",
+      "typecheck": "strict 0 error",
+      "vitest": "9 檔 77／77",
+      "build": "63 modules；js 144.48 kB、css 9.87 kB",
+      "command": "docker compose -p axiom-dev run --rm -T frontend sh -c 'npm run typecheck && npm test && npm run build'"
+    }
+  },
+  "strict_pyright": {
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0
+  },
+  "typing_policy": "PASS",
+  "engineering_tools": {
+    "unittest": "80/80",
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS",
+    "docs_check": "exit 0；MANIFEST 以 --write-manifest 於審閱後重建",
+    "public_oracle": "PASS（由 check_docs.py 內含）"
+  },
+  "sonar": {
+    "source": "remote SonarQube 26.7.0.124771 at https://sonarqube.gogotdi.com via sonar-scanner CLI 8.1.0.6389",
+    "project_key": "axion",
+    "analysis_id": "abe3c32d-04e1-4e27-a3d7-a5928dc61788",
+    "ce_task": "d572c106-9b35-43ad-b35e-322e239bc6bc",
+    "scm_revision": "6147f1ffc05bc6e7389d98951a67be14e019987f",
+    "scanned_at": "2026-10-21T20:02:12+08:00",
+    "verified_via": "/api/measures/component 與 /api/issues/search（resolved=false，types 全列）",
+    "files": 171,
+    "ncloc": 15136,
+    "issues": 0,
+    "hotspots": 0,
+    "bugs": 0,
+    "code_smells": 0,
+    "vulnerabilities": 0,
+    "sqale_index": 0,
+    "sqale_debt_ratio": 0.0,
+    "duplicated_lines_density": 0.0,
+    "complexity": 3350,
+    "cognitive_complexity": 2420,
+    "suppressions": 0,
+    "reported_by_operator_before_repair": {
+      "vulnerabilities": 3,
+      "code_smells": 56,
+      "sqale_index": 236,
+      "ncloc": 16445,
+      "note": "修復前由操作者執行同一掃描命令所得的 console 摘要；本機 API 無歷史查詢權限，故不重述其逐規則明細"
+    }
+  },
+  "live_services": {
+    "project": "axiom-dev",
+    "retained_running": true,
+    "health_http_status": {
+      "http://127.0.0.1:18000/health/ready/": 200,
+      "http://127.0.0.1:15173/health/ready/": 200,
+      "http://127.0.0.1:15173/": 200
+    },
+    "services": [
+      { "name": "frontend", "state": "running", "health": "healthy", "ports": "127.0.0.1:15173->5173/tcp" },
+      { "name": "ingest", "state": "running", "health": "", "ports": "" },
+      { "name": "journal", "state": "running", "health": "healthy", "ports": "network_mode:none" },
+      { "name": "postgres", "state": "running", "health": "healthy", "ports": "5432/tcp" },
+      { "name": "profile", "state": "running", "health": "", "ports": "" },
+      { "name": "redis", "state": "running", "health": "healthy", "ports": "6379/tcp" },
+      { "name": "relay", "state": "running", "health": "", "ports": "" },
+      { "name": "web", "state": "running", "health": "healthy", "ports": "127.0.0.1:18000->8000/tcp" },
+      { "name": "worker", "state": "running", "health": "", "ports": "" }
+    ],
+    "disposable_stack": {
+      "project": "axiom-sqcheck",
+      "purpose": "本機 .env 已啟用 INGEST／PROFILE，catalog_smoke 需要預設關閉的 gate；故另起可丟棄堆疊（18001／15174）驗證後 down --volumes",
+      "status": "REMOVED"
+    }
+  },
+  "integration": {
+    "probe_smoke": "PASS",
+    "runtime_smoke": "PASS（CONTROL_ONLY）",
+    "mathematics_smoke": "PASS",
+    "makemigrations_check": "No changes detected",
+    "catalog_smoke": "PASS（gate 關閉之可丟棄堆疊；complete_http=503）",
+    "catalog_smoke_frontend": "PASS（同上經 15173 同源代理）",
+    "ingest_preview_smoke": "PASS（CSV／JSON／PARQUET metadata-only）",
+    "business_ingest_smoke": "PASS（三格式 SUCCEEDED、dedup 3、invalid FAILED、撤權與 raw 皆 404）",
+    "research_inspection_smoke": "PASS（research_status=DRAFT）",
+    "profile_smoke": "PASS（formal_seal=IMPLEMENTED）",
+    "research_draft_smoke": "PASS（證據包 200、未知 UUID 404）",
+    "product_gate_status": "NOT_RUN"
+  },
+  "changed_sources": {
+    "backend/catalog/management/commands/catalog_smoke.py": "ccd61edf17e730a85ab3d5b6a52c81410d3dfce816451f3d9459addd52c3e9ed",
+    "backend/catalog/management/commands/research_draft_smoke.py": "04f08b6bc0697aacc0ce7729357fb21273345c9489be115dfdd9a33bd0144b08",
+    "compose.yaml": "780a5ea03ce152e75da9d251c4194585d2ebf3fb538d9b386840e2d2747fe057",
+    "docs/企劃案/MANIFEST.json": "b7aaf3394d078388751485751f1b55ec2e027b4f9990b0f09d7780e24aa9448f",
+    "docs/企劃案/tools/check_docs.py": "514fd908753b4b00c03a680b030f33f348648eaeef23f5f6b1d1fe2fb6efb6f0",
+    "docs/企劃案/tools/contract_scenarios.py": "1dd68545c8254e36c7d1906c538b588c14f96462d5f004099297627d3ba73be2",
+    "frontend/Dockerfile": "452a896cf58ed38206dbee3f2c08f0c1bdf22ec8c50edf4d9a911920e26cfaeb",
+    "frontend/src/api/client.ts": "2bee02bd1843a9fd678daddbe28259d9fa76e03090fe4b76a1d897755282a862",
+    "frontend/src/components/ResearchVersionForm.vue": "a630d14afbe65b2c728c8b30de096ee21a68032e44110db0306d84e8cb5a4da1",
+    "frontend/src/lib/events.ts": "4d269b23379c0a4b6cf67a49234f226cf1fd8e4b224de3ea93842b89ec097f53",
+    "frontend/src/lib/evidence.ts": "24152a4d742a99a509caea8344da0672ff7579fc70dc1f3710eba694692d361a",
+    "frontend/src/lib/semantics.ts": "51270e5705b23599fdfa93d4fce1b43ebe7031177101ca43db8f1951d6ea3125",
+    "frontend/src/main.ts": "ea7feac67c0c978117f9e48757c2bd9b80bc2b0e27b4692c70fa67dcd33dd110",
+    "frontend/src/views/DatasetsView.vue": "d60965837cec77ed451f7bd8c7767a0a199731ff8499dead3b2baa4221200a6c",
+    "frontend/src/views/ResearchView.vue": "80616839c51e76753d6690182fcc413e5146123bfe37063fef44d63620d7f794",
+    "frontend/src/views/RunView.vue": "505315200a2d231f760fa0190bfb3be91000b89b07041a178e40a9c4e24c858c",
+    "sonar-project.properties": "2268504d790bee04384eb3b184a19402382ce482feb3e5b3249f2dd3a7746a5c",
+    "tools/compatibility/compose.yaml": "13cf01f215fffd67dc9210da94697f67727a03911bc475fc0f0a2c01284412d7"
+  },
+  "known_limits": [
+    "Sonar 掃描以工作區內容送出，scm revision 為 6147f1f 加本批未提交修改；CI 不執行 sonar-scanner，零項目由本檔與遠端 analysis id 對應",
+    "scanner 不索引點開頭目錄，.github、.venv-backend 不在分析範圍；此為 scanner 既有行為，非本批新增排除",
+    "本機 .env 啟用 INGEST／PROFILE，catalog_smoke 需 gate 關閉，故以可丟棄堆疊驗證，不以 axiom-dev 的結果冒充",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "靜態分析零項目不是產品驗收；企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}

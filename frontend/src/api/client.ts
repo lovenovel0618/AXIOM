@@ -36,10 +36,9 @@ export function toRelativePath(url: string, base = 'http://localhost'): string {
   return `${parsed.pathname}${parsed.search}`
 }
 
+/** 冪等鍵必須不可預測；一律使用 Web Crypto，缺少時直接失敗而非退回弱隨機。 */
 export function newKey(): string {
-  const source: Crypto | undefined = globalThis.crypto
-  if (source !== undefined && typeof source.randomUUID === 'function') return source.randomUUID()
-  return `k-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`
+  return globalThis.crypto.randomUUID()
 }
 
 export interface RequestOptions {

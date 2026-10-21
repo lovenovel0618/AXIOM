@@ -70,7 +70,7 @@ export function parseEventBatch(text: string): RunEventEnvelope[] {
 
 /** 續接游標必須是後端接受的 `RUN:<run uuid>:<sequence>`，其餘一律拒絕。 */
 export function resumeCursor(runId: string, events: RunEventEnvelope[]): string | null {
-  const last = events[events.length - 1]
+  const last = events.at(-1)
   if (last === undefined) return null
   return `RUN:${runId}:${String(last.sequence)}`
 }

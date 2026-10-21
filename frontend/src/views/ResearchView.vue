@@ -436,7 +436,7 @@ onMounted(async () => {
   </div>
 
   <p v-if="error" class="alert" role="alert">{{ error }}</p>
-  <p v-if="notice" class="notice" role="status">{{ notice }}</p>
+  <output v-if="notice" class="notice">{{ notice }}</output>
 </template>
 
 <style scoped>
@@ -536,6 +536,7 @@ h3 {
   color: var(--danger);
 }
 .notice {
+  display: block;
   padding: 0.6rem 0.75rem;
   border-radius: 0.4rem;
   background: var(--surface-muted);

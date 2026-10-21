@@ -12,11 +12,11 @@ import type {
   SemanticQuantity,
 } from '../api/research'
 
-const NAME = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/
-const DECIMAL = /^(0|[1-9][0-9]*)(\.[0-9]+)?$/
-const POSITIVE_DECIMAL = /^(?!0(\.0+)?$)(0|[1-9][0-9]*)(\.[0-9]+)?$/
-const NUMERATOR = /^-?(0|[1-9][0-9]{0,127})$/
-const DENOMINATOR = /^[1-9][0-9]{0,127}$/
+const NAME = /^[A-Za-z_]\w{0,63}$/
+const DECIMAL = /^(0|[1-9]\d*)(\.\d+)?$/
+const POSITIVE_DECIMAL = /^(?!0(\.0+)?$)(0|[1-9]\d*)(\.\d+)?$/
+const NUMERATOR = /^-?(0|[1-9]\d{0,127})$/
+const DENOMINATOR = /^[1-9]\d{0,127}$/
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /** 後端只支援無時間、無群組的獨立列切分。 */

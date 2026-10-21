@@ -79,37 +79,52 @@ function parseFitSummary(value: unknown): FitSummary | null {
   return { selectedCount, uniqueX, targetMin, targetMax, targetMean, targetIqr }
 }
 
-export function parseQualityReport(value: unknown): QualityReport | null {
-  if (typeof value !== 'object' || value === null) return null
+/** 遮罩報告的開頭欄位：kind、quality、readiness 三者皆須符合契約才接受整份報告。 */
+function parseQualityHeader(value: object): { quality: QualityOutcome; readiness: Readiness } | null {
   if (!('kind' in value) || value.kind !== 'QualityReport') return null
   if (!('quality' in value) || (value.quality !== 'PASS' && value.quality !== 'BLOCKED')) return null
   if (!('readiness' in value) || (value.readiness !== 'READY' && value.readiness !== 'BLOCKED')) return null
-  if (!('remaining' in value) || !Array.isArray(value.remaining)) return null
-  const remaining: string[] = []
-  for (const item of value.remaining) {
-    if (typeof item !== 'string' || item === '') return null
-    remaining.push(item)
-  }
-  const blocking: unknown = 'blocking_code' in value ? value.blocking_code : null
-  const precision: unknown = 'precision_bits' in value ? value.precision_bits : null
-  const summary: unknown = 'fit_summary' in value ? value.fit_summary : null
+  return { quality: value.quality, readiness: value.readiness }
+}
+
+/** 選填字串欄位：留白或型別不符一律視為未提供。 */
+function optionalString(source: object, key: string): string | null {
+  const candidate = (source as Record<string, unknown>)[key]
+  return typeof candidate === 'string' && candidate !== '' ? candidate : null
+}
+
+/** 選填整數欄位：非安全整數一律視為未提供。 */
+function optionalInteger(source: object, key: string): number | null {
+  const candidate = (source as Record<string, unknown>)[key]
+  return typeof candidate === 'number' && Number.isSafeInteger(candidate) ? candidate : null
+}
+
+export function parseQualityReport(value: unknown): QualityReport | null {
+  if (typeof value !== 'object' || value === null) return null
+  const header = parseQualityHeader(value)
+  if (header === null) return null
+  if (!('remaining' in value)) return null
+  const remaining = parseStringList(value.remaining)
+  if (remaining === null) return null
   // fit 摘要若存在卻不完整，代表後端契約不符；整份報告不採用，避免顯示半解讀內容。
   let fitSummary: FitSummary | null = null
+  const summary: unknown = 'fit_summary' in value ? value.fit_summary : null
   if (summary !== null) {
     fitSummary = parseFitSummary(summary)
     if (fitSummary === null) return null
   }
   return {
-    quality: value.quality,
-    readiness: value.readiness,
-    blockingCode: typeof blocking === 'string' && blocking !== '' ? blocking : null,
+    quality: header.quality,
+    readiness: header.readiness,
+    blockingCode: optionalString(value, 'blocking_code'),
     remaining,
-    precisionBits: typeof precision === 'number' && Number.isSafeInteger(precision) ? precision : null,
+    precisionBits: optionalInteger(value, 'precision_bits'),
     fitSummary,
   }
 }
 
-function parseUuidList(value: unknown): string[] | null {
+/** 非空字串清單：任一項不符即整份拒絕，不用補值的方式蒙混過關。 */
+function parseStringList(value: unknown): string[] | null {
   if (!Array.isArray(value)) return null
   const result: string[] = []
   for (const item of value) {
@@ -127,8 +142,8 @@ export function parseEvidenceBundle(value: unknown): EvidenceBundle | null {
   if (!('research_version_id' in value) || typeof value.research_version_id !== 'string' || value.research_version_id === '') return null
   if (!('status' in value) || (value.status !== 'ACTIVE' && value.status !== 'REVOKED' && value.status !== 'QUARANTINED')) return null
   if (!('revision' in value) || typeof value.revision !== 'number' || !Number.isSafeInteger(value.revision) || value.revision < 0) return null
-  const validationIds = parseUuidList('validation_ids' in value ? value.validation_ids : null)
-  const proofArtifactIds = parseUuidList('proof_artifact_ids' in value ? value.proof_artifact_ids : null)
+  const validationIds = parseStringList('validation_ids' in value ? value.validation_ids : null)
+  const proofArtifactIds = parseStringList('proof_artifact_ids' in value ? value.proof_artifact_ids : null)
   if (validationIds === null || proofArtifactIds === null) return null
   if (validationIds.length === 0 && proofArtifactIds.length === 0) return null
   return {

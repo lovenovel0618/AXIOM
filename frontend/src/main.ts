@@ -4,9 +4,5 @@ import { restoreSession } from './lib/session'
 import { router } from './router'
 import './style.css'
 
-async function bootstrap(): Promise<void> {
-  await restoreSession()
-  createApp(App).use(router).mount('#app')
-}
-
-void bootstrap()
+await restoreSession()
+createApp(App).use(router).mount('#app')

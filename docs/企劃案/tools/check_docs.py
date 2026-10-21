@@ -10,7 +10,7 @@ import re
 import sys
 from urllib.parse import unquote
 from collections.abc import Iterator, Mapping
-from typing import Any, TypeAlias, cast
+from typing import Any, cast
 
 from jsonschema import Draft202012Validator, FormatChecker
 from jsonschema.protocols import Validator
@@ -22,7 +22,7 @@ sys.dont_write_bytecode = True
 from contract_scenarios import canonical_hash, check_scenarios, strict_json_loads
 
 # JSON documents have schema-defined dynamic keys; keep Any at this data boundary.
-JsonObject: TypeAlias = dict[str, Any]
+type JsonObject = dict[str, Any]
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_NAME = "MANIFEST.json"
 README_NAME = "README.md"

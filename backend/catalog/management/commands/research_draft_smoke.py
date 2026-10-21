@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from catalog.management.commands.business_ingest_smoke import upload, wait_run
-from catalog.management.commands.catalog_smoke import Browser
+from catalog.management.commands.catalog_smoke import BASE, Browser, FRONTEND_BASE
 from catalog.models import Account, Tenant
 from catalog.services import set_grant
 from catalog.validation import validate_api
@@ -42,7 +42,7 @@ class Command(BaseCommand):
         password = secrets.token_urlsafe(24)
         user = User.objects.create_user(username="draft-" + uuid4().hex, password=password)
         actor = Account.objects.create(user=user, tenant=Tenant.objects.create(name="draft-synthetic"), role="ADMIN")
-        browser = Browser("http://frontend:5173" if options["frontend"] else "http://127.0.0.1:8000")
+        browser = Browser(FRONTEND_BASE if options["frontend"] else BASE)
         browser.login(user.get_username(), password)
         status, dataset = browser.post("/api/v2/datasets", {"name": "synthetic-draft"})
         check(status == 201, "Dataset rejected")

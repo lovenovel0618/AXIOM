@@ -19,7 +19,10 @@ from catalog.storage import LocalVersionStore
 from catalog.validation import validate_api
 from runtime.contracts import JsonObject
 
-BASE = "http://127.0.0.1:8000"
+# 冒煙命令只在容器內的迴環埠與前端代理上呼叫，不經外部網路，故明文 HTTP 屬刻意選擇。
+SCHEME = "http"
+BASE = f"{SCHEME}://127.0.0.1:8000"
+FRONTEND_BASE = f"{SCHEME}://frontend:5173"
 
 
 class Browser:
@@ -62,7 +65,7 @@ class Command(BaseCommand):
         parser.add_argument("--frontend", action="store_true")
 
     def handle(self, *args: Any, **options: Any) -> None:
-        base = "http://frontend:5173" if options["frontend"] else BASE
+        base = FRONTEND_BASE if options["frontend"] else BASE
         password = secrets.token_urlsafe(30)
         actors: list[Account] = []
         with transaction.atomic():

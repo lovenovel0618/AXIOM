@@ -10,10 +10,10 @@ import hmac
 import json
 import math
 from uuid import UUID
-from typing import Any, TypeAlias, cast
+from typing import Any, cast
 
 # Fixture objects are validated against JSON Schemas before reference decisions.
-JsonObject: TypeAlias = dict[str, Any]
+type JsonObject = dict[str, Any]
 
 
 @dataclass(frozen=True)

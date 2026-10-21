@@ -1,3 +1,4 @@
+---
 name: axiom-dev
 x-backend: &backend
   build:
@@ -18,7 +19,8 @@ x-backend: &backend
   networks: [private]
 services:
   postgres:
-    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    image: >-
+      postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     environment:
       POSTGRES_DB: axiom
       POSTGRES_USER: axiom
@@ -31,7 +33,8 @@ services:
       timeout: 3s
       retries: 30
   redis:
-    image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    image: >-
+      redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
     command: [redis-server, --appendonly, "yes"]
     volumes: [redis-data:/data]
     networks: [private]
@@ -49,17 +52,35 @@ services:
     command: [python, -m, sealing.server]
     network_mode: none
     environment:
-      AXIOM_JOURNAL_TOKEN: ${AXIOM_JOURNAL_TOKEN:?Set AXIOM_JOURNAL_TOKEN in .env}
+      AXIOM_JOURNAL_TOKEN: ${AXIOM_JOURNAL_TOKEN:?Set journal token in .env}
       AXIOM_JOURNAL_SOCKET: /var/lib/axiom/socket/journal.sock
-    volumes: [journal-data:/var/lib/axiom/journal, journal-authority:/var/lib/axiom/authority, journal-socket:/var/lib/axiom/socket]
+    volumes:
+      - journal-data:/var/lib/axiom/journal
+      - journal-authority:/var/lib/axiom/authority
+      - journal-socket:/var/lib/axiom/socket
     healthcheck:
-      test: [CMD, python, -c, "import json,os,socket,struct; s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); s.settimeout(5); s.connect('/var/lib/axiom/socket/journal.sock'); b=json.dumps({'op':'health','token':os.environ['AXIOM_JOURNAL_TOKEN']}).encode(); s.sendall(struct.pack('!I',len(b))+b); h=s.recv(4); assert json.loads(s.recv(struct.unpack('!I',h)[0]))['status']=='ok'"]
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import json,os,socket,struct;
+          s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM);
+          s.settimeout(5); s.connect('/var/lib/axiom/socket/journal.sock');
+          b=json.dumps({'op':'health','token':os.environ['AXIOM_JOURNAL_TOKEN']});
+          b=b.encode(); s.sendall(struct.pack('!I',len(b))+b); h=s.recv(4);
+          assert json.loads(s.recv(struct.unpack('!I',h)[0]))['status']=='ok'
       interval: 5s
       timeout: 8s
       retries: 20
   migrate:
     <<: *backend
-    command: [sh, -c, "python manage.py prepare_raw_access && python manage.py migrate --noinput"]
+    command:
+      - sh
+      - -c
+      - >-
+        python manage.py prepare_raw_access &&
+        python manage.py migrate --noinput
     volumes: [object-data:/var/lib/axiom/objects]
     depends_on:
       postgres: {condition: service_healthy}
@@ -72,20 +93,41 @@ services:
       migrate: {condition: service_completed_successfully}
       redis: {condition: service_healthy}
     healthcheck:
-      test: [CMD, python, -c, "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/health/ready/', timeout=6)"]
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          from urllib.request import urlopen;
+          urlopen('http://127.0.0.1:8000/health/ready/', timeout=6)
       interval: 5s
       timeout: 8s
       retries: 20
   worker:
     <<: *backend
-    command: [celery, -A, config.celery:app, worker, --loglevel=INFO, --concurrency=1, --queues=foundation]
+    command:
+      - celery
+      - -A
+      - config.celery:app
+      - worker
+      - --loglevel=INFO
+      - --concurrency=1
+      - --queues=foundation
     depends_on:
       migrate: {condition: service_completed_successfully}
       redis: {condition: service_healthy}
   ingest:
     <<: *backend
     profiles: [ingest]
-    command: [celery, -A, config.celery:app, worker, --loglevel=INFO, --concurrency=1, --max-tasks-per-child=1, --queues=ingest]
+    command:
+      - celery
+      - -A
+      - config.celery:app
+      - worker
+      - --loglevel=INFO
+      - --concurrency=1
+      - --max-tasks-per-child=1
+      - --queues=ingest
     volumes: ["object-data:/var/lib/axiom/objects:ro"]
     depends_on:
       migrate: {condition: service_completed_successfully}
@@ -94,15 +136,27 @@ services:
     <<: *backend
     profiles: [profile]
     user: "10002:10003"
-    command: [celery, -A, config.celery:app, worker, --loglevel=INFO, --concurrency=1, --max-tasks-per-child=1, --queues=profile]
+    command:
+      - celery
+      - -A
+      - config.celery:app
+      - worker
+      - --loglevel=INFO
+      - --concurrency=1
+      - --max-tasks-per-child=1
+      - --queues=profile
     environment:
       <<: *environment
       AXIOM_SEALING_ENABLED: ${AXIOM_SEALING_ENABLED:-1}
       AXIOM_SEALING_DATA: /var/lib/axiom/sealed
       AXIOM_SEALING_KEYS: /var/lib/axiom/sealed-keys
       AXIOM_JOURNAL_SOCKET: /var/lib/axiom/socket/journal.sock
-      AXIOM_JOURNAL_TOKEN: ${AXIOM_JOURNAL_TOKEN:?Set AXIOM_JOURNAL_TOKEN in .env}
-    volumes: ["object-data:/var/lib/axiom/objects:ro", "sealed-data:/var/lib/axiom/sealed", "sealed-keys:/var/lib/axiom/sealed-keys", "journal-socket:/var/lib/axiom/socket"]
+      AXIOM_JOURNAL_TOKEN: ${AXIOM_JOURNAL_TOKEN:?Set journal token in .env}
+    volumes:
+      - "object-data:/var/lib/axiom/objects:ro"
+      - "sealed-data:/var/lib/axiom/sealed"
+      - "sealed-keys:/var/lib/axiom/sealed-keys"
+      - "journal-socket:/var/lib/axiom/socket"
     mem_limit: 2g
     cpus: 1.0
     pids_limit: 64
@@ -126,22 +180,28 @@ services:
     ports: ["127.0.0.1:${AXIOM_FRONTEND_PORT:-15173}:5173"]
     networks: [edge]
     healthcheck:
-      test: [CMD, node, -e, "fetch('http://127.0.0.1:5173/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          fetch('http://127.0.0.1:5173/').then(r => process.exit(r.ok ? 0 : 1))
+          .catch(() => process.exit(1))
       interval: 5s
       timeout: 3s
       retries: 20
     depends_on:
       web: {condition: service_healthy}
 networks:
-  edge:
+  edge: {}
   private:
     internal: true
 volumes:
-  postgres-data:
-  redis-data:
-  object-data:
-  sealed-data:
-  sealed-keys:
-  journal-data:
-  journal-authority:
-  journal-socket:
+  postgres-data: {}
+  redis-data: {}
+  object-data: {}
+  sealed-data: {}
+  sealed-keys: {}
+  journal-data: {}
+  journal-authority: {}
+  journal-socket: {}

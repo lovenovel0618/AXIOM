@@ -198,12 +198,12 @@ onMounted(loadDatasets)
   </div>
 
   <p v-if="error" class="alert" role="alert">{{ error }}</p>
-  <p v-if="notice" class="notice" role="status">
+  <output v-if="notice" class="notice">
     {{ notice }}
     <template v-if="lastRun !== null">
       <RouterLink :to="{ name: 'run', params: { id: lastRun.id } }">查看任務</RouterLink>
     </template>
-  </p>
+  </output>
 
   <section class="pending" aria-label="尚未啟用功能">
     <h2>尚未啟用</h2>
@@ -301,6 +301,7 @@ h3 {
   color: var(--danger);
 }
 .notice {
+  display: block;
   padding: 0.6rem 0.75rem;
   border-radius: 0.4rem;
   background: var(--surface-muted);
