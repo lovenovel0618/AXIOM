@@ -23,7 +23,7 @@ from catalog.validation import ApiError
 from ingestion.research import POLICY
 
 
-@override_settings(INGEST_ENABLED=True, INGEST_LIMITS_JSON=json.dumps(LIMITS.document()))
+@override_settings(INGEST_ENABLED=True, INGEST_LIMITS_JSON=json.dumps(LIMITS.document()), PROFILE_ENABLED=False)
 class InspectionTests(TransactionTestCase):
     def setUp(self) -> None:
         directory = TemporaryDirectory()

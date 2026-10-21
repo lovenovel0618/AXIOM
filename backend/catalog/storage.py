@@ -37,7 +37,7 @@ class ObjectRef:
 class LocalVersionStore:
     def __init__(self, root: Path) -> None:
         self.root = root
-        self.root.mkdir(parents=True, exist_ok=True, mode=0o700)
+        self.root.mkdir(parents=True, exist_ok=True, mode=0o750)
 
     def path(self, reference: ObjectRef) -> Path:
         # Only UUID-derived components; a user's filename never enters this path.
@@ -53,7 +53,7 @@ class LocalVersionStore:
                 self._copy(source, target, reference)
                 target.flush()
                 os.fsync(target.fileno())
-                os.fchmod(target.fileno(), 0o400)
+                os.fchmod(target.fileno(), 0o440)
             try:
                 os.link(temporary_path, self.path(reference), follow_symlinks=False)
             except FileExistsError:

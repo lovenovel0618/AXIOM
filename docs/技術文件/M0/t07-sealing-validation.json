@@ -1,0 +1,184 @@
+{
+  "date": "2026-10-21",
+  "scope": "T07_FORMAL_SEAL_AND_EXPOSURE_LEDGER",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "e92d65b0028eca9550dd4d337ff64ac1d99b9530",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "IMPLEMENTED",
+  "product_gate_status": "NOT_RUN",
+  "research_status": "READY",
+  "formal_seal": "IMPLEMENTED",
+  "tests": {
+    "postgresql_backend": 284,
+    "previous_backend": 272,
+    "new_backend": 12,
+    "new_sealing_unit_tests": 9,
+    "new_extended_existing_tests": 3,
+    "engineering_tools": 80,
+    "previous_tools": 79,
+    "unittest_command": "docker compose -p axiom-dev run --rm -T web python manage.py test",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "NO_SOURCE_CHANGE",
+      "prior_evidence": "t07-quality-validation.json: typecheck, 8 tests and build PASS"
+    }
+  },
+  "strict_pyright": {
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0
+  },
+  "typing_policy": "PASS",
+  "engineering_tools": {
+    "unittest": "80/80",
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS",
+    "public_oracle": "PASS"
+  },
+  "sonar": {
+    "source": "local sonarqube-community via sonar-scanner CLI",
+    "sources": [
+      "backend",
+      "tools",
+      "tests",
+      "docs/企劃案/tools"
+    ],
+    "python_files": 141,
+    "total_files": 152,
+    "non_python_files": [
+      "backend/Dockerfile",
+      "tools/compatibility/Dockerfile",
+      "tools/benchmark/Dockerfile",
+      "backend/catalog/templates/catalog/login.html",
+      "tools/compatibility/compose.yaml",
+      "tools/compatibility/frontend/src/App.vue",
+      "tools/compatibility/frontend/src/main.ts",
+      "tools/compatibility/frontend/src/state.ts",
+      "tools/compatibility/frontend/vite.config.ts",
+      "tools/compatibility/frontend/tests/compatibility.test.ts",
+      "tools/compatibility/frontend/record.mjs"
+    ],
+    "issues": 0,
+    "hotspots": 0,
+    "bugs": 0,
+    "code_smells": 0,
+    "vulnerabilities": 0,
+    "sqale_index": 0,
+    "duplicated_lines_density": 0.0,
+    "ncloc": 13099,
+    "suppressions": 0
+  },
+  "live_services": {
+    "project": "axiom-dev",
+    "retained_running": true,
+    "health_http_status": {
+      "http://127.0.0.1:18000/health/ready/": 200,
+      "http://127.0.0.1:15173/health/ready/": 200,
+      "http://127.0.0.1:15173/": 200
+    },
+    "journal_health": {
+      "uid": 10004,
+      "transport": "/var/lib/axiom/socket/journal.sock",
+      "status": "ok"
+    },
+    "services": [
+      { "name": "frontend", "state": "running", "health": "healthy", "ports": "127.0.0.1:15173->5173/tcp" },
+      { "name": "ingest", "state": "running", "health": "", "ports": "" },
+      { "name": "journal", "state": "running", "health": "healthy", "ports": "network_mode:none" },
+      { "name": "postgres", "state": "running", "health": "healthy", "ports": "5432/tcp" },
+      { "name": "profile", "state": "running", "health": "", "ports": "" },
+      { "name": "redis", "state": "running", "health": "healthy", "ports": "6379/tcp" },
+      { "name": "relay", "state": "running", "health": "", "ports": "" },
+      { "name": "web", "state": "running", "health": "healthy", "ports": "127.0.0.1:18000->8000/tcp" },
+      { "name": "worker", "state": "running", "health": "", "ports": "" }
+    ],
+    "identity_isolation": {
+      "evaluator_uid": 10002,
+      "raw_gid": 10003,
+      "journal_uid": 10004,
+      "raw_dir_mode": "2750",
+      "raw_object_mode": "0440",
+      "sealed_data_mode": "0700",
+      "sealed_keys_mode": "0700"
+    },
+    "image_base_pinning": {
+      "backend/Dockerfile": "python@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f",
+      "tools/compatibility/Dockerfile": "python@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f",
+      "tools/benchmark/Dockerfile": "python@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f"
+    }
+  },
+  "integration": {
+    "profile_smoke": "PASS",
+    "sealed_formats": [
+      "CSV",
+      "JSON",
+      "PARQUET"
+    ],
+    "sealed_tests_registered": 5,
+    "ready_projections": 3,
+    "blocked_draft_projections": 2,
+    "blocked_registrations": 0,
+    "quota_denial_status": 429,
+    "revoked_status": 404,
+    "formal_seal": "IMPLEMENTED",
+    "product_gate_status": "NOT_RUN"
+  },
+  "compatibility_rerun": {
+    "scope": "T02_COMPATIBILITY_ONLY",
+    "status": "PASS",
+    "python": "3.13.16",
+    "machine": "aarch64",
+    "lock_sha256": "9421423e6db6fe4fe1b08029f5fae201c6b38425b8ea8de841d30611ebb9db9f",
+    "checks": 5,
+    "evidence": "t02-linux-arm64.json"
+  },
+  "changed_sources": {
+    ".env.example": "d89c17df0f2e552a12f68e0c934922dd75d99425afdeea435057b3b58ab5520a",
+    ".github/workflows/product-check.yml": "6a7152f1538d85ae96509672bab8ff275de481176bae3b2ebc1f8adf1e0b6aa1",
+    "backend/Dockerfile": "8de30e527570b161f0f10c86177361024a2915a911eb6b61cf58edc6d8919c9f",
+    "backend/catalog/management/commands/prepare_raw_access.py": "de42dd351bd72d0312714f3a08d7b9660de07f370e6c7cacd2a74ff66bf1f778",
+    "backend/catalog/management/commands/profile_smoke.py": "9b15c481a7e262ecaf0f332fac384c3fb0c630a62235ef18b264cd6a1ee70113",
+    "backend/catalog/migrations/0011_sealregistration_and_more.py": "44cc615951bff9d6b67ca5383db2f93f7c1d8c3b5041c0d208709e544fbb24da",
+    "backend/catalog/migrations/0012_ready_guard.py": "4d24ffeecc6f8920cf58b8f0e8a8c22698221c82ba13d5b26a0e1caad18ddb40",
+    "backend/catalog/models.py": "953b3dd0c0b0ba78a1eb69123942abec952857e3dd8ca933e2511bd018ce648a",
+    "backend/catalog/profile.py": "76c53b603fa8673ab7e8a9208658a68ecf3dbfc5f313fb4ee0d8077d5a4aba12",
+    "backend/catalog/research_state.py": "acc93ef418e10cfd58571aa7a25f5c0b334648227664162b79a6d331fa48616d",
+    "backend/catalog/sealing.py": "73f5996aa99ca405bc1fd7a908a0297bb6077cbe11f25000ff29f9506c035c4b",
+    "backend/catalog/storage.py": "da1bc71f17f54f383f4acec5fbe1e8a7f7cd16d564f9dcf1d74a57e64e5c5483",
+    "backend/catalog/tests/test_api.py": "15e96230f97e66bd8e8d5be174ee43bf400dca3229283d6408da4590cc7a9689",
+    "backend/catalog/tests/test_inspection.py": "786b0757e5375b26ff0c75fe7286e5f3ea3dae8172e4bbedabfce96ed0e8775c",
+    "backend/catalog/tests/test_profile.py": "bf1e25a28ebf6687f0472434c36f9a4ac43e284ab3a4d5a960d7aadf0109bd48",
+    "backend/catalog/tests/test_research.py": "0605bbfce2df53a74c55a5c0a3bb8e9bfb1e43c5a6dc5c71c920251cf733679d",
+    "backend/catalog/tests/test_sealing.py": "c880422c37ba4c9cd63ed0c0dff17bfe28c3f9f24f6af1ade1848446a31ccdcb",
+    "backend/catalog/tests/test_storage.py": "01fb81fe4e9f28e1d04012d9a89a1cdef7fe34ce5e6c1a9facb3935b1a35f827",
+    "backend/config/settings.py": "cfa7d26c0ba586c7e2b65747fddd6b32467c28a858367a4eb5365c5be0f4abfd",
+    "backend/ingestion/supervisor.py": "3a547bc2e42db3a6a35b911d2f7b7d21e6800df30721cb089c9ceb13fcc4193f",
+    "backend/ingestion/worker.py": "ff7d11c2b328ee570b2d8b30bc9efa407f6c31a9213545d7b95e623091bd83e3",
+    "backend/pyrightconfig.json": "0f6de13d8dd6eea50f37807f34ce70ac274eb9a5607e96259fbe10f65cafaec8",
+    "backend/sealing/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend/sealing/journal.py": "e1b3f149f4ee17720e47e118301ea45832a79a945dafb2687ce4525f9d5b2db5",
+    "backend/sealing/prepare.py": "592e2669accf17b50444349da4284b8fe33e89ac550ebecac0bb09236552684c",
+    "backend/sealing/rpc.py": "60dce288c7da02ccde526deca46dbd0b3a379dd8d92f26e3b1e2412a1b4d9d0a",
+    "backend/sealing/server.py": "3e25989362749091fe5b0dd72dba15407987cf8cbba043d6d29bd14986a59e79",
+    "backend/sealing/types.py": "debfc3a3b5af1047c5380011cb416fc9b34c2f8a5f4ac5d8fc971bb7a7d487c9",
+    "backend/sealing/vault.py": "e8b7ce282b8a372a8a5d6dcf242f22abe5e39cd8c312f7b3d668093c64c68ecd",
+    "backend/sealing/worker.py": "57bd8595feb489e602065164179d70dfad3574d46c9ef55b070a7a4fa3183d9c",
+    "compose.yaml": "8f86006370d7aa0bcff814a67c7f11e2241695f2c55258993a0b7ba9150eea7b",
+    "tests/test_compatibility_probe.py": "f86b07090a968129859910255ff5f4985f6013c6fe5e444556ad3f173aa99654",
+    "tools/benchmark/Dockerfile": "3bad54f19513ccf68a1331d890051546780afea02e6c019f0bd180bc9f64a316",
+    "tools/compatibility/Dockerfile": "549d7990357831d7ebeedeccacc7821fb348663557038338c78c77d58265af1e",
+    "tools/compatibility/compose.yaml": "b12980b0773ff94ee4acf16b495f3ac52c7a83a77c43828ca68a8bb3a7ef3642",
+    "tools/compatibility/python_probe.py": "8cfbbca916b594dc24f1b4b07447c1140d4c52ac6b044743962bd682e1893c65",
+    "tools/typing-boundaries.json": "8195cb94f355c4e9e207aa030c9ee1eaef9c1ed24cc05c8c5173db37ff2d691a"
+  },
+  "known_limits": [
+    "Formal unknown blind, FrozenSubmission/FinalEvaluationSlot, scoring and complete backup SLO are not implemented",
+    "No general HTTP final read endpoint and no arbitrary submission endpoint exist",
+    "Frontend was not re-run in this batch because no frontend source changed",
+    "Windows WSL2 and remote amd64 are not exercised locally; CI decides them"
+  ]
+}

@@ -195,7 +195,7 @@ class CatalogTests(TestCase):
         self.assertEqual(Upload.objects.get().object_version, first.id)
         files = list(Path(self.directory.name).iterdir())
         self.assertEqual(len(files), 1)
-        self.assertEqual(files[0].stat().st_mode & 0o777, 0o400)
+        self.assertEqual(files[0].stat().st_mode & 0o777, 0o440)
         self.assertNotIn("private.csv", files[0].name)
         self.assertNotIn("?", upload["put_url"])
         self.assertEqual(self.client.get("/storage/uploads/" + upload["id"]).status_code, 405)
@@ -252,7 +252,8 @@ class CatalogTests(TestCase):
     def test_complete_never_fabricates_ingest(self) -> None:
         upload = self.upload()
         self.put(upload)
-        response = self.post("/api/v2/uploads/" + upload["id"] + "/complete", {"checksum": CHECKSUM})
+        with self.settings(INGEST_ENABLED=False):
+            response = self.post("/api/v2/uploads/" + upload["id"] + "/complete", {"checksum": CHECKSUM})
         self.assertEqual((response.status_code, document(response)["code"]), (503, "DEPENDENCY_UNAVAILABLE"))
         self.assertIsNone(Upload.objects.get().ingest_run_id)
         self.assertEqual(Upload.objects.get().status, "OPEN")

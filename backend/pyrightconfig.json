@@ -6,7 +6,8 @@
     "runtime",
     "catalog",
     "mathematics",
-    "ingestion"
+    "ingestion",
+    "sealing"
   ],
   "venvPath": "..",
   "venv": ".venv-backend",

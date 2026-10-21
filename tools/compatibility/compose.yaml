@@ -5,7 +5,8 @@ services:
     environment:
       POSTGRES_DB: axiom_compat
       POSTGRES_USER: axiom
-      POSTGRES_PASSWORD: compatibility-only
+      # Disposable, internal-network-only harness: no credential is stored anywhere.
+      POSTGRES_HOST_AUTH_METHOD: trust
     healthcheck:
       test: [CMD-SHELL, "pg_isready -U axiom -d axiom_compat"]
       interval: 2s
@@ -25,7 +26,7 @@ services:
     build: .
     environment:
       AXIOM_COMPAT_ALLOW_DISPOSABLE: "1"
-      AXIOM_COMPAT_POSTGRES: postgresql://axiom:compatibility-only@postgres:5432/axiom_compat
+      AXIOM_COMPAT_POSTGRES: postgresql://axiom@postgres:5432/axiom_compat
       AXIOM_COMPAT_REDIS: redis://redis:6379/13
       OMP_NUM_THREADS: "1"
       OPENBLAS_NUM_THREADS: "1"

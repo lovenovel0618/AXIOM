@@ -11,9 +11,10 @@ from catalog.budget import report_usage, reserve, release_unstarted, usage_repor
 from catalog.ingest import Meter
 from catalog.ingest_manifest import environment
 from catalog.inspection import current, configuration
-from catalog.models import Account, Audit, ProfileBinding, Provenance, ResearchBudget, ResearchVersion, Reservation
+from catalog.models import Account, Audit, ProfileBinding, Provenance, ResearchBudget, ResearchVersion, Reservation, SealRegistration
 from catalog.profile_manifest import documents, limits_for, limit_for
 from catalog.research_state import state_for, transition
+from catalog.sealing import attach, registration
 from catalog.services import provenance
 from catalog.storage import LocalVersionStore, StorageRejected
 from catalog.validation import ApiError
@@ -25,6 +26,7 @@ from runtime.budget_types import BudgetUsage
 from runtime.control import Lease, check_submission, claim, enqueue, recover
 from runtime.models import RuntimeAttempt, RuntimeRun
 from runtime.records import ControlError, db_now, lock_run, public_run, save_attempt, save_run, snapshot_for, state_event
+from sealing.types import Attestation
 
 
 def enqueue_profile(actor: Account, version: ResearchVersion, data: JsonObject, revision: int) -> JsonObject:
@@ -58,13 +60,13 @@ def enqueue_profile(actor: Account, version: ResearchVersion, data: JsonObject, 
     return public_run(actor.tenant_id,identity)
 
 
-def close_state(binding: ProfileBinding, quality: UUID | None = None, structure: UUID | None = None) -> None:
-    """僅清除屬於本 root 的活躍狀態；保留 DRAFT，品質通過仍不代表已具正式封存資格。"""
+def close_state(binding: ProfileBinding, quality: UUID | None = None, structure: UUID | None = None, seal: SealRegistration | None = None) -> None:
+    """僅清除屬於本 root 的活躍狀態；只有同時具備原生封存登記才投影 READY，否則回 DRAFT。"""
     state = state_for(binding.research_version)
     if state.active_run_id==binding.run_id:
         state.active_run_id = None
-        state.quality_id,state.structure_id = quality,structure
-        transition(state,"DRAFT")
+        state.quality_id,state.structure_id,state.seal = quality,structure,seal
+        transition(state,"READY" if seal is not None else "DRAFT")
 
 
 def recover_profile(tenant: UUID, identity: UUID) -> None:
@@ -112,12 +114,14 @@ def inputs(binding: ProfileBinding, lease: Lease) -> tuple[bytes,str,ImportLimit
         return content,version.dataset_version.document["format"],limits,config
 
 
-def results(binding: ProfileBinding, run: RuntimeRun, result: JsonObject, execution: UUID) -> tuple[UUID,UUID | None]:
-    """提交遮罩品質報告；只有 PASS 才產生 fit-only／UNKNOWN 結構，不暴露 final 原值或錯誤位置。"""
+def results(binding: ProfileBinding, run: RuntimeRun, result: JsonObject, execution: UUID, seal: Attestation | None = None, remaining: str = "") -> tuple[UUID,UUID | None]:
+    """提交遮罩品質報告；只有 PASS 才產生 fit-only／UNKNOWN 結構，READY 需同時有封存登記。"""
     version = binding.research_version
     source = Provenance.objects.get(pk=UUID(run.document["provenance_id"]),tenant_id=binding.tenant_id)
+    ready = seal is not None
     report: JsonObject = {"kind":"QualityReport","schema_version":"1.0","research_version_id":str(version.id),"run_id":str(run.id),"quality":result["quality"],
-        "blocking_code":result["blocking_code"],"fit_summary":result["fit_summary"],"readiness":"BLOCKED","remaining":["SEALED_TEST_NOT_REGISTERED"],"precision_bits":53}
+        "blocking_code":result["blocking_code"],"fit_summary":result["fit_summary"],"readiness":"READY" if ready else "BLOCKED",
+        "remaining":[] if ready else [remaining or "SEALED_TEST_NOT_REGISTERED"],"precision_bits":53}
     quality = register(binding.actor,binding,uuid4(),report,source,research_version=version)
     structure_id = None
     if result["quality"]=="PASS":
@@ -141,8 +145,12 @@ def measured(run: RuntimeRun, meter: Meter) -> BudgetUsage:
     return usage
 
 
-def submit(binding: ProfileBinding, lease: Lease, result: JsonObject, meter: Meter) -> None:
-    """提交前再驗授權、來源及 fencing；結果、receipt、兩層帳本與終態必須同一交易成功。"""
+def submit(binding: ProfileBinding, lease: Lease, result: JsonObject, meter: Meter, content: bytes, format_name: str, limits: ImportLimits, config: object) -> None:
+    """提交前再驗授權、來源及 fencing；封存副作用早於 app DB commit，未通過不得投影 READY。"""
+    attestation: Attestation | None = None
+    remaining = ""
+    if result["quality"]=="PASS" and settings.SEALING_ENABLED:
+        attestation,remaining = attach(content,format_name,limits,config)
     with transaction.atomic():
         actor,_version,reference = current(binding.actor_id,binding.research_version_id,allow_validating=True)
         LocalVersionStore(settings.OBJECT_ROOT).verify(reference)
@@ -150,15 +158,20 @@ def submit(binding: ProfileBinding, lease: Lease, result: JsonObject, meter: Met
         state_for(binding.research_version)
         usage = measured(run,meter)
         references: list[tuple[UUID,UUID | None]] = []
+        registrations: list[SealRegistration] = []
         def commit() -> None:
-            references.append(results(binding,run,result,UUID(run.document["execution_manifest_id"])))
+            # 公有 DB 先落不透明封存登記，品質報告才能在原生防線下投影 READY。
+            if attestation is not None:
+                registrations.append(registration(actor,binding,run,attestation))
+            references.append(results(binding,run,result,UUID(run.document["execution_manifest_id"]),attestation,remaining))
         def failed(_row: RuntimeRun,code: str) -> None:
             binding.error_code = code
             binding.save(update_fields=["error_code"])
         finish(lease,usage,commit,failed)
         report_usage(lease,usage_report(lease,usage),stopped=True)
         quality,structure = references[0] if references else (None,None)
-        close_state(binding,quality,structure)
+        seal = registrations[0] if registrations else None
+        close_state(binding,quality,structure,seal)
         Audit.objects.create(tenant_id=actor.tenant_id,actor_id=actor.id,action="PROFILE_FINISHED",code=result["quality"] if references else "BUDGET_EXHAUSTED")
 
 
@@ -200,7 +213,7 @@ def profile_tick(tenant_id: str, run_id: str, generation: int) -> bool:
     try:
         content,format_name,limits,config = inputs(binding,lease)
         result = inspect_research(content,format_name,limits,config)
-        submit(binding,lease,result,meter)
+        submit(binding,lease,result,meter,content,format_name,limits,config)
     except (ApiError,ImportRejected,StorageRejected) as error:
         reject(binding,lease,meter,error.code)
     except (OSError,DatabaseError):

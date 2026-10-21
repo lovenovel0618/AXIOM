@@ -14,3 +14,6 @@ dist/
 # Local product configuration and isolated typing environment
 .env
 .venv-backend/
+
+# Local Sonar scanner working directory
+.scannerwork/

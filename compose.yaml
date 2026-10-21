@@ -40,9 +40,27 @@ services:
       interval: 2s
       timeout: 3s
       retries: 30
+  journal:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    user: "10004:10004"
+    group_add: ["10003"]
+    command: [python, -m, sealing.server]
+    network_mode: none
+    environment:
+      AXIOM_JOURNAL_TOKEN: ${AXIOM_JOURNAL_TOKEN:?Set AXIOM_JOURNAL_TOKEN in .env}
+      AXIOM_JOURNAL_SOCKET: /var/lib/axiom/socket/journal.sock
+    volumes: [journal-data:/var/lib/axiom/journal, journal-authority:/var/lib/axiom/authority, journal-socket:/var/lib/axiom/socket]
+    healthcheck:
+      test: [CMD, python, -c, "import json,os,socket,struct; s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); s.settimeout(5); s.connect('/var/lib/axiom/socket/journal.sock'); b=json.dumps({'op':'health','token':os.environ['AXIOM_JOURNAL_TOKEN']}).encode(); s.sendall(struct.pack('!I',len(b))+b); h=s.recv(4); assert json.loads(s.recv(struct.unpack('!I',h)[0]))['status']=='ok'"]
+      interval: 5s
+      timeout: 8s
+      retries: 20
   migrate:
     <<: *backend
-    command: [python, manage.py, migrate, --noinput]
+    command: [sh, -c, "python manage.py prepare_raw_access && python manage.py migrate --noinput"]
+    volumes: [object-data:/var/lib/axiom/objects]
     depends_on:
       postgres: {condition: service_healthy}
   web:
@@ -75,14 +93,23 @@ services:
   profile:
     <<: *backend
     profiles: [profile]
+    user: "10002:10003"
     command: [celery, -A, config.celery:app, worker, --loglevel=INFO, --concurrency=1, --max-tasks-per-child=1, --queues=profile]
-    volumes: ["object-data:/var/lib/axiom/objects:ro"]
+    environment:
+      <<: *environment
+      AXIOM_SEALING_ENABLED: ${AXIOM_SEALING_ENABLED:-1}
+      AXIOM_SEALING_DATA: /var/lib/axiom/sealed
+      AXIOM_SEALING_KEYS: /var/lib/axiom/sealed-keys
+      AXIOM_JOURNAL_SOCKET: /var/lib/axiom/socket/journal.sock
+      AXIOM_JOURNAL_TOKEN: ${AXIOM_JOURNAL_TOKEN:?Set AXIOM_JOURNAL_TOKEN in .env}
+    volumes: ["object-data:/var/lib/axiom/objects:ro", "sealed-data:/var/lib/axiom/sealed", "sealed-keys:/var/lib/axiom/sealed-keys", "journal-socket:/var/lib/axiom/socket"]
     mem_limit: 2g
     cpus: 1.0
     pids_limit: 64
     depends_on:
       migrate: {condition: service_completed_successfully}
       redis: {condition: service_healthy}
+      journal: {condition: service_healthy}
   relay:
     <<: *backend
     command: [python, manage.py, dispatch_probes]
@@ -113,3 +140,8 @@ volumes:
   postgres-data:
   redis-data:
   object-data:
+  sealed-data:
+  sealed-keys:
+  journal-data:
+  journal-authority:
+  journal-socket:

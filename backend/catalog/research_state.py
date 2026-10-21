@@ -25,13 +25,17 @@ def transition(state: ResearchState, status: str) -> None:
 
 
 def document_for(version: ResearchVersion) -> JsonObject:
-    """合成不可變配置、最新用量與狀態；不改寫原草稿，也不提前投影 READY。"""
+    """合成不可變配置、最新用量與狀態；不改寫原草稿，封存只投影至 split 的引用欄。"""
     document = detached(version.document)
     account = ResearchBudget.objects.get(research_version=version)
     document["research_budget_usage"] = account.document["usage"]
     state = ResearchState.objects.filter(research_version=version).first()
     if state is not None:
+        seal = state.seal
+        split = dict(document["observation_split"])
+        split["sealed_test_id"] = None if seal is None else str(seal.sealed_test_id)
         document.update(status=state.status,revision=state.revision,current_event_cursor=f"RESEARCH:{version.id}:{state.revision}",
-            quality_report_id=None if state.quality_id is None else str(state.quality_id),structure_assessment_artifact_id=None if state.structure_id is None else str(state.structure_id))
+            quality_report_id=None if state.quality_id is None else str(state.quality_id),structure_assessment_artifact_id=None if state.structure_id is None else str(state.structure_id),
+            observation_split=split)
     validate(document,"research-v2.schema.json","ResearchVersion")
     return document

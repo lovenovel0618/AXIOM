@@ -10,11 +10,11 @@ import sys
 MEMORY_BYTES = 1024 * 1024 * 1024
 
 
-def configure(seconds: int) -> None:
+def configure(seconds: int, file_bytes: int = 0) -> None:
     resource.setrlimit(resource.RLIMIT_AS, (MEMORY_BYTES, MEMORY_BYTES))
     resource.setrlimit(resource.RLIMIT_CPU, (seconds + 1, seconds + 1))
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
-    resource.setrlimit(resource.RLIMIT_FSIZE, (0, 0))
+    resource.setrlimit(resource.RLIMIT_FSIZE, (file_bytes, file_bytes))
     resource.setrlimit(resource.RLIMIT_NOFILE, (64, 64))
     os.umask(0o077)
 

@@ -1,0 +1,280 @@
+{
+  "scope": "T07_ACTUAL_PROFILE",
+  "status": "PASS",
+  "results": [
+    {
+      "run_id": "6a2a5bed-f300-4736-95d0-8fd16f82ff97",
+      "research_version_id": "dd9ce338-b7a3-46d2-96cf-67fd2e38d8cf",
+      "quality_report_id": "22b3431e-cdb4-43ff-9094-4654d4e6dfeb",
+      "structure_assessment_artifact_id": "9710f2c1-65c2-4526-b7da-af0ce8923947",
+      "quality": "PASS",
+      "revision": 2,
+      "sealed_test_id": "592172a1-3a51-4f18-a768-67831c071e6f",
+      "run_usage": {
+        "tokens": 0,
+        "cpu_seconds": 1,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 159481856,
+        "candidates_accepted": 0,
+        "candidates_generated": 0,
+        "elapsed_wall_seconds": 2
+      },
+      "research_usage": {
+        "tokens": 0,
+        "cpu_seconds": 1,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 159481856,
+        "candidates_accepted": 0,
+        "candidates_generated": 0,
+        "elapsed_wall_seconds": 2
+      },
+      "report": {
+        "blocking_code": null,
+        "fit_summary": {
+          "selected_count": 6,
+          "target_iqr": "1/20",
+          "target_max": "11/100",
+          "target_mean": "3/50",
+          "target_min": "1/100",
+          "unique_x": 6
+        },
+        "kind": "QualityReport",
+        "precision_bits": 53,
+        "quality": "PASS",
+        "readiness": "READY",
+        "remaining": [],
+        "research_version_id": "dd9ce338-b7a3-46d2-96cf-67fd2e38d8cf",
+        "run_id": "6a2a5bed-f300-4736-95d0-8fd16f82ff97",
+        "schema_version": "1.0"
+      },
+      "format": "CSV"
+    },
+    {
+      "run_id": "79244574-65af-4fce-ac3e-82503bf5ee8c",
+      "research_version_id": "74b010d7-ef1e-4333-a490-324031fac68a",
+      "quality_report_id": "cba4d28c-bc36-4ab9-8cb9-f08e4f8371db",
+      "structure_assessment_artifact_id": "139a2694-69f1-4d53-abf0-e8f6f4cb1997",
+      "quality": "PASS",
+      "revision": 2,
+      "sealed_test_id": "09933db5-56a8-40dd-a5c0-626fbb90c5b7",
+      "run_usage": {
+        "tokens": 0,
+        "cpu_seconds": 1,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 159580160,
+        "candidates_accepted": 0,
+        "candidates_generated": 0,
+        "elapsed_wall_seconds": 2
+      },
+      "research_usage": {
+        "tokens": 0,
+        "cpu_seconds": 1,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 159580160,
+        "candidates_accepted": 0,
+        "candidates_generated": 0,
+        "elapsed_wall_seconds": 2
+      },
+      "report": {
+        "blocking_code": null,
+        "fit_summary": {
+          "selected_count": 6,
+          "target_iqr": "1/20",
+          "target_max": "3/25",
+          "target_mean": "7/100",
+          "target_min": "1/50",
+          "unique_x": 6
+        },
+        "kind": "QualityReport",
+        "precision_bits": 53,
+        "quality": "PASS",
+        "readiness": "READY",
+        "remaining": [],
+        "research_version_id": "74b010d7-ef1e-4333-a490-324031fac68a",
+        "run_id": "79244574-65af-4fce-ac3e-82503bf5ee8c",
+        "schema_version": "1.0"
+      },
+      "format": "JSON"
+    },
+    {
+      "run_id": "f3e3aed6-0ded-40a7-b364-791dc21e8973",
+      "research_version_id": "34382569-0cf4-416a-8d5c-fb2bc03463c8",
+      "quality_report_id": "ee40a135-fa9e-4469-af59-8b626caf9f2e",
+      "structure_assessment_artifact_id": "7aa0b551-ba6f-4d75-914d-5007b2d8a78d",
+      "quality": "PASS",
+      "revision": 2,
+      "sealed_test_id": "e2a69e53-c385-45bb-b789-4e5e7486d67c",
+      "run_usage": {
+        "tokens": 0,
+        "cpu_seconds": 1,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 189820928,
+        "candidates_accepted": 0,
+        "candidates_generated": 0,
+        "elapsed_wall_seconds": 2
+      },
+      "research_usage": {
+        "tokens": 0,
+        "cpu_seconds": 1,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 189820928,
+        "candidates_accepted": 0,
+        "candidates_generated": 0,
+        "elapsed_wall_seconds": 2
+      },
+      "report": {
+        "blocking_code": null,
+        "fit_summary": {
+          "selected_count": 6,
+          "target_iqr": "1/20",
+          "target_max": "13/100",
+          "target_mean": "2/25",
+          "target_min": "3/100",
+          "unique_x": 6
+        },
+        "kind": "QualityReport",
+        "precision_bits": 53,
+        "quality": "PASS",
+        "readiness": "READY",
+        "remaining": [],
+        "research_version_id": "34382569-0cf4-416a-8d5c-fb2bc03463c8",
+        "run_id": "f3e3aed6-0ded-40a7-b364-791dc21e8973",
+        "schema_version": "1.0"
+      },
+      "format": "PARQUET"
+    }
+  ],
+  "second_root": {
+    "run_id": "c3f93655-352f-45f4-a08d-14d8770d7aba",
+    "research_version_id": "197fed1d-9539-4131-bbcd-26cf936b4f16",
+    "quality_report_id": "141f23b3-cc9f-47ae-b1e5-05935baf721a",
+    "structure_assessment_artifact_id": null,
+    "quality": "BLOCKED",
+    "revision": 4,
+    "sealed_test_id": null,
+    "run_usage": {
+      "tokens": 0,
+      "cpu_seconds": 1,
+      "gpu_seconds": 0,
+      "peak_memory_bytes": 156590080,
+      "candidates_accepted": 0,
+      "candidates_generated": 0,
+      "elapsed_wall_seconds": 1
+    },
+    "research_usage": {
+      "tokens": 0,
+      "cpu_seconds": 2,
+      "gpu_seconds": 0,
+      "peak_memory_bytes": 156590080,
+      "candidates_accepted": 0,
+      "candidates_generated": 0,
+      "elapsed_wall_seconds": 2
+    },
+    "report": {
+      "blocking_code": "DATA_QUALITY_BLOCKED",
+      "fit_summary": null,
+      "kind": "QualityReport",
+      "precision_bits": 53,
+      "quality": "BLOCKED",
+      "readiness": "BLOCKED",
+      "remaining": [
+        "SEALED_TEST_NOT_REGISTERED"
+      ],
+      "research_version_id": "197fed1d-9539-4131-bbcd-26cf936b4f16",
+      "run_id": "c3f93655-352f-45f4-a08d-14d8770d7aba",
+      "schema_version": "1.0"
+    }
+  },
+  "masked": {
+    "run_id": "b515e759-7ef2-4b07-8df5-29fbde87f727",
+    "research_version_id": "197fed1d-9539-4131-bbcd-26cf936b4f16",
+    "quality_report_id": "4dd0223e-030a-46ab-8b7f-b5a3f6b01140",
+    "structure_assessment_artifact_id": null,
+    "quality": "BLOCKED",
+    "revision": 2,
+    "sealed_test_id": null,
+    "run_usage": {
+      "tokens": 0,
+      "cpu_seconds": 1,
+      "gpu_seconds": 0,
+      "peak_memory_bytes": 156590080,
+      "candidates_accepted": 0,
+      "candidates_generated": 0,
+      "elapsed_wall_seconds": 1
+    },
+    "research_usage": {
+      "tokens": 0,
+      "cpu_seconds": 1,
+      "gpu_seconds": 0,
+      "peak_memory_bytes": 156590080,
+      "candidates_accepted": 0,
+      "candidates_generated": 0,
+      "elapsed_wall_seconds": 1
+    },
+    "report": {
+      "blocking_code": "DATA_QUALITY_BLOCKED",
+      "fit_summary": null,
+      "kind": "QualityReport",
+      "precision_bits": 53,
+      "quality": "BLOCKED",
+      "readiness": "BLOCKED",
+      "remaining": [
+        "SEALED_TEST_NOT_REGISTERED"
+      ],
+      "research_version_id": "197fed1d-9539-4131-bbcd-26cf936b4f16",
+      "run_id": "b515e759-7ef2-4b07-8df5-29fbde87f727",
+      "schema_version": "1.0"
+    }
+  },
+  "quota_case": {
+    "run_id": "e647d313-890a-4599-8ed0-4360eac9d9cb",
+    "research_version_id": "0f554794-b6e3-4f06-9b7c-91a706c1851a",
+    "quality_report_id": "07e68ed5-0107-426c-89a4-256a8b506c90",
+    "structure_assessment_artifact_id": "7fb7efeb-904f-46b9-bf4f-a1b5ad90fcf7",
+    "quality": "PASS",
+    "revision": 2,
+    "sealed_test_id": "423f64d3-97da-4557-95b0-736f3f94e17f",
+    "run_usage": {
+      "tokens": 0,
+      "cpu_seconds": 1,
+      "gpu_seconds": 0,
+      "peak_memory_bytes": 159580160,
+      "candidates_accepted": 0,
+      "candidates_generated": 0,
+      "elapsed_wall_seconds": 2
+    },
+    "research_usage": {
+      "tokens": 0,
+      "cpu_seconds": 1,
+      "gpu_seconds": 0,
+      "peak_memory_bytes": 159580160,
+      "candidates_accepted": 0,
+      "candidates_generated": 0,
+      "elapsed_wall_seconds": 2
+    },
+    "report": {
+      "blocking_code": null,
+      "fit_summary": {
+        "selected_count": 6,
+        "target_iqr": "1/20",
+        "target_max": "7/50",
+        "target_mean": "9/100",
+        "target_min": "1/25",
+        "unique_x": 6
+      },
+      "kind": "QualityReport",
+      "precision_bits": 53,
+      "quality": "PASS",
+      "readiness": "READY",
+      "remaining": [],
+      "research_version_id": "0f554794-b6e3-4f06-9b7c-91a706c1851a",
+      "run_id": "e647d313-890a-4599-8ed0-4360eac9d9cb",
+      "schema_version": "1.0"
+    }
+  },
+  "quota_denial_status": 429,
+  "revoked_status": 404,
+  "research_status": "READY",
+  "formal_seal": "IMPLEMENTED",
+  "product_gate_status": "NOT_RUN"
+}

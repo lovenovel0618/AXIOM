@@ -1,10 +1,14 @@
 """Filesystem identity and bounded stream tests independent of HTTP."""
 import hashlib
 import io
+import os
 from pathlib import Path
+import stat
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 from uuid import uuid4
+from django.core.management import call_command
+from django.test import override_settings
 from catalog.storage import LocalVersionStore, ObjectRef, StorageRejected
 
 
@@ -58,3 +62,15 @@ class StorageTests(TestCase):
         with self.assertRaisesRegex(StorageRejected, "UPLOAD_OBJECT_CHANGED"):
             self.store.create(self.reference, source)
         self.assertEqual(path.read_bytes(), b"z" * len(self.content))
+
+    def test_prepare_raw_access_upgrades_legacy_objects_for_the_evaluator_group(self) -> None:
+        self.store.create(self.reference, io.BytesIO(self.content))
+        path = self.store.path(self.reference)
+        path.chmod(0o400)
+        self.root.chmod(0o700)
+        with override_settings(OBJECT_ROOT=self.root, RAW_GID=os.getgid()):
+            call_command("prepare_raw_access", stdout=io.StringIO())
+        self.assertEqual(stat.S_IMODE(self.root.stat().st_mode), 0o2750)
+        self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o440)
+        self.assertEqual(path.stat().st_gid, os.getgid())
+        self.assertEqual(self.store.read_verified(self.reference), self.content)

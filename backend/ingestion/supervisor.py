@@ -58,8 +58,10 @@ def collect_output(process: subprocess.Popen[bytes], seconds: int) -> bytes:
     return bytes(output)
 
 
-def _run(directory: Path, format_name: str, limits: ImportLimits, *, research: bool = False) -> bytes:
+def _run(directory: Path, format_name: str, limits: ImportLimits, *, research: bool = False, sealing: bool = False) -> bytes:
     worker = Path(__file__).with_name("research_worker.py" if research else "worker.py").resolve()
+    if sealing:
+        worker = Path(__file__).resolve().parents[1]/"sealing/worker.py"
     environment = {"POLARS_MAX_THREADS": "1", "LANG": "C.UTF-8"}
     with subprocess.Popen([sys.executable, "-I", "-B", str(worker), format_name, json.dumps(limits.document())],
                           cwd=directory, env=environment, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
@@ -68,6 +70,11 @@ def _run(directory: Path, format_name: str, limits: ImportLimits, *, research: b
             return collect_output(process, limits.max_parse_seconds)
         finally:
             terminate_group(process)
+
+
+def run_sealing_worker(directory: Path, format_name: str, limits: ImportLimits) -> bytes:
+    """公開封存 child 入口：僅私有 Evaluator 使用，對外仍是同一套資源邊界。"""
+    return _run(directory, format_name, limits, sealing=True)
 
 
 def decode_result(raw: bytes, limits: ImportLimits) -> dict[str, Any]:

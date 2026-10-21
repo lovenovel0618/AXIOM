@@ -308,8 +308,12 @@ class ResearchState(models.Model):
     structure: models.ForeignKey[Artifact | None, Artifact | None] = models.ForeignKey(Artifact, on_delete=models.PROTECT, null=True, related_name="structure_states")
     structure_id: UUID | None
 
+    seal: models.ForeignKey[SealRegistration | None, SealRegistration | None] = models.ForeignKey("SealRegistration", on_delete=models.PROTECT, null=True)
+    seal_id: UUID | None
+
     class Meta:
-        constraints = [models.CheckConstraint(condition=models.Q(status__in=["DRAFT", "VALIDATING"]), name="research_state_local_status")]
+        constraints = [models.CheckConstraint(condition=models.Q(status__in=["DRAFT", "VALIDATING", "READY"]), name="research_state_local_status"),
+                       models.CheckConstraint(condition=~models.Q(status="READY") | models.Q(seal__isnull=False), name="research_state_ready_requires_seal")]
 
 
 class ProfileBinding(models.Model):
@@ -339,3 +343,24 @@ class ResearchEvent(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["research_version", "sequence"], name="research_event_sequence_unique")]
+
+
+class SealRegistration(models.Model):
+    """公有 DB 的不透明封存登記；tokens／final 檔與密鑰只在 Evaluator 域。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True,default=uuid4,editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant,on_delete=models.PROTECT)
+    tenant_id: UUID
+    research_version: models.OneToOneField[ResearchVersion, ResearchVersion] = models.OneToOneField(ResearchVersion,on_delete=models.PROTECT)
+    research_version_id: UUID
+    run: models.OneToOneField[RuntimeRun, RuntimeRun] = models.OneToOneField(RuntimeRun,on_delete=models.PROTECT)
+    run_id: UUID
+    sealed_test_id: models.UUIDField[UUID, UUID] = models.UUIDField()
+    source_sha256: models.CharField[str, str] = models.CharField(max_length=64)
+    protocol_hash: models.CharField[str, str] = models.CharField(max_length=64)
+    authority_epoch: models.UUIDField[UUID, UUID] = models.UUIDField()
+    authority_sequence: models.PositiveBigIntegerField[int, int] = models.PositiveBigIntegerField()
+    attestation_hash: models.CharField[str, str] = models.CharField(max_length=64)
+    available: models.BooleanField[bool, bool] = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["id","tenant"],name="seal_registration_tenant_identity")]

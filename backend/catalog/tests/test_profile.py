@@ -1,13 +1,17 @@
 """Real PROFILE, two-level receipts, cancellation and current-ACL regressions."""
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from copy import deepcopy
 from datetime import timedelta
+from functools import partial
 from io import BytesIO
 import hashlib
 import json
 import sys
+from collections.abc import Generator
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest import skipUnless
 from unittest.mock import patch
 from uuid import UUID, uuid4
 from django.contrib.auth.models import User
@@ -18,20 +22,43 @@ from catalog.validation import ApiError
 from django.test import Client, TransactionTestCase, override_settings
 from catalog.budget import report_usage, usage_report, zero_usage
 from catalog.ingest import Meter, complete_upload, ingest_tick
-from catalog.models import Account, Dataset, DatasetVersion, Grant, ProfileBinding, ResearchBudget, ResearchEvent, ResearchState, ResearchVersion, Reservation, RootBudget, Tenant, Upload, UsageReceipt
+from catalog.models import Account, Dataset, DatasetVersion, Grant, ProfileBinding, ResearchBudget, ResearchEvent, ResearchState, ResearchVersion, Reservation, RootBudget, SealRegistration, Tenant, Upload, UsageReceipt
 from catalog.profile import close_state, profile_tick, recover_profile, reject, results
 from catalog.research import create_research, create_version, research_for
 from catalog.research_state import document_for, state_for
 from catalog.services import actor_for, create_dataset, create_upload, put_upload
 from catalog.tests.test_research import draft_data
+from catalog.tests.test_sealing import LocalJournal
 from ingestion.supervisor import inspect_research
 from runtime.completion import finish
 from runtime.control import cancel, claim, Lease
 from runtime.models import RunEvent, RuntimeAttempt, RuntimeRun
 from runtime.records import ControlError, db_now, lock_run
+from sealing.journal import JournalStore
+from sealing.types import Attestation
 
 LIMITS = {"max_rows":100,"max_columns":8,"max_cell_utf8_bytes":4096,"max_decoded_bytes":65536,"max_parse_seconds":10}
 MEMORY = 2*1024**3
+
+
+def local_journal(journal: LocalJournal, endpoint: str, token: str) -> LocalJournal:
+    """取代私有 RPC 的固定工廠；endpoint 與憑證仍被忽略但簽名相容。"""
+    return journal
+
+
+@contextmanager
+def sealed_authority() -> Generator[None]:
+    """以同一 authority 檔的 in-process journal 取代私有 RPC；封存 child 仍是真實子程序。"""
+    root = TemporaryDirectory()
+    try:
+        base = Path(root.name)
+        journal = LocalJournal(JournalStore(base/"events",base/"checkpoint"))
+        with patch("catalog.sealing.JournalClient",partial(local_journal,journal)), override_settings(
+                SEALING_ENABLED=True,SEALING_DATA=base/"data",SEALING_KEYS=base/"keys",
+                JOURNAL_SOCKET="/var/lib/axiom/socket/journal.sock",JOURNAL_TOKEN="synthetic-journal-token-"+"0"*16):
+            yield
+    finally:
+        root.cleanup()
 
 
 @override_settings(INGEST_ENABLED=True,INGEST_LIMITS_JSON=json.dumps(LIMITS),PROFILE_ENABLED=True,PROFILE_LIMITS_JSON=json.dumps(LIMITS))
@@ -395,8 +422,8 @@ class ProfileTests(TransactionTestCase):
         from catalog.models import Artifact
         identity = self.enqueue()
         before = Artifact.objects.count()
-        def fail_after_result(binding: ProfileBinding, run: RuntimeRun, result: dict[str,object], execution: UUID) -> tuple[UUID,UUID | None]:
-            results(binding,run,result,execution)
+        def fail_after_result(binding: ProfileBinding, run: RuntimeRun, result: dict[str,object], execution: UUID, seal: Attestation | None = None, remaining: str = "") -> tuple[UUID,UUID | None]:
+            results(binding,run,result,execution,seal,remaining)
             raise ApiError("DEPENDENCY_UNAVAILABLE",503)
         with patch("catalog.profile.results",side_effect=fail_after_result): self.execute(identity)
         self.assertEqual(Artifact.objects.count(),before)
@@ -466,3 +493,32 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(self.client.get(url,{"cursor":"bad"}).status_code,400)
         Grant.objects.filter(actor=self.actor,dataset_id=self.version.dataset_version.dataset_id).delete()
         self.assertEqual(self.client.get(url,{"cursor":page["next_cursor"]}).status_code,404)
+
+    @skipUnless(sys.platform=="linux","formal sealing requires the Linux journal and child boundary")
+    def test_formal_seal_projects_ready_without_exposing_final_rows(self) -> None:
+        with sealed_authority():
+            identity = self.enqueue()
+            self.assertTrue(self.execute(identity))
+            result = document_for(self.version)
+            registration = SealRegistration.objects.get(research_version=self.version)
+            self.assertEqual(result["status"],"READY")
+            self.assertEqual(result["observation_split"]["sealed_test_id"],str(registration.sealed_test_id))
+            self.assertEqual((registration.run_id,registration.authority_sequence),(identity,2))
+            self.assertNotIn("final_observation_tokens",json.dumps(result))
+            quality = self.client.get(f'/api/v2/artifacts/{result["quality_report_id"]}/content')
+            body = json.loads(quality.content)
+            self.assertEqual((body["quality"],body["readiness"],body["remaining"]),("PASS","READY",[]))
+            self.assertNotIn("final_test",body)
+            self.assertNotIn(b"sealed.sqlite3",quality.content)
+
+    @skipUnless(sys.platform=="linux","formal sealing requires the Linux journal and child boundary")
+    def test_blocked_sealing_keeps_draft_and_registers_nothing(self) -> None:
+        with sealed_authority(), patch("catalog.profile.attach",return_value=(None,"EXPOSURE_RECOVERY_BLOCKED")):
+            identity = self.enqueue()
+            self.assertTrue(self.execute(identity))
+        result = document_for(self.version)
+        quality = self.client.get(f'/api/v2/artifacts/{result["quality_report_id"]}/content')
+        self.assertEqual((result["status"],result["observation_split"]["sealed_test_id"]),("DRAFT",None))
+        self.assertFalse(SealRegistration.objects.exists())
+        body = json.loads(quality.content)
+        self.assertEqual((body["quality"],body["readiness"],body["remaining"]),("PASS","BLOCKED",["EXPOSURE_RECOVERY_BLOCKED"]))

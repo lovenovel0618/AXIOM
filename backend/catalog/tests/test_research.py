@@ -37,7 +37,7 @@ def draft_data(identity: UUID) -> JsonObject:
     }
 
 
-@override_settings(INGEST_ENABLED=True, INGEST_LIMITS_JSON=json.dumps(LIMITS))
+@override_settings(INGEST_ENABLED=True, INGEST_LIMITS_JSON=json.dumps(LIMITS), PROFILE_ENABLED=False)
 class ResearchTests(TransactionTestCase):
     def setUp(self) -> None:
         directory = TemporaryDirectory()

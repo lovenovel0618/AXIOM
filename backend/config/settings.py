@@ -52,8 +52,18 @@ CSRF_FAILURE_VIEW = "catalog.http.csrf_failure"
 DATA_UPLOAD_MAX_MEMORY_SIZE = 65536
 OBJECT_ROOT = Path(os.environ.get("AXIOM_OBJECT_ROOT", "/var/lib/axiom/objects"))
 
+# raw 物件由寫入者擁有、以專用群組對 Evaluator 唯讀開放；目錄 0750、物件 0440。
+RAW_GID = int(os.environ.get("AXIOM_RAW_GID","10003"))
+
 INGEST_ENABLED = os.environ.get("AXIOM_INGEST_ENABLED", "0") == "1"
 INGEST_LIMITS_JSON = os.environ.get("AXIOM_IMPORT_LIMITS", "")
 
 PROFILE_ENABLED = os.environ.get("AXIOM_PROFILE_ENABLED", "0") == "1"
 PROFILE_LIMITS_JSON = os.environ.get("AXIOM_PROFILE_LIMITS", "")
+
+# 封存只由可信 PROFILE/Evaluator 使用；普通 web 沒有 private volume 或 journal token。
+SEALING_ENABLED = os.environ.get("AXIOM_SEALING_ENABLED","0")=="1"
+SEALING_DATA = Path(os.environ.get("AXIOM_SEALING_DATA","/var/lib/axiom/sealed"))
+SEALING_KEYS = Path(os.environ.get("AXIOM_SEALING_KEYS","/var/lib/axiom/sealed-keys"))
+JOURNAL_SOCKET = os.environ.get("AXIOM_JOURNAL_SOCKET","/var/lib/axiom/socket/journal.sock")
+JOURNAL_TOKEN = os.environ.get("AXIOM_JOURNAL_TOKEN","")

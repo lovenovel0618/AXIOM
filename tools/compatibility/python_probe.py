@@ -37,14 +37,15 @@ def database_settings(dsn: str) -> dict[str, object]:
     parsed = urlparse(dsn)
     if parsed.scheme != "postgresql" or parsed.path != "/axiom_compat":
         raise ValueError("Only the disposable axiom_compat PostgreSQL database is supported")
-    if not parsed.hostname or not parsed.username or not parsed.password:
+    if not parsed.hostname or not parsed.username:
         raise ValueError("Disposable database connection is incomplete")
-    return {
+    settings: dict[str, object] = {
         "ENGINE": "django.db.backends.postgresql", "NAME": "axiom_compat",
-        "USER": unquote(parsed.username), "PASSWORD": unquote(parsed.password),
+        "USER": unquote(parsed.username), "PASSWORD": unquote(parsed.password or ""),
         "HOST": parsed.hostname, "PORT": str(parsed.port or 5432),
         "OPTIONS": {"connect_timeout": 5},
     }
+    return settings
 
 
 def require_disposable() -> None:

@@ -254,6 +254,11 @@
     "JsonObject": 0,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
+  "backend/catalog/management/commands/prepare_raw_access.py": {
+    "Any": 2,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
   "backend/catalog/management/commands/profile_smoke.py": {
     "Any": 2,
     "JsonObject": 7,

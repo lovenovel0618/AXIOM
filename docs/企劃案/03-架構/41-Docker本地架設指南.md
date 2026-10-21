@@ -21,6 +21,8 @@
 
 根目錄 compose.yaml 已提供 PostgreSQL 16、Redis 7、Python 3.13 的 migration／web／worker／relay，以及 Node 24 Vue 開發頁；映像使用 T02 驗證的 digest。宿主入口為 loopback 18000（web）與 15173（frontend），DB／Redis 不映射宿主埠。實際變數為 AXIOM_SECRET_KEY、AXIOM_DB_PASSWORD，選配 AXIOM_WEB_PORT／AXIOM_FRONTEND_PORT；沒有預設密碼。
 
+T07 封存切片另加入三個服務與一個內部通道：Evaluator 專用的 `profile` worker（UID 10002、raw GID 10003、獨立 `sealed-data`／`sealed-keys` volume）、`ingest` worker（object-data 唯讀），以及 UID 10004 的 `journal` authority（`journal-data`／`journal-authority` volume）。`journal` 以 `network_mode: none` 執行、不接任何網路、不映射宿主埠，僅透過 `journal-socket` 具名 volume 上的 Unix domain socket 與 `profile` 交換 append／read 訊息；此通道需額外設定 AXIOM_JOURNAL_TOKEN。三個自建映像（backend、compatibility、benchmark）的 Python 基底一律以 digest 固定，不使用可變 tag。
+
 執行指令與測試見 [infra 說明](<../../../infra/README.md>)、[T04 技術設計](<../../技術文件/M0/T04-產品工程骨架.md>)。已實作健康端點固定為 /health/live/、/health/ready/；worker 另以 probe_smoke 實測。Windows WSL2 未實測，不能由 macOS arm64 結果推論通過。下列完整拓樸與尚未實作的設定是後續目標，不是目前 Compose 功能；T05 已加入資料集登入帳號、租戶ACL與web專用object-data本地volume；MinIO／S3、正式業務Run、AI與proof均未啟用。
 
 ## 目標容器拓樸
@@ -62,9 +64,12 @@ flowchart TB
 | 服務 | 映像 | 容器埠 | 宿主埠 | 用途 |
 |---|---|---|---|---|
 | nginx | 待選定並鎖 digest（尚未啟用） | 80 | 8080 | 反向代理與靜態檔 |
-| web | 自建 python:3.13-slim（T02 digest） | 8000 | loopback 18000 | Django；研究 API 待實作 |
+| web | 自建 python（digest 固定，T02） | 8000 | loopback 18000 | Django；研究 API 待實作 |
 | frontend | node:24（T02 digest） | 5173 | loopback 15173 | Vue 3 + Vite 開發伺服器 |
 | worker | 同 web 映像 | — | 無 | Celery 佇列：light／search／precision |
+| ingest | 同 web 映像 | — | 無 | Celery 佇列 ingest；object-data 唯讀 |
+| profile | 同 web 映像（UID 10002／GID 10003） | — | 無 | Celery 佇列 profile；可信 PROFILE 與封存擷取 |
+| journal | 同 web 映像（UID 10004） | — | 無 | Evaluator journal authority；僅 Unix socket、`network_mode: none` |
 | beat | 同 web 映像 | — | 無 | 週期性排程（清理、TTL、基準回歸） |
 | proof | 同 web 映像（選配） | — | 無 | 受限符號／形式化驗證，預設不啟用 |
 | postgres | postgres:16-alpine（T02 digest；向量擴充待選） | 5432 | 無 | 交易資料與向量索引 |
@@ -133,6 +138,7 @@ flowchart TB
 ## 安全與隔離（兩環境皆適用）
 
 - proof／sandbox worker：`network_mode: none`、`read_only: true`、非 root 使用者、`cap_drop: ALL`、限制 `pids`／`mem`／`cpus`。
+- 封存 Evaluator 與 journal authority：`journal` 同採 `network_mode: none`，不加入任何 Compose 網路、不映射宿主埠；兩者僅以 `journal-socket` volume 上的 Unix domain socket 交換 append／read 訊息，未認證（token 長度不足或比對失敗）一律拒絕。token 只在 `profile` 與 `journal` 注入，web／frontend／worker 均不持有。
 - 不將 Docker socket 掛載進任何 worker 容器。
 - PostgreSQL 與 MinIO 的宿主埠僅供本機除錯，不對外網段開放；Redis 不設密碼時僅限本機網路。
 - 敏感資料是否可送往外部 API 依資料分級決定，本地開發預設走 Ollama 路由。
@@ -183,7 +189,7 @@ proof／sandbox 採無網路模式時，不可直接連接 PostgreSQL、Redis �
 
 minio-init 可用 root 憑證建 bucket／service policy，但 web、worker 只拿各自最小權限帳號，不能共用 MINIO_ROOT_USER／PASSWORD。平台差異以覆寫檔與 capabilities 檢查表表達；資料層宿主埠綁 127.0.0.1，不能因省略 host IP 而意外對外監聽。CHATGPT_API_KEY 僅在已核准外部路由啟用時必填；MVP 外部路由關閉，不因缺該 key 而阻止本地規則啟動。
 
-目前沒有 compose.yaml、Dockerfile 或應用管理命令實作；前述命令為目標操作介面，不可宣稱能在空倉庫直接架設。實作交付時需提供相應檔案、.env.example（無秘密）、migration/init job、healthcheck、backup/restore 與 smoke 驗收記錄。
+本節其餘命令為目標操作介面。compose.yaml、backend Dockerfile 與 Django 管理命令自 T04 起逐步交付，T07 已擴充至封存與 journal 服務；但完整 MinIO／nginx 拓樸、`.env.example` 以外的秘密注入、backup/restore 與產品 smoke 驗收仍未交付，不得宣稱可在空倉庫直接完成正式架設。
 
 | ID | 情境 | 預期 |
 |---|---|---|
@@ -200,4 +206,4 @@ minio-init 可用 root 憑證建 bucket／service policy，但 web、worker 只�
 
 ## 可重建環境的證據界線
 
-本指南的compose片段、映像標籤與env清單是待實作範本，目前沒有可啟動的產品compose或服務，不應把照抄指令當部署成功。M0交付需保存實際compose及驗證結果、平台能力探測、不可變image digest、套件lock、SBOM及最小權限secret注入；浮動latest／major tag不能作研究environment_digest依據。Python3.14的docs工具通過不代表預定產品Python版本及所有原生數值依賴相容，產品環境需獨立lock與數學回歸。macOS／Linux的sandbox隔離差異需實測，不支援硬隔離時拒絕執行不可信策略，不能退化成宿主直接exec。
+本指南的compose片段、映像標籤與env清單是待實作範本；已交付的compose與映像只涵蓋T04～T07的本機切片，其餘服務仍不可啟動，不應把照抄指令當部署成功。M0交付需保存實際compose及驗證結果、平台能力探測、不可變image digest、套件lock、SBOM及最小權限secret注入；浮動latest／major tag不能作研究environment_digest依據。Python3.14的docs工具通過不代表預定產品Python版本及所有原生數值依賴相容，產品環境需獨立lock與數學回歸。macOS／Linux的sandbox隔離差異需實測，不支援硬隔離時拒絕執行不可信策略，不能退化成宿主直接exec。

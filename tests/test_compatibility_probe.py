@@ -49,7 +49,7 @@ class CompatibilityProbeTests(unittest.TestCase):
 
     def test_postgres_guard_rejects_other_databases_and_incomplete_urls(self) -> None:
         urls = ["sqlite:///axiom_compat", "postgresql://user:password@host/production",
-                "postgresql://user@host/axiom_compat", "postgresql:///axiom_compat",
+                "postgresql:///axiom_compat",
                 "postgresql://user:password@host:invalid/axiom_compat"]
         for url in urls:
             with self.subTest(url=url), self.assertRaises(ValueError):
@@ -60,6 +60,11 @@ class CompatibilityProbeTests(unittest.TestCase):
         self.assertEqual(settings["PASSWORD"], "p@ss")
         self.assertEqual(settings["PORT"], "5433")
         self.assertEqual(settings["OPTIONS"], {"connect_timeout": 5})
+
+    def test_postgres_configuration_accepts_trust_authenticated_disposable_url(self) -> None:
+        settings = probe.database_settings("postgresql://axiom@postgres:5432/axiom_compat")
+        self.assertEqual(settings["USER"], "axiom")
+        self.assertEqual(settings["PASSWORD"], "")
 
     def test_services_require_explicit_disposable_opt_in(self) -> None:
         with patch.dict(os.environ, {}, clear=True), self.assertRaises(probe.NotRunError):
