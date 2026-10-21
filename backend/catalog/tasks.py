@@ -14,6 +14,7 @@ app.task(name="catalog.profile_tick", ignore_result=True)(profile_tick)
 
 
 def relay_ingest() -> int:
+    """有界且公平地恢復／重送 INGEST；不得把 PROFILE 誤派至匯入 handler。"""
     rows = list(RuntimeRun.objects.filter(control_only=False, document__type="INGEST", document__status__in=["QUEUED", "RUNNING"]).order_by(F("last_polled_at").asc(nulls_first=True), "id")[:100])
     for row in rows:
         recover(row.tenant_id, row.id)
@@ -27,6 +28,7 @@ def relay_ingest() -> int:
 
 
 def relay_profile() -> int:
+    """掃描未收斂的 PROFILE／未知預留，持久恢復後只派仍 QUEUED 且已啟用的任務。"""
     bindings = list(ProfileBinding.objects.filter(Q(root_budget__document__status__in=["OPEN","CLOSING"]) | Q(run__document__status__in=["QUEUED","RUNNING","CANCEL_REQUESTED"])).select_related("run").order_by(F("run__last_polled_at").asc(nulls_first=True),"run_id")[:100])
     for binding in bindings:
         recover_profile(binding.tenant_id,binding.run_id)

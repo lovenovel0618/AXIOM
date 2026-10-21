@@ -25,5 +25,6 @@
     {
       "root": "."
     }
-  ]
+  ],
+  "reportUnnecessaryTypeIgnoreComment": "error"
 }

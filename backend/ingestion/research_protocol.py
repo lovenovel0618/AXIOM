@@ -1,4 +1,7 @@
-"""Strict allowlist for the child report; no observation or final fields pass."""
+"""子程序輸出信任邊界：只允許固定鍵、有限有界數值及正確評分分母。
+未預期欄位、final 原值／位置或不一致計數一律拒絕，不能直接相信 child JSON。
+
+Strict allowlist for the child report; no observation or final fields pass."""
 from decimal import Decimal, InvalidOperation
 from fractions import Fraction
 import re

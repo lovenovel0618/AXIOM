@@ -9,6 +9,7 @@ from runtime.records import CANCEL_REQUESTED, QUEUED, RUNNING, ControlError, db_
 
 
 def control_tick(tenant_id: str, run_id: str, generation: int) -> bool:
+    """執行不接觸業務資料的控制探針，驗 lease 與取消流程。"""
     tenant, identity = UUID(tenant_id), UUID(run_id)
     worker = f"control:{os.environ.get('HOSTNAME', 'local')}:{os.getpid()}"
     try:
@@ -31,6 +32,7 @@ app.task(name="runtime.control_tick", ignore_result=True)(control_tick)
 
 
 def relay_control() -> int:
+    """有界重送 control-only root，不與 INGEST／PROFILE 業務 queue 混用。"""
     rows = list(RuntimeRun.objects.filter(document__status__in=[QUEUED, RUNNING, CANCEL_REQUESTED], control_only=True).order_by(F("last_polled_at").asc(nulls_first=True), "id")[:100])
     # Recover every selected row before publishing so broker failure cannot skip deadlines.
     for row in rows:

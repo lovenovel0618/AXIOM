@@ -1,4 +1,6 @@
-"""Opt-in business INGEST: immutable enqueue, current ACL and fenced commit."""
+"""明確啟用的真正匯入：固定原檔、隔離解析、重驗授權與原子版本提交。
+
+Opt-in business INGEST: immutable enqueue, current ACL and fenced commit."""
 import hashlib
 import math
 import resource
@@ -16,12 +18,14 @@ from ingestion.limits import ImportLimits, ImportRejected
 from ingestion.supervisor import inspect_bytes
 from runtime.completion import finish, confirm_business_stopped
 from runtime.contracts import JsonObject
+from runtime.budget_types import BudgetUsage
 from runtime.control import Lease, check_submission, claim, enqueue, recover
 from runtime.models import RuntimeRun
 from runtime.records import ControlError, db_now, public_run, snapshot_for
 
 
 def complete_upload(actor: Account, row: Upload, checksum: str, key: str) -> JsonObject:
+    """驗 checksum 與固定物件後建立真正 INGEST；重送同 upload 回同 root 並重查授權。"""
     require_key(key)
     if checksum != row.sha256:
         raise ApiError("CHECKSUM_MISMATCH", 422)
@@ -47,6 +51,7 @@ def complete_upload(actor: Account, row: Upload, checksum: str, key: str) -> Jso
 
 
 def current(binding: IngestBinding) -> tuple[Account, Upload]:
+    """背景執行也重新驗 User／Account 與資料集授權，不能沿用派送時已撤銷的權限。"""
     account = Account.objects.get(pk=binding.actor_id, tenant_id=binding.tenant_id)
     actor = actor_for(account.user_id)
     if not actor.user.is_active:
@@ -58,6 +63,7 @@ def current(binding: IngestBinding) -> tuple[Account, Upload]:
 
 
 def inputs(binding: IngestBinding, lease: Lease) -> tuple[bytes, str, ImportLimits]:
+    """核對 lease、環境及不可變來源後讀取 bytes；固定 parser 只接受已核准的完整限額。"""
     check_submission(lease)
     with transaction.atomic():
         actor, upload = current(binding)
@@ -74,13 +80,14 @@ def inputs(binding: IngestBinding, lease: Lease) -> tuple[bytes, str, ImportLimi
 
 
 class Meter:
+    """量測 parent 與已回收 child 的 CPU／wall 上取整及 RSS 保守上界，不冒充精確計費。"""
     def __init__(self) -> None:
         self.wall = time.monotonic()
         self.cpu = time.process_time()
         child = resource.getrusage(resource.RUSAGE_CHILDREN)
         self.child_cpu = child.ru_utime + child.ru_stime
 
-    def usage(self) -> JsonObject:
+    def usage(self) -> BudgetUsage:
         child = resource.getrusage(resource.RUSAGE_CHILDREN)
         parent = resource.getrusage(resource.RUSAGE_SELF)
         return {"cpu_seconds": max(0, math.ceil(time.process_time() - self.cpu + child.ru_utime + child.ru_stime - self.child_cpu)),
@@ -90,6 +97,7 @@ class Meter:
 
 
 def failed(binding: IngestBinding, run: RuntimeRun, code: str) -> None:
+    """記錄不含原值的錯誤診斷與 audit；失敗不提交可用資料版本。"""
     binding.refresh_from_db()
     binding.error_code = code
     binding.save(update_fields=["error_code"])
@@ -100,7 +108,8 @@ def failed(binding: IngestBinding, run: RuntimeRun, code: str) -> None:
     Audit.objects.create(tenant_id=binding.tenant_id, actor_id=binding.actor_id, action="INGEST_FAILED", code=code)
 
 
-def submit(binding: IngestBinding, lease: Lease, metadata: JsonObject, usage: JsonObject) -> None:
+def submit(binding: IngestBinding, lease: Lease, metadata: JsonObject, usage: object) -> None:
+    """結果提交前重驗授權及來源；版本、Artifact 與 Run 終態在同一交易。"""
     with transaction.atomic():
         actor, _upload = current(binding)
         verify_staged(actor, binding.upload_id)
@@ -112,6 +121,7 @@ def submit(binding: IngestBinding, lease: Lease, metadata: JsonObject, usage: Js
 
 
 def ingest_tick(tenant_id: str, run_id: str, generation: int) -> bool:
+    """專用匯入 worker 入口；重送由 lease fencing 擋下，解析與提交錯誤走一致結算。"""
     if not settings.INGEST_ENABLED:
         return False
     tenant, identity = UUID(tenant_id), UUID(run_id)
@@ -139,7 +149,8 @@ def ingest_tick(tenant_id: str, run_id: str, generation: int) -> bool:
     return True
 
 
-def reject(binding: IngestBinding, lease: Lease, usage: JsonObject, code: str) -> None:
+def reject(binding: IngestBinding, lease: Lease, usage: object, code: str) -> None:
+    """原 handler 確認 child 已退出後處理取消／失敗，保留量測而不讓遲到產物提交。"""
     try:
         finish(lease, usage, lambda: None, lambda run, reason: failed(binding, run, reason), code)
     except ControlError:

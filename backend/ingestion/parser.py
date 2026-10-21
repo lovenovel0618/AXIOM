@@ -1,4 +1,6 @@
-"""Parser entry point: use supervisor.inspect_bytes for untrusted data."""
+"""固定格式解析入口：依明示格式處理 CSV／JSON／Parquet，保留原列次序，不猜語意或靜默丟列。
+
+Parser entry point: use supervisor.inspect_bytes for untrusted data."""
 import csv
 from pathlib import Path
 from typing import Any

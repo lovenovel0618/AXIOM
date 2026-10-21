@@ -8,6 +8,7 @@ from catalog.ingest_manifest import code_digest, environment
 from catalog.models import Account, ResearchBudget, ResearchVersion
 from catalog.validation import ApiError
 from ingestion.limits import ImportLimits
+from runtime.budget_types import BudgetLimit, read_limit
 from runtime.contracts import JsonObject, identity_hash
 from runtime.records import db_now, task_input_hash
 
@@ -15,6 +16,7 @@ MEMORY = 2 * 1024**3
 
 
 def limits_for(version: ResearchVersion) -> ImportLimits:
+    """只有明確啟用的 Linux worker 可執行；完整容量設定及 4096 列硬上限缺一不可。"""
     if not settings.PROFILE_ENABLED or platform.system()!="Linux":
         raise ApiError("DEPENDENCY_UNAVAILABLE",503)
     try:
@@ -26,11 +28,13 @@ def limits_for(version: ResearchVersion) -> ImportLimits:
     return limits
 
 
-def limit_for(account: ResearchBudget, requested: JsonObject | None, limits: ImportLimits) -> JsonObject:
+def limit_for(account: ResearchBudget, requested: object, limits: ImportLimits) -> BudgetLimit:
+    """依研究剩餘額度算預留；固定程序與控制餘裕不足時拒絕，不以較小假預留超賣容量。"""
     available = remaining(account)
-    limit = requested if requested is not None else {"cpu_seconds":min(available["cpu_seconds"],limits.max_parse_seconds+15),"wall_seconds":min(available["wall_seconds"],limits.max_parse_seconds+30),
+    limit: BudgetLimit = read_limit(requested) if requested is not None else {"cpu_seconds":min(available["cpu_seconds"],limits.max_parse_seconds+15),"wall_seconds":min(available["wall_seconds"],limits.max_parse_seconds+30),
         "memory_bytes":MEMORY,"gpu_seconds":0,"tokens":0,"candidate_limit":0}
-    if any(limit[key]>account.document["limit"][key] for key in limit):
+    configured = read_limit(account.document["limit"])
+    if any(limit[key]>configured[key] for key in ("cpu_seconds","gpu_seconds","tokens","memory_bytes","wall_seconds","candidate_limit")):
         raise ApiError("RUN_BUDGET_EXHAUSTED",429)
     if limit["memory_bytes"]<MEMORY or limit["cpu_seconds"]<limits.max_parse_seconds+3 or limit["wall_seconds"]<limits.max_parse_seconds+10:
         raise ApiError("RESEARCH_BUDGET_EXHAUSTED" if requested is None else "RUN_BUDGET_EXHAUSTED",429)
@@ -39,7 +43,8 @@ def limit_for(account: ResearchBudget, requested: JsonObject | None, limits: Imp
     return limit
 
 
-def documents(actor: Account, version: ResearchVersion, account: ResearchBudget, limit: JsonObject, limits: ImportLimits, input_id: str, provenance_id: str) -> tuple[JsonObject,JsonObject,JsonObject,JsonObject]:
+def documents(actor: Account, version: ResearchVersion, account: ResearchBudget, limit: BudgetLimit, limits: ImportLimits, input_id: str, provenance_id: str) -> tuple[JsonObject,JsonObject,JsonObject,JsonObject]:
+    """產生真實 TaskInput／manifest／root 帳本快照；來源 SHA、環境與單次 attempt 政策納入身分。"""
     run_id,execution_id,budget_id = (str(uuid4()) for _index in range(3))
     created = db_now().isoformat()
     document = version.document

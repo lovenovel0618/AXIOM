@@ -1,4 +1,8 @@
-"""Native two-level authority, immutable receipts and fenced PROFILE results."""
+"""帳本與 PROFILE 的原生跨表防線。
+
+同租戶複合 FK 保護關聯；限額／身分不可改，receipt 與事件不可改刪。
+延遲 constraint trigger 在交易末核對研究合計與各 root 最新 receipt，容許同交易內先後更新。
+QualityReport 只允許遮罩／fit 白名單；已有 PROFILE 資料時禁止無備份直接降版。"""
 from importlib import import_module
 from uuid import uuid4
 from django.db import migrations

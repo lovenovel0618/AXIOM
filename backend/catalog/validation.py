@@ -1,4 +1,7 @@
-"""Bounded request decoding and offline OpenAPI component validation."""
+"""HTTP JSON 解碼邊界：限制 bytes／深度，拒絕重複鍵與非有限數，再驗離線 OpenAPI。
+框架傳入的動態值不得被當作已具體型別化的核心資料。
+
+Bounded request decoding and offline OpenAPI component validation."""
 from functools import lru_cache
 import json
 import math

@@ -22,6 +22,7 @@ import json
 
 
 def current(actor_id: UUID, version_id: UUID, *, allow_validating: bool = False) -> tuple[Account, ResearchVersion, ObjectRef]:
+    """可信 CLI 仍須重驗 actor、研究 owner、Dataset 寫權及來源；正式 PROFILE 執行中不得旁路預檢。"""
     account = Account.objects.filter(pk=actor_id).first()
     if account is None:
         raise ApiError("FORBIDDEN", 403)
@@ -41,6 +42,7 @@ def current(actor_id: UUID, version_id: UUID, *, allow_validating: bool = False)
 
 
 def configuration(version: ResearchVersion, limits: ImportLimits, model: bytes | None, parameters: dict[str, str]) -> JsonObject:
+    """固定研究配置、限額與已知 DSL 參數；編譯和域／單位檢查在讀觀測前完成。"""
     metadata = version.dataset_version.preview.content
     if metadata is None:
         raise ApiError("ARTIFACT_UNAVAILABLE", 409)
@@ -55,6 +57,7 @@ def configuration(version: ResearchVersion, limits: ImportLimits, model: bytes |
 
 
 def preflight(actor_id: UUID, version_id: UUID, limits: ImportLimits, model: bytes | None = None, parameters: dict[str, str] | None = None) -> JsonObject:
+    """在隔離子程序執行有界品質／已知公式預檢，保存不可變結果並於提交前重驗來源及授權。"""
     with transaction.atomic():
         actor, version, reference = current(actor_id, version_id)
         config = configuration(version, limits, model, parameters or {})
@@ -90,6 +93,7 @@ def preflight(actor_id: UUID, version_id: UUID, limits: ImportLimits, model: byt
 
 
 def parameters_from(value: str) -> dict[str, str]:
+    """只解碼十進位參數字串物件，不接受任意 Python 或 shell 表達式。"""
     from catalog.validation import decode
     data = decode(value.encode("utf-8"))
     if len(data) > 128 or any(not isinstance(item, str) for item in data.values()):
@@ -98,6 +102,7 @@ def parameters_from(value: str) -> dict[str, str]:
 
 
 def read_model(path: str | None) -> bytes | None:
+    """有界讀取並編譯既有 DSL 檔；模型只作固定已知公式驗證，不在此搜尋或擬合。"""
     if path is None:
         return None
     from pathlib import Path

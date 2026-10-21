@@ -1,4 +1,8 @@
-"""Tenant-scoped catalog and immutable upload receipts."""
+"""資料層權威模型：欄位／外鍵具體標註，動態 JSON 只作持久相容邊界。
+
+帳本身分與限額由資料庫 guard 保護；不可變配置與可變狀態分開保存。
+
+Tenant-scoped catalog and immutable upload receipts."""
 from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4

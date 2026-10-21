@@ -16,11 +16,13 @@ T = TypeVar("T", Research, ResearchVersion)
 
 
 def writable(actor: Account) -> None:
+    """全域 VIEWER 不能因資料集 grant 升級為研究寫入者。"""
     if actor.role not in {"RESEARCHER", "ADMIN"}:
         raise ApiError("FORBIDDEN", 403)
 
 
 def research_for(actor: Account, identity: UUID) -> Research:
+    """以 owner／租戶定位並鎖研究容器；ADMIN 沒有隱含讀取他人研究權。"""
     row = Research.objects.select_for_update().filter(pk=identity, tenant_id=actor.tenant_id, owner=actor).first()
     if row is None:
         raise ApiError("NOT_FOUND", 404)
@@ -28,6 +30,7 @@ def research_for(actor: Account, identity: UUID) -> Research:
 
 
 def version_for(actor: Account, identity: UUID) -> ResearchVersion:
+    """版本存取必須同時滿足 owner 與目前 Dataset grant，撤權後立即拒絕。"""
     row = ResearchVersion.objects.filter(pk=identity, tenant_id=actor.tenant_id, research__owner=actor).first()
     if row is None:
         raise ApiError("NOT_FOUND", 404)
@@ -36,12 +39,14 @@ def version_for(actor: Account, identity: UUID) -> ResearchVersion:
 
 
 def research_dto(row: Research) -> JsonObject:
+    """只投影已驗 schema 的研究 metadata，不連帶暴露資料或觀測。"""
     result: JsonObject = {"kind": "Research", "id": str(row.id), "tenant_id": str(row.tenant_id), "schema_version": "2.0", "created_at": row.created_at.isoformat(), "name": row.name, "owner_id": str(row.owner_id)}
     validate_api(result, "Research")
     return result
 
 
 def create_research(actor: Account, data: JsonObject) -> JsonObject:
+    """原子建立 owner 私有研究及來源／稽核，不假設資料權隨研究容器存在。"""
     writable(actor)
     require(bool(data["name"].strip()))
     identity, source = uuid4(), uuid4()
@@ -52,6 +57,7 @@ def create_research(actor: Account, data: JsonObject) -> JsonObject:
 
 
 def available_version(actor: Account, identity: UUID) -> DatasetVersion:
+    """建立及執行前要求可用版本與現行寫權，避免引用尚未提交或已封鎖的來源。"""
     row = DatasetVersion.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
     if row is None:
         raise ApiError("NOT_FOUND", 404)
@@ -62,6 +68,7 @@ def available_version(actor: Account, identity: UUID) -> DatasetVersion:
 
 
 def draft_document(actor: Account, research: Research, dataset: DatasetVersion, data: JsonObject, identity: UUID, created: datetime) -> JsonObject:
+    """由明確人工設定固定語意／domain／切分；初始 DRAFT 不代表正式封存已登記。"""
     preview = dataset.preview.content
     if preview is None or "source_metadata" not in preview:
         raise ApiError("DEPENDENCY_UNAVAILABLE", 503)
@@ -78,6 +85,7 @@ def draft_document(actor: Account, research: Research, dataset: DatasetVersion, 
 
 
 def create_version(actor: Account, research: Research, data: JsonObject) -> JsonObject:
+    """不可變草稿、來源與零起始研究帳本同交易建立，不能漏建帳本或洗掉歷史用量。"""
     writable(actor)
     dataset = available_version(actor, UUID(data["dataset_version_id"]))
     identity, source, created = uuid4(), uuid4(), db_now()
@@ -93,11 +101,13 @@ def create_version(actor: Account, research: Research, data: JsonObject) -> Json
 
 
 def visible_versions(actor: Account, research: Research) -> QuerySet[ResearchVersion]:
+    """只列目前 Dataset grant 仍允許的 owner 版本，不藉列表洩漏已撤權資料。"""
     permitted = Grant.objects.filter(actor=actor, tenant_id=actor.tenant_id).values("dataset_id")
     return ResearchVersion.objects.filter(tenant_id=actor.tenant_id, research=research, dataset_version__dataset_id__in=permitted)
 
 
 def page(rows: QuerySet[T], actor: Account, scope: str, cursor: str, limit: int, dto: Callable[[T], JsonObject]) -> JsonObject:
+    """按建立時間與 UUID 穩定分頁；游標綁 actor／tenant／scope 且 15 分鐘到期。"""
     binding = {"actor": str(actor.id), "tenant": str(actor.tenant_id), "scope": scope}
     rows = rows.order_by("-created_at", "-id")
     if cursor:

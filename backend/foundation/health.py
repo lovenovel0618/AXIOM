@@ -15,11 +15,13 @@ logger = logging.getLogger(__name__)
 
 @require_safe
 def live(_request: HttpRequest) -> JsonResponse:
+    """只報程序存活；不把存活誤當資料庫、儲存與 migration 已就緒。"""
     return JsonResponse({"status": "ok"})
 
 
 @require_safe
 def ready(_request: HttpRequest) -> JsonResponse:
+    """實查資料庫、必要 guards、可寫物件目錄與 Redis；失敗只回不可用，不洩連線資訊。"""
     try:
         DispatchProbe.objects.exists()
         required = {("foundation", "0001_initial"), ("runtime", "0001_initial"), ("runtime", "0002_document_guards"), ("runtime", "0003_runtimerun_runtime_run_tenant_identity"), ("catalog", "0002_tenant_guards"), ("sessions", "0001_initial"), ("catalog", "0004_ingest_guards"), ("catalog", "0006_research_guards"), ("catalog", "0008_inspection_guards"), ("catalog", "0010_profile_guards"), ("runtime", "0005_profile_roots"), ("runtime", "0004_remove_runtimerun_runtime_control_only")}

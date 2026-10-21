@@ -1,4 +1,6 @@
-"""Transactional root INGEST control; business execution stays disabled."""
+"""持久 root／attempt 控制：列鎖、lease 世代、取消 epoch、時限與有界恢復。
+
+Transactional root INGEST control; business execution stays disabled."""
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from uuid import UUID, uuid4
@@ -16,6 +18,7 @@ IMMUTABLE_KEYS = ("id", "tenant_id", "type", "research_version_id", "dataset_id"
 
 @dataclass(frozen=True)
 class Lease:
+    """一次派送的不可變授權票據；worker、generation 與取消 epoch 共同 fencing。"""
     tenant_id: UUID
     run_id: UUID
     attempt_id: UUID
@@ -25,6 +28,7 @@ class Lease:
 
 
 def _initial(record: JsonObject, budget: JsonObject) -> None:
+    """新 root 必須零用量、無預留且處於 pristine QUEUED；不能挾帶偽造終態入庫。"""
     required: JsonObject = {"status": QUEUED, "revision": 0, "active_attempt_id": None, "lease_generation": 0, "cancellation_epoch": 0, "root_epoch_at_dispatch": 0, "cancel_requested_at": None, "dispatch_stage": "SEARCH_OPEN", "phase": None, "stop_reason": None, "evidence_bundle_ids": [], "diagnostic_artifact_ids": [], "research_trace_artifact_ids": [], "skipped_phases": [], "outcome_status": None, "current_event_cursor": f"RUN:{record['id']}:0", "budget_reservations": []}
     if any(record[key] != value for key, value in required.items()):
         raise ValueError("New root must have pristine queued state")
@@ -35,6 +39,7 @@ def _initial(record: JsonObject, budget: JsonObject) -> None:
 
 
 def enqueue(tenant_id: UUID, record: JsonObject, task: JsonObject, execution: JsonObject, budget: JsonObject, *, control_only: bool = True) -> UUID:
+    """固定輸入與預算快照並原子建立 root；相同 ID 僅接受相同快照，時限須在可表示範圍。"""
     record, task, execution, budget = map(detached, [record, task, execution, budget])
     validate_bindings(record, task, execution, budget)
     _initial(record, budget)
@@ -66,10 +71,12 @@ def enqueue(tenant_id: UUID, record: JsonObject, task: JsonObject, execution: Js
 
 
 def _attempt_for(run: RuntimeRun) -> RuntimeAttempt:
+    """依 root 活躍引用取 attempt，避免任意 attempt UUID 取代本次派送。"""
     return RuntimeAttempt.objects.select_for_update().get(pk=UUID(run.document["active_attempt_id"]), run=run)
 
 
 def validate_lease(run: RuntimeRun, lease: Lease, now: datetime) -> RuntimeAttempt:
+    """提交時驗 worker／世代／取消 epoch 與時限，舊 worker 不能覆蓋新狀態。"""
     record = run.document
     if record["cancellation_epoch"] != lease.epoch or record["status"] == CANCEL_REQUESTED:
         raise ControlError("ROOT_CANCELLED")
@@ -85,6 +92,7 @@ def validate_lease(run: RuntimeRun, lease: Lease, now: datetime) -> RuntimeAttem
 
 
 def _fail(run: RuntimeRun, now: datetime, reason: str) -> None:
+    """在持鎖交易內收斂失敗狀態與事件，不讓半份 attempt／Run 終態流出。"""
     run.document.update(status="FAILED", dispatch_stage="CLOSED", stop_reason=reason)
     run.document["revision"] += 1
     state_event(run, "RunFinished", now)
@@ -92,6 +100,7 @@ def _fail(run: RuntimeRun, now: datetime, reason: str) -> None:
 
 
 def _deadline_exceeded(run: RuntimeRun, snapshot: InputSnapshot, now: datetime) -> bool:
+    """以首次啟動與固定 wall 限額判斷 deadline，不因重試重新起算。"""
     if snapshot.budget["limit"]["wall_seconds"] <= 0:
         return True
     if run.first_started_at is None:
@@ -100,6 +109,7 @@ def _deadline_exceeded(run: RuntimeRun, snapshot: InputSnapshot, now: datetime) 
 
 
 def claim(tenant_id: UUID, run_id: UUID, generation: int, worker_id: str) -> Lease | None:
+    """以 root 列鎖排除重複派送；只有當期 QUEUED 世代可建立新 attempt。"""
     if not worker_id or len(worker_id) > 200:
         raise ValueError("Invalid worker identity")
     with transaction.atomic():
@@ -123,6 +133,7 @@ def claim(tenant_id: UUID, run_id: UUID, generation: int, worker_id: str) -> Lea
 
 
 def _start_attempt(run: RuntimeRun, worker_id: str, now: datetime) -> Lease:
+    """固定一次 attempt 的開始、lease 與工作階段，再同交易投影 Run。"""
     record = run.document
     generation = record["lease_generation"] + 1
     attempt_id = uuid4()
@@ -146,6 +157,7 @@ def _start_attempt(run: RuntimeRun, worker_id: str, now: datetime) -> Lease:
 
 
 def heartbeat(lease: Lease) -> None:
+    """只延長當前有效 lease 並累計用量；取消或過時世代不得復活。"""
     with transaction.atomic():
         run = lock_run(lease.tenant_id, lease.run_id)
         now = db_now()
@@ -157,7 +169,7 @@ def heartbeat(lease: Lease) -> None:
 
 
 def check_submission(lease: Lease) -> None:
-    """Fence a future submission; this entry point writes no business result."""
+    """在業務讀值／提交前檢查當前 fencing，晚到與取消均拒絕。"""
     with transaction.atomic():
         run = lock_run(lease.tenant_id, lease.run_id)
         now = db_now()
@@ -167,6 +179,7 @@ def check_submission(lease: Lease) -> None:
 
 
 def cancel(tenant_id: UUID, run_id: UUID, expected_revision: int) -> None:
+    """先增加取消 epoch 並關派送，再等待停止證明；不能把請求取消直接當作已停。"""
     with transaction.atomic():
         run = lock_run(tenant_id, run_id)
         record = run.document
@@ -185,7 +198,7 @@ def cancel(tenant_id: UUID, run_id: UUID, expected_revision: int) -> None:
 
 
 def confirm_control_stopped(tenant_id: UUID, run_id: UUID) -> None:
-    """Only for control_only records: no external process has ever been started."""
+    """僅供沒有業務子程序的控制探針確認停止；真 INGEST／PROFILE 必須走 owning handler。"""
     with transaction.atomic():
         run = lock_run(tenant_id, run_id)
         if not run.control_only or run.document["status"] != CANCEL_REQUESTED:
@@ -202,6 +215,7 @@ def confirm_control_stopped(tenant_id: UUID, run_id: UUID) -> None:
 
 
 def recover(tenant_id: UUID, run_id: UUID) -> None:
+    """持久裁決排隊、lease、wall 超時；未知業務成本不自動重跑。"""
     with transaction.atomic():
         run = lock_run(tenant_id, run_id)
         now = db_now()
@@ -234,6 +248,7 @@ def recover(tenant_id: UUID, run_id: UUID) -> None:
 
 
 def _requeue(run: RuntimeRun, policy: JsonObject, now: datetime) -> None:
+    """控制探針有限重試延續原限額與歷史消耗，不建立新 root 洗掉成本。"""
     delay = min(policy["backoff_initial_seconds"] * 2 ** (run.document["lease_generation"] - 1), policy["backoff_max_seconds"])
     run.available_at = now + timedelta(seconds=delay)
     run.queue_deadline = run.available_at + timedelta(seconds=policy["queue_timeout_seconds"])

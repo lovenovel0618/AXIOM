@@ -1,4 +1,6 @@
-"""Untrusted JSON preflight before recursive schema validation."""
+"""DSL 解碼與語法前置檢查：限制 bytes、深度、節點與字串，拒絕未知節點及任意 Python 表達式。
+
+Untrusted JSON preflight before recursive schema validation."""
 import json
 from typing import Any, cast
 from runtime.contracts import JsonObject, canonical_bytes

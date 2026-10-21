@@ -1,4 +1,6 @@
-"""Explicit local limits, distinct from approved production capacity."""
+"""本機解析容量政策：所有上限必填且驗整數與範圍，不當成已核准的正式 SLO。
+
+Explicit local limits, distinct from approved production capacity."""
 from dataclasses import asdict, dataclass
 from typing import Any
 

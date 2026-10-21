@@ -1,3 +1,6 @@
+"""建立研究／root 帳本、預留、不可變 receipt 與研究狀態投影。
+
+結構遷移與下一版原生 guard 分開；配置保持不可變，狀態與用量使用專屬投影。"""
 import django.db.models.deletion
 import uuid
 from django.db import migrations, models

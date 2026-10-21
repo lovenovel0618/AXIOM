@@ -1,4 +1,7 @@
-"""Fixed split quality checks and fit/development-only known-model inspection."""
+"""研究品質核心：先按固定 row ID 切分，再做精確 canonical 單位轉換及 float64 邊界檢查。
+只計 fit 統計與 fit／development 已知公式評分；任一區品質失敗只回同一遮罩，不暴露 final 細節。
+
+Fixed split quality checks and fit/development-only known-model inspection."""
 from collections.abc import Sequence
 from decimal import Decimal, InvalidOperation
 from fractions import Fraction

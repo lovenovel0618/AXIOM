@@ -6,11 +6,13 @@ from runtime.records import db_now, detached
 
 
 def state_for(version: ResearchVersion) -> ResearchState:
+    """取得版本唯一狀態投影並加列鎖；呼叫端須先持相關 root 鎖。"""
     state,_created = ResearchState.objects.get_or_create(research_version=version,defaults={"tenant_id":version.tenant_id})
     return ResearchState.objects.select_for_update().get(pk=state.pk)
 
 
 def transition(state: ResearchState, status: str) -> None:
+    """控制狀態每次加一 revision，並在同交易保存不可變研究事件；用量更新不走此路徑。"""
     state.status = status
     state.revision += 1
     state.save()
@@ -23,6 +25,7 @@ def transition(state: ResearchState, status: str) -> None:
 
 
 def document_for(version: ResearchVersion) -> JsonObject:
+    """合成不可變配置、最新用量與狀態；不改寫原草稿，也不提前投影 READY。"""
     document = detached(version.document)
     account = ResearchBudget.objects.get(research_version=version)
     document["research_budget_usage"] = account.document["usage"]

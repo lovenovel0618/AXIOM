@@ -19,6 +19,8 @@ jobs:
           .venv-backend/bin/python -m pip install --require-hashes -r backend/requirements-dev.lock
       - name: Test engineering tools
         run: .venv-backend/bin/python -m unittest discover -s tests -v
+      - name: Enforce explicit typing boundaries
+        run: .venv-backend/bin/python tools/typing_policy.py
       - name: Validate development baseline
         run: .venv-backend/bin/python tools/development_baseline.py
       - name: Check public benchmark references

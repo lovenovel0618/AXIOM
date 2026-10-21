@@ -1,4 +1,6 @@
-"""Local-file scalar Parquet, bounded streaming batches inside the worker."""
+"""Parquet 解析邊界：先驗 metadata 與容量，再有界解碼；拒絕巢狀／非純量資料以防記憶體擴張。
+
+Local-file scalar Parquet, bounded streaming batches inside the worker."""
 from pathlib import Path
 import polars as pl
 from ingestion.limits import ImportLimits, ImportRejected, require

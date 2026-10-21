@@ -1,4 +1,7 @@
-"""Authenticated catalog operations; callers hold the current actor row lock."""
+"""租戶與檔案業務邊界：每次讀寫重驗角色及 Dataset grant；物件固定版本後不可覆寫。
+冪等回放仍重驗目前授權；撤權不靠刪資料或重設請求身分處理。
+
+Authenticated catalog operations; callers hold the current actor row lock."""
 from collections.abc import Callable
 from datetime import datetime, timedelta
 from uuid import UUID, uuid4

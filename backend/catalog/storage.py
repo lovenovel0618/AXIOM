@@ -1,4 +1,7 @@
-"""Private local version adapter: generated keys, bounded IO, no mutable latest."""
+"""不可變本機物件 adapter：以 UUID 命名，拒絕 symlink／非一般檔，逐次核對大小與 SHA。
+暫存、固定版本及只讀引用分開；此 adapter 不是 S3 或多租戶檔案系統沙箱。
+
+Private local version adapter: generated keys, bounded IO, no mutable latest."""
 from dataclasses import dataclass
 import hashlib
 import os

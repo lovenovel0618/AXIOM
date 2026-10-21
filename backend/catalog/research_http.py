@@ -1,4 +1,6 @@
-"""Existing v2 research endpoints, bounded to persisted DRAFT operations."""
+"""研究 HTTP 邊界：owner／Dataset ACL 交集、冪等重送與控制 revision。
+
+Existing v2 research endpoints, bounded to persisted DRAFT operations."""
 import re
 from uuid import UUID
 from django.conf import settings
@@ -16,6 +18,7 @@ from runtime.contracts import project
 
 
 def paging(request: HttpRequest) -> tuple[str, int]:
+    """檢查合法 query 與 1～200 筆上限，不允許任意 ORM 篩選。"""
     if set(request.GET).difference({"limit", "cursor"}):
         raise ApiError("INVALID_SCHEMA", 422)
     try:
@@ -30,6 +33,7 @@ def paging(request: HttpRequest) -> tuple[str, int]:
 @allowed_methods(["GET", "POST"])
 @api
 def researches(request: HttpRequest, actor: Account) -> JsonResponse:
+    """提供 owner 私有研究的建立／列表；寫入使用冪等鍵與現行授權。"""
     if request.method == "GET":
         cursor, limit = paging(request)
         result = page(Research.objects.filter(owner=actor, tenant_id=actor.tenant_id), actor, "researches", cursor, limit, research_dto)
@@ -46,12 +50,14 @@ def researches(request: HttpRequest, actor: Account) -> JsonResponse:
 @allowed_methods(["GET"])
 @api
 def research_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """只回目前 owner 可讀的研究 metadata。"""
     return JsonResponse(research_dto(research_for(actor, identity)))
 
 
 @allowed_methods(["GET", "POST"])
 @api
 def versions(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """建立或分頁查詢固定草稿；重送仍重驗來源 ACL，不沿用舊授權。"""
     research = research_for(actor, identity)
     if request.method == "GET":
         cursor, limit = paging(request)
@@ -70,6 +76,7 @@ def versions(request: HttpRequest, actor: Account, identity: UUID) -> JsonRespon
 @allowed_methods(["GET"])
 @api
 def version_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """回不可變配置加最新狀態與帳本投影，另提供控制 revision。"""
     document = document_for(version_for(actor, identity))
     validate_api(document, "ResearchVersion")
     response = JsonResponse(document)
@@ -80,6 +87,7 @@ def version_detail(_request: HttpRequest, actor: Account, identity: UUID) -> Jso
 @allowed_methods(["POST"])
 @api
 def validate_draft(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """明確啟用才建立 PROFILE；先驗授權，再由冪等及 revision 保護避免重複預留。"""
     writable(actor)
     version = version_for(actor, identity)
     available_version(actor, version.dataset_version_id)
@@ -95,6 +103,7 @@ def validate_draft(request: HttpRequest, actor: Account, identity: UUID) -> Json
 
 
 def control_revision(request: HttpRequest) -> int:
+    """要求非負十進位控制版本；缺漏 428、格式錯誤 422，不能把用量變動誤當版本衝突。"""
     value = request.headers.get("If-Control-Revision")
     if value is None:
         raise ApiError("PRECONDITION_REQUIRED",428)
@@ -106,6 +115,7 @@ def control_revision(request: HttpRequest) -> int:
 @allowed_methods(["GET"])
 @api
 def runs(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """提供研究內穩定 root 分頁供重開頁找回任務；簽章 cursor 與每次 ACL 檢查缺一不可。"""
     version_for(actor,identity)
     cursor, limit = paging(request)
     binding = {"actor":str(actor.id),"tenant":str(actor.tenant_id),"version":str(identity)}

@@ -1,4 +1,7 @@
-"""Streaming CSV and flat JSON records with strict shape and JSON semantics."""
+"""文字表格解析邊界：串流限制行／欄／cell 與解碼大小，保留空值和原始 row 順序。
+JSON 拒絕重複鍵、非有限數及巢狀觀測，十進位數值不先轉 float 丟精度。
+
+Streaming CSV and flat JSON records with strict shape and JSON semantics."""
 from collections.abc import Iterator
 from decimal import Decimal
 import csv

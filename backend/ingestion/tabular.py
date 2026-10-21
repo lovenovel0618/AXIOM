@@ -1,4 +1,6 @@
-"""Shared bounded counters; metadata contains no observed cell values."""
+"""最小純量表格介面：格式層只保留欄名、型別與原 row，不作語意猜測或資料修補。
+
+Shared bounded counters; metadata contains no observed cell values."""
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta

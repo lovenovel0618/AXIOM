@@ -1,4 +1,7 @@
-"""Offline schema, declaration, domain and SI dimension validation."""
+"""安全 DSL 編譯：只接受有限 AST 白名單，固定符號／參數、單位與定義域後才產生計畫。
+不使用 eval／exec；編譯成功只代表可安全求值，不等同數學命題已證明。
+
+Offline schema, declaration, domain and SI dimension validation."""
 from dataclasses import dataclass
 from operator import itemgetter
 import hashlib

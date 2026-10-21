@@ -14,6 +14,7 @@ from runtime.records import db_now, task_input_hash
 
 
 def configured_limits() -> ImportLimits:
+    """檢查明確啟用與完整 parser 設定；未設定時拒絕，沒有隱含正式容量。"""
     if not settings.INGEST_ENABLED or platform.system() != "Linux":
         raise ApiError("DEPENDENCY_UNAVAILABLE", 503)
     try:
@@ -23,6 +24,7 @@ def configured_limits() -> ImportLimits:
 
 
 def code_digest() -> str:
+    """雜湊當版 backend 原始碼，讓快照能偵測執行中更換實作。"""
     root = Path(__file__).resolve().parents[1]
     paths = sorted(root.rglob("*.py"))
     result = [{"path": str(path.relative_to(root)), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()} for path in paths]
@@ -36,6 +38,7 @@ def code_digest() -> str:
 
 
 def environment() -> str:
+    """固定 Python／平台／套件等執行指紋，防止不同環境沿用舊快照。"""
     root = Path(__file__).resolve().parents[1]
     return identity_hash({"requirements": hashlib.sha256((root / "requirements.lock").read_bytes()).hexdigest(),
                           "python": platform.python_version(), "system": platform.system(), "machine": platform.machine(),
@@ -43,6 +46,7 @@ def environment() -> str:
 
 
 def documents(actor: Account, upload: Upload, limits: ImportLimits, input_id: str, provenance_id: str) -> tuple[JsonObject, JsonObject, JsonObject, JsonObject]:
+    """由真實 upload 產生不可變輸入、執行與資源快照，不使用測試 fixture 冒充任務。"""
     run_id, execution_id, budget_id = (str(uuid4()) for _index in range(3))
     created = db_now().isoformat()
     usage: JsonObject = dict.fromkeys(["cpu_seconds", "gpu_seconds", "tokens", "peak_memory_bytes", "elapsed_wall_seconds", "candidates_generated", "candidates_accepted"], 0)

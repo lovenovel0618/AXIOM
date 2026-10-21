@@ -229,3 +229,10 @@ docker compose exec -T web python manage.py profile_smoke
 ```
 
 此示範經真 HTTP／INGEST／DRAFT／PROFILE queue，驗三格式、跨 root 累計、品質遮罩、餘額拒絕、事件續接與撤權。僅在可丟棄資料庫執行。停止新 PROFILE 時先停止 profile worker，將 AXIOM_PROFILE_ENABLED=0 並重建 web／relay；排隊及失聯任務依持久狀態恢復，不刪帳本。升級須排空程序、備份並套 catalog 0009／0010、runtime 0005，再啟動同版服務；readiness 驗這些 migration。已有 PROFILE root 後不可直接 reverse 至 INGEST-only guards。設計與限制見 [任務設計](<../docs/技術文件/M0/T07-研究帳本與PROFILE任務設計.md>)。
+
+
+## 開發服務保留與型別註解規範
+
+預設專案為 axiom-dev；提供使用者操作的服務完成工作後保留運行與資料 volume，不使用 down --volumes 清理。只有明確命名的可丟棄測試專案可以清理。`docker compose ps`、`curl --fail http://127.0.0.1:18000/health/ready/` 與 `curl --fail http://127.0.0.1:15173/health/ready/` 必須實際成功。前端目前為工程骨架，尚無完整研究工作台；健康檢查成功不表示所有企劃功能已完成。
+
+要讓重建後仍啟用本機 INGEST／PROFILE，將上述四個 AXIOM_INGEST_ENABLED／AXIOM_IMPORT_LIMITS／AXIOM_PROFILE_ENABLED／AXIOM_PROFILE_LIMITS 寫入既有未追蹤 .env，另設 `COMPOSE_PROFILES=ingest,profile`，即可用一般 `docker compose up --build -d --wait` 同時啟動兩個 worker。不要輸出或提交 .env。詳細型別邊界與中文註解要求見 [本輪規範](<../docs/技術文件/M0/T07-服務常駐與型別註解規範.md>)；本機及 CI 皆執行 `python tools/typing_policy.py` 與 Pyright strict，既有 Any 額度不會自動授予新檔。

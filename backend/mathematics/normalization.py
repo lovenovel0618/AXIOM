@@ -1,4 +1,6 @@
-"""Exact, bounded rational folding without removing undefined subexpressions."""
+"""DSL 身分正規化：精確有理數／十進位規則與有限常數折疊，不放寬定義域或創造浮點等價。
+
+Exact, bounded rational folding without removing undefined subexpressions."""
 from fractions import Fraction
 from decimal import Decimal, InvalidOperation
 from runtime.contracts import JsonObject, canonical_bytes

@@ -1,0 +1,297 @@
+{
+  "backend/ingestion/research.py": {
+    "Any": 10,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/ingestion/limits.py": {
+    "Any": 1,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/ingestion/supervisor.py": {
+    "Any": 7,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/ingestion/tabular.py": {
+    "Any": 1,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/ingestion/text_formats.py": {
+    "Any": 5,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/ingestion/research_protocol.py": {
+    "Any": 8,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/ingestion/parser.py": {
+    "Any": 1,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/ingestion/tests.py": {
+    "Any": 5,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/ingest.py": {
+    "Any": 0,
+    "JsonObject": 5,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/services.py": {
+    "Any": 0,
+    "JsonObject": 19,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/models.py": {
+    "Any": 0,
+    "JsonObject": 28,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/research.py": {
+    "Any": 0,
+    "JsonObject": 10,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/budget.py": {
+    "Any": 0,
+    "JsonObject": 14,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/profile.py": {
+    "Any": 0,
+    "JsonObject": 8,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/inspection.py": {
+    "Any": 0,
+    "JsonObject": 4,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/http.py": {
+    "Any": 0,
+    "JsonObject": 3,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/profile_manifest.py": {
+    "Any": 0,
+    "JsonObject": 11,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/artifacts.py": {
+    "Any": 0,
+    "JsonObject": 7,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/research_validation.py": {
+    "Any": 0,
+    "JsonObject": 13,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/ingest_manifest.py": {
+    "Any": 0,
+    "JsonObject": 9,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/research_state.py": {
+    "Any": 0,
+    "JsonObject": 2,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/validation.py": {
+    "Any": 1,
+    "JsonObject": 7,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/runtime/models.py": {
+    "Any": 0,
+    "JsonObject": 12,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/runtime/completion.py": {
+    "Any": 0,
+    "JsonObject": 2,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/runtime/control_fixture.py": {
+    "Any": 0,
+    "JsonObject": 9,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/runtime/control.py": {
+    "Any": 0,
+    "JsonObject": 9,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/runtime/records.py": {
+    "Any": 0,
+    "JsonObject": 17,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/runtime/contracts.py": {
+    "Any": 1,
+    "JsonObject": 7,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/mathematics/compiler.py": {
+    "Any": 0,
+    "JsonObject": 5,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/mathematics/syntax.py": {
+    "Any": 2,
+    "JsonObject": 7,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/mathematics/tests.py": {
+    "Any": 1,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/mathematics/normalization.py": {
+    "Any": 0,
+    "JsonObject": 10,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/mathematics/evaluator.py": {
+    "Any": 0,
+    "JsonObject": 6,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/mathematics/smoke.py": {
+    "Any": 0,
+    "JsonObject": 2,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/foundation/management/commands/probe_smoke.py": {
+    "Any": 2,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/foundation/management/commands/dispatch_probes.py": {
+    "Any": 2,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/runtime/management/commands/runtime_smoke.py": {
+    "Any": 2,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/tests/test_concurrency.py": {
+    "Any": 0,
+    "JsonObject": 2,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/tests/test_inspection_engine.py": {
+    "Any": 0,
+    "JsonObject": 14,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/tests/test_profile.py": {
+    "Any": 6,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/tests/test_research.py": {
+    "Any": 0,
+    "JsonObject": 4,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/tests/test_api.py": {
+    "Any": 0,
+    "JsonObject": 6,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/management/commands/provision_account.py": {
+    "Any": 2,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/management/commands/grant_dataset.py": {
+    "Any": 2,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/management/commands/research_draft_smoke.py": {
+    "Any": 2,
+    "JsonObject": 2,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/management/commands/research_inspection_smoke.py": {
+    "Any": 2,
+    "JsonObject": 4,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/management/commands/catalog_smoke.py": {
+    "Any": 2,
+    "JsonObject": 4,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/management/commands/business_ingest_smoke.py": {
+    "Any": 9,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/management/commands/research_inspect.py": {
+    "Any": 2,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/management/commands/ingest_preview.py": {
+    "Any": 3,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/management/commands/ingest_preview_smoke.py": {
+    "Any": 3,
+    "JsonObject": 0,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/management/commands/profile_smoke.py": {
+    "Any": 2,
+    "JsonObject": 7,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "tools/development_baseline.py": {
+    "Any": 1,
+    "JsonObject": 10,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "tools/benchmark/isolation_probe.py": {
+    "Any": 1,
+    "JsonObject": 9,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "tools/benchmark/public_oracle.py": {
+    "Any": 1,
+    "JsonObject": 21,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "tests/test_isolation_probe.py": {
+    "Any": 0,
+    "JsonObject": 2,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "tests/test_development_baseline.py": {
+    "Any": 0,
+    "JsonObject": 2,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "docs/企劃案/tools/check_docs.py": {
+    "Any": 4,
+    "JsonObject": 49,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "docs/企劃案/tools/contract_scenarios.py": {
+    "Any": 7,
+    "JsonObject": 42,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  }
+}

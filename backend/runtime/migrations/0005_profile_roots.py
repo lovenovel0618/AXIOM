@@ -1,4 +1,6 @@
-"""Permit only the next fixed business root; preserve immutable run bindings."""
+"""在既有 Run 原生 guard 中允許有完整業務綁定的 PROFILE root。
+
+沿用原不可變身分及合法狀態防線；已有 PROFILE 資料時不允許切回僅 INGEST 的舊 guard。"""
 from importlib import import_module
 from django.db import migrations
 

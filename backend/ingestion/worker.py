@@ -1,4 +1,6 @@
-"""Fixed isolated entry point; bootstrap resource limits before parser imports."""
+"""固定解析 child 入口：先設定 Linux 資源限制，再解析暫存檔並輸出有界 metadata。
+
+Fixed isolated entry point; bootstrap resource limits before parser imports."""
 import json
 import os
 from pathlib import Path

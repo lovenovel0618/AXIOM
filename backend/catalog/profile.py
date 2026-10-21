@@ -1,4 +1,6 @@
-"""Fenced business PROFILE with real reservations and private research results."""
+"""真正 PROFILE 業務執行：固定來源、目前授權、lease fencing 與原子品質提交。
+
+Fenced business PROFILE with real reservations and private research results."""
 from datetime import datetime
 import math
 from uuid import UUID, uuid4
@@ -19,12 +21,16 @@ from ingestion.limits import ImportLimits, ImportRejected
 from ingestion.supervisor import inspect_research
 from runtime.completion import finish, confirm_business_stopped
 from runtime.contracts import JsonObject, identity_hash, validate
+from runtime.budget_types import BudgetUsage
 from runtime.control import Lease, check_submission, claim, enqueue, recover
 from runtime.models import RuntimeAttempt, RuntimeRun
 from runtime.records import ControlError, db_now, lock_run, public_run, save_attempt, save_run, snapshot_for, state_event
 
 
 def enqueue_profile(actor: Account, version: ResearchVersion, data: JsonObject, revision: int) -> JsonObject:
+    """在 API 外層交易中固定輸入、來源與環境，原子建立 root、預留及 VALIDATING 狀態。
+
+    caller 已持授權鎖；取得新 root 鎖後才鎖研究狀態及帳本，revision 衝突使全部副作用回滾。"""
     limits = limits_for(version)
     account = ResearchBudget.objects.get(research_version=version,tenant_id=actor.tenant_id)
     limit = limit_for(account,data.get("run_budget"),limits)
@@ -53,6 +59,7 @@ def enqueue_profile(actor: Account, version: ResearchVersion, data: JsonObject, 
 
 
 def close_state(binding: ProfileBinding, quality: UUID | None = None, structure: UUID | None = None) -> None:
+    """僅清除屬於本 root 的活躍狀態；保留 DRAFT，品質通過仍不代表已具正式封存資格。"""
     state = state_for(binding.research_version)
     if state.active_run_id==binding.run_id:
         state.active_run_id = None
@@ -61,6 +68,7 @@ def close_state(binding: ProfileBinding, quality: UUID | None = None, structure:
 
 
 def recover_profile(tenant: UUID, identity: UUID) -> None:
+    """以 root 鎖序列化逾時與取消裁決；未啟動可釋放，已啟動失聯必須保留未知成本。"""
     with transaction.atomic():
         run = lock_run(tenant,identity)
         binding = ProfileBinding.objects.get(run=run)
@@ -88,6 +96,7 @@ def recover_profile(tenant: UUID, identity: UUID) -> None:
 
 
 def inputs(binding: ProfileBinding, lease: Lease) -> tuple[bytes,str,ImportLimits,JsonObject]:
+    """領取後重驗 lease、現行授權與固定來源；比對完整快照及環境後才讀 bytes，解析不持 DB 鎖。"""
     check_submission(lease)
     with transaction.atomic():
         _actor,version,reference = current(binding.actor_id,binding.research_version_id,allow_validating=True)
@@ -104,6 +113,7 @@ def inputs(binding: ProfileBinding, lease: Lease) -> tuple[bytes,str,ImportLimit
 
 
 def results(binding: ProfileBinding, run: RuntimeRun, result: JsonObject, execution: UUID) -> tuple[UUID,UUID | None]:
+    """提交遮罩品質報告；只有 PASS 才產生 fit-only／UNKNOWN 結構，不暴露 final 原值或錯誤位置。"""
     version = binding.research_version
     source = Provenance.objects.get(pk=UUID(run.document["provenance_id"]),tenant_id=binding.tenant_id)
     report: JsonObject = {"kind":"QualityReport","schema_version":"1.0","research_version_id":str(version.id),"run_id":str(run.id),"quality":result["quality"],
@@ -123,7 +133,8 @@ def results(binding: ProfileBinding, run: RuntimeRun, result: JsonObject, execut
     return quality.id,structure_id
 
 
-def measured(run: RuntimeRun, meter: Meter) -> JsonObject:
+def measured(run: RuntimeRun, meter: Meter) -> BudgetUsage:
+    """保留具體用量型別；wall 至少涵蓋首次啟動至結算前，CPU／RSS 沿用保守量測。"""
     usage = meter.usage()
     if run.first_started_at is not None:
         usage["elapsed_wall_seconds"] = max(usage["elapsed_wall_seconds"],math.ceil((db_now()-run.first_started_at).total_seconds()))
@@ -131,6 +142,7 @@ def measured(run: RuntimeRun, meter: Meter) -> JsonObject:
 
 
 def submit(binding: ProfileBinding, lease: Lease, result: JsonObject, meter: Meter) -> None:
+    """提交前再驗授權、來源及 fencing；結果、receipt、兩層帳本與終態必須同一交易成功。"""
     with transaction.atomic():
         actor,_version,reference = current(binding.actor_id,binding.research_version_id,allow_validating=True)
         LocalVersionStore(settings.OBJECT_ROOT).verify(reference)
@@ -151,6 +163,7 @@ def submit(binding: ProfileBinding, lease: Lease, result: JsonObject, meter: Met
 
 
 def reject(binding: ProfileBinding, lease: Lease, meter: Meter, code: str) -> None:
+    """child 已停止後仍如實入帳；取消／過期可拒收產物，不能因此丟掉實際成本。"""
     with transaction.atomic():
         run = lock_run(lease.tenant_id,lease.run_id)
         state_for(binding.research_version)
@@ -171,6 +184,7 @@ def reject(binding: ProfileBinding, lease: Lease, meter: Meter, code: str) -> No
 
 
 def profile_tick(tenant_id: str, run_id: str, generation: int) -> bool:
+    """專用 worker 的唯一 PROFILE 入口；重複派送由 claim 拒絕，失敗經停止確認路徑結算。"""
     if not settings.PROFILE_ENABLED:
         return False
     binding = ProfileBinding.objects.filter(run_id=UUID(run_id),tenant_id=UUID(tenant_id)).first()

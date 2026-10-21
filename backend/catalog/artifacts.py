@@ -10,10 +10,12 @@ from runtime.records import db_now
 
 
 class DatasetScope(Protocol):
+    """產物所需的最小資料集介面，避免依賴特定 INGEST／PROFILE binding 類別。"""
     dataset_id: UUID
 
 
 def register(actor: Account, binding: DatasetScope, identity: UUID, content: JsonObject | None, source: Provenance, raw: StoredObject | None = None, *, research_version: ResearchVersion | None = None) -> Artifact:
+    """以來源鏈及存取等級註冊不可變 JSON Artifact；私有研究產物另綁 research_version。"""
     data = canonical_bytes(content) if content is not None else b""
     source_id = uuid4()
     provenance(actor, "Artifact", identity, source_id, source)
@@ -27,6 +29,7 @@ def register(actor: Account, binding: DatasetScope, identity: UUID, content: Jso
 
 
 def assessment(binding: IngestBinding, version_id: UUID, identity: UUID, metadata: JsonObject, manifest: UUID) -> JsonObject:
+    """只從匯入 metadata 建純結構預覽，不推定語意、樣本統計或研究結論。"""
     count = len(metadata["columns"])
     result: JsonObject = {"kind": "StructureAssessment", "id": str(identity), "tenant_id": str(binding.tenant_id), "research_version_id": None,
         "schema_version": "1.0", "created_at": db_now().isoformat(), "artifact_access_class": "PROJECT", "dataset_version_id": str(version_id),
@@ -39,6 +42,7 @@ def assessment(binding: IngestBinding, version_id: UUID, identity: UUID, metadat
 
 
 def publish(actor: Account, binding: IngestBinding, metadata: JsonObject, execution_id: UUID) -> None:
+    """同交易提交可用 DatasetVersion 與純結構 Artifact；原始物件繼續封存。"""
     upload = binding.upload
     existing = DatasetVersion.objects.filter(dataset_id=binding.dataset_id, sha256=upload.sha256).first()
     if existing is not None:
@@ -64,6 +68,7 @@ def publish(actor: Account, binding: IngestBinding, metadata: JsonObject, execut
 
 
 def authorized(actor: Account, identity: UUID) -> Artifact:
+    """普通讀取同時驗租戶、Dataset grant、研究 owner 及 access class，避免只憑 UUID 下載。"""
     row = Artifact.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
     if row is None or row.document["access_class"] != "PROJECT":
         raise ApiError("NOT_FOUND", 404)

@@ -1,4 +1,7 @@
-"""Linux-only process resource boundary with bounded output and group cleanup."""
+"""固定 parser 的程序隔離與回收：乾淨環境、資源上限、stdout 上限及 wall deadline。
+逾時先終止整個程序群並 wait／reap，之後才能把成本標成已停止；不是通用插件沙箱。
+
+Linux-only process resource boundary with bounded output and group cleanup."""
 import hashlib
 import json
 import os

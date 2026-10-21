@@ -1,4 +1,6 @@
-"""Schema-aligned documents; indexed identities and relations remain SQL-owned."""
+"""持久任務模型：Run 狀態、不可變輸入、Attempt 租約與單調不可變事件。
+
+Schema-aligned documents; indexed identities and relations remain SQL-owned."""
 from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4

@@ -10,6 +10,7 @@ LEASE_SECONDS = 30
 
 
 def claim(probe_id: UUID, generation: int) -> UUID | None:
+    """原子取得控制探針當期世代，重複派送不能重複完成。"""
     with transaction.atomic():
         row = DispatchProbe.objects.select_for_update().get(pk=probe_id)
         if row.state != PENDING or row.generation != generation:
@@ -22,6 +23,7 @@ def claim(probe_id: UUID, generation: int) -> UUID | None:
 
 
 def complete(probe_id: UUID, generation: int, token: UUID) -> bool:
+    """只有持有當前 claim 的程序可完成，逾期 worker 不得覆蓋結果。"""
     with transaction.atomic():
         row = DispatchProbe.objects.select_for_update().get(pk=probe_id)
         if row.state != RUNNING or row.generation != generation or row.token != token:
@@ -35,6 +37,7 @@ def complete(probe_id: UUID, generation: int, token: UUID) -> bool:
 
 
 def pending_batch() -> list[tuple[UUID, int]]:
+    """有界掃描未完成探針，避免 relay 一次無界載入資料庫。"""
     with transaction.atomic():
         expired = DispatchProbe.objects.select_for_update(skip_locked=True).filter(
             state=RUNNING, lease_until__lte=timezone.now()
@@ -47,6 +50,7 @@ def pending_batch() -> list[tuple[UUID, int]]:
 
 
 def relay(publish: Callable[[str, int], None]) -> int:
+    """持久重送待執行探針；broker 暫失不把任務冒充成功。"""
     batch = pending_batch()
     for probe_id, generation in batch:
         publish(str(probe_id), generation)

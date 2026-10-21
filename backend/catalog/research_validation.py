@@ -9,17 +9,20 @@ INVALID_POLICY = "EVALUATION_POLICY_INVALID"
 
 
 def require(condition: bool, code: str = "INVALID_SCHEMA") -> None:
+    """把語意確認的失敗統一轉為穩定 API 錯誤，不回傳來源細節。"""
     if not condition:
         raise ApiError(code, 422)
 
 
 def decimal(value: str, code: str) -> Fraction:
     # Bound work before int conversion; the HTTP envelope is also bounded at 64 KiB.
+    """精確解析有界十進位宣告，避免先轉 float 丟失單位或邊界精度。"""
     require(len(value) <= 256, code)
     return Fraction(value)
 
 
 def mappings(profile: JsonObject, columns: set[str]) -> None:
+    """確認欄位角色、來源名稱及單位宣告一致，不自行猜測時間／特徵語意。"""
     source, target = profile["inputs"][0], profile["target"]
     for item in (source, target):
         require(item["source_column"] in columns, "SOURCE_COLUMN_NOT_FOUND")
@@ -36,6 +39,7 @@ def mappings(profile: JsonObject, columns: set[str]) -> None:
 
 
 def domain_check(data: JsonObject) -> None:
+    """核對 canonical 域、輸入及輸出量綱；宣告不能與語意映射矛盾。"""
     domain = data["domain"][0]
     require(domain["name"] == data["semantic_profile"]["inputs"][0]["name"])
     endpoints: list[Fraction] = []
@@ -48,6 +52,7 @@ def domain_check(data: JsonObject) -> None:
 
 
 def policy_check(policy: JsonObject, profile: JsonObject, split: JsonObject) -> None:
+    """驗證評估政策與研究配置一致，未支援的正式能力不得偷偷啟用。"""
     for name in ("absolute_error_bound", "practical_scale_override"):
         if policy[name] is not None:
             require(decimal(policy[name], INVALID_POLICY) > 0, INVALID_POLICY)
@@ -66,6 +71,7 @@ def policy_check(policy: JsonObject, profile: JsonObject, split: JsonObject) -> 
 
 
 def dependencies(profile: JsonObject, split: JsonObject) -> None:
+    """檢查時間／群組與 refit 依賴；當期未實作能力以明確拒絕維持邊界。"""
     grouped, timed = profile["group_column"] is not None, profile["time_ordered"]
     require(not (grouped and timed))
     require(timed == (split["kind"] == "TIME_ORDERED"))
@@ -81,6 +87,7 @@ def dependencies(profile: JsonObject, split: JsonObject) -> None:
 
 
 def iid_rows(count: int, seed: int) -> JsonObject:
+    """依固定 seed 與雜湊重算 IID 切分，不能把任意列集合冒充隨機切分。"""
     require(count >= 5, "INSUFFICIENT_DATA")
     # Public deterministic partitioning, independent of interpreter PRNG versions.
     rows = sorted(range(count), key=lambda row: (identity_hash(["axiom-iid-sha256-v1", seed, row]), row))
@@ -89,6 +96,7 @@ def iid_rows(count: int, seed: int) -> JsonObject:
 
 
 def split_check(data: JsonObject, count: int) -> JsonObject:
+    """每列恰好屬於一區且完整覆蓋，不交疊、不丟列，也不以重編列號隱藏資料。"""
     split = dict(data["observation_split"])
     require(UUID(split["dataset_version_id"]) == UUID(data["dataset_version_id"]))
     split["dataset_version_id"] = str(UUID(split["dataset_version_id"]))
@@ -110,6 +118,7 @@ def split_check(data: JsonObject, count: int) -> JsonObject:
 
 
 def confirm(data: JsonObject, metadata: JsonObject) -> JsonObject:
+    """將人工設定與來源 metadata 對照，固定可重現切分，無需讀取觀測值。"""
     profile, split = data["semantic_profile"], data["observation_split"]
     mappings(profile, {column["name"] for column in metadata["columns"]})
     domain_check(data)

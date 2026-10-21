@@ -1,4 +1,6 @@
-"""Authorized PROFILE cancellation and bounded, resumable SSE batches."""
+"""私有研究的取消與有界 SSE；每次請求重新驗權，取消須等真正停止證明。
+
+Authorized PROFILE cancellation and bounded, resumable SSE batches."""
 import json
 from uuid import UUID
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -18,6 +20,7 @@ from runtime.records import TERMINAL, lock_run, public_run
 @allowed_methods(["POST"])
 @api
 def cancel_run(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """重新驗 owner 與 Dataset 寫權限；冪等操作在 root 鎖內檢查 revision，再交取消／恢復裁決。"""
     writable(actor)
     run = run_for(actor,identity)
     if run.document["type"]!="PROFILE":
@@ -44,6 +47,7 @@ def cancel_run(request: HttpRequest, actor: Account, identity: UUID) -> JsonResp
 
 
 def after(request: HttpRequest, scope: str, identity: UUID, maximum: int) -> int:
+    """只接受相同 scope／UUID 的 Last-Event-ID；未發生的序號與 query 篩選均拒絕。"""
     if request.GET:
         raise ApiError("INVALID_SCHEMA",422)
     cursor = request.headers.get("Last-Event-ID",f"{scope}:{identity}:0")
@@ -57,6 +61,7 @@ def after(request: HttpRequest, scope: str, identity: UUID, maximum: int) -> int
 
 
 def stream(scope: str, identity: UUID, events: list[dict[str,object]]) -> HttpResponse:
+    """產生最多一批已授權事件的 SSE 回應；關閉後由客戶端攜游標重新連線及驗權。"""
     frames = ["retry: 2000\n\n"]
     for event in events:
         cursor = f"{scope}:{identity}:{event['sequence']}"
@@ -71,6 +76,7 @@ def stream(scope: str, identity: UUID, events: list[dict[str,object]]) -> HttpRe
 @allowed_methods(["GET"])
 @api
 def run_events(request: HttpRequest, actor: Account, identity: UUID) -> HttpResponse:
+    """每次請求驗目前 Run 存取權，依序回傳游標之後最多 100 筆事件。"""
     row = run_for(actor,identity)
     maximum = int(row.document["current_event_cursor"].rsplit(":",1)[1])
     sequence = after(request,"RUN",identity,maximum)
@@ -81,6 +87,7 @@ def run_events(request: HttpRequest, actor: Account, identity: UUID) -> HttpResp
 @allowed_methods(["GET"])
 @api
 def research_events(request: HttpRequest, actor: Account, identity: UUID) -> HttpResponse:
+    """研究事件只給 owner 與現行 Dataset grant 的交集；撤權後續接亦不可讀。"""
     version = version_for(actor,identity)
     latest = ResearchEvent.objects.filter(research_version=version).order_by("-sequence").first()
     maximum = 0 if latest is None else latest.sequence

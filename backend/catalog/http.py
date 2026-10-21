@@ -1,4 +1,7 @@
-"""Same-origin session authentication and the T05 catalog HTTP boundary."""
+"""HTTP 安全邊界：所有 API 經 session／CSRF、現行 actor 鎖與交易包裝。
+錯誤只回穩定代碼；登入節流、同源上傳及冪等操作不能旁路授權。
+
+Same-origin session authentication and the T05 catalog HTTP boundary."""
 from collections.abc import Callable
 from datetime import timedelta
 from functools import wraps

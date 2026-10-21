@@ -18,6 +18,7 @@ from runtime.models import RuntimeRun
 @allowed_methods(["GET"])
 @api
 def versions(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """以現行 Dataset ACL 查分頁版本，簽章 cursor 綁 actor／資料集且有期限。"""
     dataset_for(actor, identity)
     if set(request.GET).difference({"cursor", "limit"}):
         raise ApiError("INVALID_SCHEMA", 422)
@@ -49,6 +50,7 @@ def versions(request: HttpRequest, actor: Account, identity: UUID) -> JsonRespon
 
 
 def run_for(actor: Account, identity: UUID) -> RuntimeRun:
+    """拒絕 control probe；PROFILE 額外驗研究 owner，INGEST 驗 Dataset ACL。"""
     row = RuntimeRun.objects.filter(pk=identity,tenant_id=actor.tenant_id,control_only=False).first()
     if row is None:
         raise ApiError("NOT_FOUND",404)
@@ -63,6 +65,7 @@ def run_for(actor: Account, identity: UUID) -> RuntimeRun:
 @allowed_methods(["GET"])
 @api
 def run_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """回最新公開 Run 與控制 revision；未知停止成本不能標成已量測或零成本。"""
     row = run_for(actor,identity)
     response = JsonResponse(project(row.document,"Run"))
     response["X-Control-Revision"] = str(row.document["revision"])
@@ -83,6 +86,7 @@ def run_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonRes
 @allowed_methods(["GET"])
 @api
 def artifact_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """重新驗存取權後回 metadata，不能藉舊列表或 UUID 繞過撤權。"""
     row = authorized(actor, identity)
     validate_api(row.document, "Artifact")
     return JsonResponse(row.document)
@@ -91,6 +95,7 @@ def artifact_detail(_request: HttpRequest, actor: Account, identity: UUID) -> Js
 @allowed_methods(["GET"])
 @api
 def artifact_content(_request: HttpRequest, actor: Account, identity: UUID) -> HttpResponse:
+    """校驗內容 SHA／大小後以安全 JSON attachment 回傳，禁止瀏覽器把內容當可執行頁面。"""
     row = authorized(actor, identity)
     content = canonical_bytes(row.content)
     if hashlib.sha256(content).hexdigest() != row.document["sha256"] or len(content) != row.document["size_bytes"]:

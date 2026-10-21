@@ -1,0 +1,872 @@
+{
+  "date": "2026-10-21",
+  "base_commit": "d03e56b4bb1b9b0d3cc71b541c39dd4a085f5895",
+  "review": "SELF_REVIEW",
+  "tests": {
+    "backend": 272,
+    "new_backend": 6,
+    "tools": 79,
+    "new_tools": 5,
+    "frontend": 8,
+    "total": 359,
+    "skip": 0
+  },
+  "typing": {
+    "root_pyright": "PASS",
+    "backend_pyright": "PASS",
+    "policy": "PASS",
+    "negative_pyright_errors": 3,
+    "valid_typed_dict_errors": 0,
+    "runtime_invalid_cases": "PASS",
+    "remaining_dynamic_references": {
+      "Any": 98,
+      "JsonObject": 386
+    },
+    "legacy_boundary_files": 59,
+    "core_module": "backend/runtime/budget_types.py",
+    "core_dynamic_references": {
+      "Any": 0,
+      "JsonObject": 0
+    }
+  },
+  "sonar": {
+    "python_files": 128,
+    "diagnostics": 0,
+    "analyzed": [
+      "backend/catalog/__init__.py",
+      "backend/catalog/artifacts.py",
+      "backend/catalog/budget.py",
+      "backend/catalog/control_http.py",
+      "backend/catalog/http.py",
+      "backend/catalog/ingest.py",
+      "backend/catalog/ingest_manifest.py",
+      "backend/catalog/inspection.py",
+      "backend/catalog/management/__init__.py",
+      "backend/catalog/management/commands/__init__.py",
+      "backend/catalog/management/commands/business_ingest_smoke.py",
+      "backend/catalog/management/commands/catalog_smoke.py",
+      "backend/catalog/management/commands/grant_dataset.py",
+      "backend/catalog/management/commands/ingest_preview.py",
+      "backend/catalog/management/commands/ingest_preview_smoke.py",
+      "backend/catalog/management/commands/profile_smoke.py",
+      "backend/catalog/management/commands/provision_account.py",
+      "backend/catalog/management/commands/research_draft_smoke.py",
+      "backend/catalog/management/commands/research_inspect.py",
+      "backend/catalog/management/commands/research_inspection_smoke.py",
+      "backend/catalog/migrations/0001_initial.py",
+      "backend/catalog/migrations/0002_tenant_guards.py",
+      "backend/catalog/migrations/0003_artifact_datasetversion_ingestbinding_and_more.py",
+      "backend/catalog/migrations/0004_ingest_guards.py",
+      "backend/catalog/migrations/0005_research_researchversion_and_more.py",
+      "backend/catalog/migrations/0006_research_guards.py",
+      "backend/catalog/migrations/0007_researchinspection.py",
+      "backend/catalog/migrations/0008_inspection_guards.py",
+      "backend/catalog/migrations/0009_artifact_research_version_researchbudget_and_more.py",
+      "backend/catalog/migrations/0010_profile_guards.py",
+      "backend/catalog/migrations/__init__.py",
+      "backend/catalog/models.py",
+      "backend/catalog/profile.py",
+      "backend/catalog/profile_manifest.py",
+      "backend/catalog/read_http.py",
+      "backend/catalog/research.py",
+      "backend/catalog/research_http.py",
+      "backend/catalog/research_state.py",
+      "backend/catalog/research_validation.py",
+      "backend/catalog/services.py",
+      "backend/catalog/storage.py",
+      "backend/catalog/tasks.py",
+      "backend/catalog/tests/__init__.py",
+      "backend/catalog/tests/test_api.py",
+      "backend/catalog/tests/test_business_ingest.py",
+      "backend/catalog/tests/test_concurrency.py",
+      "backend/catalog/tests/test_inspection.py",
+      "backend/catalog/tests/test_inspection_engine.py",
+      "backend/catalog/tests/test_preview.py",
+      "backend/catalog/tests/test_profile.py",
+      "backend/catalog/tests/test_research.py",
+      "backend/catalog/tests/test_storage.py",
+      "backend/catalog/validation.py",
+      "backend/config/__init__.py",
+      "backend/config/celery.py",
+      "backend/config/settings.py",
+      "backend/config/urls.py",
+      "backend/config/wsgi.py",
+      "backend/foundation/__init__.py",
+      "backend/foundation/dispatch.py",
+      "backend/foundation/health.py",
+      "backend/foundation/management/__init__.py",
+      "backend/foundation/management/commands/__init__.py",
+      "backend/foundation/management/commands/dispatch_probes.py",
+      "backend/foundation/management/commands/probe_smoke.py",
+      "backend/foundation/migrations/0001_initial.py",
+      "backend/foundation/migrations/__init__.py",
+      "backend/foundation/models.py",
+      "backend/foundation/tasks.py",
+      "backend/foundation/tests/__init__.py",
+      "backend/foundation/tests/test_dispatch.py",
+      "backend/ingestion/__init__.py",
+      "backend/ingestion/limits.py",
+      "backend/ingestion/parquet_format.py",
+      "backend/ingestion/parser.py",
+      "backend/ingestion/research.py",
+      "backend/ingestion/research_protocol.py",
+      "backend/ingestion/research_worker.py",
+      "backend/ingestion/supervisor.py",
+      "backend/ingestion/tabular.py",
+      "backend/ingestion/tests.py",
+      "backend/ingestion/text_formats.py",
+      "backend/ingestion/worker.py",
+      "backend/manage.py",
+      "backend/mathematics/__init__.py",
+      "backend/mathematics/compiler.py",
+      "backend/mathematics/evaluator.py",
+      "backend/mathematics/normalization.py",
+      "backend/mathematics/smoke.py",
+      "backend/mathematics/syntax.py",
+      "backend/mathematics/tests.py",
+      "backend/runtime/__init__.py",
+      "backend/runtime/budget_types.py",
+      "backend/runtime/completion.py",
+      "backend/runtime/contracts.py",
+      "backend/runtime/control.py",
+      "backend/runtime/control_fixture.py",
+      "backend/runtime/management/__init__.py",
+      "backend/runtime/management/commands/__init__.py",
+      "backend/runtime/management/commands/runtime_smoke.py",
+      "backend/runtime/migrations/0001_initial.py",
+      "backend/runtime/migrations/0002_document_guards.py",
+      "backend/runtime/migrations/0003_runtimerun_runtime_run_tenant_identity.py",
+      "backend/runtime/migrations/0004_remove_runtimerun_runtime_control_only.py",
+      "backend/runtime/migrations/0005_profile_roots.py",
+      "backend/runtime/migrations/__init__.py",
+      "backend/runtime/models.py",
+      "backend/runtime/records.py",
+      "backend/runtime/tasks.py",
+      "backend/runtime/tests/__init__.py",
+      "backend/runtime/tests/test_budget_types.py",
+      "backend/runtime/tests/test_control.py",
+      "docs/企劃案/tools/check_docs.py",
+      "docs/企劃案/tools/contract_scenarios.py",
+      "tests/test_benchmark_partition.py",
+      "tests/test_compatibility_probe.py",
+      "tests/test_development_baseline.py",
+      "tests/test_isolation_probe.py",
+      "tests/test_public_oracle.py",
+      "tests/test_typing_policy.py",
+      "tools/benchmark/access_child.py",
+      "tools/benchmark/isolation_probe.py",
+      "tools/benchmark/partition.py",
+      "tools/benchmark/public_oracle.py",
+      "tools/compatibility/celery_app.py",
+      "tools/compatibility/python_probe.py",
+      "tools/development_baseline.py",
+      "tools/typing_policy.py"
+    ],
+    "unchanged_iac_reference": "d03e56b / t07-profile-validation.json: 3 files, 0 diagnostics; IaC sources unchanged"
+  },
+  "live_services": {
+    "project": "axiom-dev",
+    "retained_running": true,
+    "health_http_status": {
+      "http://127.0.0.1:15173/": 200,
+      "http://127.0.0.1:15173/health/ready/": 200,
+      "http://127.0.0.1:18000/health/ready/": 200
+    },
+    "services": [
+      {
+        "name": "frontend",
+        "state": "running",
+        "health": "healthy",
+        "ports": "127.0.0.1:15173->5173/tcp"
+      },
+      {
+        "name": "ingest",
+        "state": "running",
+        "health": "",
+        "ports": ""
+      },
+      {
+        "name": "postgres",
+        "state": "running",
+        "health": "healthy",
+        "ports": "5432/tcp"
+      },
+      {
+        "name": "profile",
+        "state": "running",
+        "health": "",
+        "ports": ""
+      },
+      {
+        "name": "redis",
+        "state": "running",
+        "health": "healthy",
+        "ports": "6379/tcp"
+      },
+      {
+        "name": "relay",
+        "state": "running",
+        "health": "",
+        "ports": ""
+      },
+      {
+        "name": "web",
+        "state": "running",
+        "health": "healthy",
+        "ports": "127.0.0.1:18000->8000/tcp"
+      },
+      {
+        "name": "worker",
+        "state": "running",
+        "health": "",
+        "ports": ""
+      }
+    ],
+    "local_settings": "Ignored .env persists COMPOSE_PROFILES and explicit import/profile limits; secrets not exported",
+    "source_parity": {
+      "status": "PASS",
+      "python_files": 112,
+      "sha256": {
+        "catalog/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "catalog/artifacts.py": "f3c80c1e0df54fd11b74678d41216c2e4f74f6f3008898a6b765b088d18fd70a",
+        "catalog/budget.py": "3506eb9d7417a74678eb69b987f798c67066976dff9161408fae50af951c200c",
+        "catalog/control_http.py": "0a4cc6ec4c4b0643a427e72c6cf91a8f6cc83632c8d3607187eda9c5ef0bad4b",
+        "catalog/http.py": "0e2b5532066d04582789807823cc8034fb2d2834aecb7aa77940d5e6466c817b",
+        "catalog/ingest.py": "cbf82d6cab2bc4fffb7cd2e1399616b6e8762b9a8744c4360dc5baae77b5e9f5",
+        "catalog/ingest_manifest.py": "287c13da508047748d21fd43c92ce14c372e6e3953ad82f774f095965391ed95",
+        "catalog/inspection.py": "fd858e23a0d9d876bf4fb19d45be7d395645a1bc5d520843f4e24c1891903102",
+        "catalog/management/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "catalog/management/commands/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "catalog/management/commands/business_ingest_smoke.py": "89b396a5eccefc90fec08729c291632de9c5b4c24d1e4f4875ee5ad25b95af82",
+        "catalog/management/commands/catalog_smoke.py": "d37f33148ddcbee08bf76d59c16071f4f2a725a251cba4eba0f69d6861d96339",
+        "catalog/management/commands/grant_dataset.py": "84a4c031eca7b6892bc6786fc6474170f80139b1cf9a8d2da0e666e32edd3a97",
+        "catalog/management/commands/ingest_preview.py": "11595ca183e4b80d2c181d547e99809db59e4516a91ab29ed01e9c5dedff0176",
+        "catalog/management/commands/ingest_preview_smoke.py": "974791b21c89e69dd7b2a0b98fa5e3709e3011c14b31f2d2d1069611104e4828",
+        "catalog/management/commands/profile_smoke.py": "b877fcc6a0a8969a8992c39609538da587c9c1ea0ceaf7851c7392c44c7c44ba",
+        "catalog/management/commands/provision_account.py": "8ff2ec24ec344fea8d89f07742a1bf556e66a6e6081ebd33db4eefd2e3b17aba",
+        "catalog/management/commands/research_draft_smoke.py": "32b1bfa8abfaf4b22e9f9c5b5eeb8613856f82009cb053296b68e49e76b70de8",
+        "catalog/management/commands/research_inspect.py": "7f6baeed23b48b937cb164bdd704ce0ed3315adebe01ad2fe3580bbc4c427cab",
+        "catalog/management/commands/research_inspection_smoke.py": "7dd1fd77a64fbe35232d098f9f7f59151f7fc50cc07492aae528af4bad864e2a",
+        "catalog/migrations/0001_initial.py": "005bf52e700524dd3781cbeadc2867a48f69eb12f6f845efc38609b1ddce57ff",
+        "catalog/migrations/0002_tenant_guards.py": "66551581a46c84c8189416c2c1807ae9ce881cbac741781cfa45f1956e304ea0",
+        "catalog/migrations/0003_artifact_datasetversion_ingestbinding_and_more.py": "46acbfcb3c069929931e5c13584294eeecf694ceaa9008f29558a754eb0eb452",
+        "catalog/migrations/0004_ingest_guards.py": "6c4d94f0cea9d38b321cd6ae02b29c5a16b7fb26d6fc54ea12672e1e96de4e7a",
+        "catalog/migrations/0005_research_researchversion_and_more.py": "2e66572a585aadaebafd3afcd4e7a92da9f7bc481403f73f6a3e1b9a23de2a30",
+        "catalog/migrations/0006_research_guards.py": "0180f8127745967ffbc3c0e01178f4c3db8cbb49687d216ff3d45c30442c284d",
+        "catalog/migrations/0007_researchinspection.py": "22ad612a4b8d8f12e8ad1b9961ef0d7a8389a615bd7f3fccf0c6c6712dc501a1",
+        "catalog/migrations/0008_inspection_guards.py": "da415ce628e15abee91dcf5e7c2cc649df25f23c2f2ed3bd90a329248a126fde",
+        "catalog/migrations/0009_artifact_research_version_researchbudget_and_more.py": "9a95450845575b53e9c84b0323800b9d3f2b4de684717e7146b96c3269159660",
+        "catalog/migrations/0010_profile_guards.py": "4ac67cc94db10fd92cbc1bd5134b2a3dbdcfea2bab73f5a953649448da09024c",
+        "catalog/migrations/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "catalog/models.py": "8f66f39ac6ab4ad098ca54b6cd55e8b2867e4605d08dbeab19b8a015922d9f71",
+        "catalog/profile.py": "f2a47ffc792d4625e09696854b83bc1f32ee73f9cb4692ff35648ef71ad475fa",
+        "catalog/profile_manifest.py": "f17c20d9ed892db9955c474ce558b039d13be7f9f27bb27196e53b48470e8a4d",
+        "catalog/read_http.py": "19f940c456497a40b8dd431cddf57121b283316d9b7cd411c28611b8cdd7931f",
+        "catalog/research.py": "922a3377465a95bb1ea7602e9e792c0c25768584a5106b7ebeda8adec6d6bca0",
+        "catalog/research_http.py": "2e874658e270678ba51083cc34a96c9e0d26681b938f2063d744b7dee357a0e1",
+        "catalog/research_state.py": "a27bba8eae391a2e7bad0c3c6aa5a9ea5adac459c950f3278cd5cdb0dccf4501",
+        "catalog/research_validation.py": "a79414b5506d8c956ca7328e387e5c162631e758c01161e182277186c5fbd917",
+        "catalog/services.py": "0f0072ea010c2fe18eb28f253bb4ac10fb3243b4340104485a480e9609c50dbc",
+        "catalog/storage.py": "efd20ff09c32ec8a98be0f2c3834266c79d3a7ef6cf858d6f9a6fddad692638a",
+        "catalog/tasks.py": "c0f1c67f31d90f1160acf17e6ff106ae9d98f400ee7c99bc805ee97e96288f7e",
+        "catalog/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "catalog/tests/test_api.py": "411ba715b7d451672a4578ba5a0418171b87ccb3090824aad816de52cd0408a5",
+        "catalog/tests/test_business_ingest.py": "160b83077925d927ee3557fa4aa976781a5c2ade043e070ff9db3f08a707b959",
+        "catalog/tests/test_concurrency.py": "226ccc1ae9f9ab5fe14460007118c9fc276f4c7db32ebb9a6db65fcb04f7591f",
+        "catalog/tests/test_inspection.py": "d02f4dac963412fc59b1d19130cb48b4bd621a03a4a8e8cd48221dc6a910ca0d",
+        "catalog/tests/test_inspection_engine.py": "6febbad723b4b72a4932756c7e53de39baafc5ad87b5f1433ac662d70b27957f",
+        "catalog/tests/test_preview.py": "0eeeda64223b077d8a0a1f6c0554e601d3e5c549d170b2b963fcfbb1cef1a98b",
+        "catalog/tests/test_profile.py": "52e3318623bfaf32bee7651dac222c24863620e0430b4507a0e134abecac0522",
+        "catalog/tests/test_research.py": "201fa3e67ccea5be6374b0a293178b8a488b1639554a7f6bd2e5dea7f168a1b6",
+        "catalog/tests/test_storage.py": "72614f20f1ed0988ab12fe9d876482044139e7793a8568c83983c791fd852cc4",
+        "catalog/validation.py": "8966d106d674786701583a6d331f439137c7225d6bc209a52bf204932d97b296",
+        "config/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "config/celery.py": "fdbb0b46b49c62ed533e4fe873857f1140da4b763d03f25d689ab875e02910e6",
+        "config/settings.py": "97845f22177884e67feb92bea39aaf404142ce76ecda24d843fb989ce236cbfc",
+        "config/urls.py": "ea4476e48527fa2f888b93d25483aa35c269c9efd309faa7d0496f3b800f3d57",
+        "config/wsgi.py": "eae3ca58dd999ba3acca85130f6c2fbae3b7a511850b0bb692c9073c0d8a21d0",
+        "foundation/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "foundation/dispatch.py": "496383f969889ccb944a04a79ce892f5cadc83182dbe133bd0c8134b13507157",
+        "foundation/health.py": "a8e726aa2387ea95994702068749be88ecd67c6c8bb1748b8088649e540be2f7",
+        "foundation/management/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "foundation/management/commands/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "foundation/management/commands/dispatch_probes.py": "7c4680fb9ddd54c856fc57abfeba945e30f80e18652cfffee8616e455da094e4",
+        "foundation/management/commands/probe_smoke.py": "bd470844bc7455eb89c6407d063553cd3add5744b89df4b0ed88cff58587c4a1",
+        "foundation/migrations/0001_initial.py": "c7da583e56f0e0e6f2a29667264ab7eea9fa9c5dc21953906cc34dec2ae1a021",
+        "foundation/migrations/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "foundation/models.py": "6fa4f8ce9c5203b5d0fa06fb1d3a9ada421bd0d3c5a539fa6a0f9901a759c206",
+        "foundation/tasks.py": "d15f3918b523c61db7bddb0be4a2f79c1d7f9a91bf34bf5594177a410cff3395",
+        "foundation/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "foundation/tests/test_dispatch.py": "3a6becba2a6cf253656600d5d0a3bf55d6de149f831e6c277db73b2263e150c2",
+        "ingestion/__init__.py": "9ffe766a9a0b543bff0ad32adf9e2776edc6baa1a535c590f759123b73b09617",
+        "ingestion/limits.py": "28771303b4a8d6bc5ba1754be7a2f0b35aa1b8848dc01de7c241e665f74fd5c2",
+        "ingestion/parquet_format.py": "f146c7c08ca8489978baa8d63f54414c5041d4df852343623368c348d036fecc",
+        "ingestion/parser.py": "96384069d0a6b908ceee3cecd4f64f71e9f88a0fc1ea4ae3205f79edaee07e41",
+        "ingestion/research.py": "13408772444d23e8ed7c2205972136f196daf8966e3ec8c019826d8875047a88",
+        "ingestion/research_protocol.py": "b6cd5367411a2154f271d6156e0212880c3d3aba6972f23cbcc9152408c8cef6",
+        "ingestion/research_worker.py": "1c9ce69c0e4675574cfa76f159f76626444a075dc3f685873a373649d853f6b2",
+        "ingestion/supervisor.py": "80ea62bc4e8dd46cf8d2bd4b914499997eca700947f602b2e793a6ed98959974",
+        "ingestion/tabular.py": "0ea8300c9041c59500f95ade634702162984b3870b16fc3ee0159f89fe21b84c",
+        "ingestion/tests.py": "8af98149eaa904f4ebe1454b5f9675adabc44d4d1e23f4b1c8578835ea729a5a",
+        "ingestion/text_formats.py": "e6f35c3a14f0e6a3c4aef614e3b5beac0bdf957d0d81f35142e8ee1b5a811d50",
+        "ingestion/worker.py": "4c0a009dc31a26901aedd9184b32c018870d9c070a14b3a789967be6b1f64d5f",
+        "manage.py": "a765aaf496d27c105bd1e4a5ded2c97f664b841d1acb702dc29182a39d41f2cd",
+        "mathematics/__init__.py": "10c510e9903af7defb7b9c90edbce32174244082eb08baa1f224b0c6eb8b848c",
+        "mathematics/compiler.py": "ccd933d0d0b771824c416537d9983dde49092b5508b64d101ec81475e895031d",
+        "mathematics/evaluator.py": "23f481ebca13c6dc75b51c2fbbade76ea895f0aae524b9a01be4bd1511b5b661",
+        "mathematics/normalization.py": "9f201f0e3a14f02e1c9afe360c4f2fa18538097b1f67b41efd34db1222461401",
+        "mathematics/smoke.py": "1e55fd8df9fbb05ef974fa0e36c9efbf6524ce8454b2b0db2c92b0f05e06f333",
+        "mathematics/syntax.py": "fc64f819f58589c08037c0afeebc616a237508d4364cd7f72221aa12f587b70e",
+        "mathematics/tests.py": "caeebed08759d932866dab327614f774390607cf8b3b07754a961a659d417097",
+        "runtime/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "runtime/budget_types.py": "3e8c196b9b0be9d18b1d7acd911f860bd7f7f33c8e09243af8eafbef2f6d1d7b",
+        "runtime/completion.py": "7796aed766106825ee9b79390c58f40845534e045445e85e70ee5f40e0735643",
+        "runtime/contracts.py": "52e11089a205f212ccc45b822b25b48f873f5478771b9687e2c5fc550e03cf39",
+        "runtime/control.py": "d7538af3a950eaffe36b38e175bddf82ff6a9ac85a925950eade9fe44b68f290",
+        "runtime/control_fixture.py": "fcba1c092721df8e365b24d606e4d11739c6c06dec82210c142cc1e8b3bf9497",
+        "runtime/management/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "runtime/management/commands/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "runtime/management/commands/runtime_smoke.py": "41edea1d995127326b983e6c3e8347ebfbdb41dd665db891357297f5224beca1",
+        "runtime/migrations/0001_initial.py": "dfc3af9b37b6d56b6e9b2c48a78a9e9b6f74acc9ee45e457b303b62af32a61d6",
+        "runtime/migrations/0002_document_guards.py": "faa01dde93241584494acb923b142bd689ec760e079d09ab1845bd0de68932fc",
+        "runtime/migrations/0003_runtimerun_runtime_run_tenant_identity.py": "d6fa41dd62a0c6a87e817486bed8a9c9d5bc8899c173101403f77e038c8ddb53",
+        "runtime/migrations/0004_remove_runtimerun_runtime_control_only.py": "f21c99cd9af8ce829aec6358e6c51fde31d211a50c26104520f4baadadfc556c",
+        "runtime/migrations/0005_profile_roots.py": "3679f4f02ec413302a5a354cb6760262907b34383a4dd8222e957593a6b3a130",
+        "runtime/migrations/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "runtime/models.py": "dfde119ba68f27c79c25ee0faf1aebe624a35ff6153c96e4d42bf70d4aaa184a",
+        "runtime/records.py": "3f95eb17dcc05b20e98f4d90d448efb0113ddfd712dcd96138bdbdd3d4d462b6",
+        "runtime/tasks.py": "68ef57a4604bd4cef4b848b9ca014c43ae0e4e3c023496954dae4fdfc2852e29",
+        "runtime/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "runtime/tests/test_budget_types.py": "c10913e76f1f8ea9dd42a517e125be7c25825943e2ecd22490f86917687e97fa",
+        "runtime/tests/test_control.py": "1a1b890fd56332652298f41e831b1adf673bfe45e27c2547855c8e2690efa012"
+      }
+    }
+  },
+  "integration": {
+    "direct_profile": "PASS",
+    "frontend_proxy_profile": "PASS",
+    "successful_roots": 12,
+    "probe_runtime_math_migration": "PASS"
+  },
+  "source_files": [
+    {
+      "path": "backend/catalog/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/catalog/artifacts.py",
+      "sha256": "f3c80c1e0df54fd11b74678d41216c2e4f74f6f3008898a6b765b088d18fd70a"
+    },
+    {
+      "path": "backend/catalog/budget.py",
+      "sha256": "3506eb9d7417a74678eb69b987f798c67066976dff9161408fae50af951c200c"
+    },
+    {
+      "path": "backend/catalog/control_http.py",
+      "sha256": "0a4cc6ec4c4b0643a427e72c6cf91a8f6cc83632c8d3607187eda9c5ef0bad4b"
+    },
+    {
+      "path": "backend/catalog/http.py",
+      "sha256": "0e2b5532066d04582789807823cc8034fb2d2834aecb7aa77940d5e6466c817b"
+    },
+    {
+      "path": "backend/catalog/ingest.py",
+      "sha256": "cbf82d6cab2bc4fffb7cd2e1399616b6e8762b9a8744c4360dc5baae77b5e9f5"
+    },
+    {
+      "path": "backend/catalog/ingest_manifest.py",
+      "sha256": "287c13da508047748d21fd43c92ce14c372e6e3953ad82f774f095965391ed95"
+    },
+    {
+      "path": "backend/catalog/inspection.py",
+      "sha256": "fd858e23a0d9d876bf4fb19d45be7d395645a1bc5d520843f4e24c1891903102"
+    },
+    {
+      "path": "backend/catalog/management/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/catalog/management/commands/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/catalog/management/commands/business_ingest_smoke.py",
+      "sha256": "89b396a5eccefc90fec08729c291632de9c5b4c24d1e4f4875ee5ad25b95af82"
+    },
+    {
+      "path": "backend/catalog/management/commands/catalog_smoke.py",
+      "sha256": "d37f33148ddcbee08bf76d59c16071f4f2a725a251cba4eba0f69d6861d96339"
+    },
+    {
+      "path": "backend/catalog/management/commands/grant_dataset.py",
+      "sha256": "84a4c031eca7b6892bc6786fc6474170f80139b1cf9a8d2da0e666e32edd3a97"
+    },
+    {
+      "path": "backend/catalog/management/commands/ingest_preview.py",
+      "sha256": "11595ca183e4b80d2c181d547e99809db59e4516a91ab29ed01e9c5dedff0176"
+    },
+    {
+      "path": "backend/catalog/management/commands/ingest_preview_smoke.py",
+      "sha256": "974791b21c89e69dd7b2a0b98fa5e3709e3011c14b31f2d2d1069611104e4828"
+    },
+    {
+      "path": "backend/catalog/management/commands/profile_smoke.py",
+      "sha256": "b877fcc6a0a8969a8992c39609538da587c9c1ea0ceaf7851c7392c44c7c44ba"
+    },
+    {
+      "path": "backend/catalog/management/commands/provision_account.py",
+      "sha256": "8ff2ec24ec344fea8d89f07742a1bf556e66a6e6081ebd33db4eefd2e3b17aba"
+    },
+    {
+      "path": "backend/catalog/management/commands/research_draft_smoke.py",
+      "sha256": "32b1bfa8abfaf4b22e9f9c5b5eeb8613856f82009cb053296b68e49e76b70de8"
+    },
+    {
+      "path": "backend/catalog/management/commands/research_inspect.py",
+      "sha256": "7f6baeed23b48b937cb164bdd704ce0ed3315adebe01ad2fe3580bbc4c427cab"
+    },
+    {
+      "path": "backend/catalog/management/commands/research_inspection_smoke.py",
+      "sha256": "7dd1fd77a64fbe35232d098f9f7f59151f7fc50cc07492aae528af4bad864e2a"
+    },
+    {
+      "path": "backend/catalog/migrations/0001_initial.py",
+      "sha256": "005bf52e700524dd3781cbeadc2867a48f69eb12f6f845efc38609b1ddce57ff"
+    },
+    {
+      "path": "backend/catalog/migrations/0002_tenant_guards.py",
+      "sha256": "66551581a46c84c8189416c2c1807ae9ce881cbac741781cfa45f1956e304ea0"
+    },
+    {
+      "path": "backend/catalog/migrations/0003_artifact_datasetversion_ingestbinding_and_more.py",
+      "sha256": "46acbfcb3c069929931e5c13584294eeecf694ceaa9008f29558a754eb0eb452"
+    },
+    {
+      "path": "backend/catalog/migrations/0004_ingest_guards.py",
+      "sha256": "6c4d94f0cea9d38b321cd6ae02b29c5a16b7fb26d6fc54ea12672e1e96de4e7a"
+    },
+    {
+      "path": "backend/catalog/migrations/0005_research_researchversion_and_more.py",
+      "sha256": "2e66572a585aadaebafd3afcd4e7a92da9f7bc481403f73f6a3e1b9a23de2a30"
+    },
+    {
+      "path": "backend/catalog/migrations/0006_research_guards.py",
+      "sha256": "0180f8127745967ffbc3c0e01178f4c3db8cbb49687d216ff3d45c30442c284d"
+    },
+    {
+      "path": "backend/catalog/migrations/0007_researchinspection.py",
+      "sha256": "22ad612a4b8d8f12e8ad1b9961ef0d7a8389a615bd7f3fccf0c6c6712dc501a1"
+    },
+    {
+      "path": "backend/catalog/migrations/0008_inspection_guards.py",
+      "sha256": "da415ce628e15abee91dcf5e7c2cc649df25f23c2f2ed3bd90a329248a126fde"
+    },
+    {
+      "path": "backend/catalog/migrations/0009_artifact_research_version_researchbudget_and_more.py",
+      "sha256": "9a95450845575b53e9c84b0323800b9d3f2b4de684717e7146b96c3269159660"
+    },
+    {
+      "path": "backend/catalog/migrations/0010_profile_guards.py",
+      "sha256": "4ac67cc94db10fd92cbc1bd5134b2a3dbdcfea2bab73f5a953649448da09024c"
+    },
+    {
+      "path": "backend/catalog/migrations/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/catalog/models.py",
+      "sha256": "8f66f39ac6ab4ad098ca54b6cd55e8b2867e4605d08dbeab19b8a015922d9f71"
+    },
+    {
+      "path": "backend/catalog/profile.py",
+      "sha256": "f2a47ffc792d4625e09696854b83bc1f32ee73f9cb4692ff35648ef71ad475fa"
+    },
+    {
+      "path": "backend/catalog/profile_manifest.py",
+      "sha256": "f17c20d9ed892db9955c474ce558b039d13be7f9f27bb27196e53b48470e8a4d"
+    },
+    {
+      "path": "backend/catalog/read_http.py",
+      "sha256": "19f940c456497a40b8dd431cddf57121b283316d9b7cd411c28611b8cdd7931f"
+    },
+    {
+      "path": "backend/catalog/research.py",
+      "sha256": "922a3377465a95bb1ea7602e9e792c0c25768584a5106b7ebeda8adec6d6bca0"
+    },
+    {
+      "path": "backend/catalog/research_http.py",
+      "sha256": "2e874658e270678ba51083cc34a96c9e0d26681b938f2063d744b7dee357a0e1"
+    },
+    {
+      "path": "backend/catalog/research_state.py",
+      "sha256": "a27bba8eae391a2e7bad0c3c6aa5a9ea5adac459c950f3278cd5cdb0dccf4501"
+    },
+    {
+      "path": "backend/catalog/research_validation.py",
+      "sha256": "a79414b5506d8c956ca7328e387e5c162631e758c01161e182277186c5fbd917"
+    },
+    {
+      "path": "backend/catalog/services.py",
+      "sha256": "0f0072ea010c2fe18eb28f253bb4ac10fb3243b4340104485a480e9609c50dbc"
+    },
+    {
+      "path": "backend/catalog/storage.py",
+      "sha256": "efd20ff09c32ec8a98be0f2c3834266c79d3a7ef6cf858d6f9a6fddad692638a"
+    },
+    {
+      "path": "backend/catalog/tasks.py",
+      "sha256": "c0f1c67f31d90f1160acf17e6ff106ae9d98f400ee7c99bc805ee97e96288f7e"
+    },
+    {
+      "path": "backend/catalog/tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/catalog/tests/test_api.py",
+      "sha256": "411ba715b7d451672a4578ba5a0418171b87ccb3090824aad816de52cd0408a5"
+    },
+    {
+      "path": "backend/catalog/tests/test_business_ingest.py",
+      "sha256": "160b83077925d927ee3557fa4aa976781a5c2ade043e070ff9db3f08a707b959"
+    },
+    {
+      "path": "backend/catalog/tests/test_concurrency.py",
+      "sha256": "226ccc1ae9f9ab5fe14460007118c9fc276f4c7db32ebb9a6db65fcb04f7591f"
+    },
+    {
+      "path": "backend/catalog/tests/test_inspection.py",
+      "sha256": "d02f4dac963412fc59b1d19130cb48b4bd621a03a4a8e8cd48221dc6a910ca0d"
+    },
+    {
+      "path": "backend/catalog/tests/test_inspection_engine.py",
+      "sha256": "6febbad723b4b72a4932756c7e53de39baafc5ad87b5f1433ac662d70b27957f"
+    },
+    {
+      "path": "backend/catalog/tests/test_preview.py",
+      "sha256": "0eeeda64223b077d8a0a1f6c0554e601d3e5c549d170b2b963fcfbb1cef1a98b"
+    },
+    {
+      "path": "backend/catalog/tests/test_profile.py",
+      "sha256": "52e3318623bfaf32bee7651dac222c24863620e0430b4507a0e134abecac0522"
+    },
+    {
+      "path": "backend/catalog/tests/test_research.py",
+      "sha256": "201fa3e67ccea5be6374b0a293178b8a488b1639554a7f6bd2e5dea7f168a1b6"
+    },
+    {
+      "path": "backend/catalog/tests/test_storage.py",
+      "sha256": "72614f20f1ed0988ab12fe9d876482044139e7793a8568c83983c791fd852cc4"
+    },
+    {
+      "path": "backend/catalog/validation.py",
+      "sha256": "8966d106d674786701583a6d331f439137c7225d6bc209a52bf204932d97b296"
+    },
+    {
+      "path": "backend/config/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/config/celery.py",
+      "sha256": "fdbb0b46b49c62ed533e4fe873857f1140da4b763d03f25d689ab875e02910e6"
+    },
+    {
+      "path": "backend/config/settings.py",
+      "sha256": "97845f22177884e67feb92bea39aaf404142ce76ecda24d843fb989ce236cbfc"
+    },
+    {
+      "path": "backend/config/urls.py",
+      "sha256": "ea4476e48527fa2f888b93d25483aa35c269c9efd309faa7d0496f3b800f3d57"
+    },
+    {
+      "path": "backend/config/wsgi.py",
+      "sha256": "eae3ca58dd999ba3acca85130f6c2fbae3b7a511850b0bb692c9073c0d8a21d0"
+    },
+    {
+      "path": "backend/foundation/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/foundation/dispatch.py",
+      "sha256": "496383f969889ccb944a04a79ce892f5cadc83182dbe133bd0c8134b13507157"
+    },
+    {
+      "path": "backend/foundation/health.py",
+      "sha256": "a8e726aa2387ea95994702068749be88ecd67c6c8bb1748b8088649e540be2f7"
+    },
+    {
+      "path": "backend/foundation/management/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/foundation/management/commands/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/foundation/management/commands/dispatch_probes.py",
+      "sha256": "7c4680fb9ddd54c856fc57abfeba945e30f80e18652cfffee8616e455da094e4"
+    },
+    {
+      "path": "backend/foundation/management/commands/probe_smoke.py",
+      "sha256": "bd470844bc7455eb89c6407d063553cd3add5744b89df4b0ed88cff58587c4a1"
+    },
+    {
+      "path": "backend/foundation/migrations/0001_initial.py",
+      "sha256": "c7da583e56f0e0e6f2a29667264ab7eea9fa9c5dc21953906cc34dec2ae1a021"
+    },
+    {
+      "path": "backend/foundation/migrations/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/foundation/models.py",
+      "sha256": "6fa4f8ce9c5203b5d0fa06fb1d3a9ada421bd0d3c5a539fa6a0f9901a759c206"
+    },
+    {
+      "path": "backend/foundation/tasks.py",
+      "sha256": "d15f3918b523c61db7bddb0be4a2f79c1d7f9a91bf34bf5594177a410cff3395"
+    },
+    {
+      "path": "backend/foundation/tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/foundation/tests/test_dispatch.py",
+      "sha256": "3a6becba2a6cf253656600d5d0a3bf55d6de149f831e6c277db73b2263e150c2"
+    },
+    {
+      "path": "backend/ingestion/__init__.py",
+      "sha256": "9ffe766a9a0b543bff0ad32adf9e2776edc6baa1a535c590f759123b73b09617"
+    },
+    {
+      "path": "backend/ingestion/limits.py",
+      "sha256": "28771303b4a8d6bc5ba1754be7a2f0b35aa1b8848dc01de7c241e665f74fd5c2"
+    },
+    {
+      "path": "backend/ingestion/parquet_format.py",
+      "sha256": "f146c7c08ca8489978baa8d63f54414c5041d4df852343623368c348d036fecc"
+    },
+    {
+      "path": "backend/ingestion/parser.py",
+      "sha256": "96384069d0a6b908ceee3cecd4f64f71e9f88a0fc1ea4ae3205f79edaee07e41"
+    },
+    {
+      "path": "backend/ingestion/research.py",
+      "sha256": "13408772444d23e8ed7c2205972136f196daf8966e3ec8c019826d8875047a88"
+    },
+    {
+      "path": "backend/ingestion/research_protocol.py",
+      "sha256": "b6cd5367411a2154f271d6156e0212880c3d3aba6972f23cbcc9152408c8cef6"
+    },
+    {
+      "path": "backend/ingestion/research_worker.py",
+      "sha256": "1c9ce69c0e4675574cfa76f159f76626444a075dc3f685873a373649d853f6b2"
+    },
+    {
+      "path": "backend/ingestion/supervisor.py",
+      "sha256": "80ea62bc4e8dd46cf8d2bd4b914499997eca700947f602b2e793a6ed98959974"
+    },
+    {
+      "path": "backend/ingestion/tabular.py",
+      "sha256": "0ea8300c9041c59500f95ade634702162984b3870b16fc3ee0159f89fe21b84c"
+    },
+    {
+      "path": "backend/ingestion/tests.py",
+      "sha256": "8af98149eaa904f4ebe1454b5f9675adabc44d4d1e23f4b1c8578835ea729a5a"
+    },
+    {
+      "path": "backend/ingestion/text_formats.py",
+      "sha256": "e6f35c3a14f0e6a3c4aef614e3b5beac0bdf957d0d81f35142e8ee1b5a811d50"
+    },
+    {
+      "path": "backend/ingestion/worker.py",
+      "sha256": "4c0a009dc31a26901aedd9184b32c018870d9c070a14b3a789967be6b1f64d5f"
+    },
+    {
+      "path": "backend/manage.py",
+      "sha256": "a765aaf496d27c105bd1e4a5ded2c97f664b841d1acb702dc29182a39d41f2cd"
+    },
+    {
+      "path": "backend/mathematics/__init__.py",
+      "sha256": "10c510e9903af7defb7b9c90edbce32174244082eb08baa1f224b0c6eb8b848c"
+    },
+    {
+      "path": "backend/mathematics/compiler.py",
+      "sha256": "ccd933d0d0b771824c416537d9983dde49092b5508b64d101ec81475e895031d"
+    },
+    {
+      "path": "backend/mathematics/evaluator.py",
+      "sha256": "23f481ebca13c6dc75b51c2fbbade76ea895f0aae524b9a01be4bd1511b5b661"
+    },
+    {
+      "path": "backend/mathematics/normalization.py",
+      "sha256": "9f201f0e3a14f02e1c9afe360c4f2fa18538097b1f67b41efd34db1222461401"
+    },
+    {
+      "path": "backend/mathematics/smoke.py",
+      "sha256": "1e55fd8df9fbb05ef974fa0e36c9efbf6524ce8454b2b0db2c92b0f05e06f333"
+    },
+    {
+      "path": "backend/mathematics/syntax.py",
+      "sha256": "fc64f819f58589c08037c0afeebc616a237508d4364cd7f72221aa12f587b70e"
+    },
+    {
+      "path": "backend/mathematics/tests.py",
+      "sha256": "caeebed08759d932866dab327614f774390607cf8b3b07754a961a659d417097"
+    },
+    {
+      "path": "backend/runtime/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/runtime/budget_types.py",
+      "sha256": "3e8c196b9b0be9d18b1d7acd911f860bd7f7f33c8e09243af8eafbef2f6d1d7b"
+    },
+    {
+      "path": "backend/runtime/completion.py",
+      "sha256": "7796aed766106825ee9b79390c58f40845534e045445e85e70ee5f40e0735643"
+    },
+    {
+      "path": "backend/runtime/contracts.py",
+      "sha256": "52e11089a205f212ccc45b822b25b48f873f5478771b9687e2c5fc550e03cf39"
+    },
+    {
+      "path": "backend/runtime/control.py",
+      "sha256": "d7538af3a950eaffe36b38e175bddf82ff6a9ac85a925950eade9fe44b68f290"
+    },
+    {
+      "path": "backend/runtime/control_fixture.py",
+      "sha256": "fcba1c092721df8e365b24d606e4d11739c6c06dec82210c142cc1e8b3bf9497"
+    },
+    {
+      "path": "backend/runtime/management/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/runtime/management/commands/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/runtime/management/commands/runtime_smoke.py",
+      "sha256": "41edea1d995127326b983e6c3e8347ebfbdb41dd665db891357297f5224beca1"
+    },
+    {
+      "path": "backend/runtime/migrations/0001_initial.py",
+      "sha256": "dfc3af9b37b6d56b6e9b2c48a78a9e9b6f74acc9ee45e457b303b62af32a61d6"
+    },
+    {
+      "path": "backend/runtime/migrations/0002_document_guards.py",
+      "sha256": "faa01dde93241584494acb923b142bd689ec760e079d09ab1845bd0de68932fc"
+    },
+    {
+      "path": "backend/runtime/migrations/0003_runtimerun_runtime_run_tenant_identity.py",
+      "sha256": "d6fa41dd62a0c6a87e817486bed8a9c9d5bc8899c173101403f77e038c8ddb53"
+    },
+    {
+      "path": "backend/runtime/migrations/0004_remove_runtimerun_runtime_control_only.py",
+      "sha256": "f21c99cd9af8ce829aec6358e6c51fde31d211a50c26104520f4baadadfc556c"
+    },
+    {
+      "path": "backend/runtime/migrations/0005_profile_roots.py",
+      "sha256": "3679f4f02ec413302a5a354cb6760262907b34383a4dd8222e957593a6b3a130"
+    },
+    {
+      "path": "backend/runtime/migrations/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/runtime/models.py",
+      "sha256": "dfde119ba68f27c79c25ee0faf1aebe624a35ff6153c96e4d42bf70d4aaa184a"
+    },
+    {
+      "path": "backend/runtime/records.py",
+      "sha256": "3f95eb17dcc05b20e98f4d90d448efb0113ddfd712dcd96138bdbdd3d4d462b6"
+    },
+    {
+      "path": "backend/runtime/tasks.py",
+      "sha256": "68ef57a4604bd4cef4b848b9ca014c43ae0e4e3c023496954dae4fdfc2852e29"
+    },
+    {
+      "path": "backend/runtime/tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/runtime/tests/test_budget_types.py",
+      "sha256": "c10913e76f1f8ea9dd42a517e125be7c25825943e2ecd22490f86917687e97fa"
+    },
+    {
+      "path": "backend/runtime/tests/test_control.py",
+      "sha256": "1a1b890fd56332652298f41e831b1adf673bfe45e27c2547855c8e2690efa012"
+    },
+    {
+      "path": "docs/企劃案/tools/check_docs.py",
+      "sha256": "ff2ac7bb12255e0e644fedb2d334ce001461933f871bc6f1dcae8970b156fd36"
+    },
+    {
+      "path": "docs/企劃案/tools/contract_scenarios.py",
+      "sha256": "9400561f30eb15dd3f6a16fb2869493280038d3ee2a4a983cc31e891cfa2a1e9"
+    },
+    {
+      "path": "tests/test_benchmark_partition.py",
+      "sha256": "4e250cd24da22660a1f030c9fc9865ce42c9ac5ef0f8cf70794ca412585c2498"
+    },
+    {
+      "path": "tests/test_compatibility_probe.py",
+      "sha256": "1aaf4c33ca58ec8e0f8eaf93213453f32eac246d3c9a24b5bcccbb3b9ec263a1"
+    },
+    {
+      "path": "tests/test_development_baseline.py",
+      "sha256": "5754c3f23ff857a6fbf495392efb98af68228a1dcd2e27264895efde6b11d345"
+    },
+    {
+      "path": "tests/test_isolation_probe.py",
+      "sha256": "47152572115b606bcdf22217ae6979bd2c3f5b34b0165ccd94a5d4e3749ecf88"
+    },
+    {
+      "path": "tests/test_public_oracle.py",
+      "sha256": "6725868e3e50b7693af79fe05d1b7a32646efee4bb51127d6d1c649be02fc29c"
+    },
+    {
+      "path": "tests/test_typing_policy.py",
+      "sha256": "a9ef29f342d8e152979e4e67b492bb973ca250d24560a865814887f62e44ffb1"
+    },
+    {
+      "path": "tools/benchmark/access_child.py",
+      "sha256": "01162595aba32e303ea92293ffd5cffd43e126ac8ec20517ce7356ca34a880eb"
+    },
+    {
+      "path": "tools/benchmark/isolation_probe.py",
+      "sha256": "cc3f421c76921be2b5f4c1d876bfe8a36e9d8e981c5e376b60290d4f7e773796"
+    },
+    {
+      "path": "tools/benchmark/partition.py",
+      "sha256": "2b7bbba6e91052694d98b0c2a14c6901dd7c02f4b5d304046165fd1e62b6e298"
+    },
+    {
+      "path": "tools/benchmark/public_oracle.py",
+      "sha256": "32baf505502edf97b49f6d2150c61d14051e4961ccadc11a775269c8adf51acf"
+    },
+    {
+      "path": "tools/compatibility/celery_app.py",
+      "sha256": "44887a45c781dbb97ad6c90cc1a9159a7de9441e20af999abcc767c49fe10435"
+    },
+    {
+      "path": "tools/compatibility/python_probe.py",
+      "sha256": "aaab7fc97225f5b4060c2a94e799a30b7141fc57a8e951cd25aea5fdded59271"
+    },
+    {
+      "path": "tools/development_baseline.py",
+      "sha256": "06df70939d770299c16152d261de6572b615aeaed25fbb7e325b7fa7447ada14"
+    },
+    {
+      "path": "tools/typing_policy.py",
+      "sha256": "f84dbb1b3f5e2d1894fd3e223627fb88704517fc65641ae198981dac5d71bf52"
+    }
+  ],
+  "product_gate_status": "NOT_RUN",
+  "research_status": "DRAFT",
+  "known_limits": [
+    "Legacy dynamic JSON/framework boundaries remain explicitly counted; not all Any removed",
+    "Frontend is an engineering skeleton; research workbench not implemented",
+    "Formal sealed test/exposure/READY/SEARCH not implemented"
+  ]
+}

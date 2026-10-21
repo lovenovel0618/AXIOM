@@ -96,7 +96,7 @@ class ProfileTests(TransactionTestCase):
         assert result is not None
         return result
 
-    def terminate(self, lease: Lease, usage: dict[str,object]) -> None:
+    def terminate(self, lease: Lease, usage: object) -> None:
         report = usage_report(lease,usage)
         with transaction.atomic():
             lock_run(lease.tenant_id,lease.run_id)

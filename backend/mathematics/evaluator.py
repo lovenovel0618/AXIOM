@@ -1,4 +1,7 @@
-"""Float64 scalar interpreter with lazy branches and bounded batch work."""
+"""有界純量 DSL 求值：明示運算步數與時間預算，遇域錯誤、非有限數或不支援運算保留失敗。
+評分保留完整分母，不能丟掉失敗列再聲稱模型準確。
+
+Float64 scalar interpreter with lazy branches and bounded batch work."""
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from fractions import Fraction

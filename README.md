@@ -15,6 +15,7 @@ AXIOM（Adaptive eXploration, Inference, and Objective Mathematics，公理探�
 目前由你一人開發，各技術角色由本人兼任；開發採「技術文件→代碼→測試→代碼檢測→自我檢查→commit／push」，不等待第二位程式 reviewer。目前已實作 T01 的離線開工基線檢查與 T02 的隔離相容性驗證（含測試專用 Compose），以及 T03 公開 oracle／分區／投影與真實 UID canary 驗證；技術設計與執行方式見 [技術文件](docs/技術文件/README.md)，T04 已加入本機服務骨架，啟動及診斷見 [infra/README.md](infra/README.md)。T02 的重現指令、鎖定依賴與平台實測見 [相容性驗證](docs/技術文件/M0/T02-技術選型與相容性驗證.md)。
 
 ```sh
+.venv-backend/bin/python tools/typing_policy.py
 .venv-backend/bin/python tools/development_baseline.py
 .venv-backend/bin/python -m unittest discover -s tests -v
 ```
@@ -66,3 +67,5 @@ docker compose run --rm frontend sh -c 'npm run typecheck && npm test && npm run
 ## 未決事項
 
 GPU（D-02）、正式對外架設（D-09）等阻擋條件見 [AX-37 決策待確認清單](docs/企劃案/12-附錄/37-決策待確認清單.md)。
+
+開發服務完成驗證後保留運行，測試環境清理不得連帶停止 `axiom-dev`。服務／型別／中文註解規範見 [工程規範](docs/技術文件/M0/T07-服務常駐與型別註解規範.md)。Python 的既有動態 JSON 邊界由 `tools/typing-boundaries.json` 逐檔列管；strict 零診斷不代表這些邊界已全部消除。
