@@ -16,6 +16,7 @@ urlpatterns += [
     path("api/v2/research-versions/<uuid:identity>/validate", research_http.validate_draft),
     path("api/v2/datasets/<uuid:identity>/versions", read_http.versions),
     path("api/v2/runs/<uuid:identity>", read_http.run_detail),
+    path("api/v2/evidence-bundles/<uuid:identity>", read_http.evidence_bundle_detail),
     path("api/v2/artifacts/<uuid:identity>", read_http.artifact_detail),
     path("api/v2/artifacts/<uuid:identity>/content", read_http.artifact_content),
     path("auth/login", http.login_view), path("auth/logout", http.logout_view),

@@ -19,11 +19,15 @@ import {
 import { type Run, type RunStatus } from '../api/runs'
 import ResearchVersionForm from '../components/ResearchVersionForm.vue'
 import { getArtifactContent } from '../api/artifacts'
+import { getEvidenceBundle } from '../api/evidence'
 import {
   describeRemaining,
+  EVIDENCE_STATUS_LABELS,
+  parseEvidenceBundle,
   parseQualityReport,
   QUALITY_LABELS,
   READINESS_LABELS,
+  type EvidenceBundle,
   type QualityReport,
 } from '../lib/evidence'
 import { describeError } from '../lib/messages'
@@ -39,6 +43,8 @@ const selectedVersion = ref<ResearchVersion | null>(null)
 const runs = ref<Run[]>([])
 const quality = ref<QualityReport | null>(null)
 const qualityLoading = ref(false)
+const bundle = ref<EvidenceBundle | null>(null)
+const bundleLoading = ref(false)
 const name = ref('')
 const loading = ref(false)
 const triggering = ref(false)
@@ -127,10 +133,12 @@ async function pickVersion(version: ResearchVersion): Promise<void> {
   selectedVersion.value = version
   runs.value = []
   quality.value = null
+  bundle.value = null
   error.value = ''
   notice.value = ''
   await reloadRuns()
   await loadQuality()
+  await loadBundle()
 }
 
 async function reloadRuns(): Promise<void> {
@@ -165,6 +173,27 @@ async function loadQuality(): Promise<void> {
   }
 }
 
+/** 證據包只在封存成功後產生；形狀不符或引用為空一律不顯示推測內容。 */
+async function loadBundle(): Promise<void> {
+  const version = selectedVersion.value
+  bundle.value = null
+  const first = version?.evidence_bundle_ids[0] ?? null
+  if (first === null) return
+  bundleLoading.value = true
+  try {
+    const parsed = parseEvidenceBundle(await getEvidenceBundle(client, first))
+    if (parsed === null) {
+      error.value = '證據包格式不符，無法顯示；請重新載入。'
+      return
+    }
+    bundle.value = parsed
+  } catch (cause) {
+    error.value = describeError(cause)
+  } finally {
+    bundleLoading.value = false
+  }
+}
+
 async function refreshVersion(): Promise<void> {
   const version = selectedVersion.value
   if (version === null) return
@@ -172,6 +201,7 @@ async function refreshVersion(): Promise<void> {
     selectedVersion.value = await getResearchVersion(client, version.id)
     await reloadRuns()
     await loadQuality()
+    await loadBundle()
   } catch (cause) {
     error.value = describeError(cause)
   }
@@ -321,6 +351,13 @@ onMounted(async () => {
             <dd class="mono">{{ selectedVersion.quality_report_id ?? '尚未產生' }}</dd>
             <dt>結構評估產物</dt>
             <dd class="mono">{{ selectedVersion.structure_assessment_artifact_id ?? '尚未產生（品質未通過時不產生）' }}</dd>
+            <dt>證據包</dt>
+            <dd v-if="selectedVersion.evidence_bundle_ids.length === 0" class="muted">
+              尚未產生（只有完成正式封存的 READY 版本才有）
+            </dd>
+            <dd v-else class="mono">
+              <span v-for="id in selectedVersion.evidence_bundle_ids" :key="id">{{ id }} </span>
+            </dd>
           </dl>
           <p v-if="selectedVersion.quality_report_id === null" class="muted">
             尚未執行 PROFILE，因此沒有品質報告與封存登記。
@@ -352,6 +389,28 @@ onMounted(async () => {
               {{ quality.fitSummary.targetMean }}／IQR {{ quality.fitSummary.targetIqr }}
             </dd>
           </dl>
+
+          <template v-if="selectedVersion.evidence_bundle_ids.length > 0">
+            <p v-if="bundleLoading" class="muted">讀取證據包中…</p>
+            <p v-else-if="bundle === null" class="muted">證據包內容無法解析或無法取得。</p>
+            <dl v-else class="facts">
+              <dt>證據包狀態</dt>
+              <dd>{{ EVIDENCE_STATUS_LABELS[bundle.status] }}（{{ bundle.status }}）</dd>
+              <dt>控制版本</dt>
+              <dd class="mono">{{ bundle.revision }}</dd>
+              <dt>驗證引用</dt>
+              <dd v-if="bundle.validationIds.length === 0" class="muted">無（本階段尚無驗證執行）</dd>
+              <dd v-else class="mono">
+                <span v-for="id in bundle.validationIds" :key="id">{{ id }} </span>
+              </dd>
+              <dt>證據產物</dt>
+              <dd class="mono">
+                <ul class="remaining">
+                  <li v-for="id in bundle.proofArtifactIds" :key="id">{{ id }}</li>
+                </ul>
+              </dd>
+            </dl>
+          </template>
 
           <h3>觸發 PROFILE 驗證</h3>
           <p class="muted">

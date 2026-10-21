@@ -51,7 +51,7 @@
   },
   "backend/catalog/models.py": {
     "Any": 0,
-    "JsonObject": 28,
+    "JsonObject": 30,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/research.py": {
@@ -87,6 +87,11 @@
   "backend/catalog/artifacts.py": {
     "Any": 0,
     "JsonObject": 7,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/evidence.py": {
+    "Any": 0,
+    "JsonObject": 2,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/research_validation.py": {
@@ -221,7 +226,7 @@
   },
   "backend/catalog/management/commands/research_draft_smoke.py": {
     "Any": 2,
-    "JsonObject": 2,
+    "JsonObject": 3,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/management/commands/research_inspection_smoke.py": {

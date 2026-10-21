@@ -364,3 +364,22 @@ class SealRegistration(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["id","tenant"],name="seal_registration_tenant_identity")]
+
+
+class EvidenceBundle(models.Model):
+    """READY 版本的不變證據包；只引用既有產物與登記，不生成新的科學主張。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True,default=uuid4,editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant,on_delete=models.PROTECT)
+    tenant_id: UUID
+    research_version: models.ForeignKey[ResearchVersion, ResearchVersion] = models.ForeignKey(ResearchVersion,on_delete=models.PROTECT)
+    research_version_id: UUID
+    run: models.ForeignKey[RuntimeRun, RuntimeRun] = models.ForeignKey(RuntimeRun,on_delete=models.PROTECT)
+    run_id: UUID
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+    status: models.CharField[str, str] = models.CharField(max_length=12,default="ACTIVE")
+    revision: models.PositiveIntegerField[int, int] = models.PositiveIntegerField(default=0)
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["id","tenant"],name="evidence_bundle_tenant_identity"),
+                       models.CheckConstraint(condition=models.Q(status__in=["ACTIVE","REVOKED","QUARANTINED"]),name="evidence_bundle_valid_status")]

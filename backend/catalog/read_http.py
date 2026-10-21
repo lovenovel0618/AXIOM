@@ -6,6 +6,7 @@ from django.core import signing
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from catalog.artifacts import authorized
+from catalog.evidence import authorized as evidence_bundle
 from catalog.http import api, allowed_methods
 from catalog.models import Account, DatasetVersion, IngestBinding, ProfileBinding, Reservation
 from catalog.services import dataset_for
@@ -90,6 +91,16 @@ def artifact_detail(_request: HttpRequest, actor: Account, identity: UUID) -> Js
     row = authorized(actor, identity)
     validate_api(row.document, "Artifact")
     return JsonResponse(row.document)
+
+
+@allowed_methods(["GET"])
+@api
+def evidence_bundle_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """重新驗租戶與研究存取權後回證據包，並附目前控制 revision。"""
+    row = evidence_bundle(actor,identity)
+    response = JsonResponse(row.document)
+    response["X-Control-Revision"] = str(row.document["revision"])
+    return response
 
 
 @allowed_methods(["GET"])

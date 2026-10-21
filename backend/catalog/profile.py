@@ -8,6 +8,7 @@ from django.conf import settings
 from django.db import DatabaseError, transaction
 from catalog.artifacts import register
 from catalog.budget import report_usage, reserve, release_unstarted, usage_report
+from catalog.evidence import register as register_evidence
 from catalog.ingest import Meter
 from catalog.ingest_manifest import environment
 from catalog.inspection import current, configuration
@@ -163,7 +164,11 @@ def submit(binding: ProfileBinding, lease: Lease, result: JsonObject, meter: Met
             # 公有 DB 先落不透明封存登記，品質報告才能在原生防線下投影 READY。
             if attestation is not None:
                 registrations.append(registration(actor,binding,run,attestation))
-            references.append(results(binding,run,result,UUID(run.document["execution_manifest_id"]),attestation,remaining))
+            outcome = results(binding,run,result,UUID(run.document["execution_manifest_id"]),attestation,remaining)
+            references.append(outcome)
+            # 只有真正封存成功才建立可引用的證據包，避免 BLOCKED 版本被當成已驗證證據。
+            if attestation is not None:
+                register_evidence(actor,binding,run,outcome,db_now())
         def failed(_row: RuntimeRun,code: str) -> None:
             binding.error_code = code
             binding.save(update_fields=["error_code"])

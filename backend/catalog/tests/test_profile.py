@@ -22,7 +22,7 @@ from catalog.validation import ApiError
 from django.test import Client, TransactionTestCase, override_settings
 from catalog.budget import report_usage, usage_report, zero_usage
 from catalog.ingest import Meter, complete_upload, ingest_tick
-from catalog.models import Account, Dataset, DatasetVersion, Grant, ProfileBinding, ResearchBudget, ResearchEvent, ResearchState, ResearchVersion, Reservation, RootBudget, SealRegistration, Tenant, Upload, UsageReceipt
+from catalog.models import Account, Dataset, DatasetVersion, EvidenceBundle, Grant, ProfileBinding, ResearchBudget, ResearchEvent, ResearchState, ResearchVersion, Reservation, RootBudget, SealRegistration, Tenant, Upload, UsageReceipt
 from catalog.profile import close_state, profile_tick, recover_profile, reject, results
 from catalog.research import create_research, create_version, research_for
 from catalog.research_state import document_for, state_for
@@ -510,6 +510,20 @@ class ProfileTests(TransactionTestCase):
             self.assertEqual((body["quality"],body["readiness"],body["remaining"]),("PASS","READY",[]))
             self.assertNotIn("final_test",body)
             self.assertNotIn(b"sealed.sqlite3",quality.content)
+            bundle = EvidenceBundle.objects.get(research_version=self.version)
+            self.assertEqual(result["evidence_bundle_ids"],[str(bundle.id)])
+            self.assertEqual(bundle.document["proof_artifact_ids"],[str(result["quality_report_id"]),str(result["structure_assessment_artifact_id"])])
+            self.assertEqual(bundle.document["validation_ids"],[])
+            response = self.client.get(f"/api/v2/evidence-bundles/{bundle.id}")
+            self.assertEqual(response.status_code,200)
+            self.assertEqual(response["X-Control-Revision"],"0")
+            self.assertEqual(response["Cache-Control"],"no-store")
+            self.assertEqual(json.loads(response.content),bundle.document)
+            self.assertEqual(self.client.get(f"/api/v2/evidence-bundles/{uuid4()}").status_code,404)
+            other = User.objects.create(username=uuid4().hex,password="!")
+            Account.objects.create(user=other,tenant=self.actor.tenant,role="RESEARCHER")
+            self.client.force_login(other)
+            self.assertEqual(self.client.get(f"/api/v2/evidence-bundles/{bundle.id}").status_code,404)
 
     @skipUnless(sys.platform=="linux","formal sealing requires the Linux journal and child boundary")
     def test_blocked_sealing_keeps_draft_and_registers_nothing(self) -> None:
@@ -520,5 +534,6 @@ class ProfileTests(TransactionTestCase):
         quality = self.client.get(f'/api/v2/artifacts/{result["quality_report_id"]}/content')
         self.assertEqual((result["status"],result["observation_split"]["sealed_test_id"]),("DRAFT",None))
         self.assertFalse(SealRegistration.objects.exists())
+        self.assertFalse(EvidenceBundle.objects.exists())
         body = json.loads(quality.content)
         self.assertEqual((body["quality"],body["readiness"],body["remaining"]),("PASS","BLOCKED",["EXPOSURE_RECOVERY_BLOCKED"]))
