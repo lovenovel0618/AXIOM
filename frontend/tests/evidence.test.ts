@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { describeRemaining, parseEvidenceBundle, parseQualityReport } from '../src/lib/evidence'
+import {
+  describeBlindEvaluation,
+  describeRemaining,
+  parseEvidenceBundle,
+  parseQualityReport,
+} from '../src/lib/evidence'
 
 const PASS = {
   kind: 'QualityReport',
@@ -76,6 +81,24 @@ describe('describeRemaining', () => {
   it('translates documented codes and keeps unknown ones', () => {
     expect(describeRemaining('SEALED_TEST_NOT_REGISTERED')).toBe('尚未完成正式封存測試登記')
     expect(describeRemaining('SOMETHING_ELSE')).toBe('SOMETHING_ELSE')
+  })
+})
+
+describe('describeBlindEvaluation', () => {
+  it('marks missing sealed tests as blocked', () => {
+    const result = describeBlindEvaluation({ sealedTestId: null, frozenSubmissionCount: 0 })
+    expect(result.tone).toBe('BLOCKED')
+    expect(result.summary).toContain('尚未完成正式封存測試登記')
+    expect(result.detail).toContain('G2 仍 BLOCKED')
+  })
+
+  it('marks sealed but unfrozen versions as pending', () => {
+    const result = describeBlindEvaluation({
+      sealedTestId: '11111111-1111-4111-8111-111111111111',
+      frozenSubmissionCount: 0,
+    })
+    expect(result.tone).toBe('PENDING')
+    expect(result.summary).toContain('候選提交尚未產生')
   })
 })
 

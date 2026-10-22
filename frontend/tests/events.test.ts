@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseEventBatch, resumeCursor } from '../src/lib/events'
+import { parseEventBatch, resumeCursor, resumeScopedCursor } from '../src/lib/events'
 
 const RUN_ID = '11111111-1111-1111-1111-111111111111'
 
@@ -73,5 +73,12 @@ describe('resumeCursor', () => {
 
   it('returns null when nothing was delivered', () => {
     expect(resumeCursor(RUN_ID, [])).toBeNull()
+  })
+})
+
+describe('resumeScopedCursor', () => {
+  it('builds a RESEARCH cursor from the last delivered sequence', () => {
+    const events = parseEventBatch(`${frame(4, 'ResearchVersionStateChanged', {})}`)
+    expect(resumeScopedCursor('RESEARCH', RUN_ID, events)).toBe(`RESEARCH:${RUN_ID}:4`)
   })
 })

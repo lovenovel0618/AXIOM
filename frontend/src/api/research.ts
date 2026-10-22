@@ -1,5 +1,6 @@
 /** 研究容器、固定草稿與 PROFILE 觸發；冪等鍵與控制 revision 在此集中處理。 */
 import { newKey, type ApiClient } from './client'
+import { parseEventBatch, type RunEventEnvelope } from '../lib/events'
 import type { BudgetUsage, Run } from './runs'
 
 export interface Research {
@@ -223,4 +224,16 @@ export async function listResearchVersionRuns(
     'GET',
     `/api/v2/research-versions/${versionId}/runs?limit=${String(limit)}`,
   )
+}
+
+/** 取單批研究版本事件；游標為 null 時由序號 0 開始。 */
+export async function fetchResearchVersionEvents(
+  client: ApiClient,
+  versionId: string,
+  cursor: string | null,
+): Promise<RunEventEnvelope[]> {
+  const headers: Record<string, string> = {}
+  if (cursor !== null) headers['Last-Event-ID'] = cursor
+  const body = await client.text('GET', `/api/v2/research-versions/${versionId}/events`, { headers })
+  return parseEventBatch(body)
 }

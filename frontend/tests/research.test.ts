@@ -4,6 +4,7 @@ import { getArtifactContent } from '../src/api/artifacts'
 import {
   createResearch,
   createResearchVersion,
+  fetchResearchVersionEvents,
   listResearchVersionRuns,
   validateDraft,
   type CreateResearchVersionRequest,
@@ -153,6 +154,25 @@ describe('listResearchVersionRuns', () => {
     const page = await listResearchVersionRuns(client, VERSION_ID, 20)
     expect(page.items).toEqual([])
     expect(calls[0]?.url).toBe(`/api/v2/research-versions/${VERSION_ID}/runs?limit=20`)
+  })
+})
+
+describe('fetchResearchVersionEvents', () => {
+  it('reads the bounded research event stream and forwards Last-Event-ID when present', async () => {
+    const body =
+      'retry: 2000\n\n' +
+      'id: RESEARCH:22222222-2222-2222-2222-222222222222:1\n' +
+      'event: ResearchVersionStateChanged\n' +
+      'data: {"event_id":"event-1","event_type":"ResearchVersionStateChanged","sequence":1,"occurred_at":"2026-10-21T00:00:00Z","run_id":null,"stream_scope":"RESEARCH","payload":{"status":"VALIDATING","revision":1}}\n\n'
+    const { calls, client } = scenario(() => new Response(body))
+    const events = await fetchResearchVersionEvents(client, VERSION_ID, 'RESEARCH:22222222-2222-2222-2222-222222222222:0')
+    expect(events).toHaveLength(1)
+    expect(events[0]?.event_type).toBe('ResearchVersionStateChanged')
+    expect(events[0]?.sequence).toBe(1)
+    expect(calls[0]?.url).toBe(`/api/v2/research-versions/${VERSION_ID}/events`)
+    expect(calls[0]?.headers.get('Last-Event-ID')).toBe(
+      'RESEARCH:22222222-2222-2222-2222-222222222222:0',
+    )
   })
 })
 

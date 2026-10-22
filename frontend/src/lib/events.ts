@@ -68,9 +68,18 @@ export function parseEventBatch(text: string): RunEventEnvelope[] {
   return events
 }
 
-/** 續接游標必須是後端接受的 `RUN:<run uuid>:<sequence>`，其餘一律拒絕。 */
-export function resumeCursor(runId: string, events: RunEventEnvelope[]): string | null {
+/** 續接游標必須是後端接受的 `<scope>:<stream id>:<sequence>`，其餘一律拒絕。 */
+export function resumeScopedCursor(
+  scope: 'RUN' | 'RESEARCH',
+  streamId: string,
+  events: RunEventEnvelope[],
+): string | null {
   const last = events.at(-1)
   if (last === undefined) return null
-  return `RUN:${runId}:${String(last.sequence)}`
+  return `${scope}:${streamId}:${String(last.sequence)}`
+}
+
+/** 舊的 Run 游標介面保留給任務詳情頁呼叫。 */
+export function resumeCursor(runId: string, events: RunEventEnvelope[]): string | null {
+  return resumeScopedCursor('RUN', runId, events)
 }

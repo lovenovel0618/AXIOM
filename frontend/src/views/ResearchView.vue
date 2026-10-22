@@ -3,10 +3,11 @@
  * 研究工作台（語意確認）：建立研究容器、固定不可變草稿、觸發 PROFILE。
  * 版本一旦建立即不可變；觸發需帶目前控制 revision，後端仍是唯一權威。
  */
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
   createResearch,
+  fetchResearchVersionEvents,
   getResearchVersion,
   listResearchVersionRuns,
   listResearches,
@@ -22,6 +23,7 @@ import { getArtifactContent } from '../api/artifacts'
 import { getEvidenceBundle } from '../api/evidence'
 import {
   describeRemaining,
+  describeBlindEvaluation,
   EVIDENCE_STATUS_LABELS,
   parseEvidenceBundle,
   parseQualityReport,
@@ -30,8 +32,11 @@ import {
   type EvidenceBundle,
   type QualityReport,
 } from '../lib/evidence'
+import { resumeScopedCursor, type RunEventEnvelope } from '../lib/events'
 import { describeError } from '../lib/messages'
 import { client } from '../lib/session'
+
+const POLL_MS = 2000
 
 const route = useRoute()
 const router = useRouter()
@@ -45,6 +50,9 @@ const quality = ref<QualityReport | null>(null)
 const qualityLoading = ref(false)
 const bundle = ref<EvidenceBundle | null>(null)
 const bundleLoading = ref(false)
+const researchEvents = ref<RunEventEnvelope[]>([])
+const researchCursor = ref<string | null>(null)
+const followingResearch = ref(false)
 const name = ref('')
 const loading = ref(false)
 const triggering = ref(false)
@@ -73,6 +81,66 @@ const runStatusLabel: Record<RunStatus, string> = {
 const canTrigger = computed<boolean>(
   () => selectedVersion.value !== null && selectedVersion.value.status === 'DRAFT' && !triggering.value,
 )
+
+const blindEvaluation = computed(() => {
+  const version = selectedVersion.value
+  if (version === null) return null
+  return describeBlindEvaluation({
+    sealedTestId: version.observation_split.sealed_test_id,
+    frozenSubmissionCount: version.frozen_submission_ids.length,
+  })
+})
+
+let researchTimer: ReturnType<typeof setTimeout> | null = null
+
+function summarizeEvent(payload: Record<string, unknown>): string {
+  const text = JSON.stringify(payload)
+  return text.length > 200 ? `${text.slice(0, 200)}…` : text
+}
+
+function stopFollowingResearch(): void {
+  followingResearch.value = false
+  if (researchTimer !== null) {
+    clearTimeout(researchTimer)
+    researchTimer = null
+  }
+}
+
+async function tickResearch(): Promise<void> {
+  const version = selectedVersion.value
+  if (version === null) {
+    stopFollowingResearch()
+    return
+  }
+  try {
+    const batch = await fetchResearchVersionEvents(client, version.id, researchCursor.value)
+    if (batch.length > 0) {
+      researchEvents.value = [...researchEvents.value, ...batch]
+      researchCursor.value = resumeScopedCursor('RESEARCH', version.id, batch)
+    }
+    selectedVersion.value = await getResearchVersion(client, version.id)
+  } catch (cause) {
+    error.value = describeError(cause)
+    stopFollowingResearch()
+    return
+  }
+  if (selectedVersion.value?.status !== 'VALIDATING') {
+    stopFollowingResearch()
+    return
+  }
+  researchTimer = setTimeout(() => {
+    void tickResearch()
+  }, POLL_MS)
+}
+
+async function startResearchFollow(version: ResearchVersion): Promise<void> {
+  stopFollowingResearch()
+  researchEvents.value = []
+  researchCursor.value = null
+  followingResearch.value = true
+  selectedVersion.value = version
+  await tickResearch()
+}
 
 async function loadResearches(): Promise<void> {
   loading.value = true
@@ -128,15 +196,19 @@ async function reloadVersions(): Promise<void> {
 }
 
 async function pickVersion(version: ResearchVersion): Promise<void> {
+  stopFollowingResearch()
   selectedVersion.value = version
   runs.value = []
   quality.value = null
   bundle.value = null
+  researchEvents.value = []
+  researchCursor.value = null
   error.value = ''
   notice.value = ''
   await reloadRuns()
   await loadQuality()
   await loadBundle()
+  if (version.status === 'VALIDATING') await startResearchFollow(version)
 }
 
 async function reloadRuns(): Promise<void> {
@@ -248,6 +320,7 @@ onMounted(async () => {
   const found = researches.value.find((row) => row.id === id)
   if (found !== undefined) await select(found)
 })
+onUnmounted(stopFollowingResearch)
 </script>
 
 <template>
@@ -334,6 +407,23 @@ onMounted(async () => {
             </dd>
             <dt>評估政策雜湊</dt>
             <dd class="mono">{{ selectedVersion.evaluation_policy_hash }}</dd>
+          </dl>
+
+          <h3>最終盲測評估</h3>
+          <p class="muted" :class="{ alertInline: blindEvaluation?.tone === 'BLOCKED' }">
+            {{ blindEvaluation?.summary }}
+          </p>
+          <p class="muted">{{ blindEvaluation?.detail }}</p>
+          <dl class="facts">
+            <dt>sealed_test_id</dt>
+            <dd class="mono">{{ selectedVersion.observation_split.sealed_test_id ?? '尚未登記' }}</dd>
+            <dt>FrozenSubmission</dt>
+            <dd v-if="selectedVersion.frozen_submission_ids.length === 0" class="muted">尚未產生</dd>
+            <dd v-else class="mono">
+              <ul class="remaining">
+                <li v-for="id in selectedVersion.frozen_submission_ids" :key="id">{{ id }}</li>
+              </ul>
+            </dd>
           </dl>
 
           <div class="panel-head">
@@ -428,6 +518,21 @@ onMounted(async () => {
               <span class="muted mono">{{ row.id }}</span>
             </li>
           </ul>
+
+          <h3>研究事件</h3>
+          <p class="muted" aria-live="polite">
+            {{ followingResearch ? '正在追蹤研究事件…' : '研究事件追蹤已停止。' }}
+            <template v-if="researchEvents.length > 0">已收到 {{ researchEvents.length }} 筆。</template>
+          </p>
+          <p v-if="researchEvents.length === 0" class="muted">尚無研究事件。</p>
+          <ol v-else class="timeline">
+            <li v-for="event in researchEvents" :key="event.event_id">
+              <span class="mono seq">#{{ event.sequence }}</span>
+              <span class="type">{{ event.event_type }}</span>
+              <span class="mono at">{{ event.occurred_at }}</span>
+              <span class="mono detail">{{ summarizeEvent(event.payload) }}</span>
+            </li>
+          </ol>
         </template>
       </template>
     </section>
@@ -527,6 +632,37 @@ h3 {
   color: var(--text-muted);
   font-size: 0.9rem;
 }
+.alertInline {
+  color: var(--danger);
+}
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.timeline li {
+  display: grid;
+  grid-template-columns: 4rem minmax(10rem, auto) minmax(12rem, auto) 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+}
+.seq {
+  color: var(--accent);
+}
+.type {
+  font-weight: 600;
+}
+.at,
+.detail {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  word-break: break-all;
+}
 .alert {
   padding: 0.6rem 0.75rem;
   border-radius: 0.4rem;
@@ -541,6 +677,9 @@ h3 {
 }
 @media (max-width: 48rem) {
   .grid {
+    grid-template-columns: 1fr;
+  }
+  .timeline li {
     grid-template-columns: 1fr;
   }
 }

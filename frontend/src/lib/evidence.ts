@@ -39,6 +39,12 @@ export interface EvidenceBundle {
   proofArtifactIds: string[]
 }
 
+export interface BlindEvaluationStatus {
+  tone: 'BLOCKED' | 'PENDING'
+  summary: string
+  detail: string
+}
+
 export const QUALITY_LABELS: Record<QualityOutcome, string> = {
   PASS: '通過',
   BLOCKED: '未通過',
@@ -52,6 +58,33 @@ export const EVIDENCE_STATUS_LABELS: Record<EvidenceStatus, string> = {
 export const READINESS_LABELS: Record<Readiness, string> = {
   READY: '就緒',
   BLOCKED: '未就緒',
+}
+
+/** 最終盲測評估目前仍受 D-03 與實作邊界限制；此處只整理工作台應顯示的現況。 */
+export function describeBlindEvaluation(input: {
+  sealedTestId: string | null
+  frozenSubmissionCount: number
+}): BlindEvaluationStatus {
+  const gate = 'D-03 未關，產品 Gate 維持 NOT_RUN，G2 仍 BLOCKED。'
+  if (input.sealedTestId === null) {
+    return {
+      tone: 'BLOCKED',
+      summary: '尚未完成正式封存測試登記',
+      detail: `目前沒有 sealed_test_id，#5 最終盲測評估不可開始。${gate}`,
+    }
+  }
+  if (input.frozenSubmissionCount === 0) {
+    return {
+      tone: 'PENDING',
+      summary: '候選提交尚未產生',
+      detail: `目前只有 sealed_test_id，還沒有 FrozenSubmission；工作台可顯示狀態，但最終盲測仍未接通。${gate}`,
+    }
+  }
+  return {
+    tone: 'PENDING',
+    summary: '候選提交已存在，等待正式門檻解除',
+    detail: `FrozenSubmission 已存在，但 D-03 未關前仍不得宣告最終盲測通過。${gate}`,
+  }
 }
 
 /** 未知代碼保留原始碼，方便對照後端契約與錯誤碼表。 */
