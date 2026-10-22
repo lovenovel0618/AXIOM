@@ -1,0 +1,107 @@
+{
+  "date": "2026-10-23",
+  "scope": "T07_FROZEN_SUBMISSION_AND_FINAL_EVALUATION_SLOT",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "e019776dd8dd14a22a2c8cb5ff7d691d56e329f5",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "PARTIAL",
+  "product_gate_status": "NOT_RUN",
+  "delivery_boundary": {
+    "frozen_submission": "IMPLEMENTED（catalog 0021／0022：snapshot_payload 依 (development_rank, id) 排序後取 canonical SHA-256 為 snapshot_hash；同內容重送讀回原列）",
+    "frozen_submission_read_api": "IMPLEMENTED（GET /frozen-submissions/{id}/ 經 authorized_submission 重驗租戶與研究 owner，跨租戶回 404）",
+    "final_evaluation_slot": "IMPLEMENTED（runtime 0007／0008：業務鍵 unique(tenant_id, submission_id, frozen_candidate_id, metric_version)、必為 PENDING 起始、單向結算、身分不可變、禁 DELETE；槽位不保存結果本身也不對外曝光）",
+    "slot_dispatch_orchestration": "NOT_IMPLEMENTED（insert-on-conflict 取得槽位與 FINAL_TEST validate stage 未寫）",
+    "final_test_evaluation": "NOT_IN_INPUT_SURFACE（本批不派送任何 run、不執行 final_test、不開放槽位端點）",
+    "ci_regression_fixed": "typing_policy 三筆額度補列（catalog/freezing.py 10→13、catalog/models.py 42→44、catalog/tests/test_candidates.py 8→10），修掉 master 上 docs-check 39821156876／39821642928 的紅燈",
+    "measurement_markers": "usage_scope=LOCAL_FINAL_EVAL_DATA_LAYER_ONLY、product_status=NOT_RUN、precision_bits=53"
+  },
+  "tests": {
+    "postgresql_backend": 333,
+    "previous_backend": 314,
+    "new_slice_tests": 19,
+    "new_tests_breakdown": {
+      "catalog/tests/test_candidates.py（凍結提交，6f574b1）": 7,
+      "runtime/tests/test_final_slots.py（本批槽位）": 12
+    },
+    "unittest_command": "docker compose -p axiom-dev run --rm -v \"$PWD/backend\":/app -v \"$PWD/docs/企劃案/contracts\":/app/contracts web python manage.py test --noinput",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "NO_SOURCE_CHANGE_THIS_SLICE",
+      "typecheck": "vue-tsc --noEmit 0 error",
+      "vitest": "9 檔 82／82 PASS（含 research.test.ts 8 項）"
+    }
+  },
+  "strict_pyright": {
+    "version": "1.1.414",
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0,
+    "informations": 0
+  },
+  "typing_policy": "PASS",
+  "engineering_tools": {
+    "unittest": "80/80",
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS（product_status NOT_RUN、D-01～D-09 維持 OPEN）",
+    "docs_check": "exit 0（markdown 57、chapters 54、manifest_files 86、error_codes 54（HTTP 40＋WORKER 14）、product_test_status NOT_RUN）",
+    "public_oracle": "PASS（python -m tools.benchmark.public_oracle）"
+  },
+  "integration": {
+    "slot_schema_round_trip": "PASS（PENDING 文件通過 runtime-v2.schema.json FinalEvaluationSlot 並原樣往返）",
+    "slot_completed_requires_reference": "PASS（COMPLETED 缺 validation_run_id 被 schema 的 allOf 條件拒絕）",
+    "slot_business_key": "PASS（同業務鍵第二次寫入被拒；兩執行緒並行派送只留一個槽位）",
+    "slot_state_machine": "PASS（非 PENDING 起始被拒；PENDING → COMPLETED|FAILED 單向一次；已結算再改被拒；status 超出三者被拒）",
+    "slot_immutability": "PASS（身分欄位 UPDATE 被拒、document 與資料列不同步被拒、DELETE 一律被拒）",
+    "frozen_submission_fail_closed": "PASS（seal 未登記／policy hash 不符／驗證計畫不符／rank 重複逐一拒絕且不寫入任何列）",
+    "makemigrations_check": "No changes detected",
+    "product_gate_status": "NOT_RUN",
+    "g2_status": "BLOCKED（D-03 未關）"
+  },
+  "live_services": {
+    "project": "axiom-dev",
+    "retained_running": true,
+    "health_http_status": {
+      "http://127.0.0.1:18000/health/ready/": 200,
+      "http://127.0.0.1:15173/health/ready/": 200,
+      "http://127.0.0.1:15173/": 200
+    },
+    "services": [
+      { "name": "frontend", "state": "running", "health": "healthy", "ports": "127.0.0.1:15173->5173/tcp" },
+      { "name": "ingest", "state": "running", "health": "", "ports": "" },
+      { "name": "journal", "state": "running", "health": "healthy", "ports": "" },
+      { "name": "postgres", "state": "running", "health": "healthy", "ports": "5432/tcp" },
+      { "name": "profile", "state": "running", "health": "", "ports": "" },
+      { "name": "redis", "state": "running", "health": "healthy", "ports": "6379/tcp" },
+      { "name": "relay", "state": "running", "health": "", "ports": "" },
+      { "name": "web", "state": "running", "health": "healthy", "ports": "127.0.0.1:18000->8000/tcp" },
+      { "name": "worker", "state": "running", "health": "", "ports": "" }
+    ]
+  },
+  "changed_sources": {
+    "backend/runtime/models.py": "1b74db955c62ea7acb74d07002e6afaf2fa5301401981f46f7efc43fee6fab59",
+    "backend/runtime/migrations/0007_final_evaluation_slot.py": "96f6c8aa27142ed577e4a71886a919d6aa2bbb1e7cfcbfe7d417b73f4c3a9458",
+    "backend/runtime/migrations/0008_final_slot_guards.py": "4276dd380d8a2d7a9f6790ecb2dc91abbc181da3891b3b17fcfbbeedf6e72908",
+    "backend/runtime/tests/test_final_slots.py": "7e5a1aec3542dfefa040ba51ae7d4b41e888337536cdec724b0b4c0ce141e1de",
+    "backend/foundation/health.py": "ae9baad7f48807c6786f87b092bb5649c2ecb9cb0b513a8088add6de4b4f6a56",
+    "tools/typing-boundaries.json": "a0d868fd717c5deb5d2b820be57e8b902f625a00734e809af72d20b35b32269f",
+    "docs/技術文件/M0/T07-候選凍結與比較設計.md": "d7296090dc6c2064a0580abf7c5b9fb7174906157fc3e4da60bc8a48a374364b",
+    "docs/技術文件/M0/T07-候選凍結與比較驗證紀錄.md": "917e83050fccb3b37295d0465271af715cd58f95fed72598600f28f1a02b9e92",
+    "docs/技術文件/缺口清單.md": "23033e28afdd7ef2fd1ee64ea5f23281440d5a2cab2d0d47599bdb33c20daef0",
+    "docs/技術文件/README.md": "0025e9a6aae715b774333d1cc55355d8ae407b789f91d0fa511ea6ca28000274"
+  },
+  "known_limits": [
+    "槽位派送 orchestration 未寫：取得槽位（insert-on-conflict 讀回既有 run_id）、唯一 VALIDATE run／InputManifest／outbox 同交易建立皆待後續",
+    "FINAL_TEST validate stage 未寫：dispatch_stage（SEARCH_OPEN／FINAL_ONLY／CLOSED）與 manifest 核對（submission_id／frozen_candidate_id／fit_run_id／sealed_test_id）未實作；records.validate_bindings 仍只放行 INGEST／PROFILE 根任務",
+    "ValidationRun 物件、最終結果寫入（slot=COMPLETED 同交易寫結果 outbox）、曝光帳本 consume、分母與拒答理由未實作",
+    "FrozenSubmission 的 status 目前只會停在 FROZEN：0022 讓整列不可改，EVALUATING／EVALUATED／FAILED 需在槽位派送落地時一併放行",
+    "Slots 無對外端點，工作台（#6）未接最終評估狀態",
+    "final_test 不在任何輸入介面，本批未評估最終測試",
+    "Sonar 本批未重跑：本機需 token，工作區無可用憑證，不以舊的零項目結果頂替",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}

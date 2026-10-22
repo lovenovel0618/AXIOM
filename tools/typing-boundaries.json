@@ -51,8 +51,8 @@
   },
   "backend/catalog/models.py": {
     "Any": 0,
-    "JsonObject": 42,
-    "reason": "既有 JSON／schema／框架相容邊界；新增候選、擬合與凍結五表的 document／configuration 欄位後同步擴列，之後只可收斂。"
+    "JsonObject": 44,
+    "reason": "既有 JSON／schema／框架相容邊界；新增候選、擬合、凍結五表與凍結提交的 document／configuration 欄位後同步擴列，之後只可收斂。"
   },
   "backend/catalog/research.py": {
     "Any": 0,
@@ -111,13 +111,13 @@
   },
   "backend/catalog/freezing.py": {
     "Any": 0,
-    "JsonObject": 10,
-    "reason": "凍結決策以 schema 文件為輸入並落庫凍結副本；額度只可收斂，不代表核心已具體型別化。"
+    "JsonObject": 13,
+    "reason": "凍結決策以 schema 文件為輸入並落庫凍結副本與凍結提交；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/tests/test_candidates.py": {
     "Any": 0,
-    "JsonObject": 8,
-    "reason": "測試以 schema 文件組出凍結情境；額度只可收斂，不代表核心已具體型別化。"
+    "JsonObject": 10,
+    "reason": "測試以 schema 文件組出凍結與凍結提交情境；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/research_validation.py": {
     "Any": 0,
@@ -141,8 +141,13 @@
   },
   "backend/runtime/models.py": {
     "Any": 0,
-    "JsonObject": 12,
-    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+    "JsonObject": 14,
+    "reason": "既有 JSON／schema／框架相容邊界；新增最終評估槽位的 document 欄位後同步擴列，之後只可收斂。"
+  },
+  "backend/runtime/tests/test_final_slots.py": {
+    "Any": 0,
+    "JsonObject": 2,
+    "reason": "槽位測試以 schema 文件組出契約與反例；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/runtime/completion.py": {
     "Any": 0,

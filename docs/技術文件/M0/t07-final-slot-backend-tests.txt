@@ -1,0 +1,22 @@
+ Container axiom-dev-redis-1 Running 
+ Container axiom-dev-postgres-1 Running 
+ Container axiom-dev-postgres-1 Waiting 
+ Container axiom-dev-postgres-1 Healthy 
+ Container axiom-dev-migrate-1 Starting 
+ Container axiom-dev-migrate-1 Started 
+ Container axiom-dev-redis-1 Waiting 
+ Container axiom-dev-migrate-1 Waiting 
+ Container axiom-dev-redis-1 Healthy 
+ Container axiom-dev-migrate-1 Exited 
+ Container axiom-dev-web-run-0b34b4eedf89 Creating 
+ Container axiom-dev-web-run-0b34b4eedf89 Created 
+Found 333 test(s).
+Creating test database for alias 'default'...
+System check identified no issues (0 silenced).
+......................Unhandled request request_id=b0bab93e-c759-4e1f-ae47-3850ed49b67b
+.......................................................................................................................................................................................................................................................................................................................
+----------------------------------------------------------------------
+Ran 333 tests in 194.290s
+
+OK
+Destroying test database for alias 'default'...
