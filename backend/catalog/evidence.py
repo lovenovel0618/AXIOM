@@ -5,6 +5,7 @@
 """
 from datetime import datetime
 from uuid import UUID, uuid4
+from catalog.deletion import is_tombstoned
 from catalog.models import Account, EvidenceBundle, ProfileBinding
 from catalog.research import version_for
 from catalog.validation import ApiError, validate_api
@@ -35,7 +36,7 @@ def register(actor: Account, binding: ProfileBinding, run: RuntimeRun, proof_art
 def authorized(actor: Account, identity: UUID) -> EvidenceBundle:
     """重新驗租戶與現行研究 owner；不符一律 404，不藉 UUID 繞過。"""
     row = EvidenceBundle.objects.filter(pk=identity,tenant_id=actor.tenant_id).first()
-    if row is None:
+    if row is None or is_tombstoned(actor,"EvidenceBundle",identity):
         raise ApiError("NOT_FOUND",404)
     version_for(actor,row.research_version_id)
     validate_api(row.document,"EvidenceBundle")

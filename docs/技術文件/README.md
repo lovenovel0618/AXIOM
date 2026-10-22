@@ -17,8 +17,9 @@
 | M0→M1／T07（研究帳本與 PROFILE） | [任務設計](<M0/T07-研究帳本與PROFILE任務設計.md>) | [驗證紀錄](<M0/T07-研究帳本與PROFILE任務驗證紀錄.md>) | 兩層預留與不可變用量收據、真 HTTP／專用 worker、遮罩品質與 fit-only 結構、取消／恢復與私有事件；正式封存及 READY 尚未開放 |
 | M0→M1／T07（正式封存與曝光帳本） | [封存登記設計](<M0/T07-正式封存與曝光帳本設計.md>) | [驗證紀錄](<M0/T07-正式封存與曝光帳本驗證紀錄.md>) | Evaluator 私有 SQLite authority、tenant-scoped 曝光 token 與 append-only journal、Unix socket RPC 及 UID 10002／10004 隔離；真 HTTP→INGEST→PROFILE→封存→READY 與 `formal_seal: IMPLEMENTED` 已實測，SEARCH／候選凍結／最終評分仍待後續 |
 | M0→M1／T07（證據包） | [證據包設計](<M0/T07-證據包設計.md>) | [驗證紀錄](<M0/T07-證據包驗證紀錄.md>) | READY 同交易自動登記不可變證據包、租戶一致 404、複合 FK 與引用 guard；真 HTTP 直取與前端同源皆實測，validation 引用、SEARCH 與交付仍待後續 |
+| M0→M1／T07（刪除傳播與 tombstone） | [刪除傳播與 tombstone 設計](<M0/T07-刪除傳播與tombstone設計.md>) | [驗證紀錄](<M0/T07-刪除傳播與tombstone驗證紀錄.md>) | 服務層失效宣告、同交易 tombstone 與刪除工作、讀取回查；policy 未放行時 Fail-Closed 停在 BLOCKED，真 HTTP 直取與前端同源皆實測，對外刪除 API／outbox 與異步清除仍待後續 |
 
-企劃中的產品驗收維持 NOT_RUN。T04 控制設計見 [Run／Attempt 控制核心](<M0/T04-Run與Attempt控制核心.md>)，實測見 [控制核心驗證](<M0/T04-Run與Attempt驗證紀錄.md>)。T05 已完成本機租戶／物件版本／上傳基線；T06 已提供本機有界安全 DSL 求值；T07 已交有界解析及明確啟用的真正 INGEST／Artifact；已續交人工語意與 ResearchVersion 草稿，已續交本機可信品質預檢與已知公式整合，已續交明確啟用的 PROFILE 任務與研究帳本，已續交 Evaluator 專用封存登記與曝光帳本，已續交 READY 版本唯讀證據包（品質報告與結構評估兩項封存產物），下一步接工作台與最終評估前置。不因骨架測試通過就啟用 AI、正式盲測或對外開放。
+企劃中的產品驗收維持 NOT_RUN。T04 控制設計見 [Run／Attempt 控制核心](<M0/T04-Run與Attempt控制核心.md>)，實測見 [控制核心驗證](<M0/T04-Run與Attempt驗證紀錄.md>)。T05 已完成本機租戶／物件版本／上傳基線；T06 已提供本機有界安全 DSL 求值；T07 已交有界解析及明確啟用的真正 INGEST／Artifact；已續交人工語意與 ResearchVersion 草稿，已續交本機可信品質預檢與已知公式整合，已續交明確啟用的 PROFILE 任務與研究帳本，已續交 Evaluator 專用封存登記與曝光帳本，已續交 READY 版本唯讀證據包（品質報告與結構評估兩項封存產物），已續交來源失效宣告與 tombstone（tombstone 立即生效、D-05 未決前刪除工作 Fail-Closed 停在 BLOCKED），下一步接工作台與最終評估前置。不因骨架測試通過就啟用 AI、正式盲測或對外開放。
 
 人員基線：只有使用者本人開發；Backend／Frontend／Math／QA／SRE 為兼任責任，不是招募需求。工作票預設依序執行，自我檢查為單人流程紀錄，不冒充獨立覆核。
 

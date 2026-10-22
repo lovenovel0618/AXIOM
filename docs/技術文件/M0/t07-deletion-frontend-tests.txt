@@ -1,0 +1,60 @@
+ Container axiom-dev-web-1 Running 
+ Container axiom-dev-postgres-1 Running 
+ Container axiom-dev-redis-1 Running 
+ Container axiom-dev-postgres-1 Waiting 
+ Container axiom-dev-postgres-1 Healthy 
+ Container axiom-dev-migrate-1 Starting 
+ Container axiom-dev-migrate-1 Started 
+ Container axiom-dev-redis-1 Waiting 
+ Container axiom-dev-migrate-1 Waiting 
+ Container axiom-dev-redis-1 Healthy 
+ Container axiom-dev-migrate-1 Exited 
+ Container axiom-dev-web-1 Waiting 
+ Container axiom-dev-web-1 Healthy 
+ Container axiom-dev-frontend-run-0740d93fe063 Creating 
+ Container axiom-dev-frontend-run-0740d93fe063 Created 
+
+> axiom-frontend@0.0.0 typecheck
+> vue-tsc --noEmit
+
+npm notice
+npm notice New major version of npm available! 11.19.1 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
+
+> axiom-frontend@0.0.0 test
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/app[39m
+
+ [32m✓[39m tests/events.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/evidence.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/semantics.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/sha256.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/health.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m tests/client.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m tests/research.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m tests/runs.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m tests/upload.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m      Tests [22m [1m[32m77 passed[39m[22m[90m (77)[39m
+[2m   Start at [22m 10:12:01
+[2m   Duration [22m 264ms[2m (transform 635ms, setup 0ms, import 779ms, tests 175ms, environment 3ms)[22m
+
+
+> axiom-frontend@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 63 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.37 kB │ gzip:  0.29 kB
+dist/assets/index-Bw5w47GI.css    9.87 kB │ gzip:  1.97 kB
+dist/assets/index-Jaur8Utw.js   144.31 kB │ gzip: 52.06 kB
+
+✓ built in 234ms

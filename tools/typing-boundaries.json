@@ -214,6 +214,11 @@
     "JsonObject": 6,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
+  "backend/catalog/tests/test_deletion.py": {
+    "Any": 0,
+    "JsonObject": 2,
+    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
   "backend/catalog/management/commands/provision_account.py": {
     "Any": 2,
     "JsonObject": 0,

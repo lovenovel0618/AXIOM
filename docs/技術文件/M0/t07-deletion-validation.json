@@ -1,0 +1,117 @@
+{
+  "date": "2026-10-22",
+  "scope": "T07_DELETION_PROPAGATION_AND_TOMBSTONE",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "83a5f941eaae80f72afad3e5671275021361584c",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "IMPLEMENTED",
+  "product_gate_status": "NOT_RUN",
+  "delivery_boundary": {
+    "endpoints_added": [],
+    "endpoints_reused": [
+      "GET /api/v2/artifacts/{id}",
+      "GET /api/v2/artifacts/{id}/content",
+      "GET /api/v2/evidence-bundles/{id}"
+    ],
+    "declaration_entry_point": "服務層 catalog/deletion.py declare()，不以 HTTP 開放",
+    "outbox": "NOT_IMPLEMENTED",
+    "async_index_or_cache_purge": "NOT_CLAIMED",
+    "policy_gate": "AXIOM_DELETION_PROPAGATION_ENABLED 預設 0；D-05 未決前刪除工作停在 BLOCKED 並帶 FEATURE_DISABLED",
+    "feature_flag_added": "backend/config/settings.py 的 DELETION_PROPAGATION_ENABLED，compose.yaml 以 ${AXIOM_DELETION_PROPAGATION_ENABLED:-0} 明示預設關閉"
+  },
+  "tests": {
+    "postgresql_backend": 284,
+    "previous_backend": 284,
+    "deletion_slice_tests": 10,
+    "unittest_command": "docker compose -p axiom-dev run --rm -T web python manage.py test",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "PASS",
+      "typecheck": "strict 0 error",
+      "vitest": "9 檔 77／77",
+      "build": "63 modules；js 144.31 kB、css 9.87 kB",
+      "command": "docker compose -p axiom-dev run --rm -T frontend sh -c 'npm run typecheck && npm test && npm run build'"
+    }
+  },
+  "strict_pyright": {
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0
+  },
+  "typing_policy": "PASS",
+  "engineering_tools": {
+    "unittest": "80/80",
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS",
+    "docs_check": "exit 0",
+    "public_oracle": "PASS"
+  },
+  "integration": {
+    "probe_smoke": "PASS",
+    "runtime_smoke": "PASS",
+    "mathematics_smoke": "PASS",
+    "makemigrations_check": "No changes detected",
+    "ingest_preview_smoke": "PASS",
+    "business_ingest_smoke": "PASS",
+    "research_inspection_smoke": "PASS",
+    "profile_smoke": "PASS",
+    "research_draft_smoke": "PASS（新增失效宣告段：宣告後 artifact 200→409、證據包 200→404、二次宣告 409）",
+    "research_draft_smoke_frontend": "PASS（同上經 15173 同源代理）",
+    "catalog_smoke": "本批未重跑：需 gate 關閉的可丟棄堆疊，未以 6147f1f 的舊結果頂替本批證據",
+    "product_gate_status": "NOT_RUN"
+  },
+  "live_services": {
+    "project": "axiom-dev",
+    "retained_running": true,
+    "health_http_status": {
+      "http://127.0.0.1:18000/health/ready/": 200,
+      "http://127.0.0.1:15173/health/ready/": 200,
+      "http://127.0.0.1:15173/": 200
+    },
+    "services": [
+      { "name": "frontend", "state": "running", "health": "healthy", "ports": "127.0.0.1:15173->5173/tcp" },
+      { "name": "ingest", "state": "running", "health": "", "ports": "" },
+      { "name": "journal", "state": "running", "health": "healthy", "ports": "network_mode:none" },
+      { "name": "postgres", "state": "running", "health": "healthy", "ports": "5432/tcp" },
+      { "name": "profile", "state": "running", "health": "", "ports": "" },
+      { "name": "redis", "state": "running", "health": "healthy", "ports": "6379/tcp" },
+      { "name": "relay", "state": "running", "health": "", "ports": "" },
+      { "name": "web", "state": "running", "health": "healthy", "ports": "127.0.0.1:18000->8000/tcp" },
+      { "name": "worker", "state": "running", "health": "", "ports": "" }
+    ],
+    "development_database_rebuilt": {
+      "reason": "規格級反轉重寫 0001_initial 後，existing 開發資料庫仍保有已移除的 catalog_account.role（not null）與 catalog_grant，帳號寫入失敗",
+      "action": "重建 axiom-dev 的 axiom 資料庫並重跑全部遷移（DROP／CREATE DATABASE，volume 未刪除）",
+      "scope": "僅本機可丟棄開發堆疊；未觸及其他專案或部署環境"
+    }
+  },
+  "changed_sources": {
+    "backend/catalog/artifacts.py": "568d0affcfddfe248f2578f55c7c9cb16a235ace4d2102af72d859e44a0039f7",
+    "backend/catalog/deletion.py": "d9742cb504814be5cb3243034f8810c0a0d27ee5dff5fb6b9c66158c5e6a7820",
+    "backend/catalog/evidence.py": "fb078a01134ac94fae076eb3fb734a28c694583c173cfdb46706172d9e16e091",
+    "backend/catalog/management/commands/research_draft_smoke.py": "5a61ad55a9953ba1ac4461766512add768cb1c2fc9a151cac320a25d7619a171",
+    "backend/catalog/migrations/0015_deletion_and_tombstone.py": "43252b237a50f9fa057ed5080d2320e4a40827e6d899e288b49fdb69217b399b",
+    "backend/catalog/migrations/0016_deletion_guards.py": "23baec8900cb49945f152aa523f8b350ed114f68003d8c361e815cfe9d7cdb7d",
+    "backend/catalog/models.py": "ee24ed052dfd9ee934955262d50c79b8a7a054441ecfa4e6311e806648b9681d",
+    "backend/catalog/tests/test_deletion.py": "3fcc6a11bb105bdf73181791fd694245341d1ce8144872dc4f437853be4d97f4",
+    "backend/config/settings.py": "ab28083ce4fc0beb68b44cac02706d597dd55ccfbef4be354ea5eec85cc93d30",
+    "backend/foundation/health.py": "533637525d7c7ef935e85f91e766e5b3f7d6b804cb5ad98a9912370651415a7f",
+    "compose.yaml": "411eebab69d481818142ff1307f3d1f3d7386bf98ab49f3f65bfc554fad8310b",
+    "tools/typing-boundaries.json": "0890e7f3053164fda56e0c4e35017c2c5bf45dc49f1e792a1648e551538ac2fd"
+  },
+  "known_limits": [
+    "本批不提供對外刪除或隔離端點；失效宣告只可由服務層發起，未宣稱客戶端可觸發傳播",
+    "未實作 outbox 與異步清除，也未宣稱索引、快取或訓練快照已被清除；QUARANTINED 仍僅為值域預留",
+    "AX-26 所列記憶 embedding／快取、報告、訓練快照與模型版本目前不存在，未為其偽造受影響物件列",
+    "宣告後只有讀取與下載被擋（artifact 409、證據包 404）；沒有推薦端點，故未宣稱推薦已實作",
+    "Sonar 本批未重跑：本機需 token，工作區無可用憑證，不以 6147f1f 的零項目結果頂替",
+    "catalog_smoke 需 gate 關閉的可丟棄堆疊，本批未重跑，亦不以其舊結果充作本批證據",
+    "開發資料庫因規格級反轉造成漂移而重建；此為本機可丟棄堆疊處置，不代表部署環境已就緒",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}

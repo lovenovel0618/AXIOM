@@ -2,6 +2,7 @@
 import hashlib
 from typing import Protocol
 from uuid import UUID, uuid4
+from catalog.deletion import is_tombstoned
 from catalog.models import Account, Artifact, DatasetVersion, IngestBinding, Provenance, ResearchVersion, StoredObject
 from catalog.services import dataset_for, provenance
 from catalog.validation import ApiError
@@ -76,6 +77,6 @@ def authorized(actor: Account, identity: UUID) -> Artifact:
     if row.research_version_id is not None:
         from catalog.research import version_for
         version_for(actor,row.research_version_id)
-    if row.document["status"] != "AVAILABLE":
+    if is_tombstoned(actor, "Artifact", row.id) or row.document["status"] != "AVAILABLE":
         raise ApiError("ARTIFACT_UNAVAILABLE", 409)
     return row

@@ -369,3 +369,62 @@ class EvidenceBundle(models.Model):
     class Meta:
         constraints = [models.UniqueConstraint(fields=["id","tenant"],name="evidence_bundle_tenant_identity"),
                        models.CheckConstraint(condition=models.Q(status__in=["ACTIVE","QUARANTINED"]),name="evidence_bundle_valid_status")]
+
+
+class DeletionRequest(models.Model):
+    """來源失效宣告；政策未放行前只停在 BLOCKED，不推進衍生傳播。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    dataset_version: models.ForeignKey[DatasetVersion, DatasetVersion] = models.ForeignKey(DatasetVersion, on_delete=models.PROTECT)
+    dataset_version_id: UUID
+    requested_by: models.ForeignKey[Account, Account] = models.ForeignKey(Account, on_delete=models.PROTECT)
+    requested_by_id: UUID
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+    status: models.CharField[str, str] = models.CharField(max_length=12, default="REQUESTED")
+    blocked_code: models.CharField[str | None, str | None] = models.CharField(max_length=40, null=True)
+    policy_status: models.CharField[str, str] = models.CharField(max_length=8, default="BLOCKED")
+    revision: models.PositiveIntegerField[int, int] = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="deletion_request_tenant_identity"),
+                       models.CheckConstraint(condition=models.Q(status__in=["REQUESTED", "BLOCKED", "PROPAGATING", "COMPLETED", "FAILED"]), name="deletion_request_valid_status"),
+                       models.CheckConstraint(condition=models.Q(policy_status__in=["BLOCKED", "ACTIVE"]), name="deletion_request_policy_status"),
+                       models.CheckConstraint(condition=~models.Q(status="BLOCKED") | models.Q(blocked_code__isnull=False), name="deletion_request_blocked_reason")]
+
+
+class DeletionTarget(models.Model):
+    """受影響物件與其動作；重試與錯誤逐項保留，不彙總成單一結果。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    deletion_request: models.ForeignKey[DeletionRequest, DeletionRequest] = models.ForeignKey(DeletionRequest, on_delete=models.PROTECT)
+    deletion_request_id: UUID
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    object_type: models.CharField[str, str] = models.CharField(max_length=32)
+    object_id: models.UUIDField[UUID, UUID] = models.UUIDField()
+    action: models.CharField[str, str] = models.CharField(max_length=16)
+    outcome: models.CharField[str, str] = models.CharField(max_length=8, default="PENDING")
+    attempts: models.PositiveIntegerField[int, int] = models.PositiveIntegerField(default=0)
+    last_error: models.CharField[str | None, str | None] = models.CharField(max_length=40, null=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["deletion_request", "object_type", "object_id", "action"], name="deletion_target_unique_action"),
+                       models.CheckConstraint(condition=models.Q(object_type__in=["DatasetVersion", "Artifact", "ResearchVersion", "EvidenceBundle"]), name="deletion_target_object_type"),
+                       models.CheckConstraint(condition=models.Q(action__in=["TOMBSTONE", "PURGE_DERIVED"]), name="deletion_target_valid_action"),
+                       models.CheckConstraint(condition=models.Q(outcome__in=["PENDING", "DONE", "BLOCKED", "FAILED"]), name="deletion_target_valid_outcome")]
+
+
+class Tombstone(models.Model):
+    """權威有效性來源；寫入即生效，不可改、不可刪。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    deletion_request: models.ForeignKey[DeletionRequest, DeletionRequest] = models.ForeignKey(DeletionRequest, on_delete=models.PROTECT)
+    deletion_request_id: UUID
+    object_type: models.CharField[str, str] = models.CharField(max_length=32)
+    object_id: models.UUIDField[UUID, UUID] = models.UUIDField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["tenant", "object_type", "object_id"], name="tombstone_object_unique"),
+                       models.CheckConstraint(condition=models.Q(object_type__in=["DatasetVersion", "Artifact", "ResearchVersion", "EvidenceBundle"]), name="tombstone_object_type")]

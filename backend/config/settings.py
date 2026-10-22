@@ -61,6 +61,9 @@ INGEST_LIMITS_JSON = os.environ.get("AXIOM_IMPORT_LIMITS", "")
 PROFILE_ENABLED = os.environ.get("AXIOM_PROFILE_ENABLED", "0") == "1"
 PROFILE_LIMITS_JSON = os.environ.get("AXIOM_PROFILE_LIMITS", "")
 
+# 刪除傳播要等 D-05 的保留政策關閉；未啟用時只寫 tombstone 並把刪除工作停在 BLOCKED。
+DELETION_PROPAGATION_ENABLED = os.environ.get("AXIOM_DELETION_PROPAGATION_ENABLED", "0") == "1"
+
 # 封存只由可信 PROFILE/Evaluator 使用；普通 web 沒有 private volume 或 journal token。
 SEALING_ENABLED = os.environ.get("AXIOM_SEALING_ENABLED","0")=="1"
 SEALING_DATA = Path(os.environ.get("AXIOM_SEALING_DATA","/var/lib/axiom/sealed"))
