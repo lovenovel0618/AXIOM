@@ -24,7 +24,7 @@ def ready(_request: HttpRequest) -> JsonResponse:
     """實查資料庫、必要 guards、可寫物件目錄與 Redis；失敗只回不可用，不洩連線資訊。"""
     try:
         DispatchProbe.objects.exists()
-        required = {("foundation", "0001_initial"), ("runtime", "0001_initial"), ("runtime", "0002_document_guards"), ("runtime", "0003_runtimerun_runtime_run_tenant_identity"), ("catalog", "0002_tenant_guards"), ("sessions", "0001_initial"), ("catalog", "0004_ingest_guards"), ("catalog", "0006_research_guards"), ("catalog", "0008_inspection_guards"), ("catalog", "0010_profile_guards"), ("runtime", "0005_profile_roots"), ("runtime", "0004_remove_runtimerun_runtime_control_only")}
+        required = {("foundation", "0001_initial"), ("runtime", "0001_initial"), ("runtime", "0002_document_guards"), ("runtime", "0003_runtimerun_runtime_run_tenant_identity"), ("catalog", "0002_tenant_guards"), ("sessions", "0001_initial"), ("catalog", "0004_ingest_guards"), ("catalog", "0006_research_guards"), ("catalog", "0008_inspection_guards"), ("catalog", "0010_profile_guards"), ("runtime", "0005_profile_roots"), ("runtime", "0004_remove_runtimerun_runtime_control_only"), ("runtime", "0006_revoke_roots"), ("catalog", "0015_evidence_revocation"), ("catalog", "0016_revoke_guards")}
         if required.difference(MigrationRecorder(connection).applied_migrations()):
             return JsonResponse({"status": "unavailable"}, status=503)
         if not settings.OBJECT_ROOT.is_dir() or not os.access(settings.OBJECT_ROOT, os.W_OK):

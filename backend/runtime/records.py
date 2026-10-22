@@ -54,6 +54,8 @@ def producer_for(run: RuntimeRun) -> str:
         return "t04-control-v1"
     if run.document["type"]=="PROFILE":
         return "t07-profile-v1"
+    if run.document["type"]=="REVOKE":
+        return "t07-revoke-v1"
     return "t07-ingest-v1"
 
 
@@ -100,7 +102,7 @@ def validate_bindings(record: JsonObject, task: JsonObject, execution: JsonObjec
     """驗 root、task、manifest、budget 的交叉身分與雜湊，僅放行目前已實作的根任務。"""
     for document, filename, definition in [(record, RUNTIME_SCHEMA, "RunRecord"), (task, "task-input-v2.schema.json", None), (execution, RUNTIME_SCHEMA, "ExecutionManifest"), (budget, RUNTIME_SCHEMA, "BudgetAccount")]:
         validate(document, filename, definition)
-    if record["type"] not in {"INGEST", "PROFILE"} or not record["is_root"] or record["parent_run_id"] is not None:
+    if record["type"] not in {"INGEST", "PROFILE", "REVOKE"} or not record["is_root"] or record["parent_run_id"] is not None:
         raise ControlError("FEATURE_DISABLED")
     expected: JsonObject = {
         "root_run_id": record["id"], "child_run_ids": [],

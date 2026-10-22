@@ -383,3 +383,24 @@ class EvidenceBundle(models.Model):
     class Meta:
         constraints = [models.UniqueConstraint(fields=["id","tenant"],name="evidence_bundle_tenant_identity"),
                        models.CheckConstraint(condition=models.Q(status__in=["ACTIVE","REVOKED","QUARANTINED"]),name="evidence_bundle_valid_status")]
+
+
+class EvidenceRevocation(models.Model):
+    """撤銷登記：同交易排除權威有效性，狀態由撤銷工作推進，身分與理由不可改。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True,default=uuid4,editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant,on_delete=models.PROTECT)
+    tenant_id: UUID
+    evidence_bundle: models.ForeignKey[EvidenceBundle, EvidenceBundle] = models.ForeignKey(EvidenceBundle,on_delete=models.PROTECT)
+    evidence_bundle_id: UUID
+    run: models.OneToOneField[RuntimeRun, RuntimeRun] = models.OneToOneField(RuntimeRun,on_delete=models.PROTECT)
+    run_id: UUID
+    actor: models.ForeignKey[Account, Account] = models.ForeignKey(Account,on_delete=models.PROTECT)
+    actor_id: UUID
+    counterexample_artifact_id: models.UUIDField[UUID | None, UUID | None] = models.UUIDField(null=True)
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+    status: models.CharField[str, str] = models.CharField(max_length=12,default="REQUESTED")
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["id","tenant"],name="evidence_revocation_tenant_identity"),
+                       models.CheckConstraint(condition=models.Q(status__in=["REQUESTED","BLOCKED","PROPAGATING","COMPLETED","FAILED"]),name="evidence_revocation_valid_status")]

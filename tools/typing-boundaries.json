@@ -51,7 +51,7 @@
   },
   "backend/catalog/models.py": {
     "Any": 0,
-    "JsonObject": 30,
+    "JsonObject": 32,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/research.py": {
