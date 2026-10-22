@@ -2,6 +2,10 @@
 
 > AXIOM v2.9 設計規格｜文件 ID AX-43｜狀態：待實作、待驗收｜2026-10-20
 
+## 文件定位與決策摘要
+
+定義以 (tenant_id,id) 複合鍵為基礎的權威 ERD、唯一性與刪除約束、物件儲存提交交易、Schema 升級，以及最終評估槽位、曝光帳本與預算等不變條件。
+
 ## 權威關係圖
 
 所有受保護表以 (tenant_id,id) 複合唯一鍵供外鍵引用，id 為 UUID。下圖與 AX-47 同名，DOMAIN 欄位形狀見 research-v2 schema；圖表示關係，不省略版本層。Dataset、Research 容器可改名；版本內容與證據不可原地修改。
@@ -92,14 +96,18 @@ Derived feature、memory、training snapshot 是 M4/M7 的擴充表，所有引�
 
 採 expand→相容雙讀→回填→驗證→contract。舊 DSL parser 在歷史保留期內保留；移除舊欄位前必須證明舊產物可讀。回滾不相容時用 AX-27 配對快照，不能只降應用映像。
 
+Artifact registry 以 (tenant_id,id) 供外鍵，uri/hash/size 不可改寫；檔案變更需新 Artifact。連到 registry 的版本物件不得引用外租戶或不存在物件，下載先查 registry 與證據有效性，不直接暴露物件服務帳號。
+
+## 章節驗收案例
+
+以下為預定測試，狀態皆 NOT_RUN；實際證據依 AX-46 登錄。
+
 | ID | 操作 | 預期 |
 |---|---|---|
 | AC-43-01 | 重送同檔、相同事件及相同 idempotency key | 唯一約束生效，版本／副作用各只有一次 |
 | AC-43-02 | A 的 FitRun 引用 B 的資料版本 | DB 複合 FK 拒絕，即使 UUID 真實存在 |
 | AC-43-03 | MinIO 成功後 DB rollback | API 不顯示 AVAILABLE，孤兒延遲回收且無有效引用 |
 | AC-43-04 | 升級後讀舊 DSL 產物並模擬回滾 | 內容 hash 不變、相容 parser 可讀，否則阻擋部署 |
-
-Artifact registry 以 (tenant_id,id) 供外鍵，uri/hash/size 不可改寫；檔案變更需新 Artifact。連到 registry 的版本物件不得引用外租戶或不存在物件，下載先查 registry 與證據有效性，不直接暴露物件服務帳號。
 
 ## v2 執行與評估關係補充
 
@@ -148,3 +156,7 @@ Run.research_trace_artifact_ids為授權投影，內部以(run_id,chunk_sequence
 ## v2.9 完成狀態及分級鏈約束
 
 AVAILABLE DatasetVersion必有metadata preview，READY以上研究版本必有fit結構評估；這是內部完成交易的不變條件；公開DTO因授權過濾可回null，不能把公開null當內部未完成或遺失的證據，也不回傳洩漏資源存在性的私有原因。內部缺引用需完整性告警／修復，不以安全投影掩蓋。trace唯一鍵為(tenant,trace_stream_id,sequence)，stream固定run／class／audience；跨私有前提的公開節點拒絕。plan／recipe、訓練分區authority及source group引用需同租戶FK／registry驗證；UUID形狀不證引用有效。
+
+## 共用規則
+
+版本、錯誤、證據與審查規則見 [AX-48 共用契約與文件治理](<../00-總覽/48-共用契約與文件治理.md>)；本章的專屬限制及驗收條件仍須同時滿足。

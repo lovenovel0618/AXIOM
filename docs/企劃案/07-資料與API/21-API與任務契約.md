@@ -2,6 +2,10 @@
 
 > AXIOM v2.9 設計規格｜文件 ID AX-21｜狀態：待實作、待驗收｜2026-10-20
 
+## 文件定位與決策摘要
+
+MVP API 以 /api/v2 為前綴，JSON 使用 UTF-8，傳輸使用 HTTPS（本機開發可 HTTP）；v2 瀏覽器採同源 session cookie 與 CSRF，服務帳號採限制 scope 的 bearer token。
+
 ## 契約範圍與認證
 
 MVP API 前綴 /api/v2，JSON 使用 UTF-8，傳輸使用 HTTPS（本機開發可 HTTP）。機器可讀端點、請求與回應見 [openapi-v2.json](<../contracts/openapi-v2.json>)。v2 瀏覽器採同源 session cookie 與 CSRF，服務帳號採限制 scope 的 bearer token；細節與角色矩陣見 AX-26。M4 以後的 /experiences、/models、/proofs 尚非 MVP API，未啟用時回 FEATURE_DISABLED，不能暗中啟用外部路由。
@@ -96,7 +100,9 @@ GET /runs/{id} 與 GET /research-versions/{id} 各回一致性snapshot/current_e
 
 研究版本可在PUBLISHED後收到EvidenceRevoked；客戶端訂閱研究stream即可更新歷史報告，不需要猜新REVOKE run_id。schema及正反例見event-v2；舊ValidationCompleted等別名不再是合法事件。
 
-## 契約驗收
+## 章節驗收案例
+
+以下為預定測試，狀態皆 NOT_RUN；實際證據依 AX-46 登錄。
 
 | ID | 請求 | 預期 |
 |---|---|---|
@@ -190,3 +196,7 @@ Run必填research_trace_artifact_ids，透過既有GET run、研究runs列表及
 DatasetVersion.structure_preview_artifact_id及ResearchVersion.structure_assessment_artifact_id為可null的Artifact引用，分別由既有dataset版本列表／研究snapshot恢復；依AX-49，AVAILABLE／READY等完成狀態必有對應引用，無權時按既有ACL過濾。沒有新增preflight或高階job端點。公開Run及Artifact仍是現行導航邊界，trace鏈按獨立可見stream驗證，不返回隱藏stream ID或hash。
 
 本機 INGEST 的 GET /runs/{id} 另回 X-Usage-Status=NOT_STARTED／MEASURED_UPPER_BOUND／UNKNOWN。UNKNOWN 表示已開始的 attempt 失聯而無法確認用量，不得把零欄位解讀為免費執行；MEASURED_UPPER_BOUND 的 CPU／wall 為向上整秒、memory 為 process high-water 的保守和，非精確同時 RSS 或正式 SLO。此 header 不改 Run JSON，亦不代表完整 quota／budget gate 已驗收。
+
+## 共用規則
+
+版本、錯誤、證據與審查規則見 [AX-48 共用契約與文件治理](<../00-總覽/48-共用契約與文件治理.md>)；本章的專屬限制及驗收條件仍須同時滿足。

@@ -2,6 +2,10 @@
 
 > AXIOM v2.9 設計規格｜文件 ID AX-10｜狀態：待實作、待驗收｜2026-10-20
 
+## 文件定位與決策摘要
+
+v1 僅支援實數純量顯式函數與常數、變數、參數及列舉算子；AST 是權威，LaTeX 只作顯示。求和、遞迴、導數、積分、分布、ODE 皆屬後續擴充，v1 輸入須回 UNSUPPORTED_OPERATOR。
+
 ## DSL v1 範圍
 
 v1 僅支援實數純量顯式函數；常數、變數、參數、add/sub/mul/div/pow/sin/cos/exp/log/abs/piecewise。AST 是權威，LaTeX 只作顯示。求和、遞迴、導數、積分、分布、ODE 皆屬後續 DSL 擴充，v1 輸入必須回 UNSUPPORTED_OPERATOR；M5/M6/M7 的能力不可偷偷用任意 Python 執行。
@@ -41,7 +45,9 @@ div 分母為零、log 非正值、零的非正冪與非有限結果都回 DOMAI
 
 x/x 與 1 在包含 0 的原始域不能合併；sqrt(x²) 等擴充式不得直接當作 x。超時回 UNKNOWN，不當成反證。前端 AST JSON round-trip 才要求身分 hash 不變；LaTeX 不保證可無損還原，不能當匯入權威。
 
-## 驗收
+## 章節驗收案例
+
+以下為預定測試，狀態皆 NOT_RUN；實際證據依 AX-46 登錄。
 
 | ID | 輸入 | 預期結果 |
 |---|---|---|
@@ -59,3 +65,7 @@ ResearchVersion.domain／CreateResearchVersion.domain使用ResearchDomain，形�
 MVP每個EquationVersion.dsl.domain必等於所屬研究的canonical domain，不能由插件縮到容易通過的子域；運算造成的孔洞另以DOMAIN_VIOLATION／valid_mask與coverage處理，不透過改域排除失敗點。domain參與EquationVersion identity_hash，研究域不可原地變更；所有FIT／VALIDATE／FrozenCandidate沿研究及公式引用核對域。單點域只有兩端閉合才非空；非法域在計算前拒絕。
 
 觀測域是允許求值及聲明的固定範圍；訓練支撐範圍是fit觀測的覆蓋；兩者之間可顯示為外插且不能提高證據。超出固定domain不執行DSL求值，UI標示域外並留空，不能因拖曳圖表暗中擴域。需要新範圍必另建研究版本，並重新審查資料與驗證資格。
+
+## 共用規則
+
+版本、錯誤、證據與審查規則見 [AX-48 共用契約與文件治理](<../00-總覽/48-共用契約與文件治理.md>)；本章的專屬限制及驗收條件仍須同時滿足。

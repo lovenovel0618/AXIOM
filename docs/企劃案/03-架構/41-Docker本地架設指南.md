@@ -2,6 +2,10 @@
 
 > AXIOM v2.9 設計規格｜文件 ID AX-41｜狀態：待實作、待驗收｜2026-10-20
 
+## 文件定位與決策摘要
+
+規範以同一份 Docker Compose 定義，在 macOS（開發）與 Windows WSL2（架設）建立可重現環境，作為 P0 基準測試與各模組開發的統一入口。
+
 ## 文件目的
 
 規範以同一份 Docker Compose 定義，在 macOS（開發）與 Windows WSL2（架設）建立可重現環境，作為 P0 基準測試與各模組開發的統一入口。
@@ -181,11 +185,9 @@ proof／sandbox 採無網路模式時，不可直接連接 PostgreSQL、Redis �
 
 [AX-08 部署與運算資源規劃](<08-部署與運算資源規劃.md>)；[AX-26 安全隱私與可信執行](<../09-非功能/26-安全隱私與可信執行.md>)；[AX-37 決策待確認清單](<../12-附錄/37-決策待確認清單.md>)。
 
-## 共用規則
+## 章節驗收案例
 
-版本、錯誤、證據與審查規則見 [AX-48 共用契約與文件治理](<../00-總覽/48-共用契約與文件治理.md>)；本章的專屬限制及驗收條件仍須同時滿足。
-
-## 初始化、秘密與契約驗收補充
+以下為預定測試，狀態皆 NOT_RUN；實際證據依 AX-46 登錄。
 
 minio-init 可用 root 憑證建 bucket／service policy，但 web、worker 只拿各自最小權限帳號，不能共用 MINIO_ROOT_USER／PASSWORD。平台差異以覆寫檔與 capabilities 檢查表表達；資料層宿主埠綁 127.0.0.1，不能因省略 host IP 而意外對外監聽。CHATGPT_API_KEY 僅在已核准外部路由啟用時必填；MVP 外部路由關閉，不因缺該 key 而阻止本地規則啟動。
 
@@ -207,3 +209,7 @@ minio-init 可用 root 憑證建 bucket／service policy，但 web、worker 只�
 ## 可重建環境的證據界線
 
 本指南的compose片段、映像標籤與env清單是待實作範本；已交付的compose與映像只涵蓋T04～T07的本機切片，其餘服務仍不可啟動，不應把照抄指令當部署成功。M0交付需保存實際compose及驗證結果、平台能力探測、不可變image digest、套件lock、SBOM及最小權限secret注入；浮動latest／major tag不能作研究environment_digest依據。Python3.14的docs工具通過不代表預定產品Python版本及所有原生數值依賴相容，產品環境需獨立lock與數學回歸。macOS／Linux的sandbox隔離差異需實測，不支援硬隔離時拒絕執行不可信策略，不能退化成宿主直接exec。
+
+## 共用規則
+
+版本、錯誤、證據與審查規則見 [AX-48 共用契約與文件治理](<../00-總覽/48-共用契約與文件治理.md>)；本章的專屬限制及驗收條件仍須同時滿足。
