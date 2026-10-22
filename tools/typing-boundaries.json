@@ -114,6 +114,11 @@
     "JsonObject": 13,
     "reason": "凍結決策以 schema 文件為輸入並落庫凍結副本與凍結提交；額度只可收斂，不代表核心已具體型別化。"
   },
+  "backend/catalog/final_evaluation.py": {
+    "Any": 0,
+    "JsonObject": 1,
+    "reason": "槽位文件仍以 schema 契約流動；額度只可收斂，不代表核心已具體型別化。"
+  },
   "backend/catalog/tests/test_candidates.py": {
     "Any": 0,
     "JsonObject": 10,

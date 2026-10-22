@@ -1,0 +1,241 @@
+"""最終評估槽位服務層：業務鍵 insert-on-conflict、成員資格、單向結算與提交狀態流。
+
+Service-level FinalEvaluationSlot acquisition, eligibility and single-forward settlement."""
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
+from fractions import Fraction
+import hashlib
+from io import BytesIO
+import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from uuid import UUID, uuid4
+from django.contrib.auth.models import User
+from django.db import IntegrityError, connection, connections, transaction
+from django.test import TransactionTestCase, override_settings
+from catalog.artifacts import register as register_artifact
+from catalog.candidates import persist
+from catalog.final_evaluation import acquire, settle
+from catalog.freezing import frozen_candidate, frozen_submission
+from catalog.ingest import complete_upload, ingest_tick
+from catalog.models import Account, Artifact, Candidate, Dataset, DatasetVersion, FitRun, FrozenCandidate, FrozenSubmission, Provenance, RepresentationSpec, ResearchBudget, ResearchVersion, SealRegistration, Tenant, Upload
+from catalog.research import create_research, create_version, research_for
+from catalog.services import actor_for, create_dataset, create_upload, put_upload
+from catalog.tests.test_research import CONTENT, LIMITS, draft_data
+from catalog.validation import ApiError
+from mathematics.search import Domain, Request, Variable, search
+from runtime.contracts import validate
+from runtime.models import FinalEvaluationSlot, RuntimeRun
+
+DIMENSIONLESS = (0,) * 7
+
+
+def request(fit: list[tuple[float, float]], development: list[tuple[float, float]]) -> Request:
+    """固定域與無量綱單位的離線請求；槽位測試不觸及 final_test 內容。"""
+    return Request(Variable("x", DIMENSIONLESS), DIMENSIONLESS, Domain(Fraction(-1000), Fraction(1000), True, True),
+        tuple(fit), tuple(development))
+
+
+def enforce(action: Callable[[], object]) -> None:
+    """在單一交易內執行資料庫變動；觸發器或約束拒絕時拋 IntegrityError。"""
+    with transaction.atomic():
+        action()
+        connection.check_constraints()
+
+
+@override_settings(INGEST_ENABLED=True, INGEST_LIMITS_JSON=json.dumps(LIMITS), PROFILE_ENABLED=False)
+class FinalEvaluationTests(TransactionTestCase):
+    def setUp(self) -> None:
+        directory = TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        override = self.settings(OBJECT_ROOT=Path(directory.name))
+        override.enable()
+        self.addCleanup(override.disable)
+        self.actor = self.account(Tenant.objects.create(name="final-evaluation"))
+        self.other = self.account(Tenant.objects.create(name="final-evaluation-other"))
+        self.version = self.fixture()
+        self.budget = ResearchBudget.objects.get(research_version=self.version)
+        self.candidates = self.store()
+        self.frozen = self.freeze_one(self.candidates[0])
+        self.outsider = self.freeze_one(self.candidates[1])
+        self.submission = self.submit([self.frozen])
+
+    def account(self, tenant: Tenant) -> Account:
+        user = User.objects.create(username=uuid4().hex, password="!")
+        return Account.objects.create(user=user, tenant=tenant)
+
+    def fixture(self) -> ResearchVersion:
+        """以真實匯入建立資料與研究版本，不以偽造 fixture 代替來源鏈。"""
+        with transaction.atomic():
+            actor = actor_for(self.actor.user_id)
+            dataset = Dataset.objects.get(pk=UUID(create_dataset(actor, {"name": "final-evaluation"})["id"]))
+            upload = create_upload(actor, dataset, {"filename": "synthetic", "format": "CSV", "size_bytes": len(CONTENT),
+                "sha256": hashlib.sha256(CONTENT).hexdigest()}, "http://localhost")
+            row = Upload.objects.get(pk=UUID(upload["id"]))
+            put_upload(actor, row, upload["required_headers"]["X-Upload-Token"], BytesIO(CONTENT))
+            run = complete_upload(actor, row, row.sha256, "complete")
+        self.assertTrue(ingest_tick(str(actor.tenant_id), run["id"], 0))
+        version_row = DatasetVersion.objects.get(dataset=dataset)
+        with transaction.atomic():
+            actor = actor_for(self.actor.user_id)
+            research = research_for(actor, UUID(create_research(actor, {"name": "final-evaluation"})["id"]))
+            document = create_version(actor, research, draft_data(version_row.id))
+        return ResearchVersion.objects.get(pk=UUID(document["id"]))
+
+    def store(self) -> list[Candidate]:
+        """精確線性資料的離線報告，只含 fit／development。"""
+        fit = [(float(index), float(2 * index + 1)) for index in range(6)]
+        development = [(float(index), float(2 * index + 1)) for index in range(6, 8)]
+        with transaction.atomic():
+            return persist(self.actor, self.version, self.budget, search(request(fit, development)))
+
+    def freeze_one(self, candidate: Candidate) -> FrozenCandidate:
+        fit = FitRun.objects.get(pk=UUID(candidate.document["fit_run_ids"][0]))
+        representation = RepresentationSpec.objects.get(pk=fit.representation_artifact_id)
+        with transaction.atomic():
+            return frozen_candidate(self.actor, candidate, fit, candidate.equation_version, representation, self.version)
+
+    def register_plan(self) -> Artifact:
+        content = {"id": str(uuid4()), "tenant_id": str(self.version.tenant_id),
+            "research_version_id": str(self.version.id), "purpose": self.version.document["purpose"]}
+        source = Provenance.objects.get(pk=self.version.provenance_id, tenant_id=self.version.tenant_id)
+        return register_artifact(self.actor, self.version.dataset_version, UUID(str(content["id"])), content, source, research_version=self.version)
+
+    def register_seal(self) -> SealRegistration:
+        existing = SealRegistration.objects.filter(research_version=self.version).first()
+        if existing is not None:
+            return existing
+        run = RuntimeRun.objects.filter(document__type="INGEST").order_by("id").first()
+        self.assertIsNotNone(run)
+        return SealRegistration.objects.create(tenant_id=self.version.tenant_id, research_version=self.version, run=run,
+            sealed_test_id=uuid4(), source_sha256="1" * 64, protocol_hash="2" * 64, authority_epoch=uuid4(),
+            authority_sequence=1, attestation_hash="3" * 64, available=True)
+
+    def submit(self, frozen: list[FrozenCandidate]) -> FrozenSubmission:
+        artifact = self.register_plan()
+        self.register_seal()
+        with transaction.atomic():
+            return frozen_submission(self.actor, self.version, frozen, artifact)
+
+    def test_first_dispatch_creates_a_pending_slot_and_advances_the_submission(self) -> None:
+        run_id = uuid4()
+        slot, created = acquire(self.actor, self.submission, self.frozen, run_id)
+        self.assertTrue(created)
+        validate(slot.document, "runtime-v2.schema.json", "FinalEvaluationSlot")
+        self.assertEqual((slot.status, slot.validation_run_id), ("PENDING", None))
+        self.assertEqual((slot.run_id, slot.metric_version), (run_id, "2.0"))
+        self.assertEqual((slot.submission_id, slot.frozen_candidate_id), (self.submission.id, self.frozen.id))
+        self.assertEqual(slot.document["run_id"], str(run_id))
+        stored = FrozenSubmission.objects.get(pk=self.submission.id)
+        self.assertEqual((stored.status, stored.document["status"]), ("EVALUATING", "EVALUATING"))
+
+    def test_repeated_dispatch_reads_back_the_same_run(self) -> None:
+        first, first_created = acquire(self.actor, self.submission, self.frozen, uuid4())
+        second, second_created = acquire(self.actor, self.submission, self.frozen, uuid4())
+        self.assertTrue(first_created)
+        self.assertFalse(second_created)
+        self.assertEqual((first.id, second.id), (first.id, first.id))
+        self.assertEqual(second.run_id, first.run_id)
+        self.assertEqual(FinalEvaluationSlot.objects.count(), 1)
+
+    def test_parallel_dispatch_keeps_one_slot_and_one_run(self) -> None:
+        def compete(run_id: UUID) -> tuple[bool, UUID]:
+            try:
+                slot, created = acquire(self.actor, self.submission, self.frozen, run_id)
+                return created, slot.run_id
+            finally:
+                connections.close_all()
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            outcomes = list(pool.map(compete, [uuid4() for _index in range(4)]))
+        self.assertEqual(sum(created for created, _run in outcomes), 1)
+        self.assertEqual(len({str(run) for _created, run in outcomes}), 1)
+        self.assertEqual(FinalEvaluationSlot.objects.count(), 1)
+
+    def test_two_members_hold_independent_slots(self) -> None:
+        pair = self.submit([self.frozen, self.outsider])
+        first, first_created = acquire(self.actor, pair, self.frozen, uuid4())
+        second, second_created = acquire(self.actor, pair, self.outsider, uuid4())
+        self.assertTrue(first_created and second_created)
+        self.assertNotEqual(first.run_id, second.run_id)
+        self.assertEqual((first.frozen_candidate_id, second.frozen_candidate_id), (self.frozen.id, self.outsider.id))
+        self.assertEqual(FinalEvaluationSlot.objects.count(), 2)
+
+    def test_candidate_outside_the_submission_is_not_eligible(self) -> None:
+        with self.assertRaises(ApiError) as denied:
+            acquire(self.actor, self.submission, self.outsider, uuid4())
+        self.assertEqual(denied.exception.code, "BLIND_ELIGIBILITY_DENIED")
+        self.assertFalse(FinalEvaluationSlot.objects.exists())
+        self.assertEqual(FrozenSubmission.objects.get(pk=self.submission.id).status, "FROZEN")
+
+    def test_foreign_tenant_cannot_touch_the_slot(self) -> None:
+        slot, _created = acquire(self.actor, self.submission, self.frozen, uuid4())
+        with self.assertRaises(ApiError) as acquired:
+            acquire(self.other, self.submission, self.frozen, uuid4())
+        self.assertEqual(acquired.exception.code, "NOT_FOUND")
+        with self.assertRaises(ApiError) as settled:
+            settle(self.other, slot, "COMPLETED", uuid4())
+        self.assertEqual(settled.exception.code, "NOT_FOUND")
+        self.assertEqual(FinalEvaluationSlot.objects.get(pk=slot.id).status, "PENDING")
+
+    def test_settlement_is_single_and_forward_only(self) -> None:
+        slot, _created = acquire(self.actor, self.submission, self.frozen, uuid4())
+        result = uuid4()
+        settled = settle(self.actor, slot, "COMPLETED", result)
+        self.assertEqual((settled.status, settled.validation_run_id), ("COMPLETED", result))
+        stored = FinalEvaluationSlot.objects.get(pk=slot.id)
+        self.assertEqual((stored.status, stored.validation_run_id), ("COMPLETED", result))
+        self.assertEqual(stored.document["validation_run_id"], str(result))
+        self.assertEqual(FrozenSubmission.objects.get(pk=self.submission.id).status, "EVALUATED")
+        with self.assertRaises(ApiError) as again:
+            settle(self.actor, slot, "FAILED", None)
+        self.assertEqual(again.exception.code, "INVALID_TRANSITION")
+        self.assertEqual(FinalEvaluationSlot.objects.get(pk=slot.id).status, "COMPLETED")
+
+    def test_result_reference_shape_is_enforced(self) -> None:
+        slot, _created = acquire(self.actor, self.submission, self.frozen, uuid4())
+        for status, reference in [("COMPLETED", None), ("FAILED", uuid4()), ("DONE", None)]:
+            with self.subTest(status=status), self.assertRaises(ApiError) as invalid:
+                settle(self.actor, slot, status, reference)
+            self.assertEqual(invalid.exception.code, "INVALID_SCHEMA")
+        self.assertEqual(FinalEvaluationSlot.objects.get(pk=slot.id).status, "PENDING")
+
+    def test_failed_settlement_keeps_the_reference_null(self) -> None:
+        slot, _created = acquire(self.actor, self.submission, self.frozen, uuid4())
+        settled = settle(self.actor, slot, "FAILED", None)
+        self.assertEqual((settled.status, settled.validation_run_id), ("FAILED", None))
+        self.assertEqual(FinalEvaluationSlot.objects.get(pk=slot.id).validation_run_id, None)
+        self.assertEqual(FrozenSubmission.objects.get(pk=self.submission.id).status, "FAILED")
+
+    def test_settled_submission_reads_the_result_back_instead_of_dispatching_again(self) -> None:
+        slot, _created = acquire(self.actor, self.submission, self.frozen, uuid4())
+        settle(self.actor, slot, "COMPLETED", uuid4())
+        fresh = FrozenSubmission.objects.get(pk=self.submission.id)
+        again, created = acquire(self.actor, fresh, self.frozen, uuid4())
+        self.assertFalse(created)
+        self.assertEqual((again.id, again.status), (slot.id, "COMPLETED"))
+        self.assertEqual(FinalEvaluationSlot.objects.count(), 1)
+
+    def test_submission_outside_dispatchable_states_rejects_new_slot(self) -> None:
+        identity = self.submission.id
+        evaluating = dict(self.submission.document) | {"status": "EVALUATING"}
+        evaluated = dict(evaluating) | {"status": "EVALUATED"}
+        enforce(lambda: FrozenSubmission.objects.filter(pk=identity).update(status="EVALUATING", document=evaluating))
+        enforce(lambda: FrozenSubmission.objects.filter(pk=identity).update(status="EVALUATED", document=evaluated))
+        self.assertFalse(FinalEvaluationSlot.objects.exists())
+        fresh = FrozenSubmission.objects.get(pk=identity)
+        with self.assertRaises(ApiError) as blocked:
+            acquire(self.actor, fresh, self.frozen, uuid4())
+        self.assertEqual(blocked.exception.code, "DISPATCH_STAGE_VIOLATION")
+        self.assertFalse(FinalEvaluationSlot.objects.exists())
+
+    def test_submission_status_flow_and_immutability_are_guarded(self) -> None:
+        identity = self.submission.id
+        invalid = dict(self.submission.document) | {"status": "EVALUATED"}
+        desynced = dict(self.submission.document)
+        for action in [lambda: FrozenSubmission.objects.filter(pk=identity).update(status="EVALUATED", document=invalid),
+                       lambda: FrozenSubmission.objects.filter(pk=identity).update(status="EVALUATING", document=desynced),
+                       lambda: FrozenSubmission.objects.filter(pk=identity).update(snapshot_hash="0" * 64),
+                       lambda: FrozenSubmission.objects.filter(pk=identity).delete()]:
+            with self.subTest(action=action), self.assertRaises(IntegrityError):
+                enforce(action)
+        self.assertEqual(FrozenSubmission.objects.get(pk=identity).status, "FROZEN")
