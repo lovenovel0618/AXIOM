@@ -93,7 +93,16 @@ docker compose exec web python manage.py changepassword dino
 docker compose exec -T postgres psql -U axiom -d axiom -c 'truncate catalog_loginthrottle'
 ```
 
-`AXIOM_BOOTSTRAP_*` 只注入 `migrate` 服務，刻意不給 web／worker／frontend；因此在 web 直接執行 `bootstrap_account` 會回報 SKIPPED，要手動建立其他帳號請用 `provision_account`。`bootstrap_account` 與 `provision_account` 要求至少 12 字元；`changepassword` 走 Django 密碼驗證器，本專案未設 `AUTH_PASSWORD_VALIDATORS`，不檢查長度。
+若上面的 `changepassword` 在 macOS 的 Docker TTY 報 `UnicodeDecodeError`，改用下列命令避開 `getpass`：
+
+```sh
+read -s AXIOM_NEW_PASSWORD && echo
+docker compose exec -T -e AXIOM_NEW_PASSWORD="$AXIOM_NEW_PASSWORD" web \
+  python manage.py shell -c "import os; from django.contrib.auth.models import User; u=User.objects.get(username='dino'); u.set_password(os.environ['AXIOM_NEW_PASSWORD']); u.save(update_fields=['password']); print('password-updated')"
+unset AXIOM_NEW_PASSWORD
+```
+
+`AXIOM_BOOTSTRAP_*` 只注入 `migrate` 服務，刻意不給 web／worker／frontend；因此在 web 直接執行 `bootstrap_account` 會回報 SKIPPED，要手動建立其他帳號請用 `provision_account`。`bootstrap_account` 與 `provision_account` 要求至少 12 字元；`changepassword` 走 Django 密碼驗證器，本專案未設 `AUTH_PASSWORD_VALIDATORS`，不檢查長度。backend 容器現已固定注入 `LANG=C.UTF-8`、`LC_ALL=C.UTF-8` 與 `PYTHONIOENCODING=utf-8`，降低 Docker TTY 編碼錯誤機率。
 
 開啟 <http://127.0.0.1:15173/auth/login> 或後端18000的同一路徑。GET表單取得 axiom_csrf，POST帳密成功回status=ok並輪替 axiom_session；cookie名與其他 localhost 專案分開。/auth/logout只可POST＋X-CSRFToken。後續請求需目前session及CSRF header；Idempotency-Key為研究資源POST的必填header。
 

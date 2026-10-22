@@ -159,7 +159,7 @@ proof／sandbox 採無網路模式時，不可直接連接 PostgreSQL、Redis �
 | 追蹤日誌 | `docker compose logs -f web worker` |
 | 執行資料庫遷移 | `docker compose exec web python manage.py migrate` |
 | 建立本機帳號 | 於 `.env` 設 `AXIOM_BOOTSTRAP_USER`／`AXIOM_BOOTSTRAP_PASSWORD`，`migrate` 自動建立；或 `docker compose exec web python manage.py provision_account <名稱> <租戶>` |
-| 變更本機帳號密碼 | `docker compose exec web python manage.py changepassword <名稱>` |
+| 變更本機帳號密碼 | `docker compose exec web python manage.py changepassword <名稱>`；若 Docker TTY 報 `UnicodeDecodeError`，改用 `docker compose exec -T ... python manage.py shell -c ...` 直接 `set_password()` |
 | 進容器除錯 | `docker compose exec web bash` |
 | 停止並保留資料 | `docker compose down` |
 | 完全重置（含資料卷） | `docker compose down -v` |
