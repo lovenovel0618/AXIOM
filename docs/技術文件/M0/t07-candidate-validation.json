@@ -111,6 +111,17 @@
     "docs/技術文件/缺口清單.md": "db2dc3dc3418c4c5d54c06f8e314773b7f520889ad0fbd59c4ddb31babaf3cea",
     "docs/技術文件/README.md": "489b5ac0a4291a0b12244da753b980907e1ca62a71ae2da8009ccd2e8f847d95"
   },
+  "post_commit_ci": {
+    "commit": "da63af7",
+    "platform": "Linux amd64（GitHub Actions）",
+    "workflows": [
+      { "name": "docs-check", "conclusion": "success", "duration_seconds": 42 },
+      { "name": "compatibility-check", "conclusion": "success", "duration_seconds": 51 },
+      { "name": "product-check", "conclusion": "success", "duration_seconds": 380 }
+    ],
+    "note": "完整後端測試（含 catalog.tests.test_candidates）於 amd64 為實際往返；product Gate 仍 NOT_RUN",
+    "hashes_note": "changed_sources 的 sha256 以提交 da63af7 的內容為準；本補批只增列 CI 段落與本摘要，未改動程式或測試"
+  },
   "known_limits": [
     "FrozenSubmission 與 snapshot_hash、SealedTest／BenchmarkPartition／EvaluationPolicy／VerificationPlan 及其 recipe 未實作；SNAPSHOT_MISMATCH 分支只在純函式對照被觸發，落庫路徑不觸及",
     "SEARCH／FIT run 只是最小權威身分列：未派送、無租約、無 checkpoint、無帳本列，故不宣稱搜尋已執行",
