@@ -356,3 +356,21 @@ class CandidateTests(TransactionTestCase):
         with self.assertRaises(ApiError) as bad_plan:
             frozen_submission(self.actor, self.version, [frozen], foreign_plan)
         self.assertEqual(bad_plan.exception.code, "VERIFICATION_PLAN_MISMATCH")
+
+    def test_frozen_submission_http_detail_requires_owner_scope(self) -> None:
+        rows = self.store()
+        candidate = rows[0]
+        fit = FitRun.objects.get(pk=UUID(candidate.document["fit_run_ids"][0]))
+        representation = RepresentationSpec.objects.get(pk=fit.representation_artifact_id)
+        with transaction.atomic():
+            frozen = frozen_candidate(self.actor, candidate, fit, candidate.equation_version, representation, self.version)
+        _plan, artifact = self.register_plan(self.version)
+        self.register_seal(self.version)
+        with transaction.atomic():
+            submission = frozen_submission(self.actor, self.version, [frozen], artifact)
+        self.client.force_login(self.actor.user)
+        response = self.client.get(f"/api/v2/frozen-submissions/{submission.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["id"], str(submission.id))
+        self.client.force_login(self.other.user)
+        self.assertEqual(self.client.get(f"/api/v2/frozen-submissions/{submission.id}").status_code, 404)

@@ -165,6 +165,23 @@ export interface RunPage {
   next_cursor: string | null
 }
 
+export interface FrozenSubmission {
+  kind: 'FrozenSubmission'
+  id: string
+  tenant_id: string
+  schema_version: string
+  created_at: string
+  research_version_id: string
+  sealed_test_id: string
+  frozen_candidate_ids: string[]
+  metric_version: string
+  snapshot_hash: string
+  status: 'FROZEN' | 'EVALUATING' | 'EVALUATED' | 'FAILED'
+  evaluation_policy_hash: string
+  verification_plan_artifact_id: string
+  verification_plan_hash: string
+}
+
 export async function listResearches(client: ApiClient, limit = 50): Promise<ResearchPage> {
   return client.request<ResearchPage>('GET', `/api/v2/researches?limit=${String(limit)}`)
 }
@@ -200,6 +217,10 @@ export async function createResearchVersion(
 
 export async function getResearchVersion(client: ApiClient, id: string): Promise<ResearchVersion> {
   return client.request<ResearchVersion>('GET', `/api/v2/research-versions/${id}`)
+}
+
+export async function getFrozenSubmission(client: ApiClient, id: string): Promise<FrozenSubmission> {
+  return client.request<FrozenSubmission>('GET', `/api/v2/frozen-submissions/${id}`)
 }
 
 /** 觸發 PROFILE 需要目前控制 revision；未啟用時後端回 503，缺 revision 回 428。 */

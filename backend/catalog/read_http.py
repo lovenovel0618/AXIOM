@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from catalog.artifacts import authorized
 from catalog.evidence import authorized as evidence_bundle
+from catalog.freezing import authorized_submission
 from catalog.http import api, allowed_methods
 from catalog.models import Account, DatasetVersion, IngestBinding, ProfileBinding, Reservation
 from catalog.services import dataset_for
@@ -101,6 +102,14 @@ def evidence_bundle_detail(_request: HttpRequest, actor: Account, identity: UUID
     response = JsonResponse(row.document)
     response["X-Control-Revision"] = str(row.document["revision"])
     return response
+
+
+@allowed_methods(["GET"])
+@api
+def frozen_submission_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """重新驗租戶與研究 owner 後回 FrozenSubmission。"""
+    row = authorized_submission(actor, identity)
+    return JsonResponse(row.document)
 
 
 @allowed_methods(["GET"])

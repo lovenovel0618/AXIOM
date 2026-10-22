@@ -6,7 +6,7 @@ Fail-closed freeze decisions mirroring contract_scenarios; final_test execution 
 `SNAPSHOT_MISMATCH` 屬 `FrozenSubmission.snapshot_hash`；本模組會建立提交包，但仍不執行 final_test
 或 FinalEvaluationSlot。"""
 import re
-from uuid import uuid4
+from uuid import UUID, uuid4
 from catalog.ingest_manifest import environment
 from catalog.models import Account, Artifact, Candidate, EquationVersion, FitRun, FrozenCandidate, FrozenSubmission, RepresentationSpec, ResearchVersion, SealRegistration
 from catalog.validation import ApiError
@@ -171,6 +171,17 @@ def frozen_submission(actor: Account, version: ResearchVersion, frozen: list[Fro
     return FrozenSubmission.objects.create(id=identity, tenant_id=actor.tenant_id, research_version=version,
         verification_plan_artifact=verification_plan, sealed_test_id=seal.sealed_test_id, metric_version="2.0",
         snapshot_hash=snapshot, status="FROZEN", document=document, created_at=created)
+
+
+def authorized_submission(actor: Account, identity: UUID) -> FrozenSubmission:
+    """重新驗租戶與研究 owner 後回 FrozenSubmission；不因知道 UUID 就放行。"""
+    row = FrozenSubmission.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
+    if row is None:
+        raise ApiError("NOT_FOUND", 404)
+    from catalog.research import version_for
+    version_for(actor, row.research_version_id)
+    validate(row.document, "research-v2.schema.json", "FrozenSubmission")
+    return row
 
 
 def frozen_candidate(actor: Account, candidate: Candidate, fit: FitRun, equation: EquationVersion,

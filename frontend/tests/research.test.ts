@@ -5,6 +5,7 @@ import {
   createResearch,
   createResearchVersion,
   fetchResearchVersionEvents,
+  getFrozenSubmission,
   listResearchVersionRuns,
   validateDraft,
   type CreateResearchVersionRequest,
@@ -15,6 +16,7 @@ const RESEARCH_ID = '11111111-1111-1111-1111-111111111111'
 const VERSION_ID = '22222222-2222-2222-2222-222222222222'
 const DATASET_ID = '33333333-3333-3333-3333-333333333333'
 const PREVIEW_ID = '44444444-4444-4444-4444-444444444444'
+const SUBMISSION_ID = '77777777-7777-7777-7777-777777777777'
 const CSRF = 'csrf-1'
 
 interface Call {
@@ -173,6 +175,32 @@ describe('fetchResearchVersionEvents', () => {
     expect(calls[0]?.headers.get('Last-Event-ID')).toBe(
       'RESEARCH:22222222-2222-2222-2222-222222222222:0',
     )
+  })
+})
+
+describe('getFrozenSubmission', () => {
+  it('reads the frozen submission resource from the documented path', async () => {
+    const { calls, client } = scenario(() =>
+      Response.json({
+        kind: 'FrozenSubmission',
+        id: SUBMISSION_ID,
+        tenant_id: '55555555-5555-5555-5555-555555555555',
+        schema_version: '2.0',
+        created_at: '2026-10-21T00:00:00Z',
+        research_version_id: VERSION_ID,
+        sealed_test_id: '88888888-8888-8888-8888-888888888888',
+        frozen_candidate_ids: ['99999999-9999-9999-9999-999999999999'],
+        metric_version: '2.0',
+        snapshot_hash: 'a'.repeat(64),
+        status: 'FROZEN',
+        evaluation_policy_hash: 'b'.repeat(64),
+        verification_plan_artifact_id: PREVIEW_ID,
+        verification_plan_hash: 'c'.repeat(64),
+      }),
+    )
+    const submission = await getFrozenSubmission(client, SUBMISSION_ID)
+    expect(submission.id).toBe(SUBMISSION_ID)
+    expect(calls[0]?.url).toBe(`/api/v2/frozen-submissions/${SUBMISSION_ID}`)
   })
 })
 
