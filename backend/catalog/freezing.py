@@ -1,14 +1,14 @@
-"""凍結與比較決策：逐條實作 contract_scenarios 的凍結鏈，並落庫 FrozenCandidate。
+"""凍結與比較決策：逐條實作 contract_scenarios 的凍結鏈，並落庫 FrozenCandidate / FrozenSubmission。
 
-Fail-closed freeze decisions mirroring contract_scenarios; no FrozenSubmission, no final_test.
+Fail-closed freeze decisions mirroring contract_scenarios; final_test execution is still out of scope.
 
 本模組的純函式裁決與 `docs/企劃案/tools/contract_scenarios.py` 逐字對齊並回傳同一組穩定代碼。
-`SNAPSHOT_MISMATCH` 屬 `FrozenSubmission.snapshot_hash`；本批不建立該物件，因此只有在提供完整
-submission 情境的純函式呼叫（conformance 對照）才會走到該分支，落庫路徑不會觸及。"""
+`SNAPSHOT_MISMATCH` 屬 `FrozenSubmission.snapshot_hash`；本模組會建立提交包，但仍不執行 final_test
+或 FinalEvaluationSlot。"""
 import re
 from uuid import uuid4
 from catalog.ingest_manifest import environment
-from catalog.models import Account, Candidate, EquationVersion, FitRun, FrozenCandidate, RepresentationSpec, ResearchVersion
+from catalog.models import Account, Artifact, Candidate, EquationVersion, FitRun, FrozenCandidate, FrozenSubmission, RepresentationSpec, ResearchVersion, SealRegistration
 from catalog.validation import ApiError
 from runtime.contracts import JsonObject, identity_hash, validate
 from runtime.records import db_now
@@ -114,6 +114,63 @@ def empty_search_decision(infrastructure_failed: bool, eligible_candidates: int,
     if not final_budget_available:
         return "SUCCEEDED:INSUFFICIENT_EVIDENCE:BUDGET_EXHAUSTED"
     return "FREEZE_AND_EVALUATE"
+
+
+def snapshot_payload(version: ResearchVersion, sealed_test_id: str, verification_plan: Artifact,
+                     frozen: list[FrozenCandidate]) -> JsonObject:
+    ordered = sorted(frozen, key=lambda row: (row.development_rank, str(row.id)))
+    return {"research_version_id": str(version.id), "sealed_test_id": sealed_test_id, "metric_version": "2.0",
+        "evaluation_policy_hash": version.document["evaluation_policy_hash"],
+        "verification_plan_artifact_id": str(verification_plan.id),
+        "verification_plan_hash": identity_hash(verification_plan.content), "frozen_candidates": [row.document for row in ordered]}
+
+
+def _verification_plan_document(version: ResearchVersion, artifact: Artifact) -> JsonObject:
+    content = artifact.content
+    if (artifact.tenant_id != version.tenant_id or artifact.research_version_id != version.id
+            or content is None or content.get("id") != str(artifact.id)
+            or content.get("tenant_id") != str(version.tenant_id)
+            or content.get("research_version_id") != str(version.id)
+            or content.get("purpose") != version.document["purpose"]):
+        raise ApiError("VERIFICATION_PLAN_MISMATCH", 409)
+    return content
+
+
+def frozen_submission(actor: Account, version: ResearchVersion, frozen: list[FrozenCandidate],
+                      verification_plan: Artifact) -> FrozenSubmission:
+    """以 development_rank 固定候選排序並建立 FrozenSubmission；同一 snapshot_hash 重送讀回原列。"""
+    if len(frozen) == 0:
+        raise ApiError("INVALID_SCHEMA", 422)
+    seal = SealRegistration.objects.filter(research_version=version, tenant_id=actor.tenant_id, available=True).first()
+    if seal is None:
+        raise ApiError("SEALED_TEST_NOT_REGISTERED", 409)
+    plan = _verification_plan_document(version, verification_plan)
+    policy_hash = identity_hash(version.document["evaluation_policy"])
+    if version.document["evaluation_policy_hash"] != policy_hash:
+        raise ApiError("EVALUATION_POLICY_MISMATCH", 409)
+    ordered = sorted(frozen, key=lambda row: (row.development_rank, str(row.id)))
+    if len({row.id for row in ordered}) != len(ordered) or len({row.development_rank for row in ordered}) != len(ordered):
+        raise ApiError("RANK_MISMATCH", 409)
+    for row in ordered:
+        if (row.tenant_id != actor.tenant_id or row.representation_artifact.research_version_id != version.id
+                or row.dataset_version_id != version.dataset_version_id):
+            raise ApiError("FIT_REFERENCE_MISMATCH", 409)
+    identity, created = uuid4(), db_now()
+    payload = snapshot_payload(version, str(seal.sealed_test_id), verification_plan, ordered)
+    snapshot = identity_hash(payload)
+    existing = FrozenSubmission.objects.filter(research_version=version, snapshot_hash=snapshot).first()
+    if existing is not None:
+        return existing
+    document: JsonObject = {"kind": "FrozenSubmission", "id": str(identity), "tenant_id": str(actor.tenant_id),
+        "schema_version": "2.0", "created_at": created.isoformat(), "research_version_id": str(version.id),
+        "sealed_test_id": str(seal.sealed_test_id), "frozen_candidate_ids": [str(row.id) for row in ordered],
+        "metric_version": "2.0", "snapshot_hash": snapshot, "status": "FROZEN",
+        "evaluation_policy_hash": policy_hash, "verification_plan_artifact_id": str(verification_plan.id),
+        "verification_plan_hash": identity_hash(plan)}
+    validate(document, "research-v2.schema.json", "FrozenSubmission")
+    return FrozenSubmission.objects.create(id=identity, tenant_id=actor.tenant_id, research_version=version,
+        verification_plan_artifact=verification_plan, sealed_test_id=seal.sealed_test_id, metric_version="2.0",
+        snapshot_hash=snapshot, status="FROZEN", document=document, created_at=created)
 
 
 def frozen_candidate(actor: Account, candidate: Candidate, fit: FitRun, equation: EquationVersion,

@@ -1,6 +1,6 @@
 """Mutable state projection beside the immutable research configuration."""
 from uuid import uuid4
-from catalog.models import EvidenceBundle, ResearchBudget, ResearchEvent, ResearchState, ResearchVersion
+from catalog.models import EvidenceBundle, FrozenSubmission, ResearchBudget, ResearchEvent, ResearchState, ResearchVersion
 from runtime.contracts import JsonObject, validate
 from runtime.records import db_now, detached
 
@@ -29,6 +29,7 @@ def document_for(version: ResearchVersion) -> JsonObject:
     document = detached(version.document)
     account = ResearchBudget.objects.get(research_version=version)
     document["research_budget_usage"] = account.document["usage"]
+    document["frozen_submission_ids"] = [str(value) for value in FrozenSubmission.objects.filter(research_version=version).order_by("created_at","id").values_list("id",flat=True)]
     document["evidence_bundle_ids"] = [str(value) for value in EvidenceBundle.objects.filter(research_version=version).order_by("created_at","id").values_list("id",flat=True)]
     state = ResearchState.objects.filter(research_version=version).first()
     if state is not None:

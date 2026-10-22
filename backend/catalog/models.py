@@ -558,3 +558,28 @@ class FrozenCandidate(models.Model):
                        models.CheckConstraint(condition=models.Q(development_rank__gte=1), name="frozen_candidate_development_rank"),
                        models.CheckConstraint(condition=models.Q(dsl_identity_hash__regex="^[0-9a-f]{64}$"), name="frozen_candidate_dsl_identity_format"),
                        models.CheckConstraint(condition=models.Q(parameter_binding_hash__regex="^[0-9a-f]{64}$"), name="frozen_candidate_binding_hash_format")]
+
+
+class FrozenSubmission(models.Model):
+    """最終盲測前的不可變提交包；固定 sealed_test 與候選排序，不保存最終結果。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    research_version: models.ForeignKey[ResearchVersion, ResearchVersion] = models.ForeignKey(ResearchVersion, on_delete=models.PROTECT)
+    research_version_id: UUID
+    verification_plan_artifact: models.ForeignKey[Artifact, Artifact] = models.ForeignKey(Artifact, on_delete=models.PROTECT)
+    verification_plan_artifact_id: UUID
+    sealed_test_id: models.UUIDField[UUID, UUID] = models.UUIDField()
+    metric_version: models.CharField[str, str] = models.CharField(max_length=8, default="2.0")
+    snapshot_hash: models.CharField[str, str] = models.CharField(max_length=64)
+    status: models.CharField[str, str] = models.CharField(max_length=12, default="FROZEN")
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        indexes = [models.Index(fields=["research_version", "created_at", "id"], name="frozen_submission_page")]
+        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="frozen_submission_tenant_identity"),
+                       models.UniqueConstraint(fields=["research_version", "snapshot_hash"], name="frozen_submission_snapshot_unique"),
+                       models.CheckConstraint(condition=models.Q(metric_version="2.0"), name="frozen_submission_metric_version"),
+                       models.CheckConstraint(condition=models.Q(snapshot_hash__regex="^[0-9a-f]{64}$"), name="frozen_submission_snapshot_format"),
+                       models.CheckConstraint(condition=models.Q(status__in=["FROZEN", "EVALUATING", "EVALUATED", "FAILED"]), name="frozen_submission_status")]

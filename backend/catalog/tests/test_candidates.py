@@ -13,12 +13,14 @@ from uuid import UUID, uuid4
 from django.contrib.auth.models import User
 from django.db import IntegrityError, connection, transaction
 from django.test import TransactionTestCase, override_settings
+from catalog.artifacts import register as register_artifact
 from catalog.candidates import persist, rows_hash
 from catalog.equations import register as register_equation
-from catalog.freezing import binding_hash, canonical_decimal, empty_search_decision, freeze_decision, frozen_candidate
+from catalog.freezing import binding_hash, canonical_decimal, empty_search_decision, freeze_decision, frozen_candidate, frozen_submission, snapshot_payload
 from catalog.ingest import complete_upload, ingest_tick
-from catalog.models import Account, Candidate, Dataset, DatasetVersion, EquationVersion, FitRun, FrozenCandidate, ObservationSplit, ProfileBinding, RepresentationSpec, Reservation, ResearchBudget, ResearchVersion, RootBudget, Tenant, Upload
+from catalog.models import Account, Artifact, Candidate, Dataset, DatasetVersion, FrozenSubmission, EquationVersion, FitRun, FrozenCandidate, ObservationSplit, ProfileBinding, Provenance, RepresentationSpec, Reservation, ResearchBudget, ResearchVersion, RootBudget, SealRegistration, Tenant, Upload
 from catalog.research import create_research, create_version, research_for
+from catalog.research_state import document_for
 from catalog.services import actor_for, create_dataset, create_upload, put_upload
 from catalog.tests.test_research import CONTENT, LIMITS, draft_data
 from catalog.validation import ApiError
@@ -122,6 +124,20 @@ class CandidateTests(TransactionTestCase):
         return {"research_version": json.loads(json.dumps(self.version.document)), "submission": submission,
             "verification_plan": plan, "representation": representation.document, "fit": fit.document,
             "equation": equation.document, "candidate": candidate.document, "frozen_candidate": frozen}
+
+    def register_plan(self, version: ResearchVersion, *, research_version_id: str | None = None) -> tuple[JsonObject, Artifact]:
+        content: JsonObject = {"id": str(uuid4()), "tenant_id": str(version.tenant_id),
+            "research_version_id": research_version_id or str(version.id), "purpose": version.document["purpose"]}
+        source = Provenance.objects.get(pk=version.provenance_id, tenant_id=version.tenant_id)
+        artifact = register_artifact(self.actor, version.dataset_version, UUID(content["id"]), content, source, research_version=version)
+        return content, artifact
+
+    def register_seal(self, version: ResearchVersion) -> SealRegistration:
+        run = RuntimeRun.objects.filter(document__type="INGEST").order_by("id").first()
+        self.assertIsNotNone(run)
+        return SealRegistration.objects.create(tenant_id=version.tenant_id, research_version=version, run=run,
+            sealed_test_id=uuid4(), source_sha256="1" * 64, protocol_hash="2" * 64, authority_epoch=uuid4(),
+            authority_sequence=1, attestation_hash="3" * 64, available=True)
 
     def test_candidates_are_ranked_deduplicated_and_bound_to_their_fit_runs(self) -> None:
         report = self.report()
@@ -294,3 +310,49 @@ class CandidateTests(TransactionTestCase):
         with self.assertRaises(ApiError) as mismatch:
             frozen_candidate(self.actor, candidate, other_fit, other.equation_version, representation, self.version)
         self.assertEqual(mismatch.exception.code, "EQUATION_MISMATCH")
+
+    def test_frozen_submission_is_persisted_idempotently_and_projected(self) -> None:
+        rows = self.store()
+        candidate = rows[0]
+        fit = FitRun.objects.get(pk=UUID(candidate.document["fit_run_ids"][0]))
+        representation = RepresentationSpec.objects.get(pk=fit.representation_artifact_id)
+        with transaction.atomic():
+            frozen = frozen_candidate(self.actor, candidate, fit, candidate.equation_version, representation, self.version)
+        plan, artifact = self.register_plan(self.version)
+        seal = self.register_seal(self.version)
+        with transaction.atomic():
+            submission = frozen_submission(self.actor, self.version, [frozen], artifact)
+        self.assertEqual((submission.research_version_id, submission.verification_plan_artifact_id), (self.version.id, artifact.id))
+        self.assertEqual((submission.sealed_test_id, submission.metric_version, submission.status), (seal.sealed_test_id, "2.0", "FROZEN"))
+        self.assertEqual(submission.document["frozen_candidate_ids"], [str(frozen.id)])
+        self.assertEqual(submission.document["verification_plan_hash"], identity_hash(plan))
+        self.assertEqual(submission.snapshot_hash, identity_hash(snapshot_payload(self.version, str(seal.sealed_test_id), artifact, [frozen])))
+        with transaction.atomic():
+            self.assertEqual(frozen_submission(self.actor, self.version, [frozen], artifact).id, submission.id)
+        self.assertEqual(FrozenSubmission.objects.count(), 1)
+        projected = document_for(self.version)
+        self.assertEqual(projected["frozen_submission_ids"], [str(submission.id)])
+        identity = uuid4()
+        duplicate = submission.document | {"id": str(identity)}
+        with self.assertRaises(IntegrityError):
+            enforce(lambda: FrozenSubmission.objects.create(id=identity, tenant_id=self.actor.tenant_id,
+                research_version_id=self.version.id, verification_plan_artifact_id=artifact.id, sealed_test_id=seal.sealed_test_id,
+                metric_version="2.0", snapshot_hash=submission.snapshot_hash, status="FROZEN", document=duplicate))
+
+    def test_frozen_submission_rejects_missing_seal_and_bad_plan(self) -> None:
+        rows = self.store()
+        candidate = rows[0]
+        fit = FitRun.objects.get(pk=UUID(candidate.document["fit_run_ids"][0]))
+        representation = RepresentationSpec.objects.get(pk=fit.representation_artifact_id)
+        with transaction.atomic():
+            frozen = frozen_candidate(self.actor, candidate, fit, candidate.equation_version, representation, self.version)
+        _content, artifact = self.register_plan(self.version)
+        with self.assertRaises(ApiError) as missing:
+            frozen_submission(self.actor, self.version, [frozen], artifact)
+        self.assertEqual(missing.exception.code, "SEALED_TEST_NOT_REGISTERED")
+        self.register_seal(self.version)
+        foreign_plan = Artifact.objects.get(pk=artifact.id)
+        foreign_plan.content = dict(foreign_plan.content or {}) | {"research_version_id": str(uuid4())}
+        with self.assertRaises(ApiError) as bad_plan:
+            frozen_submission(self.actor, self.version, [frozen], foreign_plan)
+        self.assertEqual(bad_plan.exception.code, "VERIFICATION_PLAN_MISMATCH")
