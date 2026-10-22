@@ -107,7 +107,18 @@
     "docs/技術文件/缺口清單.md": "44fc74dc60f81e22c303c2057c0c19460a7fe7eded95a70dfb32af7d9690988d",
     "docs/技術文件/README.md": "c44c702a8f5b6c938c1cc13c6b344bf6cc75fc9b5b2d0a143ce6a9b63d120ca8",
     "docs/技術文件/M0/T07-SEARCH執行器設計.md": "650cca1f69cae6f89114df14af1d76f1e72efc5590bee65ac0d66b3b806d9cbd",
-    "docs/技術文件/M0/T07-SEARCH執行器驗證紀錄.md": "7acd5131b328cc2f77ba8fe0679d3556209fb1892cd78c9c140940df599741bf"
+    "docs/技術文件/M0/T07-SEARCH執行器驗證紀錄.md": "73dea15b88ae1a1f0d6a49c1fe8e28e24865fa8591516feaa2ef39a210c91e36"
+  },
+  "post_commit_ci": {
+    "commit": "03de531",
+    "platform": "Linux amd64（GitHub Actions）",
+    "workflows": [
+      { "name": "docs-check", "conclusion": "success", "duration_seconds": 48 },
+      { "name": "compatibility-check", "conclusion": "success", "duration_seconds": 48 },
+      { "name": "product-check", "conclusion": "success", "duration_seconds": 275 }
+    ],
+    "note": "完整後端測試（含 mathematics.test_linalg／mathematics.test_search 與 EquationVersion）與 python -m mathematics.smoke 於 amd64 為實際往返；product Gate 仍 NOT_RUN",
+    "hashes_note": "changed_sources 的 sha256 以提交 03de531 的內容為準；本補批只增列 CI 段落與本摘要，未改動程式或測試"
   },
   "known_limits": [
     "本批不含 SEARCH run 與派送／租約／checkpoint，未建立任何 run 或 Candidate／FitRun／FrozenCandidate 資料列",

@@ -41,3 +41,8 @@
 0017 建 EquationVersion 兩唯一鍵與 `dsl_version` 值域；0018 加原生 guard，寫入時 `document` 的 `kind`、`schema_version`、`id`、`tenant_id`、`created_at`、`identity_hash`、`dsl.dsl_version` 必須與資料列同步，`identity_hash` 必須為 64 位小寫十六進位，UPDATE 與 DELETE 一律拒絕。本批沒有任何資料表引用 EquationVersion，故不新增複合 FK；待候選凍結切片建立 Candidate 時再一併加上 `(equation_version_id, tenant_id)`。
 
 下一步為候選凍結與比較（#4）、最終盲測評估（#5，D-03 未關使 G2 保持 BLOCKED）與工作台整合（#6）。validation 引用仍受阻於 FitRun／FrozenCandidate 尚未存在。M0／M1 與企劃驗收維持 NOT_RUN。
+
+## 提交後 CI 補批
+
+日期：2026-10-22；承接 03de531。三個工作流於本提交全部成功：`docs-check` 48s、`compatibility-check` 48s、`product-check` 4m35s。因此 Linux amd64 上的完整後端測試（含 `mathematics.test_linalg`／`mathematics.test_search` 與 EquationVersion 測試）與 `python -m mathematics.smoke` 皆為實際往返，不是由本機推論。產品 Gate 仍 NOT_RUN。
+
