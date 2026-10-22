@@ -219,33 +219,6 @@ def partition_decision(c: JsonObject) -> str:
             seen[value] = row["partition"]
     return "ACCEPT"
 
-def effective_access_class(case: JsonObject) -> str:
-    released = (case["access_class"] == "RELEASED_AGGREGATE" and case.get("release_checked")
-                and case.get("registered_summary_lineage"))
-    if case.get("inherited_sealed") and not released:
-        return "SEALED_DETAIL"
-    return cast(str, case["access_class"])
-
-
-def access_decision(scenario: Scenario) -> str:
-    case = scenario.case
-    if not case["acl_read"]:
-        return "NOT_FOUND"
-    access = effective_access_class(case)
-    if case["actor"] == "solver" and not case.get("task_bound"):
-        return "NOT_FOUND"
-    if case["actor"] == "solver" and access != "PROJECT":
-        return "NOT_FOUND"
-    if access == "SEALED_DETAIL":
-        human = (case["actor"] == "reviewer" and case.get("isolated_grant")
-                 and case.get("independent_reviewer"))
-        evaluator = case["actor"] == "evaluator" and case.get("submission_bound")
-        return "ACCEPT" if human or evaluator else "NOT_FOUND"
-    if access == "RELEASED_AGGREGATE" and not case.get("release_checked"):
-        return "NOT_FOUND"
-    return "ACCEPT"
-
-
 def final_slot_decision(scenario: Scenario) -> str:
     case = scenario.case
     existing, incoming = case["existing"], case["incoming"]
@@ -436,8 +409,6 @@ def streams_decision(scenario: Scenario) -> str:
             return "RUN_STREAM_CLOSED"
         if sequence <= latest_by_stream.get(scope, 0):
             return "SEQUENCE_CONFLICT"
-        if name in {"ReviewRecorded", "EvidenceRevoked"} and scope != "RESEARCH":
-            return "STREAM_SCOPE_MISMATCH"
         latest_by_stream[scope] = sequence
         if scope == "RUN" and name in {"RunFinished", "RunCancelled"}:
             closed.add(scope)
@@ -548,9 +519,9 @@ def empty_search_decision(scenario: Scenario) -> str:
     if case["infrastructure_failed"]:
         return "FAILED"
     if case["eligible_candidates"] == 0:
-        return "SUCCEEDED:INSUFFICIENT_EVIDENCE:NO_VALID_CANDIDATE:REVIEW"
+        return "SUCCEEDED:INSUFFICIENT_EVIDENCE:NO_VALID_CANDIDATE"
     if not case["final_budget_available"]:
-        return "SUCCEEDED:INSUFFICIENT_EVIDENCE:BUDGET_EXHAUSTED:REVIEW"
+        return "SUCCEEDED:INSUFFICIENT_EVIDENCE:BUDGET_EXHAUSTED"
     return "FREEZE_AND_EVALUATE"
 
 
@@ -629,67 +600,6 @@ def unit_conversion_decision(scenario: Scenario) -> str:
         raise AssertionError("Inverse unit conversion drift")
     if Fraction(case["source_error"]) * scale != Fraction(case["canonical_error"]):
         raise AssertionError("Error scale must not include affine offset")
-    return "ACCEPT"
-
-
-def independent_review_decision(scenario: Scenario) -> str:
-    case = scenario.case
-    authors = case["responsible_human_ids"]
-    if not case["provenance_complete"] or not authors:
-        return "INDEPENDENT_REVIEW_REQUIRED"
-    if case["service_actor"] or case["reviewer_id"] in authors:
-        return "INDEPENDENT_REVIEW_REQUIRED"
-    return "ACCEPT" if case["reviewer_grant"] else "NOT_FOUND"
-
-
-def claim_evidence_matches(claim: JsonObject, result: JsonObject) -> bool:
-    keys = ["empirical_level", "proof_level", "outcome_status"]
-    if any(claim[key] != result[key] for key in keys):
-        return False
-    if claim["claim_kind"] == "DESCRIPTIVE" and result["split_role"] == "DEVELOPMENT":
-        return (result["frozen_candidate_id"] is None
-                and result["fit_run_id"] == result["frozen_fit_run_id"])
-    return (claim["frozen_candidate_id"] == result["frozen_candidate_id"]
-            and claim["validation_run_id"] == result["id"])
-
-
-def claim_kind_valid(claim: JsonObject, result: JsonObject) -> bool:
-    kind, outcome = claim["claim_kind"], claim["outcome_status"]
-    if claim["proof_level"] != "P0":
-        return False
-    if kind == "DIAGNOSTIC":
-        return (claim["empirical_level"] == "E0" and outcome == "INSUFFICIENT_EVIDENCE"
-                and claim["frozen_candidate_id"] is None and claim["validation_run_id"] is None)
-    if kind == "DESCRIPTIVE":
-        return claim["empirical_level"] in {"E1", "E2"} and outcome in {"SUPPORTED", "AMBIGUOUS"}
-    required = {"PREDICTIVE": "SUPPORTED", "REFUTATION": "FALSIFIED"}.get(kind)
-    return (required is not None and outcome == required and claim["empirical_level"] == "E2"
-            and result["split_role"] == "FINAL_TEST" and result["submission_matches"]
-            and result["valid_count"] == result["selected_count"] > 0)
-
-
-def publication_claim_decision(scenario: Scenario) -> str:
-    case = scenario.case
-    if not case["policy_approved"]:
-        return "PUBLICATION_POLICY_BLOCKED"
-    if not case["bundle_active"] or not case["same_lineage"] or not case["domain_matches"]:
-        return "PUBLICATION_CLAIM_INVALID"
-    claim, result = case["claim"], case["result"]
-    if claim["claim_kind"] != "DIAGNOSTIC" and not claim_evidence_matches(claim, result):
-        return "PUBLICATION_CLAIM_INVALID"
-    return "ACCEPT" if claim_kind_valid(claim, result) else "PUBLICATION_CLAIM_INVALID"
-
-
-def summary_release_decision(scenario: Scenario) -> str:
-    case = scenario.case
-    if not case["acl_read"] or case.get("actor") == "solver":
-        return "NOT_FOUND"
-    if not case["policy_approved"] or not case["safe_projection_checked"]:
-        return "DISCLOSURE_POLICY_BLOCKED"
-    if case["source_status"] == "QUARANTINED":
-        return "ARTIFACT_UNAVAILABLE"
-    if case["source_status"] == "REVOKED":
-        return "ARTIFACT_UNAVAILABLE" if case.get("operation") == "CONTENT" else "REVOKED_HISTORY_WITH_WARNING"
     return "ACCEPT"
 
 
@@ -909,22 +819,6 @@ def experience_summary_decision(scenario: Scenario) -> str:
     return "ACCEPT"
 
 
-def learning_release_decision(scenario: Scenario) -> str:
-    case = scenario.case
-    if set(case["source_access_classes"]) & {"SEALED_DETAIL", "RELEASED_AGGREGATE"}:
-        return "LEARNING_SOURCE_FORBIDDEN"
-    train, development, test = (set(case[key]) for key in ["train", "development", "test"])
-    if train & development or train & test or development & test:
-        return "TRAINING_FAMILY_LEAK"
-    if not case["sources_active"] or not case["rights_verified"]:
-        return "LEARNING_SOURCE_FORBIDDEN"
-    if not case["baseline_passed"] or not case["ablation_passed"] or case["regression_detected"]:
-        return "LEARNING_RELEASE_REJECTED"
-    if not case["independent_approval"]:
-        return "INDEPENDENT_REVIEW_REQUIRED"
-    return "ACCEPT"
-
-
 def trace_chain_decision(scenario: Scenario) -> str:
     case = scenario.case
     if case["sequence"] == 1:
@@ -1050,12 +944,8 @@ CASE_HANDLERS: dict[str, Callable[[Scenario], str]] = {
     "token_capture": token_capture_decision,
     "archive_guard": archive_guard_decision,
     "experience_summary": experience_summary_decision,
-    "learning_release": learning_release_decision,
 
     "unit_conversion": unit_conversion_decision,
-    "independent_review": independent_review_decision,
-    "publication_claim": publication_claim_decision,
-    "summary_release": summary_release_decision,
     "upload_completion": upload_completion_decision,
     "retry": retry_decision,
     "dispatch_recovery": dispatch_recovery_decision,
@@ -1067,7 +957,6 @@ CASE_HANDLERS: dict[str, Callable[[Scenario], str]] = {
     "evaluation_policy": evaluation_policy_decision,
     "column_binding": column_binding_decision,
     "research_budget": research_budget_decision,
-    "access": access_decision,
     "final_slot": final_slot_decision,
     "domain": domain_decision,
     "profile_transition": profile_transition_decision,

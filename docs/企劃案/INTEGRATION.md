@@ -9,7 +9,7 @@
 | `docs` 原有 42 篇編號章節 | 保留原領域細節、REQ／RISK／ADR 編號、架構圖及部署決策 |
 | `AXIOM_Project` 的 41 篇同路徑章節 | 合併 v2 決策摘要、能力規格、異常處理、驗收與交付條件 |
 | `AXIOM_Project/13-專題深化` 的 6 篇 | 整合至同名目錄，補充具體欄位、流程、操作與測試證據 |
-| README／閱讀導航 | 重新整理完整索引、角色路徑與共用契約的權威位置 |
+| README／閱讀導航 | 重新整理完整索引、閱讀路徑與共用契約的權威位置 |
 | MANIFEST | 依最終內容重建大小與 SHA-256，排除自身與 .DS_Store |
 | 原始 `AXIOM_Project` | 整合後確認來源檔案皆有對應文件且校驗值正確，依使用者指示於 2026-10-19 刪除 |
 
@@ -28,7 +28,7 @@
 
 ## 深化範圍
 
-研究物件契約補上型別、版本與驗證產物；搜尋決策樹補上策略輸入及停止原因；ERD 補上唯一性、外鍵與跨儲存交易恢復；工作台補上頁面狀態和前端驗收；SLO 補上統計口徑與壓測步驟；發布矩陣補上逐 gate 案例、追溯欄位與回退要求。
+研究物件契約補上型別、版本與驗證產物；搜尋決策樹補上策略輸入及停止原因；ERD 補上唯一性、外鍵與跨儲存交易恢復；工作台補上頁面狀態和前端驗收；SLO 補上統計口徑與壓測步驟；驗收矩陣補上逐 gate 案例、追溯欄位與回退要求。
 
 新增細則是待實作的設計提案，不代表系統已經具備此能力。具體人員、期限、硬體、模型版本、容量門檻與正式部署方案依 AX-37 決策，不能用文件數量或篇幅代替產品驗收。
 
@@ -42,7 +42,7 @@
 
 | 審查問題 | 已完成的規格修訂／驗證入口 | 尚待實作或決策 |
 |---|---|---|
-| 真值流入求解器 | AX-05／28 改三角色與雙資料流，補拒絕存取案例 | 實際 bucket／帳號與隔離測試 |
+| 真值流入求解器 | AX-05／28 改三層隔離與雙資料流，補拒絕存取案例 | 實際 bucket／帳號與隔離測試 |
 | 搜尋適應驗證集 | 固定 fit/development/final_test、一次凍結評估與污染退役規則 | 真實 evaluator／blind generator；D-03 |
 | DSL 只有描述 | AX-10 語法／arity／域／單位／hash、schema 正反例 | parser、求值器、資源隔離與容差測試 |
 | 數學判定模糊 | AX-28／13 指標公式、coverage、等效與拒答方法、公開 fixture | 領域量測模型與正式盲測門檻 |
@@ -51,11 +51,11 @@
 | 範圍與階段衝突 | AX-02／30 統一 M0～M7；M3 是互動 MVP | 具名人力、工期與 D-08 |
 | 物件／ERD 不一致 | AX-47 逐物件必要欄位與 schema；AX-43 版本、複合 FK 與約束 | DB migrations 與跨租戶測試 |
 | 驗收只有模板 | AX-46 全部 REQ 連到 AC；各章補專屬判定 | 案例皆 NOT_RUN；產品執行證據 |
-| 部署／恢復不可照做 | AX-41 init/live/ready；AX-27 BackupSet、還原順序與撤銷重播 | Compose／管理命令與實際演練；D-06 |
-| 權限／外送／撤銷模糊 | AX-26 身分、操作矩陣、分級、快取與模型隔離 | 真實政策批准與 D-04／05 |
+| 部署／恢復不可照做 | AX-41 init/live/ready；AX-27 BackupSet、還原順序與隔離重播 | Compose／管理命令與實際演練；D-06 |
+| 分區／外送模糊 | AX-26 身分、分級、快取與模型隔離 | 真實政策與 D-04／05 |
 | 重複模板掩蓋細節 | 共用規則集中 AX-48，移除重複泛用能力／流程／驗收段 | 後續變更依權威表持續維護 |
 
-新增 contracts 與 docs/企劃案/tools/check_docs.py，供 schema、OpenAPI、範例、公開 oracle、追溯及檔案校驗。v2.2 為 49 篇編號章節、51 份 Markdown；manifest 現涵蓋 contracts 與工具，documents 不再等於 files 筆數，全部檔案數使用 file_count。文件通過不代表產品通過，G2／G7 的正式門檻未核准時保持 BLOCKED。
+新增 contracts 與 docs/企劃案/tools/check_docs.py，供 schema、OpenAPI、範例、公開 oracle、追溯及檔案校驗。v2.2 為 49 篇編號章節、51 份 Markdown；manifest 現涵蓋 contracts 與工具，documents 不再等於 files 筆數，全部檔案數使用 file_count。文件通過不代表產品通過，G2／G7 的正式門檻未關閉時保持 BLOCKED。
 
 ## v2.3 跨契約一致性修訂（2026-10-19）
 
@@ -63,24 +63,24 @@
 |---|---|---|
 | AX-06仍畫proof直連DB | 區分可信supervisor與無網路sandbox；移除直接儲存邊 | 拓樸邊檢查＋AC-06-04 |
 | Run／Attempt schema拒絕內部欄位 | public DTO與runtime Record分檔，明確allowlist投影 | 內外部正反例、共享欄位比對 |
-| 父取消後子租約仍可提交 | root epoch、固定鎖順序、提交祖先檢查、遠端停止確認 | CF-05～08、CF-23～24與AC-38-05～10 |
-| 家族與擬合公式評分混淆 | FrozenCandidate固定唯一FitRun/binding；FrozenSubmission hash | CF-01～04、CF-15～16／25 |
-| 題目／觀測切分混用 | BenchmarkPartition、ObservationSplit、SealedTest獨立物件 | CF-09～12／21～22／26 |
-| limit與usage混用且不允許零記憶體 | Limit、Reservation、Usage分型；累計／峰值及遲到計量定義 | 零Usage範例、CF-13～14／19 |
+| 父取消後子租約仍可提交 | root epoch、固定鎖順序、提交祖先檢查、遠端停止確認 | CF-05～CF-08、CF-23～CF-24與AC-38-05～10 |
+| 家族與擬合公式評分混淆 | FrozenCandidate固定唯一FitRun/binding；FrozenSubmission hash | CF-01～CF-04、CF-15～CF-16、CF-25 |
+| 題目／觀測切分混用 | BenchmarkPartition、ObservationSplit、SealedTest獨立物件 | CF-09～CF-12、CF-21～CF-22、CF-26 |
+| limit與usage混用且不允許零記憶體 | Limit、Reservation、Usage分型；累計／峰值及遲到計量定義 | 零Usage範例、CF-13～CF-14、CF-19 |
 | 重新登入找不到研究 | 研究→版本→run導覽與凍結物件唯讀API | 文檔／OpenAPI雙向端點覆蓋，AC-21-05 |
-| run關閉後收不到審核 | RUN與RESEARCH分scope/cursor，終態後只研究流續寫 | CF-17～18／20，AC-21-06～07 |
+| run關閉後收不到研究流更新 | RUN與RESEARCH分scope/cursor，終態後只研究流續寫 | CF-17～CF-18、CF-20，AC-21-06～07 |
 
-研究／內部schema及事件採2.0，HTTP為/api/v2，metric與觀測政策為2.0；DSL仍1.0。未部署v1草案以Git保留，本次沒有宣稱相容服務或資料遷移已執行。控制版本改用X-Control-Revision／If-Control-Revision，不把業務revision當整份動態回應的ETag；可變snapshot不作HTTP快取。冪等回放先重新授權，原操作結果與目前資源狀態分開讀取。
+研究／內部schema及事件採2.0，HTTP為/api/v2，metric與觀測政策為2.0；DSL仍1.0。未部署v1草案以Git保留，本次沒有宣稱相容服務或資料遷移已執行。控制版本改用X-Control-Revision／If-Control-Revision，不把業務revision當整份動態回應的ETag；可變snapshot不作HTTP快取。冪等回放先重新驗身分，原操作結果與目前資源狀態分開讀取。
 
-共49篇章節／51份Markdown，新增runtime契約與27組conformance參考情境，原AC編號保留並補充跨契約驗收。manifest涵蓋全部現行文件、契約與工具。參考情境通過不代表真實交易、worker、符號引擎、瀏覽器或正式發布已通過，產品狀態仍NOT_RUN，未決D-03／D-06等發布阻擋不變。
+共49篇章節／51份Markdown，新增runtime契約與27組conformance參考情境，原AC編號保留並補充跨契約驗收。manifest涵蓋全部現行文件、契約與工具。參考情境通過不代表真實交易、worker、符號引擎、瀏覽器或正式交付已通過，產品狀態仍NOT_RUN，未決D-03／D-06等阻擋不變。
 
 ## v2.4 生命週期與還原缺口修訂（2026-10-20）
 
-本輪完成六項跨契約修正：PROFILE取消／永久失敗回DRAFT；SEARCH_OPEN／FINAL_ONLY／CLOSED區分凍結與結束；封存測試先消耗後讀取、同提交故障恢復與不可逆退役；預註冊fit+development重擬合列與hash；研究快照證據／品質報告引用及審核唯讀API；Run結果與略過階段欄位、APPROVE／REJECT統一。同步修改公開／runtime／TaskInput／OpenAPI及fixture，擴充文件參考情境。契約仍是未部署2.0草案，產品與故障注入驗收仍NOT_RUN。
+本輪完成六項跨契約修正：PROFILE取消／永久失敗回DRAFT；SEARCH_OPEN／FINAL_ONLY／CLOSED區分凍結與結束；封存測試先消耗後讀取、同提交故障恢復與不可逆退役；預註冊fit+development重擬合列與hash；研究快照證據／品質報告引用及唯讀API；Run結果與略過階段欄位，並統一終態值。同步修改公開／runtime／TaskInput／OpenAPI及fixture，擴充文件參考情境。契約仍是未部署2.0草案，產品與故障注入驗收仍NOT_RUN。
 
-## v2.5 權限與觀測身分修訂（2026-10-20）
+## v2.5 分區與觀測身分修訂（2026-10-20）
 
-完成五項審查缺口：逐資源SEALED_DETAIL與聚合報告授權；FinalEvaluationSlot及最終結果partial unique／提交成員FK；觀測內容與可信來源雙token曝光ledger；依chronological_rank檢查時間gap；CreateResearchVersion／PROFILE／DSL固定ResearchDomain。公開、runtime、TaskInput及OpenAPI／fixture同步更新，文件工具增加原缺陷的回歸情境。全部仍為設計與參考裁決，實際授權、HMAC密鑰管理、多交易競態及產品驗收保持NOT_RUN。
+完成五項審查缺口：逐資源SEALED_DETAIL與聚合報告分級；FinalEvaluationSlot及最終結果partial unique／提交成員FK；觀測內容與可信來源雙token曝光ledger；依chronological_rank檢查時間gap；CreateResearchVersion／PROFILE／DSL固定ResearchDomain。公開、runtime、TaskInput及OpenAPI／fixture同步更新，文件工具增加原缺陷的回歸情境。全部仍為設計與參考裁決，實際分區、HMAC密鑰管理、多交易競態及產品驗收保持NOT_RUN。
 
 ## 文件工具型別與開發環境修正（2026-10-20）
 
@@ -92,7 +92,7 @@
 
 ## v2.5 文件治理補強（2026-10-20）
 
-本輪修正文件層級的可驗證缺口，不改動產品範圍：AX-41 標頭對齊 v2.5，兩份落後標頭統一為現行版本；AX-02 新增 NFR-001～007 非功能需求編號，AX-46 補非功能需求追溯表與章節驗收覆蓋表，使全部 AC 皆可由發布矩陣追溯；AX-08／41 補上 D-02／D-09 阻擋引用。check_docs.py 增列標頭版本、AC 覆蓋與決策引用的回歸檢查。以上仍為設計與參考裁決，產品驗收保持NOT_RUN。
+本輪修正文件層級的可驗證缺口，不改動產品範圍：AX-41 標頭對齊 v2.5，兩份落後標頭統一為現行版本；AX-02 新增 NFR-001～007 非功能需求編號，AX-46 補非功能需求追溯表與章節驗收覆蓋表，使全部 AC 皆可由驗收矩陣追溯；AX-08／41 補上 D-02／D-09 阻擋引用。check_docs.py 增列標頭版本、AC 覆蓋與決策引用的回歸檢查。以上仍為設計與參考裁決，產品驗收保持NOT_RUN。
 
 ## v2.6 復原與研究輸入補強（2026-10-20）
 
@@ -100,7 +100,7 @@
 
 ## v2.7 整體一致性修訂
 
-以49章及全部契約作一體審查，記錄見REVIEW.md；新增單位轉換、永久作者與執行manifest、發布claim及獨立摘要導航，並補上有界匯入／恢復、計數及安全交付條件。來源整合範圍不變，原始AXIOM_Project仍由Git追溯。規格閉合與產品完成分開，所有實作驗收仍NOT_RUN。
+以49章及全部契約作一體審查，記錄見REVIEW.md；新增單位轉換、永久作者與執行manifest，並補上有界匯入／恢復、計數及安全交付條件。來源整合範圍不變，原始AXIOM_Project仍由Git追溯。規格閉合與產品完成分開，所有實作驗收仍NOT_RUN。
 
 ## v2.8 四份自主研究討論的完整整合
 
@@ -116,7 +116,7 @@
 
 ## 開發流程補充
 
-擴充 AX-31，將企劃轉為 M0～M7 的實作順序、WBS 對應、各階段交付／驗收、T01～T08 首輪工作票、並行依賴、交接模板與失敗回退。AX-30／53 與索引增加開工入口，AX-46 補 AC-31-05～08 追溯。修正移至 docs/企劃案 後 AX-48／53 的契約與工具路徑；未新增產品服務、未替決策簽核，產品案例維持 NOT_RUN。
+擴充 AX-31，將企劃轉為 M0～M7 的實作順序、WBS 對應、各階段交付／驗收、T01～T08 首輪工作票、並行依賴、交接模板與失敗回退。AX-30／53 與索引增加開工入口，AX-46 補 AC-31-05～08 追溯。修正移至 docs/企劃案 後 AX-48／53 的契約與工具路徑；未新增產品服務、未自行關閉決策，產品案例維持 NOT_RUN。
 
 ## T01 工程開工基線
 
@@ -124,12 +124,12 @@
 
 ## 單人開發確認
 
-使用者確認僅本人開發；AX-30／31／37／46／53 以單人兼任各技術角色、自我檢查與依序交付為基線，不再等待第二位程式 reviewer。T01 基線升為2.0，加入 SOLO／SELF_REVIEW 與 project-owner 責任識別；具名欄位不再虛設為未指派。D-08 的人數已確定，但預算／領域／排程及其餘政策未自動核准。研究成果正式發布的獨立審核與盲測隔離保持原契約。
+使用者確認僅本人開發；AX-30／31／37／46／53 以單人兼任各技術職責、自我檢查與依序交付為基線，不再等待第二位程式審查者。T01 基線升為2.0，加入 SOLO／SELF_REVIEW 與專案負責識別；具名欄位不再虛設為未指派。D-08 的人數已確定，但預算／領域／排程及其餘政策未自動關閉。研究成果的盲測隔離與 provenance 保持原契約。
 
 ## T02 技術選型與相容性驗證
 
-先產技術文件，再交 Python／Node 鎖檔、macOS 與隔離 Linux arm64 的 Django／DRF／數學／PostgreSQL／Celery 實測、Vue／Pinia／Router 型別及建置測試、依賴 inventory 與 SBOM。測試 Compose 不是產品部署。Windows WSL2、完整授權與產品案例仍待驗；下一步按 T03 補公開 fixture／oracle 與盲測隔離基線，不自動關閉 M0。
+先產技術文件，再交 Python／Node 鎖檔、macOS 與隔離 Linux arm64 的 Django／DRF／數學／PostgreSQL／Celery 實測、Vue／Pinia／Router 型別及建置測試、依賴 inventory 與 SBOM。測試 Compose 不是產品部署。Windows WSL2、完整分區與產品案例仍待驗；下一步按 T03 補公開 fixture／oracle 與盲測隔離基線，不自動關閉 M0。
 
 ## T03 公開基準與盲測隔離基線
 
-先產技術文件，再交既有四個公開案例的獨立 oracle、完整分母／失敗列評分、題目級 family／source 分區參考與 Solver 白名單投影。新增 Linux 真實 UID canary 與放寬權限、缺檔、錯誤身份的反例測試，不以同帳號條件判斷取代權限實測。CI 加公開 oracle 與隔離 job；正式私有 generator／種子、產品 ACL／ledger 與 D-03 仍待交付或決策，產品狀態 NOT_RUN。下一步 T04 接產品工程骨架。
+先產技術文件，再交既有四個公開案例的獨立 oracle、完整分母／失敗列評分、題目級 family／source 分區參考與 Solver 白名單投影。新增 Linux 真實 UID canary 與放寬權限、缺檔、錯誤身份的反例測試，不以同帳號條件判斷取代權限實測。CI 加公開 oracle 與隔離 job；正式私有 generator／種子、產品分區／ledger 與 D-03 仍待交付或決策，產品狀態 NOT_RUN。下一步 T04 接產品工程骨架。

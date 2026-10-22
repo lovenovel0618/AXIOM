@@ -8,43 +8,43 @@
   "files": [
     {
       "path": "00-總覽/00-專案憲章.md",
-      "bytes": 2504,
-      "sha256": "eac98325dda42d32983bfc8bcb87816dad9bd100d614ac944405bada15410276"
+      "bytes": 2500,
+      "sha256": "dbcecff0a324d0d926550b91c697ec3ea1bae010787d672ca4bbac7ac592049a"
     },
     {
       "path": "00-總覽/01-閱讀導航與文件地圖.md",
-      "bytes": 8300,
-      "sha256": "e876de1d8d5f7d077efdf920eb51d2b749d15e3e9f08e249c3d5c2dedfe61a87"
+      "bytes": 8282,
+      "sha256": "04a81e2f20b5298676c280899601bf3bfa397ecb600c4dfe9b3b8db47bf05682"
     },
     {
       "path": "00-總覽/48-共用契約與文件治理.md",
-      "bytes": 8734,
-      "sha256": "dd2730a3fab9ec781661d2bb599ca64d42372b278df74b5c7a257f0095be49f6"
+      "bytes": 8719,
+      "sha256": "eff1021f1d21635f734e1aad37f7e84dce24c72d2799e951f4fbf29c7b18f692"
     },
     {
       "path": "01-需求/02-需求規格與使用情境.md",
-      "bytes": 5971,
-      "sha256": "b0f7c25527aa78f7441fbc16952f47a33a79829c7e2add3ab21f8f282c95b113"
+      "bytes": 6150,
+      "sha256": "3ff2b01b3823fb6a22173be207311adc5e18bbf2021afbb4088a231a764ec0ad"
     },
     {
       "path": "01-需求/03-成功指標與研究品質.md",
       "bytes": 1800,
-      "sha256": "5e4cc01f123daaa1aaffdd1148bd3a7e0562f8fed8d617ddcc43312e21dd3e43"
+      "sha256": "433f12c53be581d4fb3d3709d09de49d29d45da1d821fc611732718b7db6e3c3"
     },
     {
       "path": "02-流程/04-端到端研究流程.md",
-      "bytes": 8210,
-      "sha256": "af6d82ec57f352d0c5e6e60529a486c8c0f93bba5b937bf3389ee9548484bc9b"
+      "bytes": 8180,
+      "sha256": "b591d33b843c5b041f5bd44d60ba4bfc904b39ee1677d76f509fd7a3cd7a433d"
     },
     {
       "path": "02-流程/05-基準測試與持續學習流程.md",
-      "bytes": 10451,
-      "sha256": "a0d0a48c59f8031b0a38f6607e829a5a197744264931f58e7663ebe50a84abd4"
+      "bytes": 10472,
+      "sha256": "b5fb2986ebae9f019203f86e2f3f43ca6e20404687ed0aeff3201b3cc6c4ec2f"
     },
     {
       "path": "03-架構/06-總體技術架構.md",
-      "bytes": 3240,
-      "sha256": "05c17d3b729b244971c68ee1bf72acf71f2d77ed7cc756af8444ce47225ac74b"
+      "bytes": 3249,
+      "sha256": "6423090df42df92a5a29ba2f7a0afff3a207cea830f1d3c42a86fd4ff8baba04"
     },
     {
       "path": "03-架構/07-模組邊界與事件契約.md",
@@ -58,13 +58,13 @@
     },
     {
       "path": "03-架構/38-演算法插件與研究協調.md",
-      "bytes": 18942,
-      "sha256": "9410c617eea55930dfb4437ffee185e88ba4630f4725a854d10ed5a528b7f918"
+      "bytes": 18935,
+      "sha256": "8e83211d225daa163dbacf5d93ba5053b5b2934d76102507a00b04b691d143ce"
     },
     {
       "path": "03-架構/41-Docker本地架設指南.md",
-      "bytes": 17050,
-      "sha256": "7422469124e463cbffe2740ee2e2f656087dee9135fe3ecf03acecc14dcaf80e"
+      "bytes": 17062,
+      "sha256": "8d7f2d5a40288b01e11f170ccc8ed26b8581d51b33ff594d9d2ee32e79e806d6"
     },
     {
       "path": "04-數學核心/09-數據語意與前處理.md",
@@ -103,98 +103,98 @@
     },
     {
       "path": "05-記憶/16-經驗記憶與檢索架構.md",
-      "bytes": 4398,
-      "sha256": "5dbbaf1cbbd0c8faace3ceea2e74f435098e11e2ce26f8a60b263c520cd47751"
+      "bytes": 4413,
+      "sha256": "cd57e860fd1536b866a6440117ee77fa1dce5b49516f206da7569123bf246270"
     },
     {
       "path": "05-記憶/17-知識圖譜與理論演化.md",
-      "bytes": 2317,
-      "sha256": "4456344e6d73ae13b92725f58f690b1a491be57d97b94290e0c2175359be7441"
+      "bytes": 2341,
+      "sha256": "732b2590ce29c136ed27fbcbba8781d3e3721b048624000d3f2229902b2f60af"
     },
     {
       "path": "06-AI/18-ChatGPT與Ollama協作.md",
-      "bytes": 3817,
-      "sha256": "7dfa2a221d256dd5e7d5bcfd90ca18f56ac2262313dd9a58362f9e00dd6f5fcb"
+      "bytes": 3835,
+      "sha256": "517930a77c4d59a24402a0e57e122e13c0470ecb09193f9d426dd8a5229e3bab"
     },
     {
       "path": "06-AI/19-策略學習微調與蒸餾.md",
       "bytes": 2834,
-      "sha256": "8039321ec23626185fcaf57a539af50bd523a79950a8a78241af3f265e94ef6a"
+      "sha256": "58989ba5b85827d60a8a914c66f8c4a6aec83c9ac22bda6979a172e597bb8d6c"
     },
     {
       "path": "07-資料與API/20-資料模型與儲存規劃.md",
-      "bytes": 3229,
-      "sha256": "82cfe45f33a3ee289aa5580398e56962b1c33d6de6378fed4565e9b3fe042514"
+      "bytes": 3240,
+      "sha256": "08522eafac46925d1216caf65e7f8a89675c4e4eb0ee1560ee6405584be87d59"
     },
     {
       "path": "07-資料與API/21-API與任務契約.md",
-      "bytes": 23764,
-      "sha256": "00828dcc4d2db100897cfc15305a06d5e8c89343e855f41dc1f5b3d49bf1d595"
+      "bytes": 19826,
+      "sha256": "ff3059b35164c0c6b2a8c064d7546030c5d0955911d8bcb6696edae049be9b05"
     },
     {
       "path": "08-前端UX/22-設計系統與視覺規範.md",
-      "bytes": 3291,
-      "sha256": "a0244e2e19858fbab0f0bcf5f10381d2d7c578c2f52241432cc74f19d5be8351"
+      "bytes": 3297,
+      "sha256": "98e0d26e99faf92a7fa3246d8cd50f0c5da74bd4d6aa5cb4ab45b7bcf5457e7e"
     },
     {
       "path": "08-前端UX/23-頁面清單與資訊架構.md",
-      "bytes": 2069,
-      "sha256": "d1d14132262fd7a824d684b0f083e57615c2dd33334c3388cd4753b3317a4852"
+      "bytes": 2089,
+      "sha256": "317613514bc7ee2ba451651a991fffcfb1f7bc0ab818a769d9e7f1b31650a866"
     },
     {
       "path": "08-前端UX/24-畫面線框與互動流程.md",
-      "bytes": 3966,
-      "sha256": "40f616f2542f859557dac66a60fdc9856abf604abfd7438938e81696667b1307"
+      "bytes": 4020,
+      "sha256": "380715ed8de2ee6c80689bd50e9c7a12d46addc3ac1b42319d843c0e83517cb0"
     },
     {
       "path": "09-非功能/25-效能與成本治理.md",
       "bytes": 3804,
-      "sha256": "95368616c6f7af26f3f52bf36edbaa35271d2ec02b35842224f60fac2dac5fd4"
+      "sha256": "7792aefb2395a79a163ed1b2b241b2bbaa5584b1544fecbde93f5830ea1ecb9e"
     },
     {
       "path": "09-非功能/26-安全隱私與可信執行.md",
-      "bytes": 12764,
-      "sha256": "04f96dbf5d11754d386d85e469b60861e9defcde49822451d4b9e34ea1a562e5"
+      "bytes": 10264,
+      "sha256": "551e7158427da105c0458b22c0cf363b5f69b4837a738060aac629ad6e9a666c"
     },
     {
       "path": "09-非功能/27-可觀測性備份與故障復原.md",
-      "bytes": 10068,
-      "sha256": "f06bd31ea91d87e2f4126ac9d4afde6d9f21779a78e690061e4dd8b878818209"
+      "bytes": 10125,
+      "sha256": "c6bf7bdd3e582687ef3e8c33f121b1d1a5ce3f2aaa1c74222e87a75a0afb022e"
     },
     {
       "path": "09-非功能/40-資料治理倫理與領域適用性.md",
       "bytes": 1721,
-      "sha256": "02e6e699fd457d23afd7c386f486d60e00a83d3dae2e63e58077972b71eb5ab9"
+      "sha256": "eafb19c85b501fd09bbc9672a2dae5a57dfd4228ea189e84f9d8f915ae8ca30a"
     },
     {
       "path": "10-測試/28-數學基準測試規格.md",
-      "bytes": 17709,
-      "sha256": "927abdf5abaeecb414cb559eb2374acaddf19dd9d4242896222cc091c3395402"
+      "bytes": 17721,
+      "sha256": "a7c7cfa828a9f99c3bc59fa002fba3d8dac33262f01a1801f518244acda313f9"
     },
     {
       "path": "10-測試/29-驗收測試與品質閘門.md",
-      "bytes": 5337,
-      "sha256": "0794a1813baf9a391546f394299686b293c4c91201b4fdc104c21fb1511c3bcc"
+      "bytes": 4996,
+      "sha256": "888bd50038e9ca10bc174f8c7249bc1d859753d1e057070705a4c4af76327736"
     },
     {
       "path": "10-測試/39-推導證明與理論演化測試.md",
       "bytes": 2129,
-      "sha256": "c50580a021e42897750a970880baf9dce7a920d06fbec59e64a7c913bcede0ed"
+      "sha256": "05a25dde6a77e99346cdd2d249182c2122ad0e4e317d4c9de44074d6cb116958"
     },
     {
       "path": "11-交付/30-里程碑與分階段開發計畫.md",
-      "bytes": 4758,
-      "sha256": "5f693d6d4aad9906c49575a87a1d24dc360ddc9d200134aebb2b717bba49f500"
+      "bytes": 4824,
+      "sha256": "19b0141c0a32e05aff852ce28ecf373811c310a9ca63eede820875cec9844226"
     },
     {
       "path": "11-交付/31-工作拆解WBS與依賴.md",
-      "bytes": 23797,
-      "sha256": "a3aff21f3814fd45f4e325ca9be94fa943b2ca091dd70d21fafc4622c2193c71"
+      "bytes": 23991,
+      "sha256": "034db546086f910533a36f0062e6a0fa1fdfe77728dd67dc1081defa6140bc96"
     },
     {
       "path": "11-交付/32-風險登錄與決策紀錄.md",
-      "bytes": 2981,
-      "sha256": "5e1827a84303d45e8c095913e704a7d6548fd8e9fe8bed4ae0bc00fa30a0726a"
+      "bytes": 3001,
+      "sha256": "7256a0ee5912928d5877baf12a5d273dd97da0085fc62c03abcad7320b779dc5"
     },
     {
       "path": "12-附錄/33-語言框架與套件選型.md",
@@ -203,8 +203,8 @@
     },
     {
       "path": "12-附錄/34-術語表與證據等級.md",
-      "bytes": 6240,
-      "sha256": "88bde50b4b5975c41a9c0fda0fc7c47f49f05a6190cba8a8bbe85fe380aa7e4f"
+      "bytes": 4929,
+      "sha256": "ca7421b7b05c1229ef1022daa04efb8e471543df57651feaae8c3dfa8f403ecb"
     },
     {
       "path": "12-附錄/35-畫面驗收清單.md",
@@ -213,13 +213,13 @@
     },
     {
       "path": "12-附錄/36-研究案例與情境測試.md",
-      "bytes": 3720,
-      "sha256": "27da4642549c2ac9db2486d0a3e284d4c4892fe1d6913b69cf28596bf6394b01"
+      "bytes": 3689,
+      "sha256": "ae221c1d673a8354fa40229d1bb6762597867b9a2f0a8290491647c6324cf740"
     },
     {
       "path": "12-附錄/37-決策待確認清單.md",
-      "bytes": 4066,
-      "sha256": "ec191173d1e836d7dba294f351c173463db07bf32d5e86bfbd498ec2ab7f64e8"
+      "bytes": 4041,
+      "sha256": "a0f2890021f572a25be5943140c91afbba2337d74d5536d2479192aafad738bf"
     },
     {
       "path": "13-專題深化/42-公式搜尋與推演決策樹.md",
@@ -228,28 +228,28 @@
     },
     {
       "path": "13-專題深化/43-資料庫ERD與關係約束.md",
-      "bytes": 14975,
-      "sha256": "208eb0e3eda7907557946125fcb18b16f3d40dc1097098c1c7a1659d5987fed0"
+      "bytes": 14497,
+      "sha256": "aa22e684202f1229946f15bdd009025fde1f936db03d2505791b5fdb3c316184"
     },
     {
       "path": "13-專題深化/44-研究工作台畫面詳細規格.md",
-      "bytes": 10361,
-      "sha256": "43c1591b5858e0476e20a22f1f37ad25850087ffdc1adc6adb3c54c5f771ffb0"
+      "bytes": 9918,
+      "sha256": "dbea9b66c60d9fcb6da535cf87a3636169ac68dcd0d4d64328bd1083389bcb2c"
     },
     {
       "path": "13-專題深化/45-非功能SLO與壓測方案.md",
-      "bytes": 5410,
-      "sha256": "ffa940b1b91d3d75e4008a5ee1ecbab923fa6f3480de0d6df25230e3f3f68a34"
+      "bytes": 5413,
+      "sha256": "b690de6e1f654469f63bb5a7e426944eb3d1a51e8f7b2f52cf62e7ecfdb35161"
     },
     {
-      "path": "13-專題深化/46-發布驗收矩陣與交付證據.md",
-      "bytes": 15207,
-      "sha256": "b0ed77745464ce5a5ea6554f6e15960554537af2dac5017a2c551b064c2738d5"
+      "path": "13-專題深化/46-驗收矩陣與交付證據.md",
+      "bytes": 15276,
+      "sha256": "32212d9f1ba3dee88def8f04845c326f80fa4243f4353e5012e344d75ac414b3"
     },
     {
       "path": "13-專題深化/47-完整研究物件契約.md",
-      "bytes": 14777,
-      "sha256": "b4d01e9356f86801603f7edc80239e3847b73c6a02b701cc8c5bb6d7363d632d"
+      "bytes": 14191,
+      "sha256": "2cb3e4beb5686699c78e03664bd54c631418bd30717c97b5e75288787e835f76"
     },
     {
       "path": "14-自主研究/49-數據結構與自主表徵探索.md",
@@ -258,18 +258,18 @@
     },
     {
       "path": "14-自主研究/50-研究決策軌跡與錯誤恢復.md",
-      "bytes": 9614,
-      "sha256": "e6cfe84cfe1619c3ec220100665c8fc910be4d05f27e113faf38abd9261b1a81"
+      "bytes": 9647,
+      "sha256": "a9ae0d00c3a591ba6a6405b13a6ca88cb587f7c45d2b612731cf6b206eb2f140"
     },
     {
       "path": "14-自主研究/51-正確性證據與正逆向驗證.md",
-      "bytes": 9574,
-      "sha256": "9d33c29b3b16882e6a660a19eb967e07c4de7f05405c90496bbcc9d6bb5470a3"
+      "bytes": 9540,
+      "sha256": "e40ba67040582b0230d5e1891593c615ef1637852369c4f9beb2558294d591ab"
     },
     {
       "path": "14-自主研究/52-AI紀錄封存與經驗演化.md",
-      "bytes": 13654,
-      "sha256": "bbe1840ca99dca7f82098e1147cb4ac5703df71a2ac183eb644ea1abbeefc14f"
+      "bytes": 13722,
+      "sha256": "169068b6524cbebd1ad0ae86002f6ca4f3d9776f88aa9f5f1ffaf1a6cefc3b0a"
     },
     {
       "path": "14-自主研究/sources/01-數據表徵原始討論.txt",
@@ -293,28 +293,28 @@
     },
     {
       "path": "15-工程/53-工程治理與開發者工作流.md",
-      "bytes": 11556,
-      "sha256": "4c94bab36321124e2cf6544bc30792a332f72299bf412d8359e20baa64ecbd45"
+      "bytes": 11229,
+      "sha256": "f853a76c58a0f30adcf23e4e38407e8e6fc95a180572117709dbcb77b7232e6b"
     },
     {
       "path": "INTEGRATION.md",
-      "bytes": 14536,
-      "sha256": "d2fc12930bb8064799b35a5ea6315299827e0d2a306ef8248781e3ed30b5d8e6"
+      "bytes": 14493,
+      "sha256": "f5bf950a4b8f8a48555e88cccd35efa5dde530df1d4ab7b63b383111c70ee72b"
     },
     {
       "path": "README.md",
-      "bytes": 17746,
-      "sha256": "e8fc22692cb28246760053e5d4eca78159f3075fd864c0c47e446f184a400c1f"
+      "bytes": 17682,
+      "sha256": "027c04e03a8bda6e06587ec46f926d94732ed42313771971bcf78b2f15f5ca4f"
     },
     {
       "path": "REVIEW.md",
-      "bytes": 16319,
-      "sha256": "0dda56e971b7c94f12631eb3a22ee18199a53559a2a3c3bf3f2ca79ec09be8fc"
+      "bytes": 15274,
+      "sha256": "b01c6cfc7ddc88c0dafecbbf3d78e4eb895d5a94a5bb23984526cad9c232a804"
     },
     {
       "path": "contracts/api-v2.examples.json",
-      "bytes": 48011,
-      "sha256": "926c0fb2f6965db5f5cf368d12555617d26ff1f93feaa5549ff9bcb968a799d4"
+      "bytes": 47135,
+      "sha256": "a8c780dcafc365d4301095ee14680d230b69c5952ea149b311a53bb62cab751f"
     },
     {
       "path": "contracts/attachment-requests-v1.json",
@@ -333,8 +333,8 @@
     },
     {
       "path": "contracts/conformance-v2.examples.json",
-      "bytes": 188181,
-      "sha256": "699cb37a7df05c45a3ddd5c99301f892ebc116d8f77beddc8375f4c33839e3da"
+      "bytes": 153074,
+      "sha256": "e4efa5a7a8d948814e0092a2b44722a41a4402b239ff0c9ca60c439ad441fd04"
     },
     {
       "path": "contracts/dsl-v1.examples.json",
@@ -348,83 +348,83 @@
     },
     {
       "path": "contracts/error-codes-v1.json",
-      "bytes": 7479,
-      "sha256": "dbdd4d02b8a828b02271c3c841c6742a17ecbd3fa30b25f50fb9197ad025283b"
+      "bytes": 8826,
+      "sha256": "5541709844b9d6c943ea08431a23457a05b8b09c3867c7d19c608f003e38fde2"
     },
     {
       "path": "contracts/event-v2.examples.json",
-      "bytes": 3828,
-      "sha256": "73b5c3edc9b9abd4f1b9341b720d2f67aa0cb6d56fa5225b27d378a1b12e8766"
+      "bytes": 2234,
+      "sha256": "e331bd87639fb92b365b01ed5ace6beccaf60230e779de2d64eb448f8950ae66"
     },
     {
       "path": "contracts/event-v2.schema.json",
-      "bytes": 14952,
-      "sha256": "ce58624a86a48b008f2393c9edbf5c1462a60259323c390c6797cd68d40a311b"
+      "bytes": 12288,
+      "sha256": "881623a5c20f79da173cee7dd2b70a4affec1d21a69f6be5c0a28e08785046cc"
     },
     {
       "path": "contracts/openapi-v2.json",
-      "bytes": 306538,
-      "sha256": "903834e5f20db926dc9330621873dc625a968da8d285a42b05f6be67a9176233"
+      "bytes": 246894,
+      "sha256": "160256369591ec62a23a53d8db41495b1040232b0a40d79ccb1c25f5d3d8817f"
     },
     {
       "path": "contracts/policy-registry-v1.json",
-      "bytes": 803,
-      "sha256": "af86e5cf714ae69f70f4546af011b7ec6ce4f2109d6b8ed8ed01dc006196f74f"
+      "bytes": 484,
+      "sha256": "ffcf843965d055468927fe3933fd7ac9287e70746f4589a2988aa350d6cecae3"
     },
     {
       "path": "contracts/research-learning-v1.examples.json",
-      "bytes": 41354,
-      "sha256": "0038f3b4b39d73513f2295932b3673ebc073c6df43a31f21fee8188ba763e941"
+      "bytes": 39664,
+      "sha256": "32cb26037b759f855e98fa4c96271dd2376566c4f39cb9eeaa9361a7d076da25"
     },
     {
       "path": "contracts/research-learning-v1.schema.json",
-      "bytes": 68018,
-      "sha256": "0ee582749b6a70947b76520a4089552ba9fb8aad39f4bc9159d91379a10bb956"
+      "bytes": 65121,
+      "sha256": "ad0de4ceaf7cbcdb0dbbe19a7024aa50deb4bf70cacc724c0bff2e76e9b62bbe"
     },
     {
       "path": "contracts/research-v2.examples.json",
-      "bytes": 40498,
-      "sha256": "0ab1d57a2261e6857782dda5219e4056ae4fa2fb3b1ece279478b51d054af393"
+      "bytes": 34329,
+      "sha256": "06109e811b8e793cf0adf57a4558a636ac677531fb1f9cdde615bbbac7c5c090"
     },
     {
       "path": "contracts/research-v2.schema.json",
-      "bytes": 74192,
-      "sha256": "acc22df0a50787a567361f13bf363c35098885ee4dc6f31986ea20167cac7910"
+      "bytes": 63068,
+      "sha256": "702d5fb332ce9ad1353080236eb71f3c59bef100af871a19ce9a8d0a2f3eaf27"
     },
     {
       "path": "contracts/review-coverage-v1.json",
-      "bytes": 46629,
-      "sha256": "c05c38f264cbbb8647f8c2e4ba94cbc7714232e1014ea21cf2b2c079aaa75540"
+      "bytes": 43795,
+      "sha256": "f49855d749a3fb3ee0e689870214df57ee2b8f62a17160450eb068efb7bac00f"
     },
     {
       "path": "contracts/runtime-v2.examples.json",
-      "bytes": 18184,
-      "sha256": "8f72cf7ab5d8176b483863c6288411cd69cb60fac262bc7018a46e6be6cc7225"
+      "bytes": 15863,
+      "sha256": "d5267c40c18aec4301ab34a4b931ed0d0b60280d887ed05e6e3bfbe2e74ec61c"
     },
     {
       "path": "contracts/runtime-v2.schema.json",
-      "bytes": 102405,
-      "sha256": "b769ef677f557567bb2e3192e0d6217cafc2b5b59ae7c075a7533e3b3dfde660"
+      "bytes": 90077,
+      "sha256": "d406e03957a492025b8b9f13f08433f5247fbb6a0fef57af9996cc2dd392e520"
     },
     {
       "path": "contracts/task-input-v2.examples.json",
-      "bytes": 11528,
-      "sha256": "d9ed1168f46bc13d2e0d91521727c1704e93c6904c97e55a67473e6e9b2ec477"
+      "bytes": 11007,
+      "sha256": "6c38df5ef4d82e7421b97898c84d184dc71b41790238ab6ad87a329846d0663f"
     },
     {
       "path": "contracts/task-input-v2.schema.json",
-      "bytes": 13204,
-      "sha256": "cbea093ae4493fcefcdf7ff58b251bf6c091c9023ecdbaaeb53673221fc786d6"
+      "bytes": 12170,
+      "sha256": "1867b8136c492e82b37df24f78cfff28e64d481221b611a2e83623ac2efa2787"
     },
     {
       "path": "tools/check_docs.py",
-      "bytes": 42288,
-      "sha256": "514fd908753b4b00c03a680b030f33f348648eaeef23f5f6b1d1fe2fb6efb6f0"
+      "bytes": 41124,
+      "sha256": "d0b372ca018afaa70f061bd7cb63d2ea453c83570ed4f031d6bd41d96c6b6d40"
     },
     {
       "path": "tools/contract_scenarios.py",
-      "bytes": 47777,
-      "sha256": "1dd68545c8254e36c7d1906c538b588c14f96462d5f004099297627d3ba73be2"
+      "bytes": 42558,
+      "sha256": "e9d796fb587c159902636538f172a57e59ef68c5fbb346230e50f1f30aded45d"
     },
     {
       "path": "tools/requirements-dev.txt",

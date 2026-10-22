@@ -15,7 +15,6 @@ class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("username")
         parser.add_argument("tenant")
-        parser.add_argument("--role", choices=["VIEWER", "RESEARCHER", "ADMIN"], default="RESEARCHER")
         parser.add_argument("--password-stdin", action="store_true")
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -30,6 +29,6 @@ class Command(BaseCommand):
                 raise CommandError("Ambiguous tenant name; use a unique local tenant name")
             tenant = matches[0] if matches else Tenant.objects.create(name=options["tenant"])
             user = User.objects.create_user(username=options["username"], password=password)
-            account = Account.objects.create(user=user, tenant=tenant, role=options["role"])
+            account = Account.objects.create(user=user, tenant=tenant)
             Audit.objects.create(tenant_id=tenant.id, actor_id=account.id, action="PROVISION_ACCOUNT", code="OK")
         self.stdout.write(f"actor={account.id} tenant={tenant.id}")

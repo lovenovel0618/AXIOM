@@ -1,4 +1,4 @@
-"""Current ACL and immutable-version integration with the real parse process."""
+"""Tenant-scoped preview and immutable-version integration with the real parse process."""
 from datetime import timedelta
 import hashlib
 from io import BytesIO, StringIO
@@ -12,7 +12,7 @@ from django.core.management.base import CommandError
 from django.contrib.auth.models import User
 from django.test import TestCase
 from catalog.management.commands.ingest_preview import preview
-from catalog.models import Account, Audit, Dataset, Grant, Tenant, Upload
+from catalog.models import Account, Audit, Dataset, Tenant, Upload
 from catalog.services import actor_for, create_dataset, create_upload, put_upload
 from catalog.storage import LocalVersionStore, ObjectRef
 from catalog.validation import ApiError
@@ -43,7 +43,7 @@ class PreviewTests(TestCase):
 
     def account(self, tenant: Tenant) -> Account:
         user = User.objects.create(username=uuid4().hex, password="!")
-        return Account.objects.create(user=user, tenant=tenant, role="RESEARCHER")
+        return Account.objects.create(user=user, tenant=tenant)
 
     def test_real_preview_has_no_cells_or_business_success(self) -> None:
         result = preview(self.owner.id, self.upload.id, LIMITS)
@@ -56,25 +56,19 @@ class PreviewTests(TestCase):
         self.assertFalse(RuntimeRun.objects.exists())
         self.assertEqual(Audit.objects.filter(action="INSPECT_UPLOAD").count(), 1)
 
-    def test_cross_tenant_and_revoked_acl_reject_before_spawn(self) -> None:
+    def test_cross_tenant_actor_rejects_before_spawn(self) -> None:
         with patch("catalog.management.commands.ingest_preview.inspect_bytes") as process:
             with self.assertRaises(ApiError) as raised:
                 preview(self.other.id, self.upload.id, LIMITS)
             self.assertEqual(raised.exception.code, "NOT_FOUND")
-            Grant.objects.filter(dataset_id=self.dataset, actor=self.owner).delete()
-            with self.assertRaises(ApiError):
-                preview(self.owner.id, self.upload.id, LIMITS)
             process.assert_not_called()
 
-    def test_disabled_and_downgraded_actor(self) -> None:
+    def test_disabled_and_inactive_actor(self) -> None:
         with patch("catalog.management.commands.ingest_preview.inspect_bytes") as process:
             Account.objects.filter(pk=self.owner.id).update(enabled=False)
             with self.assertRaises(ApiError):
                 preview(self.owner.id, self.upload.id, LIMITS)
-            Account.objects.filter(pk=self.owner.id).update(enabled=True, role="VIEWER")
-            with self.assertRaises(ApiError):
-                preview(self.owner.id, self.upload.id, LIMITS)
-            Account.objects.filter(pk=self.owner.id).update(role="RESEARCHER")
+            Account.objects.filter(pk=self.owner.id).update(enabled=True)
             User.objects.filter(pk=self.owner.user_id).update(is_active=False)
             with self.assertRaises(ApiError):
                 preview(self.owner.id, self.upload.id, LIMITS)

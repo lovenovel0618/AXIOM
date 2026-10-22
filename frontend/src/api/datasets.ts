@@ -2,7 +2,7 @@
 import { newKey, toRelativePath, type ApiClient } from './client'
 
 export type UploadFormat = 'CSV' | 'JSON' | 'PARQUET'
-export type DatasetVersionStatus = 'AVAILABLE' | 'UNAVAILABLE' | 'REVOKED'
+export type DatasetVersionStatus = 'AVAILABLE' | 'UNAVAILABLE'
 
 export interface Dataset {
   kind: 'Dataset'

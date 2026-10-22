@@ -1,6 +1,6 @@
 """證據包的原生防線：同租戶複合 FK、身分不可改、引用必須是真實可用產物。
 
-證據包是 READY 版本的公開引用入口，因此不可刪除；狀態變更（如 REVOKED）
+證據包是 READY 版本的公開引用入口，因此不可刪除；狀態變更（如 QUARANTINED）
 只允許 revision 每次加一，且文件與欄位必須同步，避免出現兩份真相。"""
 from django.db import migrations
 

@@ -36,7 +36,7 @@ BEGIN
  FOREACH key IN ARRAY ARRAY['quality_report_id','refit_policy_artifact_id','structure_assessment_artifact_id'] LOOP
   IF NEW.document->key IS DISTINCT FROM 'null'::jsonb THEN RAISE EXCEPTION 'Draft has fabricated result' USING ERRCODE='23514'; END IF;
  END LOOP;
- FOREACH key IN ARRAY ARRAY['frozen_submission_ids','review_ids','published_artifact_ids','evidence_bundle_ids','released_summary_ids'] LOOP
+ FOREACH key IN ARRAY ARRAY['frozen_submission_ids','evidence_bundle_ids'] LOOP
   IF NEW.document->key IS DISTINCT FROM '[]'::jsonb THEN RAISE EXCEPTION 'Draft has fabricated collection' USING ERRCODE='23514'; END IF;
  END LOOP;
  FOREACH key IN ARRAY ARRAY['sealed_test_id','benchmark_partition_id','benchmark_case_id'] LOOP

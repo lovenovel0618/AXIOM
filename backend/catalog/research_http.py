@@ -1,4 +1,4 @@
-"""研究 HTTP 邊界：owner／Dataset ACL 交集、冪等重送與控制 revision。
+"""研究 HTTP 邊界：owner／租戶分區、冪等重送與控制 revision。
 
 Existing v2 research endpoints, bounded to persisted DRAFT operations."""
 import re
@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.http import HttpRequest, JsonResponse
 from catalog.http import allowed_methods, api, body
 from catalog.models import Account, ProfileBinding, Research
-from catalog.research import available_version, create_research, create_version, page, research_dto, research_for, version_for, visible_versions, writable
+from catalog.research import available_version, create_research, create_version, page, research_dto, research_for, version_for, visible_versions
 from catalog.services import replay
 from catalog.validation import ApiError, validate_api
 from catalog.research_state import document_for
@@ -33,13 +33,12 @@ def paging(request: HttpRequest) -> tuple[str, int]:
 @allowed_methods(["GET", "POST"])
 @api
 def researches(request: HttpRequest, actor: Account) -> JsonResponse:
-    """提供 owner 私有研究的建立／列表；寫入使用冪等鍵與現行授權。"""
+    """提供 owner 私有研究的建立／列表；寫入使用冪等鍵與現行租戶分區。"""
     if request.method == "GET":
         cursor, limit = paging(request)
         result = page(Research.objects.filter(owner=actor, tenant_id=actor.tenant_id), actor, "researches", cursor, limit, research_dto)
         validate_api(result, "ResearchPage")
         return JsonResponse(result)
-    writable(actor)
     data = body(request, "CreateResearch")
     def authorize(previous: dict[str, object]) -> None:
         research_for(actor, UUID(str(previous["id"])))
@@ -57,14 +56,13 @@ def research_detail(_request: HttpRequest, actor: Account, identity: UUID) -> Js
 @allowed_methods(["GET", "POST"])
 @api
 def versions(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
-    """建立或分頁查詢固定草稿；重送仍重驗來源 ACL，不沿用舊授權。"""
+    """建立或分頁查詢固定草稿；重送仍重驗來源與租戶分區，不沿用舊狀態。"""
     research = research_for(actor, identity)
     if request.method == "GET":
         cursor, limit = paging(request)
         result = page(visible_versions(actor, research), actor, str(identity), cursor, limit, document_for)
         validate_api(result, "ResearchVersionPage")
         return JsonResponse(result)
-    writable(actor)
     data = body(request, "CreateResearchVersion")
     def authorize(previous: dict[str, object]) -> None:
         version = version_for(actor, UUID(str(previous["id"])))
@@ -87,8 +85,7 @@ def version_detail(_request: HttpRequest, actor: Account, identity: UUID) -> Jso
 @allowed_methods(["POST"])
 @api
 def validate_draft(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
-    """明確啟用才建立 PROFILE；先驗授權，再由冪等及 revision 保護避免重複預留。"""
-    writable(actor)
+    """明確啟用才建立 PROFILE；先驗租戶分區，再由冪等及 revision 保護避免重複預留。"""
     version = version_for(actor, identity)
     available_version(actor, version.dataset_version_id)
     if not settings.PROFILE_ENABLED:
@@ -115,7 +112,7 @@ def control_revision(request: HttpRequest) -> int:
 @allowed_methods(["GET"])
 @api
 def runs(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
-    """提供研究內穩定 root 分頁供重開頁找回任務；簽章 cursor 與每次 ACL 檢查缺一不可。"""
+    """提供研究內穩定 root 分頁供重開頁找回任務；簽章 cursor 與每次租戶分區檢查缺一不可。"""
     version_for(actor,identity)
     cursor, limit = paging(request)
     binding = {"actor":str(actor.id),"tenant":str(actor.tenant_id),"version":str(identity)}

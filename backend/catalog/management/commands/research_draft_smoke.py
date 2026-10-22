@@ -3,13 +3,12 @@ import json
 import secrets
 from argparse import ArgumentParser
 from typing import Any
-from uuid import UUID, uuid4
+from uuid import uuid4
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from catalog.management.commands.business_ingest_smoke import upload, wait_run
 from catalog.management.commands.catalog_smoke import BASE, Browser, FRONTEND_BASE
 from catalog.models import Account, Tenant
-from catalog.services import set_grant
 from catalog.validation import validate_api
 from runtime.contracts import JsonObject, identity_hash
 
@@ -41,7 +40,7 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         password = secrets.token_urlsafe(24)
         user = User.objects.create_user(username="draft-" + uuid4().hex, password=password)
-        actor = Account.objects.create(user=user, tenant=Tenant.objects.create(name="draft-synthetic"), role="ADMIN")
+        Account.objects.create(user=user, tenant=Tenant.objects.create(name="draft-synthetic"))
         browser = Browser(FRONTEND_BASE if options["frontend"] else BASE)
         browser.login(user.get_username(), password)
         status, dataset = browser.post("/api/v2/datasets", {"name": "synthetic-draft"})
@@ -91,10 +90,4 @@ class Command(BaseCommand):
         check(sorted(bundle["proof_artifact_ids"]) == sorted([ready["quality_report_id"], ready["structure_assessment_artifact_id"]]), "Evidence bundle references differ from sealed artifacts")
         status, _ = browser.request(f"/api/v2/evidence-bundles/{uuid4()}")
         check(status == 404, "Unknown evidence bundle was exposed")
-        set_grant(actor.id, actor.id, UUID(dataset["id"]), None)
-        for revoked in [detail, f"/api/v2/evidence-bundles/{bundle_id}"]:
-            status, _ = browser.request(revoked)
-            check(status == 404, "Revoked access exposed " + revoked)
-        status, _ = browser.request(path, "POST", encoded, headers)
-        check(status == 404, "Cached draft bypassed revocation")
-        self.stdout.write(json.dumps({"scope": "T07_RESEARCH_DRAFT_HTTP", "status": "PASS", "via_frontend": bool(options["frontend"]), "ingest_status": run["status"], "research_version_status": ready["status"], "draft_id": draft["id"], "draft_hash": identity_hash(draft), "policy_hash": draft["evaluation_policy_hash"], "unicode_source_mapping": "PASS", "replay_and_restore": "PASS", "revoked_http_status": 404, "profile_http_status": queue_status, "profile_run_status": run["status"], "sealed_test_registered": ready["observation_split"]["sealed_test_id"] is not None, "evidence_bundle_id": bundle_id, "evidence_bundle_status": bundle["status"], "evidence_bundle_revision": bundle["revision"], "evidence_bundle_proof_count": len(bundle["proof_artifact_ids"]), "unknown_bundle_http_status": 404, "product_gate_status": "NOT_RUN"}, indent=2))
+        self.stdout.write(json.dumps({"scope": "T07_RESEARCH_DRAFT_HTTP", "status": "PASS", "via_frontend": bool(options["frontend"]), "ingest_status": run["status"], "research_version_status": ready["status"], "draft_id": draft["id"], "draft_hash": identity_hash(draft), "policy_hash": draft["evaluation_policy_hash"], "unicode_source_mapping": "PASS", "replay_and_restore": "PASS", "profile_http_status": queue_status, "profile_run_status": run["status"], "sealed_test_registered": ready["observation_split"]["sealed_test_id"] is not None, "evidence_bundle_id": bundle_id, "evidence_bundle_status": bundle["status"], "evidence_bundle_revision": bundle["revision"], "evidence_bundle_proof_count": len(bundle["proof_artifact_ids"]), "unknown_bundle_http_status": 404, "product_gate_status": "NOT_RUN"}, indent=2))

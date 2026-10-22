@@ -101,8 +101,6 @@
       },
       "current_event_cursor": "RESEARCH:00000000-0000-4000-8000-000000000003:0",
       "frozen_submission_ids": [],
-      "review_ids": [],
-      "published_artifact_ids": [],
       "evidence_bundle_ids": [],
       "quality_report_id": null,
       "refit_policy_artifact_id": null,
@@ -146,7 +144,6 @@
         "candidates_generated": 0,
         "candidates_accepted": 0
       },
-      "released_summary_ids": [],
       "structure_assessment_artifact_id": "00000000-0000-4000-8000-000000000821"
     },
     {
@@ -560,33 +557,6 @@
       "research_trace_artifact_ids": []
     },
     {
-      "kind": "ReviewDecision",
-      "id": "00000000-0000-4000-8000-000000000085",
-      "tenant_id": "00000000-0000-4000-8000-000000000100",
-      "schema_version": "2.0",
-      "created_at": "2026-10-19T00:00:00Z",
-      "research_version_id": "00000000-0000-4000-8000-000000000003",
-      "evidence_bundle_id": "00000000-0000-4000-8000-000000000086",
-      "reviewer_id": "00000000-0000-4000-8000-000000000087",
-      "decision": "REJECT",
-      "comment": "證據不足，請建立新研究版本補驗。",
-      "expected_revision": 4,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      }
-    },
-    {
       "kind": "ValidationRun",
       "id": "00000000-0000-4000-8000-000000000006",
       "tenant_id": "00000000-0000-4000-8000-000000000100",
@@ -669,42 +639,6 @@
         "00000000-0000-4000-8000-000000000113"
       ],
       "research_trace_artifact_ids": []
-    },
-    {
-      "kind": "PublicationClaim",
-      "id": "00000000-0000-4000-8000-000000000703",
-      "tenant_id": "00000000-0000-4000-8000-000000000001",
-      "schema_version": "2.0",
-      "created_at": "2026-10-20T00:00:00Z",
-      "research_version_id": "00000000-0000-4000-8000-000000000002",
-      "review_id": "00000000-0000-4000-8000-000000000003",
-      "evidence_bundle_id": "00000000-0000-4000-8000-000000000004",
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      }
-    },
-    {
-      "kind": "ReleasedSummary",
-      "id": "00000000-0000-4000-8000-000000000704",
-      "tenant_id": "00000000-0000-4000-8000-000000000001",
-      "schema_version": "2.0",
-      "created_at": "2026-10-20T00:00:00Z",
-      "research_version_id": "00000000-0000-4000-8000-000000000002",
-      "artifact_id": "00000000-0000-4000-8000-000000000705",
-      "disclosure_policy_artifact_id": "00000000-0000-4000-8000-000000000706",
-      "disclosure_policy_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "validity": "ACTIVE"
     }
   ],
   "invalid": [
@@ -984,36 +918,6 @@
       }
     },
     {
-      "reason": "Rejected review uses REJECT, not REJECTED",
-      "document": {
-        "kind": "ReviewDecision",
-        "id": "00000000-0000-4000-8000-000000000085",
-        "tenant_id": "00000000-0000-4000-8000-000000000100",
-        "schema_version": "2.0",
-        "created_at": "2026-10-19T00:00:00Z",
-        "research_version_id": "00000000-0000-4000-8000-000000000003",
-        "evidence_bundle_id": "00000000-0000-4000-8000-000000000086",
-        "reviewer_id": "00000000-0000-4000-8000-000000000087",
-        "decision": "REJECTED",
-        "comment": "證據不足，請建立新研究版本補驗。",
-        "expected_revision": 4,
-        "claim": {
-          "claim_kind": "PREDICTIVE",
-          "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-          "validation_run_id": "00000000-0000-4000-8000-000000000008",
-          "empirical_level": "E2",
-          "proof_level": "P0",
-          "outcome_status": "SUPPORTED",
-          "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-          "assumptions": [
-            "觀測相互獨立"
-          ],
-          "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-          "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-        }
-      }
-    },
-    {
       "reason": "Final evaluation must identify its frozen submission",
       "document": {
         "kind": "ValidationRun",
@@ -1098,49 +1002,6 @@
         "size_bytes": 100,
         "media_type": "application/json",
         "access_class": "PUBLIC"
-      }
-    },
-    {
-      "reason": "公開摘要不可夾帶密封來源 ID",
-      "document": {
-        "kind": "ReleasedSummary",
-        "id": "00000000-0000-4000-8000-000000000704",
-        "tenant_id": "00000000-0000-4000-8000-000000000001",
-        "schema_version": "2.0",
-        "created_at": "2026-10-20T00:00:00Z",
-        "research_version_id": "00000000-0000-4000-8000-000000000002",
-        "artifact_id": "00000000-0000-4000-8000-000000000705",
-        "disclosure_policy_artifact_id": "00000000-0000-4000-8000-000000000706",
-        "disclosure_policy_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        "validity": "ACTIVE",
-        "evidence_bundle_id": "00000000-0000-4000-8000-000000000004"
-      }
-    },
-    {
-      "reason": "MVP 不提供因果結論發布",
-      "document": {
-        "kind": "PublicationClaim",
-        "id": "00000000-0000-4000-8000-000000000703",
-        "tenant_id": "00000000-0000-4000-8000-000000000001",
-        "schema_version": "2.0",
-        "created_at": "2026-10-20T00:00:00Z",
-        "research_version_id": "00000000-0000-4000-8000-000000000002",
-        "review_id": "00000000-0000-4000-8000-000000000003",
-        "evidence_bundle_id": "00000000-0000-4000-8000-000000000004",
-        "claim": {
-          "claim_kind": "CAUSAL",
-          "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-          "validation_run_id": "00000000-0000-4000-8000-000000000008",
-          "empirical_level": "E2",
-          "proof_level": "P0",
-          "outcome_status": "SUPPORTED",
-          "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-          "assumptions": [
-            "觀測相互獨立"
-          ],
-          "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-          "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-        }
       }
     }
   ]

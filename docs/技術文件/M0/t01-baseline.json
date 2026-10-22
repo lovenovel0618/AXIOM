@@ -5,27 +5,27 @@
   "sources": [
     {
       "path": "docs/企劃案/01-需求/02-需求規格與使用情境.md",
-      "sha256": "b0f7c25527aa78f7441fbc16952f47a33a79829c7e2add3ab21f8f282c95b113"
+      "sha256": "3ff2b01b3823fb6a22173be207311adc5e18bbf2021afbb4088a231a764ec0ad"
     },
     {
       "path": "docs/企劃案/11-交付/30-里程碑與分階段開發計畫.md",
-      "sha256": "381509e10beb1238139fc7f803af69d455bbb159778c4bc6b9a416c7e1d74281"
+      "sha256": "19b0141c0a32e05aff852ce28ecf373811c310a9ca63eede820875cec9844226"
     },
     {
       "path": "docs/企劃案/11-交付/31-工作拆解WBS與依賴.md",
-      "sha256": "a3aff21f3814fd45f4e325ca9be94fa943b2ca091dd70d21fafc4622c2193c71"
+      "sha256": "034db546086f910533a36f0062e6a0fa1fdfe77728dd67dc1081defa6140bc96"
     },
     {
       "path": "docs/企劃案/12-附錄/37-決策待確認清單.md",
-      "sha256": "521b92c52ace3ff6225150f31f907275a262e8e25e12c05d75e55b78aec32f4a"
+      "sha256": "a0f2890021f572a25be5943140c91afbba2337d74d5536d2479192aafad738bf"
     },
     {
-      "path": "docs/企劃案/13-專題深化/46-發布驗收矩陣與交付證據.md",
-      "sha256": "5e45c07a3ae83e1eac60acae0718ab6ce764497b55e982a4803cb4adf953ad25"
+      "path": "docs/企劃案/13-專題深化/46-驗收矩陣與交付證據.md",
+      "sha256": "32212d9f1ba3dee88def8f04845c326f80fa4243f4353e5012e344d75ac414b3"
     },
     {
       "path": "docs/企劃案/15-工程/53-工程治理與開發者工作流.md",
-      "sha256": "4c94bab36321124e2cf6544bc30792a332f72299bf412d8359e20baa64ecbd45"
+      "sha256": "f853a76c58a0f30adcf23e4e38407e8e6fc95a180572117709dbcb77b7232e6b"
     },
     {
       "path": "docs/企劃案/contracts/capability-registry-v1.json",
@@ -33,7 +33,7 @@
     },
     {
       "path": "docs/企劃案/contracts/policy-registry-v1.json",
-      "sha256": "af86e5cf714ae69f70f4546af011b7ec6ce4f2109d6b8ed8ed01dc006196f74f"
+      "sha256": "ffcf843965d055468927fe3933fd7ac9287e70746f4589a2988aa350d6cecae3"
     }
   ],
   "requirements": [
@@ -232,15 +232,15 @@
       "description": "正式 blind generator、題數、成功率／拒答／成本門檻",
       "owner_role": "Math/QA",
       "deadline": "M0 數學基準審查前",
-      "restriction": "公開 fixture 可開發；G2 正式發布 BLOCKED",
+      "restriction": "公開 fixture 可開發；G2 正式上線 BLOCKED",
       "status": "OPEN",
       "approved_by": null,
       "evidence_uri": null
     },
     {
       "id": "D-04",
-      "description": "外部模型供應商條款、資料目的與例外批准",
-      "owner_role": "資料 owner/安全/AI",
+      "description": "外部模型供應商條款、資料目的與例外處理",
+      "owner_role": "資料負責／安全／AI",
       "deadline": "任一外部請求前",
       "restriction": "全部外部 LLM 關閉，MVP 走本地規則",
       "status": "OPEN",
@@ -249,10 +249,10 @@
     },
     {
       "id": "D-05",
-      "description": "資料保留、刪除SLA、備份到期、授權、publication／disclosure政策及例外",
-      "owner_role": "資料 owner/安全/Math",
-      "deadline": "接收真實敏感資料或對外發布／釋出前",
-      "restriction": "僅公開／合成且有使用權資料；不接敏感資料；正式發布／摘要釋出及刪除維持BLOCKED",
+      "description": "資料保留、刪除SLA、備份到期、授權、資料分級與外送政策及例外",
+      "owner_role": "資料負責／安全／Math",
+      "deadline": "接收真實敏感資料或對外傳送前",
+      "restriction": "僅公開／合成且有使用權資料；不接敏感資料；對外傳送及刪除維持BLOCKED",
       "status": "OPEN",
       "approved_by": null,
       "evidence_uri": null
@@ -262,7 +262,7 @@
       "description": "RPO/RTO、正式錯誤率／告警／SLO 窗口",
       "owner_role": "SRE/PM",
       "deadline": "M3 G7 前",
-      "restriction": "每日開發備份 7 集；無正式可用性承諾；G7 正式發布 BLOCKED",
+      "restriction": "每日開發備份 7 集；無正式可用性承諾；G7 正式上線 BLOCKED",
       "status": "OPEN",
       "approved_by": null,
       "evidence_uri": null
@@ -289,8 +289,8 @@
     },
     {
       "id": "D-09",
-      "description": "正式對外架設、域名／憑證／存取控管",
-      "owner_role": "平台/Security",
+      "description": "正式對外架設、域名／憑證／租戶分區",
+      "owner_role": "平台／Security",
       "deadline": "對外開放前",
       "restriction": "本機 loopback；禁止公開部署",
       "status": "OPEN",
@@ -341,7 +341,7 @@
       "depends_on": [
         "T01"
       ],
-      "deliverable": "公開與封存來源分開，QA 權限與 D-03 待決可見",
+      "deliverable": "公開與封存來源分開，QA 存取範圍與 D-03 待決可見",
       "status": "NOT_STARTED"
     },
     {

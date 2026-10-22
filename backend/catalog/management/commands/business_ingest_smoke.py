@@ -5,13 +5,12 @@ import json
 import secrets
 import time
 from typing import Any
-from uuid import UUID, uuid4
+from uuid import uuid4
 import polars as pl
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from catalog.management.commands.catalog_smoke import Browser
 from catalog.models import Account, Tenant
-from catalog.services import set_grant
 from catalog.validation import validate_api
 
 
@@ -70,7 +69,7 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         password = secrets.token_urlsafe(24)
         user = User.objects.create_user(username="ingest-" + uuid4().hex, password=password)
-        actor = Account.objects.create(user=user, tenant=Tenant.objects.create(name="ingest-" + uuid4().hex), role="ADMIN")
+        Account.objects.create(user=user, tenant=Tenant.objects.create(name="ingest-" + uuid4().hex))
         browser = Browser()
         browser.login(user.get_username(), password)
         status, dataset = browser.post("/api/v2/datasets", {"name": "synthetic-business-ingest"})
@@ -97,11 +96,6 @@ class Command(BaseCommand):
         status, raw = browser.request(f"/api/v2/datasets/{dataset['id']}/versions")
         if status != 200 or len(json.loads(raw)["items"]) != 3:
             raise CommandError("Duplicate or failed version committed")
-        set_grant(actor.id, actor.id, UUID(dataset["id"]), None)
-        for path in [f"/api/v2/runs/{results[0]['run_id']}", f"/api/v2/artifacts/{results[0]['preview_id']}/content"]:
-            status, _ = browser.request(path)
-            if status != 404:
-                raise CommandError("Revoked access remained readable")
         self.stdout.write(json.dumps({"scope": "T07_ACTUAL_LOCAL_INGEST", "status": "PASS", "results": results,
-            "dedup_versions": 3, "invalid_status": invalid["status"], "revoked_http_status": 404, "raw_http_status": 404,
+            "dedup_versions": 3, "invalid_status": invalid["status"], "raw_http_status": 404,
             "research_version_status": "NOT_EXERCISED_BY_THIS_SMOKE", "product_gate_status": "NOT_RUN"}, indent=2))

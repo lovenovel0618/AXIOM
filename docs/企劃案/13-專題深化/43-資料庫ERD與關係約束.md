@@ -15,7 +15,6 @@ erDiagram
  ARTIFACT ||--o{ DATASET_VERSION : stores
  ARTIFACT ||--o{ VALIDATION_RUN : stores
  ARTIFACT ||--o{ PROOF_ARTIFACT : stores
- ARTIFACT ||--o{ PUBLISHED_ARTIFACT : stores
  DATASET ||--o{ DATASET_VERSION : versions
  RESEARCH ||--o{ RESEARCH_VERSION : versions
  DATASET_VERSION ||--o{ RESEARCH_VERSION : uses
@@ -53,16 +52,13 @@ erDiagram
  EVIDENCE_BUNDLE ||--o{ EVIDENCE_PROOF_LINK : contains
  PROOF_ARTIFACT ||--o{ EVIDENCE_PROOF_LINK : referenced
  EQUATION_VERSION ||--o{ PROOF_ARTIFACT : proposition
- EVIDENCE_BUNDLE ||--o{ REVIEW_DECISION : reviewed
- REVIEW_DECISION ||--o| PUBLISHED_ARTIFACT : publishes
- EVIDENCE_BUNDLE ||--o{ EVIDENCE_REVOCATION : revoked
  EVIDENCE_BUNDLE ||--o{ EXPERIENCE_LINK : supports
  TRAINING_RUN ||--o{ MODEL_VERSION : produces
  RUN |o--o{ OUTBOX : run_or_source
  RESEARCH_VERSION |o--o{ OUTBOX : research_stream
 ```
 
-Derived feature、memory、training snapshot 是 M4/M7 的擴充表，所有引用必須具來源版本與授權，不能讓 pgvector 成為權威有效性來源。
+Derived feature、memory、training snapshot 是 M4/M7 的擴充表，所有引用必須具來源版本與分類政策，不能讓 pgvector 成為權威有效性來源。
 
 ## 唯一性、索引與刪除
 
@@ -76,11 +72,10 @@ Derived feature、memory、training snapshot 是 M4/M7 的擴充表，所有引�
 | FitRun | unique(run_id)、同租戶FK；id為FitRun識別，資料／公式版本FK | 不混合不同參數估計 |
 | ValidationRun | 開發評估unique(tenant_id,run_id,observation_split_id,split_role,metric_version)；FINAL_TEST另partial unique(tenant_id,submission_id,frozen_candidate_id,metric_version) | 更換run_id仍不能重複最終結果；final需非null提交引用 |
 | Evidence links | unique(bundle_id,validation_id/proof_id)；tenant 複合 FK | 防止外租戶或重複證據 |
-| ReviewDecision | unique(research_version_id,expected_revision) | 同 revision 僅一個審核決定 |
 | Outbox | event_id 唯一、unique(stream_scope,stream_id,sequence) | 至少一次投遞＋消費去重 |
 | IdempotencyRecord | unique(tenant_id,actor_id,method,path,key) | request_hash、HTTP 結果與資源引用原子保存 |
 
-歷史版本與證據 FK 預設 RESTRICT，不級聯刪掉已發布來源。可重建暫存才可 TTL 清理。敏感刪除依 AX-26 專用流程，對保留稽核只留政策允許欄位。owner/admin 權限不靠外鍵自動取得，API ACL 與 DB 租戶約束均須驗證。
+歷史版本與證據 FK 預設 RESTRICT，不級聯刪掉已被引用的來源。可重建暫存才可 TTL 清理。敏感刪除依 AX-26 專用流程，對保留稽核只留政策允許欄位。資源可見性由租戶分區與 access_class 分類政策決定，不靠外鍵自動取得；服務端分類政策與 DB 租戶約束均須驗證。
 
 ## 物件儲存提交與交易
 
@@ -90,7 +85,7 @@ Derived feature、memory、training snapshot 是 M4/M7 的擴充表，所有引�
 4. 若第 3 步失敗，正式物件可能是孤兒；清理器經至少 24 小時寬限與 DB 無引用檢查後回收。
 5. DB 已提交後物件遺失則標版本不可用、阻擋新研究並復原，不以空檔或新內容覆蓋原 hash。
 
-跨 DB／MinIO 無共同交易；checksum 不能替代可恢復流程。發布、撤銷、預算扣帳、租約裁決皆鎖權威列並同交易寫 outbox。使用者大檔不放 DB blob。
+跨 DB／MinIO 無共同交易；checksum 不能替代可恢復流程。刪除、隔離、預算扣帳、租約裁決皆鎖權威列並同交易寫 outbox。使用者大檔不放 DB blob。
 
 ## Schema 升級與驗收
 
@@ -141,21 +136,21 @@ ResearchVersion的evaluation_policy、hash及SemanticProfile.source_column不可
 
 ## v2.7 持久約束與資料生命週期
 
-新增私有ResourceProvenance、ExecutionManifest、UploadRecord、SummaryLineage，對應runtime schema；公開新增PublicationClaim／ReleasedSummary。PublicationClaim.review_id與PublishedArtifact.publication_claim_id為同tenant FK；SummaryLineage.released_summary_id唯一且所有來源FK同tenant。資源建立與provenance／registry同交易，provenance append-only且resource_type/resource_id唯一；作者集合按AX-26保存不可變責任閉包，刪帳號不cascade刪歷史。
+新增私有ResourceProvenance、ExecutionManifest、UploadRecord，對應runtime schema。資源建立與provenance／registry同交易，provenance append-only且resource_type/resource_id唯一；作者集合按AX-26保存不可變責任閉包，刪帳號不cascade刪歷史。
 
-UploadRecord COMPLETED必非null object_version／ingest_run_id；一session一INGEST，以business unique保證超過冪等TTL仍重用。dispatch key按AX-38設唯一鍵並保存payload hash，不能讓不同payload使用相同key。Evaluation計數、單位比例、publication claim資格與政策來源屬跨物件語意約束，DB CHECK／FK、可信服務與故障注入需共同驗收，JSON shape通過不代表這些不變條件已實作。
+UploadRecord COMPLETED必非null object_version／ingest_run_id；一session一INGEST，以business unique保證超過冪等TTL仍重用。dispatch key按AX-38設唯一鍵並保存payload hash，不能讓不同payload使用相同key。Evaluation計數、單位比例與政策來源屬跨物件語意約束，DB CHECK／FK、可信服務與故障注入需共同驗收，JSON shape通過不代表這些不變條件已實作。
 
-MVP不提供資料硬刪除API。D-05未定保留及刪除政策前只允許受審查的隔離／tombstone；操作需先dry-run計算原始檔、projection、report、memory、cache及備份的lineage影響，不能讓失去來源的摘要仍有效。GC只處理確定無引用的暫存，資料庫刪除成功不代表備份／下載副本已消失。私有內容刪除與最少必要audit／曝光ledger保留必分開裁決，無政策就阻擋，不悄悄選擇永久保留或全部刪光。
+MVP不提供資料硬刪除API。D-05未定保留及刪除政策前只允許受控的隔離／tombstone；操作需先dry-run計算原始檔、projection、report、memory、cache及備份的lineage影響，不能讓失去來源的摘要仍有效。GC只處理確定無引用的暫存，資料庫刪除成功不代表備份／下載副本已消失。私有內容刪除與最少必要audit／曝光ledger保留必分開裁決，無政策就阻擋，不悄悄選擇永久保留或全部刪光。
 
 ## 軌跡與學習lineage約束
 
-Run.research_trace_artifact_ids為授權投影，內部以(run_id,chunk_sequence)及node_id唯一、payload hash不可變，前chunk及parent需已存在／同tenant並保證DAG；遲到診斷不寫合法證據關聯。新payload中evidence、row依賴、case family、模型與訓練來源均為同租戶受控FK／registry引用，不能因都是UUID就放行。
+Run.research_trace_artifact_ids為受控投影，內部以(run_id,chunk_sequence)及node_id唯一、payload hash不可變，前chunk及parent需已存在／同tenant並保證DAG；遲到診斷不寫合法證據關聯。新payload中evidence、row依賴、case family、模型與訓練來源均為同租戶受控FK／registry引用，不能因都是UUID就放行。
 
-批次以(tenant,policy_hash,input_high_watermark)唯一、提交結果後才CAS前移水位；壓縮manifest切換不改Artifact內容身分，原bytes／hash仍可還原。ExperienceVersion append-only、supersedes不成環；模型／規則release與來源撤銷有持久影響索引，不能只靠向量庫刪embedding。M4／M7實作需實際DB遷移與併發驗收，payload schema不代替關係約束。
+批次以(tenant,policy_hash,input_high_watermark)唯一、提交結果後才CAS前移水位；壓縮manifest切換不改Artifact內容身分，原bytes／hash仍可還原。ExperienceVersion append-only、supersedes不成環；模型／規則更新與來源刪除有持久影響索引，不能只靠向量庫刪embedding。M4／M7實作需實際DB遷移與併發驗收，payload schema不代替關係約束。
 
 ## v2.9 完成狀態及分級鏈約束
 
-AVAILABLE DatasetVersion必有metadata preview，READY以上研究版本必有fit結構評估；這是內部完成交易的不變條件；公開DTO因授權過濾可回null，不能把公開null當內部未完成或遺失的證據，也不回傳洩漏資源存在性的私有原因。內部缺引用需完整性告警／修復，不以安全投影掩蓋。trace唯一鍵為(tenant,trace_stream_id,sequence)，stream固定run／class／audience；跨私有前提的公開節點拒絕。plan／recipe、訓練分區authority及source group引用需同租戶FK／registry驗證；UUID形狀不證引用有效。
+AVAILABLE DatasetVersion必有metadata preview，READY以上研究版本必有fit結構評估；這是內部完成交易的不變條件；公開DTO因分類政策過濾可回null，不能把公開null當內部未完成或遺失的證據，也不回傳洩漏資源存在性的私有原因。內部缺引用需完整性告警／修復，不以安全投影掩蓋。trace唯一鍵為(tenant,trace_stream_id,sequence)，stream固定run／class／audience；跨私有前提的公開節點拒絕。plan／recipe、訓練分區authority及source group引用需同租戶FK／registry驗證；UUID形狀不證引用有效。
 
 ## 共用規則
 

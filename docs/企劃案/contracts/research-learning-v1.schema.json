@@ -41,9 +41,6 @@
       "$ref": "#/$defs/TrainingDatasetManifest"
     },
     {
-      "$ref": "#/$defs/LearningRelease"
-    },
-    {
       "$ref": "#/$defs/VerificationPlan"
     },
     {
@@ -2350,7 +2347,6 @@
             "RAW_OBSERVATION",
             "CANDIDATE",
             "BENCHMARK_VERIFIED",
-            "REVOKED",
             "QUARANTINED"
           ]
         },
@@ -2576,133 +2572,6 @@
         "partition_authority_artifact_id"
       ],
       "additionalProperties": false
-    },
-    "LearningRelease": {
-      "type": "object",
-      "properties": {
-        "kind": {
-          "const": "LearningRelease"
-        },
-        "id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "tenant_id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "research_version_id": {
-          "anyOf": [
-            {
-              "type": "string",
-              "format": "uuid"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "schema_version": {
-          "const": "1.0"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "artifact_access_class": {
-          "type": "string",
-          "enum": [
-            "PROJECT",
-            "SEALED_DETAIL"
-          ]
-        },
-        "destination": {
-          "type": "string",
-          "enum": [
-            "MEMORY",
-            "RULE",
-            "MODEL"
-          ]
-        },
-        "candidate_manifest_id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "baseline_manifest_id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "benchmark_artifact_id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "ablation_artifact_id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "approval_artifact_id": {
-          "anyOf": [
-            {
-              "type": "string",
-              "format": "uuid"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "rollback_manifest_id": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "CANDIDATE",
-            "APPROVED",
-            "REJECTED",
-            "REVOKED",
-            "QUARANTINED"
-          ]
-        }
-      },
-      "required": [
-        "kind",
-        "id",
-        "tenant_id",
-        "research_version_id",
-        "schema_version",
-        "created_at",
-        "artifact_access_class",
-        "destination",
-        "candidate_manifest_id",
-        "baseline_manifest_id",
-        "benchmark_artifact_id",
-        "ablation_artifact_id",
-        "approval_artifact_id",
-        "rollback_manifest_id",
-        "status"
-      ],
-      "additionalProperties": false,
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "status": {
-                "const": "APPROVED"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "approval_artifact_id": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          }
-        }
-      ]
     },
     "VerificationPlan": {
       "type": "object",

@@ -105,8 +105,6 @@
       "frozen_submission_ids": [
         "00000000-0000-4000-8000-000000000065"
       ],
-      "review_ids": [],
-      "published_artifact_ids": [],
       "evidence_bundle_ids": [],
       "quality_report_id": null,
       "refit_policy_artifact_id": null,
@@ -150,7 +148,6 @@
         "candidates_generated": 0,
         "candidates_accepted": 0
       },
-      "released_summary_ids": [],
       "structure_assessment_artifact_id": "00000000-0000-4000-8000-000000000821"
     },
     "equation": {
@@ -821,12 +818,12 @@
         ],
         [
           "RESEARCH",
-          "ReviewRecorded",
+          "ResearchVersionReady",
           1
         ],
         [
           "RESEARCH",
-          "EvidenceRevoked",
+          "ResearchVersionStateChanged",
           2
         ]
       ],
@@ -843,7 +840,7 @@
         ],
         [
           "RUN",
-          "ReviewRecorded",
+          "RunStarted",
           2
         ]
       ],
@@ -2358,132 +2355,6 @@
     },
     {
       "id": "CF-70",
-      "check": "access",
-      "expected": "NOT_FOUND",
-      "actor": "reader",
-      "access_class": "SEALED_DETAIL",
-      "acl_read": true
-    },
-    {
-      "id": "CF-71",
-      "check": "access",
-      "expected": "NOT_FOUND",
-      "actor": "admin",
-      "access_class": "SEALED_DETAIL",
-      "acl_read": true
-    },
-    {
-      "id": "CF-72",
-      "check": "access",
-      "expected": "NOT_FOUND",
-      "actor": "solver",
-      "access_class": "SEALED_DETAIL",
-      "acl_read": true
-    },
-    {
-      "id": "CF-73",
-      "check": "access",
-      "expected": "ACCEPT",
-      "actor": "reviewer",
-      "access_class": "SEALED_DETAIL",
-      "acl_read": true,
-      "isolated_grant": true,
-      "independent_reviewer": true
-    },
-    {
-      "id": "CF-74",
-      "check": "access",
-      "expected": "NOT_FOUND",
-      "actor": "reviewer",
-      "access_class": "SEALED_DETAIL",
-      "acl_read": true,
-      "isolated_grant": true,
-      "independent_reviewer": false
-    },
-    {
-      "id": "CF-75",
-      "check": "access",
-      "expected": "ACCEPT",
-      "actor": "evaluator",
-      "access_class": "SEALED_DETAIL",
-      "acl_read": true,
-      "submission_bound": true
-    },
-    {
-      "id": "CF-76",
-      "check": "access",
-      "expected": "NOT_FOUND",
-      "actor": "evaluator",
-      "access_class": "SEALED_DETAIL",
-      "acl_read": true,
-      "submission_bound": false
-    },
-    {
-      "id": "CF-77",
-      "check": "access",
-      "expected": "ACCEPT",
-      "actor": "reader",
-      "access_class": "RELEASED_AGGREGATE",
-      "acl_read": true,
-      "release_checked": true
-    },
-    {
-      "id": "CF-78",
-      "check": "access",
-      "expected": "NOT_FOUND",
-      "actor": "solver",
-      "access_class": "RELEASED_AGGREGATE",
-      "acl_read": true,
-      "release_checked": true
-    },
-    {
-      "id": "CF-79",
-      "check": "access",
-      "expected": "NOT_FOUND",
-      "actor": "reader",
-      "access_class": "RELEASED_AGGREGATE",
-      "acl_read": true,
-      "release_checked": false
-    },
-    {
-      "id": "CF-80",
-      "check": "access",
-      "expected": "ACCEPT",
-      "actor": "solver",
-      "access_class": "PROJECT",
-      "acl_read": true,
-      "task_bound": true
-    },
-    {
-      "id": "CF-81",
-      "check": "access",
-      "expected": "NOT_FOUND",
-      "actor": "solver",
-      "access_class": "PROJECT",
-      "acl_read": true,
-      "task_bound": false
-    },
-    {
-      "id": "CF-82",
-      "check": "access",
-      "expected": "NOT_FOUND",
-      "actor": "reader",
-      "access_class": "PROJECT",
-      "acl_read": true,
-      "inherited_sealed": true
-    },
-    {
-      "id": "CF-83",
-      "check": "access",
-      "expected": "NOT_FOUND",
-      "actor": "reviewer",
-      "access_class": "SEALED_DETAIL",
-      "acl_read": false,
-      "isolated_grant": true,
-      "independent_reviewer": true
-    },
-    {
-      "id": "CF-84",
       "check": "final_slot",
       "expected": "REUSE_EVALUATION_RUN",
       "existing": {
@@ -2514,7 +2385,7 @@
       }
     },
     {
-      "id": "CF-85",
+      "id": "CF-71",
       "check": "final_slot",
       "expected": "EXISTING_RESULT",
       "existing": {
@@ -2545,7 +2416,7 @@
       }
     },
     {
-      "id": "CF-86",
+      "id": "CF-72",
       "check": "final_slot",
       "expected": "INVALID_TRANSITION",
       "existing": {
@@ -2576,7 +2447,7 @@
       }
     },
     {
-      "id": "CF-87",
+      "id": "CF-73",
       "check": "final_slot",
       "expected": "NEW_SLOT",
       "existing": {
@@ -2607,7 +2478,7 @@
       }
     },
     {
-      "id": "CF-88",
+      "id": "CF-74",
       "check": "domain",
       "expected": "ACCEPT",
       "input_values": [
@@ -2632,7 +2503,7 @@
       ]
     },
     {
-      "id": "CF-89",
+      "id": "CF-75",
       "check": "domain",
       "expected": "DOMAIN_VIOLATION",
       "input_values": [
@@ -2640,7 +2511,7 @@
       ]
     },
     {
-      "id": "CF-90",
+      "id": "CF-76",
       "check": "domain",
       "expected": "DOMAIN_VIOLATION",
       "input_values": [
@@ -2654,7 +2525,7 @@
       ]
     },
     {
-      "id": "CF-91",
+      "id": "CF-77",
       "check": "domain",
       "expected": "INVALID_RESEARCH_DOMAIN",
       "input_values": [],
@@ -2669,7 +2540,7 @@
       ]
     },
     {
-      "id": "CF-92",
+      "id": "CF-78",
       "check": "domain",
       "expected": "INVALID_RESEARCH_DOMAIN",
       "input_values": [],
@@ -2681,7 +2552,7 @@
       ]
     },
     {
-      "id": "CF-93",
+      "id": "CF-79",
       "check": "domain",
       "expected": "EQUATION_DOMAIN_MISMATCH",
       "input_values": [
@@ -2704,7 +2575,7 @@
       ]
     },
     {
-      "id": "CF-94",
+      "id": "CF-80",
       "check": "exposure_tokens",
       "original": {
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -2821,7 +2692,7 @@
       "expected": "BLIND_ELIGIBILITY_DENIED"
     },
     {
-      "id": "CF-95",
+      "id": "CF-81",
       "check": "exposure_tokens",
       "original": {
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -2914,7 +2785,7 @@
       "expected": "BLIND_ELIGIBILITY_DENIED"
     },
     {
-      "id": "CF-96",
+      "id": "CF-82",
       "check": "exposure_recovery",
       "expected": "ACCEPT",
       "recovery": {
@@ -2933,7 +2804,7 @@
       }
     },
     {
-      "id": "CF-97",
+      "id": "CF-83",
       "check": "exposure_recovery",
       "expected": "EXPOSURE_RECOVERY_BLOCKED",
       "recovery": {
@@ -2952,7 +2823,7 @@
       }
     },
     {
-      "id": "CF-98",
+      "id": "CF-84",
       "check": "exposure_recovery",
       "expected": "EXPOSURE_RECOVERY_BLOCKED",
       "recovery": {
@@ -2971,7 +2842,7 @@
       }
     },
     {
-      "id": "CF-99",
+      "id": "CF-85",
       "check": "exposure_recovery",
       "expected": "EXPOSURE_RECOVERY_BLOCKED",
       "recovery": {
@@ -2990,7 +2861,7 @@
       }
     },
     {
-      "id": "CF-100",
+      "id": "CF-86",
       "check": "exposure_recovery",
       "expected": "EXPOSURE_RECOVERY_BLOCKED",
       "recovery": {
@@ -3009,23 +2880,23 @@
       }
     },
     {
-      "id": "CF-101",
+      "id": "CF-87",
       "check": "empty_search",
-      "expected": "SUCCEEDED:INSUFFICIENT_EVIDENCE:NO_VALID_CANDIDATE:REVIEW",
+      "expected": "SUCCEEDED:INSUFFICIENT_EVIDENCE:NO_VALID_CANDIDATE",
       "eligible_candidates": 0,
       "final_budget_available": true,
       "infrastructure_failed": false
     },
     {
-      "id": "CF-102",
+      "id": "CF-88",
       "check": "empty_search",
-      "expected": "SUCCEEDED:INSUFFICIENT_EVIDENCE:BUDGET_EXHAUSTED:REVIEW",
+      "expected": "SUCCEEDED:INSUFFICIENT_EVIDENCE:BUDGET_EXHAUSTED",
       "eligible_candidates": 2,
       "final_budget_available": false,
       "infrastructure_failed": false
     },
     {
-      "id": "CF-103",
+      "id": "CF-89",
       "check": "empty_search",
       "expected": "FREEZE_AND_EVALUATE",
       "eligible_candidates": 2,
@@ -3033,7 +2904,7 @@
       "infrastructure_failed": false
     },
     {
-      "id": "CF-104",
+      "id": "CF-90",
       "check": "empty_search",
       "expected": "FAILED",
       "eligible_candidates": 0,
@@ -3041,7 +2912,7 @@
       "infrastructure_failed": true
     },
     {
-      "id": "CF-105",
+      "id": "CF-91",
       "check": "evaluation_policy",
       "expected": "ACCEPT",
       "policy": {
@@ -3064,7 +2935,7 @@
       "development_count": 6
     },
     {
-      "id": "CF-106",
+      "id": "CF-92",
       "check": "evaluation_policy",
       "expected": "INSUFFICIENT_EVIDENCE",
       "policy": {
@@ -3087,7 +2958,7 @@
       "development_count": 6
     },
     {
-      "id": "CF-107",
+      "id": "CF-93",
       "check": "evaluation_policy",
       "expected": "EVALUATION_POLICY_INVALID",
       "policy": {
@@ -3110,7 +2981,7 @@
       "development_count": 6
     },
     {
-      "id": "CF-108",
+      "id": "CF-94",
       "check": "evaluation_policy",
       "expected": "EVALUATION_POLICY_INVALID",
       "policy": {
@@ -3133,7 +3004,7 @@
       "development_count": 6
     },
     {
-      "id": "CF-109",
+      "id": "CF-95",
       "check": "evaluation_policy",
       "expected": "EVALUATION_POLICY_INVALID",
       "policy": {
@@ -3156,7 +3027,7 @@
       "development_count": 6
     },
     {
-      "id": "CF-110",
+      "id": "CF-96",
       "check": "evaluation_policy",
       "expected": "ACCEPT",
       "policy": {
@@ -3179,7 +3050,7 @@
       "development_count": 6
     },
     {
-      "id": "CF-111",
+      "id": "CF-97",
       "check": "evaluation_policy",
       "expected": "INSUFFICIENT_EVIDENCE",
       "policy": {
@@ -3202,7 +3073,7 @@
       "development_count": 6
     },
     {
-      "id": "CF-112",
+      "id": "CF-98",
       "check": "evaluation_policy",
       "expected": "ACCEPT",
       "policy": {
@@ -3225,7 +3096,7 @@
       "development_count": 6
     },
     {
-      "id": "CF-113",
+      "id": "CF-99",
       "check": "evaluation_policy",
       "expected": "EVALUATION_POLICY_INVALID",
       "policy": {
@@ -3248,7 +3119,7 @@
       "development_count": 6
     },
     {
-      "id": "CF-114",
+      "id": "CF-100",
       "check": "column_binding",
       "expected": "ACCEPT",
       "semantic_profile": {
@@ -3302,7 +3173,7 @@
       ]
     },
     {
-      "id": "CF-115",
+      "id": "CF-101",
       "check": "column_binding",
       "expected": "SOURCE_COLUMN_NOT_FOUND",
       "semantic_profile": {
@@ -3355,7 +3226,7 @@
       ]
     },
     {
-      "id": "CF-116",
+      "id": "CF-102",
       "check": "column_binding",
       "expected": "SOURCE_COLUMN_CONFLICT",
       "semantic_profile": {
@@ -3409,7 +3280,7 @@
       ]
     },
     {
-      "id": "CF-117",
+      "id": "CF-103",
       "check": "research_budget",
       "expected": "RESEARCH_BUDGET_EXHAUSTED",
       "research_limit": 100,
@@ -3421,7 +3292,7 @@
       ]
     },
     {
-      "id": "CF-118",
+      "id": "CF-104",
       "check": "research_budget",
       "expected": "RUN_BUDGET_EXHAUSTED",
       "research_limit": 100,
@@ -3433,7 +3304,7 @@
       ]
     },
     {
-      "id": "CF-119",
+      "id": "CF-105",
       "check": "research_budget",
       "expected": "RESEARCH_BUDGET_EXHAUSTED",
       "research_limit": 100,
@@ -3446,7 +3317,7 @@
       ]
     },
     {
-      "id": "CF-120",
+      "id": "CF-106",
       "check": "research_budget",
       "expected": "ACCEPT",
       "research_limit": 100,
@@ -3458,7 +3329,7 @@
       ]
     },
     {
-      "id": "CF-121",
+      "id": "CF-107",
       "check": "research_budget",
       "expected": "ALREADY_ACCOUNTED",
       "research_limit": 100,
@@ -3471,7 +3342,7 @@
       "usage_event_seen": true
     },
     {
-      "id": "CF-122",
+      "id": "CF-108",
       "check": "freeze",
       "expected": "EVALUATION_POLICY_MISMATCH",
       "mutations": [
@@ -3482,7 +3353,7 @@
       ]
     },
     {
-      "id": "CF-123",
+      "id": "CF-109",
       "check": "evaluation_policy",
       "expected": "INSUFFICIENT_EVIDENCE",
       "policy": {
@@ -3506,7 +3377,7 @@
       "grouped_rows": false
     },
     {
-      "id": "CF-124",
+      "id": "CF-110",
       "check": "evaluation_policy",
       "expected": "EVALUATION_POLICY_INVALID",
       "policy": {
@@ -3530,7 +3401,7 @@
       "grouped_rows": true
     },
     {
-      "id": "CF-125",
+      "id": "CF-111",
       "check": "evaluation_policy",
       "expected": "INSUFFICIENT_EVIDENCE",
       "policy": {
@@ -3554,7 +3425,7 @@
       "grouped_rows": true
     },
     {
-      "id": "CF-126",
+      "id": "CF-112",
       "check": "column_binding",
       "expected": "SOURCE_COLUMN_CONFLICT",
       "semantic_profile": {
@@ -3614,7 +3485,7 @@
       "canonical": "1.5",
       "source_error": "2",
       "canonical_error": "0.02",
-      "id": "CF-127",
+      "id": "CF-113",
       "check": "unit_conversion",
       "expected": "ACCEPT"
     },
@@ -3625,7 +3496,7 @@
       "canonical": "1.5",
       "source_error": "2",
       "canonical_error": "0.02",
-      "id": "CF-128",
+      "id": "CF-114",
       "check": "unit_conversion",
       "expected": "UNIT_CONVERSION_INVALID"
     },
@@ -3636,7 +3507,7 @@
       "canonical": "1.5",
       "source_error": "2",
       "canonical_error": "0.02",
-      "id": "CF-129",
+      "id": "CF-115",
       "check": "unit_conversion",
       "expected": "UNIT_CONVERSION_INVALID"
     },
@@ -3647,702 +3518,9 @@
       "canonical": "233.15",
       "source_error": "0.5",
       "canonical_error": "0.5",
-      "id": "CF-130",
+      "id": "CF-116",
       "check": "unit_conversion",
       "expected": "ACCEPT"
-    },
-    {
-      "responsible_human_ids": [
-        "author",
-        "initiator"
-      ],
-      "reviewer_id": "reviewer",
-      "provenance_complete": true,
-      "service_actor": false,
-      "reviewer_grant": true,
-      "id": "CF-131",
-      "check": "independent_review",
-      "expected": "ACCEPT"
-    },
-    {
-      "responsible_human_ids": [
-        "author",
-        "initiator"
-      ],
-      "reviewer_id": "author",
-      "provenance_complete": true,
-      "service_actor": false,
-      "reviewer_grant": true,
-      "id": "CF-132",
-      "check": "independent_review",
-      "expected": "INDEPENDENT_REVIEW_REQUIRED"
-    },
-    {
-      "responsible_human_ids": [
-        "author",
-        "initiator"
-      ],
-      "reviewer_id": "initiator",
-      "provenance_complete": true,
-      "service_actor": false,
-      "reviewer_grant": true,
-      "id": "CF-133",
-      "check": "independent_review",
-      "expected": "INDEPENDENT_REVIEW_REQUIRED"
-    },
-    {
-      "responsible_human_ids": [
-        "author",
-        "initiator"
-      ],
-      "reviewer_id": "reviewer",
-      "provenance_complete": true,
-      "service_actor": true,
-      "reviewer_grant": true,
-      "id": "CF-134",
-      "check": "independent_review",
-      "expected": "INDEPENDENT_REVIEW_REQUIRED"
-    },
-    {
-      "responsible_human_ids": [
-        "author",
-        "initiator"
-      ],
-      "reviewer_id": "reviewer",
-      "provenance_complete": false,
-      "service_actor": false,
-      "reviewer_grant": true,
-      "id": "CF-135",
-      "check": "independent_review",
-      "expected": "INDEPENDENT_REVIEW_REQUIRED"
-    },
-    {
-      "responsible_human_ids": [],
-      "reviewer_id": "reviewer",
-      "provenance_complete": true,
-      "service_actor": false,
-      "reviewer_grant": true,
-      "id": "CF-136",
-      "check": "independent_review",
-      "expected": "INDEPENDENT_REVIEW_REQUIRED"
-    },
-    {
-      "responsible_human_ids": [
-        "author",
-        "initiator"
-      ],
-      "reviewer_id": "reviewer",
-      "provenance_complete": true,
-      "service_actor": false,
-      "reviewer_grant": false,
-      "id": "CF-137",
-      "check": "independent_review",
-      "expected": "NOT_FOUND"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-138",
-      "check": "publication_claim",
-      "expected": "ACCEPT"
-    },
-    {
-      "policy_approved": false,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-139",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_POLICY_BLOCKED"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": false,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-140",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": false,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-141",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": false,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-142",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "DEVELOPMENT",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-143",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": false,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-144",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 9,
-        "selected_count": 10
-      },
-      "id": "CF-145",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E1",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-146",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "different-candidate",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-147",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "CAUSAL",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10,
-        "claim_kind": "CAUSAL"
-      },
-      "id": "CF-148",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P1",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P1",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-149",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E3",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E3",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-150",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "REFUTATION",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "FALSIFIED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "FALSIFIED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-151",
-      "check": "publication_claim",
-      "expected": "ACCEPT"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "PREDICTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "FALSIFIED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "FALSIFIED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-152",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "DIAGNOSTIC",
-        "frozen_candidate_id": null,
-        "validation_run_id": null,
-        "empirical_level": "E0",
-        "proof_level": "P0",
-        "outcome_status": "INSUFFICIENT_EVIDENCE",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E2",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "FINAL_TEST",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10
-      },
-      "id": "CF-153",
-      "check": "publication_claim",
-      "expected": "ACCEPT"
-    },
-    {
-      "acl_read": true,
-      "policy_approved": true,
-      "safe_projection_checked": true,
-      "source_status": "ACTIVE",
-      "sealed_detail_grant": false,
-      "id": "CF-154",
-      "check": "summary_release",
-      "expected": "ACCEPT"
-    },
-    {
-      "acl_read": false,
-      "policy_approved": true,
-      "safe_projection_checked": true,
-      "source_status": "ACTIVE",
-      "sealed_detail_grant": false,
-      "id": "CF-155",
-      "check": "summary_release",
-      "expected": "NOT_FOUND"
-    },
-    {
-      "acl_read": true,
-      "policy_approved": false,
-      "safe_projection_checked": true,
-      "source_status": "ACTIVE",
-      "sealed_detail_grant": false,
-      "id": "CF-156",
-      "check": "summary_release",
-      "expected": "DISCLOSURE_POLICY_BLOCKED"
-    },
-    {
-      "acl_read": true,
-      "policy_approved": true,
-      "safe_projection_checked": false,
-      "source_status": "ACTIVE",
-      "sealed_detail_grant": false,
-      "id": "CF-157",
-      "check": "summary_release",
-      "expected": "DISCLOSURE_POLICY_BLOCKED"
-    },
-    {
-      "acl_read": true,
-      "policy_approved": true,
-      "safe_projection_checked": true,
-      "source_status": "REVOKED",
-      "sealed_detail_grant": false,
-      "id": "CF-158",
-      "check": "summary_release",
-      "expected": "REVOKED_HISTORY_WITH_WARNING"
-    },
-    {
-      "acl_read": true,
-      "policy_approved": true,
-      "safe_projection_checked": true,
-      "source_status": "QUARANTINED",
-      "sealed_detail_grant": false,
-      "id": "CF-159",
-      "check": "summary_release",
-      "expected": "ARTIFACT_UNAVAILABLE"
     },
     {
       "same_tenant": true,
@@ -4350,7 +3528,7 @@
       "expired": false,
       "version_matches": true,
       "checksum_matches": true,
-      "id": "CF-160",
+      "id": "CF-117",
       "check": "upload_completion",
       "expected": "PIN_VERSION_AND_CREATE_INGEST"
     },
@@ -4360,7 +3538,7 @@
       "expired": false,
       "version_matches": true,
       "checksum_matches": true,
-      "id": "CF-161",
+      "id": "CF-118",
       "check": "upload_completion",
       "expected": "NOT_FOUND"
     },
@@ -4370,7 +3548,7 @@
       "expired": true,
       "version_matches": true,
       "checksum_matches": true,
-      "id": "CF-162",
+      "id": "CF-119",
       "check": "upload_completion",
       "expected": "UPLOAD_EXPIRED"
     },
@@ -4380,7 +3558,7 @@
       "expired": false,
       "version_matches": false,
       "checksum_matches": true,
-      "id": "CF-163",
+      "id": "CF-120",
       "check": "upload_completion",
       "expected": "UPLOAD_OBJECT_CHANGED"
     },
@@ -4390,7 +3568,7 @@
       "expired": false,
       "version_matches": true,
       "checksum_matches": false,
-      "id": "CF-164",
+      "id": "CF-121",
       "check": "upload_completion",
       "expected": "UPLOAD_OBJECT_CHANGED"
     },
@@ -4400,7 +3578,7 @@
       "expired": true,
       "version_matches": false,
       "checksum_matches": true,
-      "id": "CF-165",
+      "id": "CF-122",
       "check": "upload_completion",
       "expected": "EXISTING_INGEST"
     },
@@ -4410,7 +3588,7 @@
       "expired": false,
       "version_matches": true,
       "checksum_matches": true,
-      "id": "CF-166",
+      "id": "CF-123",
       "check": "upload_completion",
       "expected": "UPLOAD_EXPIRED"
     },
@@ -4422,7 +3600,7 @@
       "max_attempts": 3,
       "deadline_expired": false,
       "retryable": true,
-      "id": "CF-167",
+      "id": "CF-124",
       "check": "retry",
       "expected": "RETRY_SAME_RUN"
     },
@@ -4434,7 +3612,7 @@
       "max_attempts": 3,
       "deadline_expired": false,
       "retryable": true,
-      "id": "CF-168",
+      "id": "CF-125",
       "check": "retry",
       "expected": "CANCEL_AND_DRAIN"
     },
@@ -4446,7 +3624,7 @@
       "max_attempts": 3,
       "deadline_expired": false,
       "retryable": true,
-      "id": "CF-169",
+      "id": "CF-126",
       "check": "retry",
       "expected": "FAILED:DEPENDENCY_FAILURE"
     },
@@ -4458,7 +3636,7 @@
       "max_attempts": 3,
       "deadline_expired": false,
       "retryable": true,
-      "id": "CF-170",
+      "id": "CF-127",
       "check": "retry",
       "expected": "RETRY_SAME_RUN"
     },
@@ -4470,7 +3648,7 @@
       "max_attempts": 3,
       "deadline_expired": false,
       "retryable": true,
-      "id": "CF-171",
+      "id": "CF-128",
       "check": "retry",
       "expected": "CLOSE_AND_DRAIN_THEN_FAIL"
     },
@@ -4482,7 +3660,7 @@
       "max_attempts": 3,
       "deadline_expired": true,
       "retryable": true,
-      "id": "CF-172",
+      "id": "CF-129",
       "check": "retry",
       "expected": "CLOSE_AND_DRAIN_THEN_FAIL"
     },
@@ -4494,7 +3672,7 @@
       "max_attempts": 3,
       "deadline_expired": false,
       "retryable": false,
-      "id": "CF-173",
+      "id": "CF-130",
       "check": "retry",
       "expected": "CLOSE_AND_DRAIN_THEN_FAIL"
     },
@@ -4502,7 +3680,7 @@
       "existing_key": true,
       "same_payload": true,
       "dispatch_allowed": true,
-      "id": "CF-174",
+      "id": "CF-131",
       "check": "dispatch_recovery",
       "expected": "EXISTING_CHILD"
     },
@@ -4510,7 +3688,7 @@
       "existing_key": true,
       "same_payload": false,
       "dispatch_allowed": true,
-      "id": "CF-175",
+      "id": "CF-132",
       "check": "dispatch_recovery",
       "expected": "DISPATCH_KEY_CONFLICT"
     },
@@ -4518,7 +3696,7 @@
       "existing_key": false,
       "same_payload": true,
       "dispatch_allowed": true,
-      "id": "CF-176",
+      "id": "CF-133",
       "check": "dispatch_recovery",
       "expected": "CREATE_CHILD"
     },
@@ -4526,7 +3704,7 @@
       "existing_key": false,
       "same_payload": true,
       "dispatch_allowed": false,
-      "id": "CF-177",
+      "id": "CF-134",
       "check": "dispatch_recovery",
       "expected": "DISPATCH_STAGE_VIOLATION"
     },
@@ -4538,7 +3716,7 @@
       "mae": 0.1,
       "reason": null,
       "outcome": "SUPPORTED",
-      "id": "CF-178",
+      "id": "CF-135",
       "check": "evaluation_counts",
       "expected": "ACCEPT"
     },
@@ -4550,7 +3728,7 @@
       "mae": 0.1,
       "reason": null,
       "outcome": "SUPPORTED",
-      "id": "CF-179",
+      "id": "CF-136",
       "check": "evaluation_counts",
       "expected": "EVALUATION_COUNTS_INVALID"
     },
@@ -4562,7 +3740,7 @@
       "mae": 0.1,
       "reason": null,
       "outcome": "SUPPORTED",
-      "id": "CF-180",
+      "id": "CF-137",
       "check": "evaluation_counts",
       "expected": "EVALUATION_COUNTS_INVALID"
     },
@@ -4574,7 +3752,7 @@
       "mae": 0.1,
       "reason": null,
       "outcome": "SUPPORTED",
-      "id": "CF-181",
+      "id": "CF-138",
       "check": "evaluation_counts",
       "expected": "EVALUATION_COUNTS_INVALID"
     },
@@ -4586,7 +3764,7 @@
       "mae": 0.1,
       "reason": null,
       "outcome": "INSUFFICIENT_EVIDENCE",
-      "id": "CF-182",
+      "id": "CF-139",
       "check": "evaluation_counts",
       "expected": "ACCEPT"
     },
@@ -4598,7 +3776,7 @@
       "mae": null,
       "reason": "NO_EVALUABLE_ROWS",
       "outcome": "INSUFFICIENT_EVIDENCE",
-      "id": "CF-183",
+      "id": "CF-140",
       "check": "evaluation_counts",
       "expected": "ACCEPT"
     },
@@ -4610,7 +3788,7 @@
       "mae": 0,
       "reason": null,
       "outcome": "INSUFFICIENT_EVIDENCE",
-      "id": "CF-184",
+      "id": "CF-141",
       "check": "evaluation_counts",
       "expected": "EVALUATION_COUNTS_INVALID"
     },
@@ -4618,7 +3796,7 @@
       "time_ordered": false,
       "grouped": false,
       "kind": "EXPLICIT",
-      "id": "CF-185",
+      "id": "CF-142",
       "check": "split_dependence",
       "expected": "ACCEPT"
     },
@@ -4626,7 +3804,7 @@
       "time_ordered": true,
       "grouped": false,
       "kind": "EXPLICIT",
-      "id": "CF-186",
+      "id": "CF-143",
       "check": "split_dependence",
       "expected": "SPLIT_DEPENDENCE_CONFLICT"
     },
@@ -4634,7 +3812,7 @@
       "time_ordered": true,
       "grouped": false,
       "kind": "TIME_ORDERED",
-      "id": "CF-187",
+      "id": "CF-144",
       "check": "split_dependence",
       "expected": "ACCEPT"
     },
@@ -4642,7 +3820,7 @@
       "time_ordered": false,
       "grouped": true,
       "kind": "EXPLICIT",
-      "id": "CF-188",
+      "id": "CF-145",
       "check": "split_dependence",
       "expected": "SPLIT_DEPENDENCE_CONFLICT"
     },
@@ -4650,7 +3828,7 @@
       "time_ordered": false,
       "grouped": true,
       "kind": "GROUPED_ROWS",
-      "id": "CF-189",
+      "id": "CF-146",
       "check": "split_dependence",
       "expected": "ACCEPT"
     },
@@ -4658,12 +3836,12 @@
       "time_ordered": true,
       "grouped": true,
       "kind": "TIME_ORDERED",
-      "id": "CF-190",
+      "id": "CF-147",
       "check": "split_dependence",
       "expected": "SPLIT_DEPENDENCE_CONFLICT"
     },
     {
-      "id": "CF-191",
+      "id": "CF-148",
       "check": "exposure_tokens",
       "original": {
         "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -4788,89 +3966,6 @@
       "expected": "BLIND_ELIGIBILITY_DENIED"
     },
     {
-      "acl_read": true,
-      "policy_approved": true,
-      "safe_projection_checked": true,
-      "source_status": "REVOKED",
-      "sealed_detail_grant": false,
-      "id": "CF-192",
-      "check": "summary_release",
-      "expected": "ARTIFACT_UNAVAILABLE",
-      "operation": "CONTENT"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "DESCRIPTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E1",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E1",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": null,
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "DEVELOPMENT",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10,
-        "fit_run_id": "fit-1",
-        "frozen_fit_run_id": "fit-1"
-      },
-      "id": "CF-193",
-      "check": "publication_claim",
-      "expected": "ACCEPT"
-    },
-    {
-      "policy_approved": true,
-      "bundle_active": true,
-      "same_lineage": true,
-      "domain_matches": true,
-      "claim": {
-        "claim_kind": "DESCRIPTIVE",
-        "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-        "validation_run_id": "00000000-0000-4000-8000-000000000008",
-        "empirical_level": "E1",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-        "assumptions": [
-          "觀測相互獨立"
-        ],
-        "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-        "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      },
-      "result": {
-        "empirical_level": "E1",
-        "proof_level": "P0",
-        "outcome_status": "SUPPORTED",
-        "frozen_candidate_id": null,
-        "id": "00000000-0000-4000-8000-000000000008",
-        "split_role": "DEVELOPMENT",
-        "submission_matches": true,
-        "valid_count": 10,
-        "selected_count": 10,
-        "fit_run_id": "different-fit",
-        "frozen_fit_run_id": "fit-1"
-      },
-      "id": "CF-194",
-      "check": "publication_claim",
-      "expected": "PUBLICATION_CLAIM_INVALID"
-    },
-    {
       "check": "submit",
       "mutations": [
         [
@@ -4879,40 +3974,7 @@
         ]
       ],
       "expected": "DISPATCH_STAGE_VIOLATION",
-      "id": "CF-195"
-    },
-    {
-      "check": "access",
-      "acl_read": true,
-      "actor": "reader",
-      "access_class": "RELEASED_AGGREGATE",
-      "inherited_sealed": true,
-      "release_checked": true,
-      "registered_summary_lineage": true,
-      "expected": "ACCEPT",
-      "id": "CF-196"
-    },
-    {
-      "check": "access",
-      "acl_read": true,
-      "actor": "reader",
-      "access_class": "RELEASED_AGGREGATE",
-      "inherited_sealed": true,
-      "release_checked": true,
-      "registered_summary_lineage": false,
-      "expected": "NOT_FOUND",
-      "id": "CF-197"
-    },
-    {
-      "acl_read": true,
-      "policy_approved": true,
-      "safe_projection_checked": true,
-      "source_status": "ACTIVE",
-      "sealed_detail_grant": false,
-      "id": "CF-198",
-      "check": "summary_release",
-      "expected": "NOT_FOUND",
-      "actor": "solver"
+      "id": "CF-149"
     },
     {
       "selection_role": "DEVELOPMENT",
@@ -4938,7 +4000,7 @@
       ],
       "check": "representation_guard",
       "expected": "ACCEPT",
-      "id": "CF-199"
+      "id": "CF-150"
     },
     {
       "selection_role": "FINAL_TEST",
@@ -4964,7 +4026,7 @@
       ],
       "check": "representation_guard",
       "expected": "FINAL_SELECTION_DENIED",
-      "id": "CF-200"
+      "id": "CF-151"
     },
     {
       "selection_role": "DEVELOPMENT",
@@ -4990,7 +4052,7 @@
       ],
       "check": "representation_guard",
       "expected": "REPRESENTATION_LIMIT_EXCEEDED",
-      "id": "CF-201"
+      "id": "CF-152"
     },
     {
       "selection_role": "DEVELOPMENT",
@@ -5016,7 +4078,7 @@
       ],
       "check": "representation_guard",
       "expected": "TRANSFORM_DOMAIN_INVALID",
-      "id": "CF-202"
+      "id": "CF-153"
     },
     {
       "selection_role": "DEVELOPMENT",
@@ -5042,7 +4104,7 @@
       ],
       "check": "representation_guard",
       "expected": "SAMPLING_POLICY_INVALID",
-      "id": "CF-203"
+      "id": "CF-154"
     },
     {
       "selection_role": "DEVELOPMENT",
@@ -5068,7 +4130,7 @@
       ],
       "check": "representation_guard",
       "expected": "SAMPLING_POLICY_INVALID",
-      "id": "CF-204"
+      "id": "CF-155"
     },
     {
       "selection_role": "DEVELOPMENT",
@@ -5094,7 +4156,7 @@
       ],
       "check": "representation_guard",
       "expected": "REPRESENTATION_EQUIVALENCE_INVALID",
-      "id": "CF-205"
+      "id": "CF-156"
     },
     {
       "selection_role": "DEVELOPMENT",
@@ -5120,7 +4182,7 @@
       ],
       "check": "representation_guard",
       "expected": "REPRESENTATION_SPLIT_LEAK",
-      "id": "CF-206"
+      "id": "CF-157"
     },
     {
       "tenant": "A",
@@ -5147,7 +4209,7 @@
       "promote_evidence": false,
       "check": "trace_graph",
       "expected": "ACCEPT",
-      "id": "CF-207"
+      "id": "CF-158"
     },
     {
       "tenant": "A",
@@ -5174,7 +4236,7 @@
       "promote_evidence": false,
       "check": "trace_graph",
       "expected": "TRACE_DEPENDENCY_INVALID",
-      "id": "CF-208"
+      "id": "CF-159"
     },
     {
       "tenant": "A",
@@ -5194,7 +4256,7 @@
       "promote_evidence": false,
       "check": "trace_graph",
       "expected": "TRACE_TENANT_MISMATCH",
-      "id": "CF-209"
+      "id": "CF-160"
     },
     {
       "tenant": "A",
@@ -5221,7 +4283,7 @@
       "promote_evidence": false,
       "check": "trace_graph",
       "expected": "ACCEPT",
-      "id": "CF-210"
+      "id": "CF-161"
     },
     {
       "tenant": "A",
@@ -5248,7 +4310,7 @@
       "promote_evidence": true,
       "check": "trace_graph",
       "expected": "STALE_ATTEMPT",
-      "id": "CF-211"
+      "id": "CF-162"
     },
     {
       "tenant": "A",
@@ -5275,7 +4337,7 @@
       "promote_evidence": false,
       "check": "trace_graph",
       "expected": "ACCEPT",
-      "id": "CF-212"
+      "id": "CF-163"
     },
     {
       "failure_class": "OPTIMIZATION",
@@ -5285,7 +4347,7 @@
       "reject_entire_family": false,
       "check": "failure_judgment",
       "expected": "ACCEPT",
-      "id": "CF-213"
+      "id": "CF-164"
     },
     {
       "failure_class": "OPTIMIZATION",
@@ -5295,7 +4357,7 @@
       "reject_entire_family": false,
       "check": "failure_judgment",
       "expected": "COUNTEREXAMPLE_INVALID",
-      "id": "CF-214"
+      "id": "CF-165"
     },
     {
       "failure_class": "STRUCTURE",
@@ -5305,7 +4367,7 @@
       "reject_entire_family": false,
       "check": "failure_judgment",
       "expected": "ACCEPT",
-      "id": "CF-215"
+      "id": "CF-166"
     },
     {
       "failure_class": "STRUCTURE",
@@ -5315,7 +4377,7 @@
       "reject_entire_family": false,
       "check": "failure_judgment",
       "expected": "COUNTEREXAMPLE_INVALID",
-      "id": "CF-216"
+      "id": "CF-167"
     },
     {
       "failure_class": "OPTIMIZATION",
@@ -5325,7 +4387,7 @@
       "reject_entire_family": true,
       "check": "failure_judgment",
       "expected": "CLAIM_SCOPE_INVALID",
-      "id": "CF-217"
+      "id": "CF-168"
     },
     {
       "failure_class": "RESOURCE",
@@ -5335,7 +4397,7 @@
       "reject_entire_family": false,
       "check": "failure_judgment",
       "expected": "COUNTEREXAMPLE_INVALID",
-      "id": "CF-218"
+      "id": "CF-169"
     },
     {
       "attempt_reuse_final": false,
@@ -5348,7 +4410,7 @@
       "stage": "SEARCH_OPEN",
       "check": "hypothesis_recovery",
       "expected": "REVISIT_ACTIVE_BRANCH",
-      "id": "CF-219"
+      "id": "CF-170"
     },
     {
       "attempt_reuse_final": true,
@@ -5361,7 +4423,7 @@
       "stage": "SEARCH_OPEN",
       "check": "hypothesis_recovery",
       "expected": "BLIND_ELIGIBILITY_DENIED",
-      "id": "CF-220"
+      "id": "CF-171"
     },
     {
       "attempt_reuse_final": false,
@@ -5374,7 +4436,7 @@
       "stage": "SEARCH_OPEN",
       "check": "hypothesis_recovery",
       "expected": "RECOVERY_BUDGET_EXHAUSTED",
-      "id": "CF-221"
+      "id": "CF-172"
     },
     {
       "attempt_reuse_final": false,
@@ -5387,7 +4449,7 @@
       "stage": "SEARCH_OPEN",
       "check": "hypothesis_recovery",
       "expected": "RECOVERY_BUDGET_EXHAUSTED",
-      "id": "CF-222"
+      "id": "CF-173"
     },
     {
       "attempt_reuse_final": false,
@@ -5400,7 +4462,7 @@
       "stage": "SEARCH_OPEN",
       "check": "hypothesis_recovery",
       "expected": "NO_RECOVERY_TRIGGER",
-      "id": "CF-223"
+      "id": "CF-174"
     },
     {
       "attempt_reuse_final": false,
@@ -5413,7 +4475,7 @@
       "stage": "SEARCH_OPEN",
       "check": "hypothesis_recovery",
       "expected": "NEW_VERSION_REQUIRED",
-      "id": "CF-224"
+      "id": "CF-175"
     },
     {
       "attempt_reuse_final": false,
@@ -5426,7 +4488,7 @@
       "stage": "SEARCH_OPEN",
       "check": "hypothesis_recovery",
       "expected": "NEW_VERSION_REQUIRED",
-      "id": "CF-225"
+      "id": "CF-176"
     },
     {
       "attempt_reuse_final": false,
@@ -5439,7 +4501,7 @@
       "stage": "FINAL_ONLY",
       "check": "hypothesis_recovery",
       "expected": "DISPATCH_STAGE_VIOLATION",
-      "id": "CF-226"
+      "id": "CF-177"
     },
     {
       "method": "BAYES_MODEL_POSTERIOR",
@@ -5449,7 +4511,7 @@
       "reason": "固定模型集與先驗，非真實定律機率",
       "check": "probability_guard",
       "expected": "ACCEPT",
-      "id": "CF-227"
+      "id": "CF-178"
     },
     {
       "method": "LLM_CONFIDENCE",
@@ -5459,7 +4521,7 @@
       "reason": "固定模型集與先驗，非真實定律機率",
       "check": "probability_guard",
       "expected": "UNDEFINED_PROBABILITY",
-      "id": "CF-228"
+      "id": "CF-179"
     },
     {
       "method": "ONE_MINUS_P",
@@ -5469,7 +4531,7 @@
       "reason": "固定模型集與先驗，非真實定律機率",
       "check": "probability_guard",
       "expected": "UNDEFINED_PROBABILITY",
-      "id": "CF-229"
+      "id": "CF-180"
     },
     {
       "method": "MODEL_VOTE",
@@ -5479,7 +4541,7 @@
       "reason": "固定模型集與先驗，非真實定律機率",
       "check": "probability_guard",
       "expected": "UNDEFINED_PROBABILITY",
-      "id": "CF-230"
+      "id": "CF-181"
     },
     {
       "method": "BAYES_MODEL_POSTERIOR",
@@ -5489,7 +4551,7 @@
       "reason": "固定模型集與先驗，非真實定律機率",
       "check": "probability_guard",
       "expected": "UNDEFINED_PROBABILITY",
-      "id": "CF-231"
+      "id": "CF-182"
     },
     {
       "method": "BAYES_MODEL_POSTERIOR",
@@ -5499,7 +4561,7 @@
       "reason": "固定模型集與先驗，非真實定律機率",
       "check": "probability_guard",
       "expected": "UNDEFINED_PROBABILITY",
-      "id": "CF-232"
+      "id": "CF-183"
     },
     {
       "method": "BAYES_MODEL_POSTERIOR",
@@ -5509,7 +4571,7 @@
       "reason": "固定模型集與先驗，非真實定律機率",
       "check": "probability_guard",
       "expected": "ACCEPT",
-      "id": "CF-233"
+      "id": "CF-184"
     },
     {
       "method": "BAYES_MODEL_POSTERIOR",
@@ -5519,7 +4581,7 @@
       "reason": "",
       "check": "probability_guard",
       "expected": "UNDEFINED_PROBABILITY",
-      "id": "CF-234"
+      "id": "CF-185"
     },
     {
       "paths": [
@@ -5541,7 +4603,7 @@
       "multiply_as_independent": false,
       "check": "independent_paths",
       "expected": "ACCEPT",
-      "id": "CF-235"
+      "id": "CF-186"
     },
     {
       "paths": [
@@ -5563,7 +4625,7 @@
       "multiply_as_independent": false,
       "check": "independent_paths",
       "expected": "ACCEPT",
-      "id": "CF-236"
+      "id": "CF-187"
     },
     {
       "paths": [
@@ -5585,7 +4647,7 @@
       "multiply_as_independent": true,
       "check": "independent_paths",
       "expected": "DEPENDENT_EVIDENCE",
-      "id": "CF-237"
+      "id": "CF-188"
     },
     {
       "paths": [
@@ -5607,7 +4669,7 @@
       "multiply_as_independent": true,
       "check": "independent_paths",
       "expected": "DEPENDENT_EVIDENCE",
-      "id": "CF-238"
+      "id": "CF-189"
     },
     {
       "target": 4,
@@ -5618,7 +4680,7 @@
       ],
       "check": "square_inverse",
       "expected": "MULTIPLE",
-      "id": "CF-239"
+      "id": "CF-190"
     },
     {
       "target": 4,
@@ -5628,7 +4690,7 @@
       ],
       "check": "square_inverse",
       "expected": "INVERSE_SOLUTION_SET_INVALID",
-      "id": "CF-240"
+      "id": "CF-191"
     },
     {
       "target": 4,
@@ -5638,7 +4700,7 @@
       ],
       "check": "square_inverse",
       "expected": "UNIQUE",
-      "id": "CF-241"
+      "id": "CF-192"
     },
     {
       "target": -1,
@@ -5646,7 +4708,7 @@
       "claimed_solutions": [],
       "check": "square_inverse",
       "expected": "NONE_REAL",
-      "id": "CF-242"
+      "id": "CF-193"
     },
     {
       "target": 2,
@@ -5654,7 +4716,7 @@
       "claimed_solutions": [],
       "check": "square_inverse",
       "expected": "UNKNOWN_IN_THIS_FIXTURE",
-      "id": "CF-243"
+      "id": "CF-194"
     },
     {
       "target": 0,
@@ -5664,7 +4726,7 @@
       ],
       "check": "square_inverse",
       "expected": "UNIQUE",
-      "id": "CF-244"
+      "id": "CF-195"
     },
     {
       "chunk_count_as_token_count": false,
@@ -5676,7 +4738,7 @@
       "expected_rate": 10,
       "check": "token_capture",
       "expected": "ACCEPT",
-      "id": "CF-245"
+      "id": "CF-196"
     },
     {
       "chunk_count_as_token_count": true,
@@ -5688,7 +4750,7 @@
       "expected_rate": 10,
       "check": "token_capture",
       "expected": "TOKEN_MEASUREMENT_INVALID",
-      "id": "CF-246"
+      "id": "CF-197"
     },
     {
       "chunk_count_as_token_count": false,
@@ -5700,7 +4762,7 @@
       "expected_rate": 10,
       "check": "token_capture",
       "expected": "TOKEN_MEASUREMENT_INVALID",
-      "id": "CF-247"
+      "id": "CF-198"
     },
     {
       "chunk_count_as_token_count": false,
@@ -5712,7 +4774,7 @@
       "expected_rate": 10,
       "check": "token_capture",
       "expected": "ACCEPT",
-      "id": "CF-248"
+      "id": "CF-199"
     },
     {
       "chunk_count_as_token_count": false,
@@ -5724,7 +4786,7 @@
       "expected_rate": 10,
       "check": "token_capture",
       "expected": "PARTIAL_USAGE_UNKNOWN",
-      "id": "CF-249"
+      "id": "CF-200"
     },
     {
       "chunk_count_as_token_count": false,
@@ -5736,7 +4798,7 @@
       "expected_rate": 10,
       "check": "token_capture",
       "expected": "TOKEN_RATE_UNAVAILABLE",
-      "id": "CF-250"
+      "id": "CF-201"
     },
     {
       "chunk_count_as_token_count": false,
@@ -5748,7 +4810,7 @@
       "expected_rate": 10,
       "check": "token_capture",
       "expected": "TOKEN_RATE_UNAVAILABLE",
-      "id": "CF-251"
+      "id": "CF-202"
     },
     {
       "decoded_bytes": 100,
@@ -5763,7 +4825,7 @@
       "retention_approved": false,
       "check": "archive_guard",
       "expected": "ACCEPT",
-      "id": "CF-252"
+      "id": "CF-203"
     },
     {
       "decoded_bytes": 201,
@@ -5778,7 +4840,7 @@
       "retention_approved": false,
       "check": "archive_guard",
       "expected": "ARCHIVE_LIMIT_EXCEEDED",
-      "id": "CF-253"
+      "id": "CF-204"
     },
     {
       "decoded_bytes": 100,
@@ -5793,7 +4855,7 @@
       "retention_approved": false,
       "check": "archive_guard",
       "expected": "ARCHIVE_CHECKSUM_MISMATCH",
-      "id": "CF-254"
+      "id": "CF-205"
     },
     {
       "decoded_bytes": 100,
@@ -5808,7 +4870,7 @@
       "retention_approved": false,
       "check": "archive_guard",
       "expected": "RETENTION_POLICY_BLOCKED",
-      "id": "CF-255"
+      "id": "CF-206"
     },
     {
       "decoded_bytes": 100,
@@ -5823,7 +4885,7 @@
       "retention_approved": true,
       "check": "archive_guard",
       "expected": "ACCEPT",
-      "id": "CF-256"
+      "id": "CF-207"
     },
     {
       "support_ids": [
@@ -5841,7 +4903,7 @@
       "asserts_universal_success": false,
       "check": "experience_summary",
       "expected": "ACCEPT",
-      "id": "CF-257"
+      "id": "CF-208"
     },
     {
       "support_ids": [
@@ -5857,7 +4919,7 @@
       "asserts_universal_success": false,
       "check": "experience_summary",
       "expected": "EXPERIENCE_COUNTEREXAMPLES_LOST",
-      "id": "CF-258"
+      "id": "CF-209"
     },
     {
       "support_ids": [
@@ -5875,7 +4937,7 @@
       "asserts_universal_success": false,
       "check": "experience_summary",
       "expected": "EXPERIENCE_DENOMINATOR_INVALID",
-      "id": "CF-259"
+      "id": "CF-210"
     },
     {
       "support_ids": [
@@ -5893,214 +4955,7 @@
       "asserts_universal_success": true,
       "check": "experience_summary",
       "expected": "EXPERIENCE_CLAIM_INVALID",
-      "id": "CF-260"
-    },
-    {
-      "source_access_classes": [
-        "PROJECT"
-      ],
-      "train": [
-        "family-A"
-      ],
-      "development": [
-        "family-B"
-      ],
-      "test": [
-        "family-C"
-      ],
-      "sources_active": true,
-      "rights_verified": true,
-      "baseline_passed": true,
-      "ablation_passed": true,
-      "regression_detected": false,
-      "independent_approval": true,
-      "check": "learning_release",
-      "expected": "ACCEPT",
-      "id": "CF-261"
-    },
-    {
-      "source_access_classes": [
-        "SEALED_DETAIL"
-      ],
-      "train": [
-        "family-A"
-      ],
-      "development": [
-        "family-B"
-      ],
-      "test": [
-        "family-C"
-      ],
-      "sources_active": true,
-      "rights_verified": true,
-      "baseline_passed": true,
-      "ablation_passed": true,
-      "regression_detected": false,
-      "independent_approval": true,
-      "check": "learning_release",
-      "expected": "LEARNING_SOURCE_FORBIDDEN",
-      "id": "CF-262"
-    },
-    {
-      "source_access_classes": [
-        "RELEASED_AGGREGATE"
-      ],
-      "train": [
-        "family-A"
-      ],
-      "development": [
-        "family-B"
-      ],
-      "test": [
-        "family-C"
-      ],
-      "sources_active": true,
-      "rights_verified": true,
-      "baseline_passed": true,
-      "ablation_passed": true,
-      "regression_detected": false,
-      "independent_approval": true,
-      "check": "learning_release",
-      "expected": "LEARNING_SOURCE_FORBIDDEN",
-      "id": "CF-263"
-    },
-    {
-      "source_access_classes": [
-        "PROJECT"
-      ],
-      "train": [
-        "family-A"
-      ],
-      "development": [
-        "family-B"
-      ],
-      "test": [
-        "family-A"
-      ],
-      "sources_active": true,
-      "rights_verified": true,
-      "baseline_passed": true,
-      "ablation_passed": true,
-      "regression_detected": false,
-      "independent_approval": true,
-      "check": "learning_release",
-      "expected": "TRAINING_FAMILY_LEAK",
-      "id": "CF-264"
-    },
-    {
-      "source_access_classes": [
-        "PROJECT"
-      ],
-      "train": [
-        "family-A"
-      ],
-      "development": [
-        "family-B"
-      ],
-      "test": [
-        "family-C"
-      ],
-      "sources_active": false,
-      "rights_verified": true,
-      "baseline_passed": true,
-      "ablation_passed": true,
-      "regression_detected": false,
-      "independent_approval": true,
-      "check": "learning_release",
-      "expected": "LEARNING_SOURCE_FORBIDDEN",
-      "id": "CF-265"
-    },
-    {
-      "source_access_classes": [
-        "PROJECT"
-      ],
-      "train": [
-        "family-A"
-      ],
-      "development": [
-        "family-B"
-      ],
-      "test": [
-        "family-C"
-      ],
-      "sources_active": true,
-      "rights_verified": false,
-      "baseline_passed": true,
-      "ablation_passed": true,
-      "regression_detected": false,
-      "independent_approval": true,
-      "check": "learning_release",
-      "expected": "LEARNING_SOURCE_FORBIDDEN",
-      "id": "CF-266"
-    },
-    {
-      "source_access_classes": [
-        "PROJECT"
-      ],
-      "train": [
-        "family-A"
-      ],
-      "development": [
-        "family-B"
-      ],
-      "test": [
-        "family-C"
-      ],
-      "sources_active": true,
-      "rights_verified": true,
-      "baseline_passed": true,
-      "ablation_passed": true,
-      "regression_detected": true,
-      "independent_approval": true,
-      "check": "learning_release",
-      "expected": "LEARNING_RELEASE_REJECTED",
-      "id": "CF-267"
-    },
-    {
-      "source_access_classes": [
-        "PROJECT"
-      ],
-      "train": [
-        "family-A"
-      ],
-      "development": [
-        "family-B"
-      ],
-      "test": [
-        "family-C"
-      ],
-      "sources_active": true,
-      "rights_verified": true,
-      "baseline_passed": true,
-      "ablation_passed": false,
-      "regression_detected": false,
-      "independent_approval": true,
-      "check": "learning_release",
-      "expected": "LEARNING_RELEASE_REJECTED",
-      "id": "CF-268"
-    },
-    {
-      "source_access_classes": [
-        "PROJECT"
-      ],
-      "train": [
-        "family-A"
-      ],
-      "development": [
-        "family-B"
-      ],
-      "test": [
-        "family-C"
-      ],
-      "sources_active": true,
-      "rights_verified": true,
-      "baseline_passed": true,
-      "ablation_passed": true,
-      "regression_detected": false,
-      "independent_approval": false,
-      "check": "learning_release",
-      "expected": "INDEPENDENT_REVIEW_REQUIRED",
-      "id": "CF-269"
+      "id": "CF-211"
     },
     {
       "scope": "METADATA_ONLY",
@@ -6111,7 +4966,7 @@
       "only_fit_rows": false,
       "check": "structure_preview",
       "expected": "ACCEPT",
-      "id": "CF-270"
+      "id": "CF-212"
     },
     {
       "scope": "METADATA_ONLY",
@@ -6122,7 +4977,7 @@
       "only_fit_rows": false,
       "check": "structure_preview",
       "expected": "PREVIEW_SCOPE_VIOLATION",
-      "id": "CF-271"
+      "id": "CF-213"
     },
     {
       "scope": "METADATA_ONLY",
@@ -6133,7 +4988,7 @@
       "only_fit_rows": false,
       "check": "structure_preview",
       "expected": "PREVIEW_SCOPE_VIOLATION",
-      "id": "CF-272"
+      "id": "CF-214"
     },
     {
       "scope": "METADATA_ONLY",
@@ -6144,7 +4999,7 @@
       "only_fit_rows": false,
       "check": "structure_preview",
       "expected": "PREVIEW_SCOPE_VIOLATION",
-      "id": "CF-273"
+      "id": "CF-215"
     },
     {
       "scope": "FIT_ONLY",
@@ -6155,7 +5010,7 @@
       "only_fit_rows": true,
       "check": "structure_preview",
       "expected": "ACCEPT",
-      "id": "CF-274"
+      "id": "CF-216"
     },
     {
       "scope": "FIT_ONLY",
@@ -6166,7 +5021,7 @@
       "only_fit_rows": false,
       "check": "structure_preview",
       "expected": "STRUCTURE_SCOPE_VIOLATION",
-      "id": "CF-275"
+      "id": "CF-217"
     },
     {
       "sequence": 2,
@@ -6178,7 +5033,7 @@
       "previous_visibility": "PROJECT",
       "check": "trace_chain",
       "expected": "ACCEPT",
-      "id": "CF-276"
+      "id": "CF-218"
     },
     {
       "sequence": 2,
@@ -6190,7 +5045,7 @@
       "previous_visibility": "PROJECT",
       "check": "trace_chain",
       "expected": "TRACE_CHAIN_INVALID",
-      "id": "CF-277"
+      "id": "CF-219"
     },
     {
       "sequence": 2,
@@ -6202,7 +5057,7 @@
       "previous_visibility": "PROJECT",
       "check": "trace_chain",
       "expected": "TRACE_VISIBILITY_LEAK",
-      "id": "CF-278"
+      "id": "CF-220"
     },
     {
       "sequence": 2,
@@ -6214,7 +5069,7 @@
       "previous_visibility": "SEALED_DETAIL",
       "check": "trace_chain",
       "expected": "TRACE_VISIBILITY_LEAK",
-      "id": "CF-279"
+      "id": "CF-221"
     },
     {
       "sequence": 1,
@@ -6226,7 +5081,7 @@
       "previous_visibility": "PROJECT",
       "check": "trace_chain",
       "expected": "ACCEPT",
-      "id": "CF-280"
+      "id": "CF-222"
     },
     {
       "sequence": 1,
@@ -6238,7 +5093,7 @@
       "previous_visibility": "PROJECT",
       "check": "trace_chain",
       "expected": "TRACE_CHAIN_INVALID",
-      "id": "CF-281"
+      "id": "CF-223"
     },
     {
       "tenant": "A",
@@ -6265,7 +5120,7 @@
       "promote_evidence": false,
       "check": "trace_graph",
       "expected": "ACCEPT",
-      "id": "CF-282"
+      "id": "CF-224"
     },
     {
       "tenant": "A",
@@ -6293,7 +5148,7 @@
       "promote_evidence": false,
       "check": "trace_graph",
       "expected": "TRACE_NODE_CONFLICT",
-      "id": "CF-283"
+      "id": "CF-225"
     },
     {
       "tenant": "A",
@@ -6316,7 +5171,7 @@
       },
       "check": "trace_graph",
       "expected": "TRACE_VISIBILITY_LEAK",
-      "id": "CF-284"
+      "id": "CF-226"
     },
     {
       "tenant": "A",
@@ -6344,88 +5199,88 @@
       "promote_evidence": false,
       "check": "trace_graph",
       "expected": "TRACE_VISIBILITY_LEAK",
-      "id": "CF-285"
+      "id": "CF-227"
     },
     {
       "raw": "{\"a\":1,\"a\":2}",
       "check": "strict_json",
       "expected": "JSON_REJECTED",
-      "id": "CF-286"
+      "id": "CF-228"
     },
     {
       "raw": "{\"a\":1,\"\\u0061\":2}",
       "check": "strict_json",
       "expected": "JSON_REJECTED",
-      "id": "CF-287"
+      "id": "CF-229"
     },
     {
       "raw": "{\"x\":NaN}",
       "check": "strict_json",
       "expected": "JSON_REJECTED",
-      "id": "CF-288"
+      "id": "CF-230"
     },
     {
       "raw": "{\"x\":Infinity}",
       "check": "strict_json",
       "expected": "JSON_REJECTED",
-      "id": "CF-289"
+      "id": "CF-231"
     },
     {
       "raw": "{\"x\":1e400}",
       "check": "strict_json",
       "expected": "JSON_REJECTED",
-      "id": "CF-290"
+      "id": "CF-232"
     },
     {
       "raw": "{\"x\":0.1}",
       "check": "strict_json",
       "expected": "ACCEPT",
-      "id": "CF-291"
+      "id": "CF-233"
     },
     {
       "raw": "{\"z\":[true,null],\"a\":1}",
       "expected_bytes": "{\"a\":1,\"z\":[true,null]}",
       "check": "canonical_profile",
       "expected": "ACCEPT",
-      "id": "CF-292"
+      "id": "CF-234"
     },
     {
       "raw": "{\"😀\":2,\"\":1}",
       "expected_bytes": "{\"\":1,\"😀\":2}",
       "check": "canonical_profile",
       "expected": "ACCEPT",
-      "id": "CF-293"
+      "id": "CF-235"
     },
     {
       "raw": "{\"source_column\":\"2.00\",\"alias\":\"-0.0\"}",
       "expected_bytes": "{\"alias\":\"-0.0\",\"source_column\":\"2.00\"}",
       "check": "canonical_profile",
       "expected": "ACCEPT",
-      "id": "CF-294"
+      "id": "CF-236"
     },
     {
       "raw": "{\"x\":0.1}",
       "check": "canonical_profile",
       "expected": "CANONICAL_JSON_REJECTED",
-      "id": "CF-295"
+      "id": "CF-237"
     },
     {
       "raw": "{\"x\":9007199254740992}",
       "check": "canonical_profile",
       "expected": "CANONICAL_JSON_REJECTED",
-      "id": "CF-296"
+      "id": "CF-238"
     },
     {
       "raw": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[0]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]",
       "check": "canonical_profile",
       "expected": "CANONICAL_JSON_REJECTED",
-      "id": "CF-297"
+      "id": "CF-239"
     },
     {
       "raw": "{\"x\":\"\\ud800\"}",
       "check": "canonical_profile",
       "expected": "CANONICAL_JSON_REJECTED",
-      "id": "CF-298"
+      "id": "CF-240"
     },
     {
       "mutations": [
@@ -6436,7 +5291,7 @@
       ],
       "check": "freeze",
       "expected": "FIT_REFERENCE_MISMATCH",
-      "id": "CF-299"
+      "id": "CF-241"
     },
     {
       "mutations": [
@@ -6447,7 +5302,7 @@
       ],
       "check": "freeze",
       "expected": "VERIFICATION_PLAN_MISMATCH",
-      "id": "CF-300"
+      "id": "CF-242"
     },
     {
       "mutations": [
@@ -6458,7 +5313,7 @@
       ],
       "check": "freeze",
       "expected": "VERIFICATION_PLAN_MISMATCH",
-      "id": "CF-301"
+      "id": "CF-243"
     },
     {
       "mutations": [
@@ -6473,7 +5328,7 @@
       ],
       "check": "freeze",
       "expected": "PARAMETER_NOT_CANONICAL",
-      "id": "CF-302"
+      "id": "CF-244"
     },
     {
       "required_axes": [
@@ -6492,7 +5347,7 @@
       "claimed_sufficient": false,
       "check": "evidence_sufficiency",
       "expected": "ACCEPT",
-      "id": "CF-303"
+      "id": "CF-245"
     },
     {
       "required_axes": [
@@ -6511,7 +5366,7 @@
       "claimed_sufficient": true,
       "check": "evidence_sufficiency",
       "expected": "EVIDENCE_SUFFICIENCY_CONFLICT",
-      "id": "CF-304"
+      "id": "CF-246"
     },
     {
       "required_axes": [
@@ -6530,7 +5385,7 @@
       "claimed_sufficient": true,
       "check": "evidence_sufficiency",
       "expected": "ACCEPT",
-      "id": "CF-305"
+      "id": "CF-247"
     },
     {
       "required_axes": [
@@ -6549,7 +5404,7 @@
       "claimed_sufficient": true,
       "check": "evidence_sufficiency",
       "expected": "EVIDENCE_SUFFICIENCY_CONFLICT",
-      "id": "CF-306"
+      "id": "CF-248"
     },
     {
       "required_axes": [
@@ -6570,7 +5425,7 @@
       "claimed_sufficient": true,
       "check": "evidence_sufficiency",
       "expected": "ACCEPT",
-      "id": "CF-307"
+      "id": "CF-249"
     },
     {
       "required_axes": [
@@ -6589,7 +5444,7 @@
       "claimed_sufficient": false,
       "check": "evidence_sufficiency",
       "expected": "VERIFICATION_PLAN_MISMATCH",
-      "id": "CF-308"
+      "id": "CF-250"
     },
     {
       "required_axes": [
@@ -6610,7 +5465,7 @@
       "claimed_sufficient": true,
       "check": "evidence_sufficiency",
       "expected": "EVIDENCE_SUFFICIENCY_CONFLICT",
-      "id": "CF-309"
+      "id": "CF-251"
     },
     {
       "status": "MULTIPLE",
@@ -6622,7 +5477,7 @@
       "causal_evidence_verified": false,
       "check": "inverse_result",
       "expected": "ACCEPT",
-      "id": "CF-310"
+      "id": "CF-252"
     },
     {
       "status": "MULTIPLE",
@@ -6634,7 +5489,7 @@
       "causal_evidence_verified": false,
       "check": "inverse_result",
       "expected": "INVERSE_RESULT_INVALID",
-      "id": "CF-311"
+      "id": "CF-253"
     },
     {
       "status": "UNIQUE",
@@ -6646,7 +5501,7 @@
       "causal_evidence_verified": false,
       "check": "inverse_result",
       "expected": "INVERSE_RESULT_INVALID",
-      "id": "CF-312"
+      "id": "CF-254"
     },
     {
       "status": "UNIQUE",
@@ -6658,7 +5513,7 @@
       "causal_evidence_verified": false,
       "check": "inverse_result",
       "expected": "ACCEPT",
-      "id": "CF-313"
+      "id": "CF-255"
     },
     {
       "status": "NONE",
@@ -6670,7 +5525,7 @@
       "causal_evidence_verified": false,
       "check": "inverse_result",
       "expected": "INVERSE_RESULT_INVALID",
-      "id": "CF-314"
+      "id": "CF-256"
     },
     {
       "status": "NONE",
@@ -6682,7 +5537,7 @@
       "causal_evidence_verified": false,
       "check": "inverse_result",
       "expected": "ACCEPT",
-      "id": "CF-315"
+      "id": "CF-257"
     },
     {
       "status": "MULTIPLE",
@@ -6694,7 +5549,7 @@
       "causal_evidence_verified": false,
       "check": "inverse_result",
       "expected": "CAUSAL_IDENTIFICATION_MISSING",
-      "id": "CF-316"
+      "id": "CF-258"
     },
     {
       "authority_verified": true,
@@ -6722,7 +5577,7 @@
       ],
       "check": "training_partition",
       "expected": "ACCEPT",
-      "id": "CF-317"
+      "id": "CF-259"
     },
     {
       "authority_verified": false,
@@ -6750,7 +5605,7 @@
       ],
       "check": "training_partition",
       "expected": "TRAINING_PARTITION_AUTHORITY_INVALID",
-      "id": "CF-318"
+      "id": "CF-260"
     },
     {
       "authority_verified": true,
@@ -6778,7 +5633,7 @@
       ],
       "check": "training_partition",
       "expected": "TRAINING_OBSERVATION_LEAK",
-      "id": "CF-319"
+      "id": "CF-261"
     },
     {
       "authority_verified": true,
@@ -6806,7 +5661,7 @@
       ],
       "check": "training_partition",
       "expected": "TRAINING_OBSERVATION_LEAK",
-      "id": "CF-320"
+      "id": "CF-262"
     },
     {
       "authority_verified": true,
@@ -6833,7 +5688,7 @@
       ],
       "check": "training_partition",
       "expected": "TRAINING_SOURCE_MISMATCH",
-      "id": "CF-321"
+      "id": "CF-263"
     },
     {
       "candidate_active": false,
@@ -6844,7 +5699,7 @@
       "alternative_passed": false,
       "check": "rollback_eligibility",
       "expected": "DISABLE_AI",
-      "id": "CF-322"
+      "id": "CF-264"
     },
     {
       "candidate_active": false,
@@ -6855,7 +5710,7 @@
       "alternative_passed": false,
       "check": "rollback_eligibility",
       "expected": "ROLLBACK_TO_VALID_BASELINE",
-      "id": "CF-323"
+      "id": "CF-265"
     },
     {
       "candidate_active": false,
@@ -6866,7 +5721,7 @@
       "alternative_passed": false,
       "check": "rollback_eligibility",
       "expected": "DISABLE_AI",
-      "id": "CF-324"
+      "id": "CF-266"
     },
     {
       "candidate_active": false,
@@ -6877,10 +5732,10 @@
       "alternative_passed": true,
       "check": "rollback_eligibility",
       "expected": "USE_VALID_ALTERNATIVE",
-      "id": "CF-325"
+      "id": "CF-267"
     },
     {
-      "id": "CF-326",
+      "id": "CF-268",
       "check": "freeze",
       "mutations": [
         [
@@ -6891,7 +5746,7 @@
       "expected": "REPRESENTATION_MISMATCH"
     },
     {
-      "id": "CF-327",
+      "id": "CF-269",
       "check": "freeze",
       "mutations": [
         [
@@ -6902,7 +5757,7 @@
       "expected": "REPRESENTATION_MISMATCH"
     },
     {
-      "id": "CF-328",
+      "id": "CF-270",
       "check": "freeze",
       "mutations": [
         [
@@ -6913,7 +5768,7 @@
       "expected": "VERIFICATION_PLAN_MISMATCH"
     },
     {
-      "id": "CF-329",
+      "id": "CF-271",
       "check": "trace_graph",
       "tenant": "A",
       "committed_parent_ids": [
@@ -6937,7 +5792,7 @@
       "expected": "ACCEPT"
     },
     {
-      "id": "CF-330",
+      "id": "CF-272",
       "check": "trace_graph",
       "tenant": "A",
       "committed_parent_ids": [

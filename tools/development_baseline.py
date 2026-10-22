@@ -23,7 +23,7 @@ BASELINE_PATH = TECHNICAL + "t01-baseline.json"
 SCHEMA_PATH = TECHNICAL + "t01-baseline.schema.json"
 WBS_PATH = PLAN + "11-交付/31-工作拆解WBS與依賴.md"
 DECISIONS_PATH = PLAN + "12-附錄/37-決策待確認清單.md"
-MATRIX_PATH = PLAN + "13-專題深化/46-發布驗收矩陣與交付證據.md"
+MATRIX_PATH = PLAN + "13-專題深化/46-驗收矩陣與交付證據.md"
 SOURCE_PATHS = {
     PLAN + "01-需求/02-需求規格與使用情境.md",
     PLAN + "11-交付/30-里程碑與分階段開發計畫.md",

@@ -134,28 +134,6 @@
       }
     },
     {
-      "schema": "CreateReview",
-      "document": {
-        "decision": "APPROVE",
-        "evidence_bundle_id": "00000000-0000-4000-8000-000000000010",
-        "comment": "待實作後覆核",
-        "claim": {
-          "claim_kind": "PREDICTIVE",
-          "frozen_candidate_id": "00000000-0000-4000-8000-000000000007",
-          "validation_run_id": "00000000-0000-4000-8000-000000000008",
-          "empirical_level": "E2",
-          "proof_level": "P0",
-          "outcome_status": "SUPPORTED",
-          "scope_text": "僅適用固定觀測域、資料來源與誤差模型",
-          "assumptions": [
-            "觀測相互獨立"
-          ],
-          "publication_policy_artifact_id": "00000000-0000-4000-8000-000000000700",
-          "publication_policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-        }
-      }
-    },
-    {
       "schema": "CreateResearchVersion",
       "document": {
         "dataset_version_id": "00000000-0000-4000-8000-000000000001",

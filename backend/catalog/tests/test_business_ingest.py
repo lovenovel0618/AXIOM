@@ -1,4 +1,4 @@
-"""Actual PostgreSQL submit, dedup, current ACL and immutable result tests."""
+"""Actual PostgreSQL submit, dedup, tenant-scoped reads and immutable result tests."""
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import timedelta
@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError, connection, connections, transaction
 from django.test import TransactionTestCase, override_settings
 from catalog.ingest import complete_upload, ingest_tick
-from catalog.models import Account, Artifact, Audit, Dataset, DatasetVersion, Grant, IngestBinding, Provenance, Tenant, Upload
+from catalog.models import Account, Artifact, Audit, Dataset, DatasetVersion, IngestBinding, Provenance, Tenant, Upload
 from catalog.services import actor_for, create_dataset, create_upload, put_upload, upload_for, provenance
 from catalog.storage import LocalVersionStore, ObjectRef
 from catalog.validation import ApiError, validate_api
@@ -36,7 +36,7 @@ class BusinessTests(TransactionTestCase):
         override.enable()
         self.addCleanup(override.disable)
         user = User.objects.create(username=uuid4().hex, password="!")
-        self.actor = Account.objects.create(user=user, tenant=Tenant.objects.create(name="synthetic"), role="RESEARCHER")
+        self.actor = Account.objects.create(user=user, tenant=Tenant.objects.create(name="synthetic"))
         with transaction.atomic():
             self.dataset = UUID(create_dataset(actor_for(user.pk), {"name": "synthetic"})["id"])
         self.upload = self.staged()
@@ -130,25 +130,6 @@ class BusinessTests(TransactionTestCase):
         diagnostic = Artifact.objects.get(pk=UUID(row.document["diagnostic_artifact_ids"][0]))
         self.assertNotIn("private-marker", json.dumps(diagnostic.content))
 
-    def test_revoked_before_execution_never_parses(self) -> None:
-        identity = self.enqueue()
-        Grant.objects.filter(actor=self.actor).delete()
-        with patch("catalog.ingest.inspect_bytes") as parser:
-            self.execute(identity)
-            parser.assert_not_called()
-        self.assertFalse(DatasetVersion.objects.exists())
-        self.assertEqual(RuntimeRun.objects.get(pk=identity).document["status"], "FAILED")
-
-    def test_revoke_during_parser_prevents_commit(self) -> None:
-        identity = self.enqueue()
-        def parse_and_revoke(*_args: object) -> dict[str, object]:
-            Grant.objects.filter(actor=self.actor).delete()
-            return {"source_sha256": self.upload.sha256, "metadata": {"row_count": 2, "columns": [{"name": "x", "physical_type": "CSV_TEXT"}, {"name": "y", "physical_type": "CSV_TEXT"}]}}
-        with patch("catalog.ingest.inspect_bytes", side_effect=parse_and_revoke):
-            self.execute(identity)
-        self.assertFalse(DatasetVersion.objects.exists())
-        self.assertEqual(IngestBinding.objects.get().error_code, "NOT_FOUND")
-
     def test_cancel_during_parser_prevents_commit_and_confirms_exit(self) -> None:
         identity = self.enqueue()
         def parse_and_cancel(*_args: object) -> dict[str, object]:
@@ -170,7 +151,7 @@ class BusinessTests(TransactionTestCase):
         self.assertFalse(DatasetVersion.objects.exists())
         self.assertEqual(IngestBinding.objects.get().error_code, "UPLOAD_OBJECT_CHANGED")
 
-    def test_current_acl_on_all_reads_and_sealed_raw_denied(self) -> None:
+    def test_sealed_raw_artifact_denied_and_preview_readable(self) -> None:
         identity = self.enqueue()
         self.execute(identity)
         version = DatasetVersion.objects.get()
@@ -182,9 +163,6 @@ class BusinessTests(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["X-Content-Type-Options"], "nosniff")
         self.assertEqual(hashlib.sha256(response.content).hexdigest(), version.preview.document["sha256"])
-        Grant.objects.filter(actor=self.actor).delete()
-        for path in [f"/api/v2/runs/{identity}", f"/api/v2/datasets/{self.dataset}/versions", f"/api/v2/artifacts/{version.preview_id}", f"/api/v2/artifacts/{version.preview_id}/content"]:
-            self.assertEqual(self.client.get(path).status_code, 404)
 
     def test_atomic_callback_failure_rolls_back_version_and_success(self) -> None:
         identity = self.enqueue()
@@ -262,7 +240,7 @@ class BusinessTests(TransactionTestCase):
         self.execute(identity)
         version = DatasetVersion.objects.get()
         user = User.objects.create(username=uuid4().hex, password="!")
-        other = Account.objects.create(user=user, tenant=Tenant.objects.create(name="other"), role="ADMIN")
+        other = Account.objects.create(user=user, tenant=Tenant.objects.create(name="other"))
         self.client.force_login(user)
         for path in [f"/api/v2/runs/{identity}", f"/api/v2/datasets/{self.dataset}/versions", f"/api/v2/artifacts/{version.preview_id}"]:
             self.assertEqual(self.client.get(path).status_code, 404)

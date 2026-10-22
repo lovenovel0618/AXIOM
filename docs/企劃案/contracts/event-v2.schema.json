@@ -21,10 +21,7 @@
         "RunFinished",
         "ResearchVersionReady",
         "ResearchVersionStateChanged",
-        "SubmissionFrozen",
-        "ReviewRecorded",
-        "EvidenceRevoked",
-        "SummaryReleased"
+        "SubmissionFrozen"
       ]
     },
     "tenant_id": {
@@ -438,81 +435,6 @@
       "if": {
         "properties": {
           "event_type": {
-            "const": "ReviewRecorded"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "payload": {
-            "type": "object",
-            "properties": {
-              "review_id": {
-                "type": "string",
-                "format": "uuid"
-              },
-              "decision": {
-                "type": "string",
-                "enum": [
-                  "APPROVE",
-                  "REJECT"
-                ]
-              },
-              "evidence_bundle_id": {
-                "type": "string",
-                "format": "uuid"
-              }
-            },
-            "required": [
-              "review_id",
-              "decision",
-              "evidence_bundle_id"
-            ],
-            "additionalProperties": false
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "event_type": {
-            "const": "EvidenceRevoked"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "payload": {
-            "type": "object",
-            "properties": {
-              "evidence_bundle_id": {
-                "type": "string",
-                "format": "uuid"
-              },
-              "revocation_id": {
-                "type": "string",
-                "format": "uuid"
-              },
-              "reason_code": {
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": [
-              "evidence_bundle_id",
-              "revocation_id",
-              "reason_code"
-            ],
-            "additionalProperties": false
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "event_type": {
             "const": "ResearchVersionStateChanged"
           }
         }
@@ -530,8 +452,6 @@
                   "READY",
                   "QUEUED",
                   "RUNNING",
-                  "REVIEW",
-                  "PUBLISHED",
                   "FAILED",
                   "CANCELLED"
                 ]
@@ -630,42 +550,8 @@
             "enum": [
               "ResearchVersionReady",
               "ResearchVersionStateChanged",
-              "SubmissionFrozen",
-              "ReviewRecorded",
-              "EvidenceRevoked",
-              "SummaryReleased"
+              "SubmissionFrozen"
             ]
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "event_type": {
-            "const": "SummaryReleased"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "payload": {
-            "type": "object",
-            "properties": {
-              "released_summary_id": {
-                "type": "string",
-                "format": "uuid"
-              },
-              "revision": {
-                "type": "integer",
-                "minimum": 0
-              }
-            },
-            "required": [
-              "released_summary_id",
-              "revision"
-            ],
-            "additionalProperties": false
           }
         }
       }

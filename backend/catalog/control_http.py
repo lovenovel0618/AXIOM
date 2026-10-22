@@ -8,7 +8,7 @@ from catalog.http import allowed_methods, api, body
 from catalog.models import Account, ProfileBinding, ResearchEvent
 from catalog.profile import recover_profile
 from catalog.read_http import run_for
-from catalog.research import available_version, version_for, writable
+from catalog.research import available_version, version_for
 from catalog.research_http import control_revision
 from catalog.services import replay
 from catalog.validation import ApiError
@@ -20,8 +20,7 @@ from runtime.records import TERMINAL, lock_run, public_run
 @allowed_methods(["POST"])
 @api
 def cancel_run(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
-    """重新驗 owner 與 Dataset 寫權限；冪等操作在 root 鎖內檢查 revision，再交取消／恢復裁決。"""
-    writable(actor)
+    """重新驗 owner 與租戶分區；冪等操作在 root 鎖內檢查 revision，再交取消／恢復裁決。"""
     run = run_for(actor,identity)
     if run.document["type"]!="PROFILE":
         raise ApiError("DEPENDENCY_UNAVAILABLE",503)
@@ -87,7 +86,7 @@ def run_events(request: HttpRequest, actor: Account, identity: UUID) -> HttpResp
 @allowed_methods(["GET"])
 @api
 def research_events(request: HttpRequest, actor: Account, identity: UUID) -> HttpResponse:
-    """研究事件只給 owner 與現行 Dataset grant 的交集；撤權後續接亦不可讀。"""
+    """研究事件只給 owner 與租戶分區的交集；不符時亦不可讀。"""
     version = version_for(actor,identity)
     latest = ResearchEvent.objects.filter(research_version=version).order_by("-sequence").first()
     maximum = 0 if latest is None else latest.sequence

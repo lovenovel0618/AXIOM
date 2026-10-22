@@ -1,4 +1,4 @@
-"""Real PROFILE, two-level receipts, cancellation and current-ACL regressions."""
+"""Real PROFILE, two-level receipts, cancellation and tenant-scope regressions."""
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from copy import deepcopy
@@ -22,7 +22,7 @@ from catalog.validation import ApiError
 from django.test import Client, TransactionTestCase, override_settings
 from catalog.budget import report_usage, usage_report, zero_usage
 from catalog.ingest import Meter, complete_upload, ingest_tick
-from catalog.models import Account, Dataset, DatasetVersion, EvidenceBundle, Grant, ProfileBinding, ResearchBudget, ResearchEvent, ResearchState, ResearchVersion, Reservation, RootBudget, SealRegistration, Tenant, Upload, UsageReceipt
+from catalog.models import Account, Dataset, DatasetVersion, EvidenceBundle, ProfileBinding, ResearchBudget, ResearchEvent, ResearchState, ResearchVersion, Reservation, RootBudget, SealRegistration, Tenant, Upload, UsageReceipt
 from catalog.profile import close_state, profile_tick, recover_profile, reject, results
 from catalog.research import create_research, create_version, research_for
 from catalog.research_state import document_for, state_for
@@ -70,7 +70,7 @@ class ProfileTests(TransactionTestCase):
         override.enable()
         self.addCleanup(override.disable)
         user = User.objects.create(username=uuid4().hex,password="!")
-        self.actor = Account.objects.create(user=user,tenant=Tenant.objects.create(name="profile-synthetic"),role="RESEARCHER")
+        self.actor = Account.objects.create(user=user,tenant=Tenant.objects.create(name="profile-synthetic"))
         self.version = self.fixture()
         self.url = f'/api/v2/research-versions/{self.version.id}/validate'
         self.client.force_login(user)
@@ -324,29 +324,16 @@ class ProfileTests(TransactionTestCase):
         self.assertNotIn("final_test",report)
         self.assertEqual(document_for(version)["status"],"DRAFT")
 
-    def test_revocation_and_other_administrator_hide_profile_and_artifacts(self) -> None:
+    def test_other_account_hides_profile_and_artifacts(self) -> None:
         identity = self.enqueue()
         self.execute(identity)
         report = document_for(self.version)["quality_report_id"]
         user = User.objects.create(username=uuid4().hex,password="!")
-        other = Account.objects.create(user=user,tenant=self.actor.tenant,role="ADMIN")
-        Grant.objects.create(actor=other,tenant=self.actor.tenant,dataset=self.version.dataset_version.dataset,permission="OWNER")
+        Account.objects.create(user=user,tenant=self.actor.tenant)
         paths = [f'/api/v2/runs/{identity}',f'/api/v2/artifacts/{report}/content',f'/api/v2/runs/{identity}/events',f'/api/v2/research-versions/{self.version.id}/events']
         self.client.force_login(user)
         for path in paths:self.assertEqual(self.client.get(path).status_code,404)
-        self.client.force_login(self.actor.user)
-        Grant.objects.filter(actor=self.actor).delete()
-        for path in paths:self.assertEqual(self.client.get(path).status_code,404)
         self.assertEqual(self.post()[0],404)
-
-    def test_worker_revoked_before_execution_never_reads_raw(self) -> None:
-        identity = self.enqueue()
-        Grant.objects.filter(actor=self.actor).delete()
-        with patch("catalog.profile.inspect_research") as parser:
-            self.execute(identity)
-            parser.assert_not_called()
-        self.assertEqual(RuntimeRun.objects.get(pk=identity).document["status"],"FAILED")
-        self.assertEqual(Reservation.objects.get(root__run_id=identity).state,"RELEASED")
 
     def test_events_resume_and_control_header(self) -> None:
         identity = self.enqueue()
@@ -432,18 +419,6 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(UsageReceipt.objects.count(),1)
         self.assertEqual(Reservation.objects.get(root__run_id=identity).state,"RELEASED")
 
-    def test_revocation_after_child_prevents_any_result_commit(self) -> None:
-        identity = self.enqueue()
-        def revoke_after_child(*args: object, **kwargs: object) -> dict[str,object]:
-            from typing import Any, cast
-            result = inspect_research(*cast(Any,args),**cast(Any,kwargs))
-            Grant.objects.filter(actor=self.actor).delete()
-            return result
-        with patch("catalog.profile.inspect_research",side_effect=revoke_after_child): self.execute(identity)
-        self.assertIsNone(ProfileBinding.objects.get(run_id=identity).result_id)
-        self.assertEqual(RuntimeRun.objects.get(pk=identity).document["status"],"FAILED")
-        self.assertEqual(UsageReceipt.objects.count(),1)
-
     def test_expired_child_result_is_discarded_but_late_cost_is_settled(self) -> None:
         identity = self.enqueue()
         def expire_after_child(*args: object, **kwargs: object) -> dict[str,object]:
@@ -474,7 +449,7 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(ProfileBinding.objects.count(),1)
         self.assertEqual(Reservation.objects.count(),1)
 
-    def test_run_page_recovers_roots_and_rejects_wrong_scope_or_revoked_access(self) -> None:
+    def test_run_page_recovers_roots_and_rejects_wrong_scope(self) -> None:
         first = self.enqueue()
         self.execute(first)
         second = self.enqueue(revision=2,key="second")
@@ -491,8 +466,6 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(wrong.status_code,400)
         self.assertEqual(self.client.get(url,{"limit":201}).status_code,422)
         self.assertEqual(self.client.get(url,{"cursor":"bad"}).status_code,400)
-        Grant.objects.filter(actor=self.actor,dataset_id=self.version.dataset_version.dataset_id).delete()
-        self.assertEqual(self.client.get(url,{"cursor":page["next_cursor"]}).status_code,404)
 
     @skipUnless(sys.platform=="linux","formal sealing requires the Linux journal and child boundary")
     def test_formal_seal_projects_ready_without_exposing_final_rows(self) -> None:
@@ -521,7 +494,7 @@ class ProfileTests(TransactionTestCase):
             self.assertEqual(json.loads(response.content),bundle.document)
             self.assertEqual(self.client.get(f"/api/v2/evidence-bundles/{uuid4()}").status_code,404)
             other = User.objects.create(username=uuid4().hex,password="!")
-            Account.objects.create(user=other,tenant=self.actor.tenant,role="RESEARCHER")
+            Account.objects.create(user=other,tenant=self.actor.tenant)
             self.client.force_login(other)
             self.assertEqual(self.client.get(f"/api/v2/evidence-bundles/{bundle.id}").status_code,404)
 

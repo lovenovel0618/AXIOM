@@ -11,7 +11,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 
 class Command(BaseCommand):
-    help = "Grant the sealed Evaluator group read-only access to existing raw objects"
+    help = "Prepare the sealed Evaluator group's read-only access to existing raw objects"
 
     def handle(self,*args: Any,**options: Any) -> None:
         root = Path(settings.OBJECT_ROOT)

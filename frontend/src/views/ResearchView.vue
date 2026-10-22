@@ -57,8 +57,6 @@ const versionStatusLabel: Record<ResearchVersionStatus, string> = {
   READY: '就緒',
   QUEUED: '排隊中',
   RUNNING: '執行中',
-  REVIEW: '待審核',
-  PUBLISHED: '已發布',
   FAILED: '失敗',
   CANCELLED: '已取消',
 }

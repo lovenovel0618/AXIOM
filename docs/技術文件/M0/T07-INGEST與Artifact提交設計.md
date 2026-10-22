@@ -8,21 +8,21 @@
 
 ## 交易及派送
 
-complete沿現行session／CSRF／actor／Dataset寫ACL，鎖Upload並核對checksum、實際bytes、固定object version及期限。原子建立真實Run、TaskInput Artifact、ExecutionManifest／Budget快照、provenance、Upload→Run唯一binding，才把Upload標COMPLETED。completed的重送（含過期及24h後）重新查現行ACL／checksum後回同一Run，不重新派生Run；不同request key不影響這項領域冪等性。
+complete沿現行session／CSRF／actor／Dataset access_class，鎖Upload並核對checksum、實際bytes、固定object version及期限。原子建立真實Run、TaskInput Artifact、ExecutionManifest／Budget快照、provenance、Upload→Run唯一binding，才把Upload標COMPLETED。completed的重送（含過期及24h後）重新查現行 access_class／checksum後回同一Run，不重新派生Run；不同request key不影響這項領域冪等性。
 
 Run本身是持久待派送紀錄，relay對非control INGEST重送固定ingest queue；原T04 foundation worker不掛原檔、不執行業務INGEST。新增ingest profile worker，只聽ingest、concurrency=1、每處理一task更換pool child，掛原始volume唯讀。重複派送以現有Run／Attempt世代claim拒絕；本輪business max_attempts=1，失聯／逾期不自動重跑未知用量。
 
-worker先取得lease，再在短交易查目前actor（含Django User.is_active）、Dataset ACL及upload固定版本，讀取最多50MiB已驗證bytes；釋鎖後執行有界parser。提交時依actor→dataset→upload→run順序重新授權、重驗bytes／lease／epoch／deadline；撤權、掉包、舊attempt或取消都不能產生版本。成功與Attempt／Run狀態、事件、audit及binding.result在同一交易提交。parser／授權失敗只寫失敗code，不寫觀測值。
+worker先取得lease，再在短交易查目前actor（含Django User.is_active）、Dataset access_class及upload固定版本，讀取最多50MiB已驗證bytes；釋鎖後執行有界parser。提交時依actor→dataset→upload→run順序重新檢查、重驗bytes／lease／epoch／deadline；刪除、隔離、掉包、舊attempt或取消都不能產生版本。成功與Attempt／Run狀態、事件、audit及binding.result在同一交易提交。parser／授權失敗只寫失敗code，不寫觀測值。
 
 ## 模型與產物
 
 Catalog新增Artifact、DatasetVersion、IngestBinding。原生複合FK保護tenant／dataset／raw-object／artifact／Run；immutable trigger保護身分、內容、hash、snapshot和已提交result。DatasetVersion以(dataset,sha256)唯一；持dataset鎖去重，兩個成功Run可以指同一版本。若相同bytes被宣告成不同格式，拒絕格式衝突，不改原版本。
 
-Artifact本機採DB immutable JSON或固定StoredObject二選一，公開artifact_uri是授權proxy路徑。TaskInput與原始Artifact為SEALED_DETAIL，當期HTTP一律404；只有可信產生的METADATA_ONLY預覽為PROJECT。一般自有原始資料採保守封存策略，不把來源直接交Solver；正式blind授權尚未啟用。
+Artifact本機採DB immutable JSON或固定StoredObject二選一，公開artifact_uri是受控 proxy 路徑。TaskInput與原始Artifact為SEALED_DETAIL，當期HTTP一律404；只有可信產生的METADATA_ONLY預覽為PROJECT。一般自有原始資料採保守封存策略，不把來源直接交Solver；正式blind授權尚未啟用。
 
 預覽content符合StructureAssessment，periodicity／time_basis皆UNKNOWN、fit_rows_hash／research_version_id／intrinsic_dimension_estimate皆null，不推論時間、座標或內在維度。原schema沒有欄名／型別／列數的承載欄位，本輪以向後相容的可選source_metadata補齊；實作的METADATA_ONLY報告必填它，舊fixture仍可驗證。observation／representation_dimension只記來源欄數，不宣稱座標或內在維度。
 
-GET datasets/{id}/versions、runs/{id}、artifacts/{id}及artifacts/{id}/content沿現行ACL；Artifact內容為attachment JSON、nosniff及no-store，重算SHA／size，不redirect至儲存位置。沒有一般原檔下載、公開研究或正式封存授權入口。
+GET datasets/{id}/versions、runs/{id}、artifacts/{id}及artifacts/{id}/content沿現行 access_class 政策；Artifact內容為attachment JSON、nosniff及no-store，重算SHA／size，不redirect至儲存位置。沒有一般原檔下載、公開研究或正式封存入口。
 
 ## 身分、資源與失敗界線
 
@@ -34,6 +34,6 @@ manifest保存實際Python／平台／Polars、requirements.lock digest、執行
 
 ## 驗證與回退
 
-真PG測空庫migration、複合FK、SQL不可變、complete並行／永久冪等、去重、交易失敗回滾、撤權／停權、source掉包、舊世代／deadline、parser失敗、metadata無labels、raw封存拒絕與重新查ACL。真HTTP＋relay＋ingest worker測三格式到SUCCEEDED及Artifact內容；舊控制／上傳／數學／parser全面回歸，strict Pyright、Sonar及CI須通過。
+真PG測空庫migration、複合FK、SQL不可變、complete並行／永久冪等、去重、交易失敗回滾、刪除或隔離／停用、source掉包、舊世代／deadline、parser失敗、metadata無labels、raw封存拒絕與重新查 access_class。真HTTP＋relay＋ingest worker測三格式到SUCCEEDED及Artifact內容；舊控制／上傳／數學／parser全面回歸，strict Pyright、Sonar及CI須通過。
 
 預設gate關閉時仍503，舊既有tests沿原行為。啟用需顯式配置limits，關閉只停止新complete／派送，已有Run不可當作從未存在；重新啟用依lease恢復裁決。回退先停ingest／relay及web並備份DB與原物件，逆序回退catalog新表／guards與runtime control flag限制；存在業務Run時不能直接恢復control_only=true約束，須保留資料或另作具名遷移，不宣稱無損降版。

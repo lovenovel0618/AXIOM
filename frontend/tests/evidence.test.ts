@@ -104,15 +104,15 @@ describe('parseEvidenceBundle', () => {
     })
   })
 
-  it('accepts a revoked bundle that only references validations', () => {
+  it('accepts a quarantined bundle that only references validations', () => {
     const parsed = parseEvidenceBundle({
       ...BUNDLE,
-      status: 'REVOKED',
+      status: 'QUARANTINED',
       revision: 1,
       validation_ids: ['55555555-5555-4555-8555-555555555555'],
       proof_artifact_ids: [],
     })
-    expect(parsed?.status).toBe('REVOKED')
+    expect(parsed?.status).toBe('QUARANTINED')
     expect(parsed?.revision).toBe(1)
     expect(parsed?.validationIds).toEqual(['55555555-5555-4555-8555-555555555555'])
     expect(parsed?.proofArtifactIds).toEqual([])

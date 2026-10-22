@@ -24,8 +24,6 @@ export type ResearchVersionStatus =
   | 'READY'
   | 'QUEUED'
   | 'RUNNING'
-  | 'REVIEW'
-  | 'PUBLISHED'
   | 'FAILED'
   | 'CANCELLED'
 export type SplitKind = 'IID_ROWS' | 'GROUPED_ROWS' | 'TIME_ORDERED' | 'EXPLICIT'
@@ -146,8 +144,6 @@ export interface ResearchVersion {
   observation_split: ObservationSplit
   current_event_cursor: string
   frozen_submission_ids: string[]
-  review_ids: string[]
-  published_artifact_ids: string[]
   evidence_bundle_ids: string[]
   quality_report_id: string | null
   refit_policy_artifact_id: string | null
@@ -155,7 +151,6 @@ export interface ResearchVersion {
   evaluation_policy: EvaluationPolicy
   evaluation_policy_hash: string
   research_budget_usage: BudgetUsage
-  released_summary_ids: string[]
   structure_assessment_artifact_id: string | null
 }
 

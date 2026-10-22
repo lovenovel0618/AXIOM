@@ -68,7 +68,7 @@ def publish(actor: Account, binding: IngestBinding, metadata: JsonObject, execut
 
 
 def authorized(actor: Account, identity: UUID) -> Artifact:
-    """普通讀取同時驗租戶、Dataset grant、研究 owner 及 access class，避免只憑 UUID 下載。"""
+    """普通讀取同時驗租戶、研究 owner 及 access class，避免只憑 UUID 下載。"""
     row = Artifact.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
     if row is None or row.document["access_class"] != "PROJECT":
         raise ApiError("NOT_FOUND", 404)

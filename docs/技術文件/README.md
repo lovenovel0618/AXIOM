@@ -8,19 +8,19 @@
 | M0／T02 | [技術選型與相容性驗證](<M0/T02-技術選型與相容性驗證.md>) | [本輪驗證](<M0/T02-驗證紀錄.md>) | macOS／Linux arm64 與 Node 24 驗證通過；Windows WSL2、完整授權及產品 gate 尚未驗收 |
 | M0／T03 | [公開基準與盲測隔離基線](<M0/T03-公開基準與盲測隔離基線.md>) | [本輪驗證](<M0/T03-驗證紀錄.md>) | 四個公開 oracle、分區／投影參考驗證與 Linux 真實 UID canary 通過；正式盲測及產品隔離尚未驗收 |
 | M0／T04（基礎切片） | [產品工程骨架](<M0/T04-產品工程骨架.md>) | [本輪驗證](<M0/T04-驗證紀錄.md>) | 本機 Compose、Django／Vue、遷移、健康檢查與合成派送已實作；已續交 INGEST 根 Run／Attempt 控制核心，完整領域整合仍待 M1 |
-| M0／T05 | [租戶與不可變上傳](<M0/T05-租戶與不可變上傳設計.md>) | [驗證紀錄](<M0/T05-租戶與不可變上傳驗證紀錄.md>) | session／CSRF、租戶 ACL、版本化本機 adapter、冪等與雙路 HTTP smoke；真實 INGEST／S3／正式發布尚未啟用 |
+| M0／T05 | [租戶與不可變上傳](<M0/T05-租戶與不可變上傳設計.md>) | [驗證紀錄](<M0/T05-租戶與不可變上傳驗證紀錄.md>) | session／CSRF、租戶分區、版本化本機 adapter、冪等與雙路 HTTP smoke；真實 INGEST／S3／正式對外尚未啟用 |
 | M0／T06 | [安全 DSL 求值](<M0/T06-安全DSL求值設計.md>) | [驗證紀錄](<M0/T06-安全DSL求值驗證紀錄.md>) | 本機有界編譯／求值、單位與域檢查、canonical 身分及獨立 oracle；真實 INGEST 整合待 T07 |
 | M0→M1／T07（解析前置切片） | [有界匯入解析](<M0/T07-有界匯入解析設計.md>) | [驗證紀錄](<M0/T07-有界匯入解析驗證紀錄.md>) | 三格式解析、Linux程序限制及固定版本預覽；已續交下一切片的真正INGEST，研究版本待後續 |
 | M0→M1／T07（INGEST／Artifact） | [提交設計](<M0/T07-INGEST與Artifact提交設計.md>) | [驗證紀錄](<M0/T07-INGEST與Artifact提交驗證紀錄.md>) | 明確啟用的真實Run／專用queue／原子版本及metadata Artifact，三格式HTTP實測；已續交研究草稿；PROFILE／已知公式整合仍待後續 |
-| M0→M1／T07（研究草稿） | [語意確認設計](<M0/T07-研究草稿與語意確認設計.md>) | [驗證紀錄](<M0/T07-研究草稿與語意確認驗證紀錄.md>) | owner 私有研究、現行 Dataset ACL、精確語意／域／切分及不可變 DRAFT；PROFILE／正式封存／評估待後續 |
+| M0→M1／T07（研究草稿） | [語意確認設計](<M0/T07-研究草稿與語意確認設計.md>) | [驗證紀錄](<M0/T07-研究草稿與語意確認驗證紀錄.md>) | owner 私有研究、現行 Dataset access_class、精確語意／域／切分及不可變 DRAFT；PROFILE／正式封存／評估待後續 |
 | M0→M1／T07（研究預檢與已知公式） | [整合設計](<M0/T07-研究預檢與已知公式整合設計.md>) | [驗證紀錄](<M0/T07-研究預檢與已知公式整合驗證紀錄.md>) | 三格式有界品質／精確單位轉換、fit 統計與已知 DSL 的 fit／development 評分、遮罩與不可變記錄；正式 PROFILE／帳本／封存仍待後續 |
 | M0→M1／T07（研究帳本與 PROFILE） | [任務設計](<M0/T07-研究帳本與PROFILE任務設計.md>) | [驗證紀錄](<M0/T07-研究帳本與PROFILE任務驗證紀錄.md>) | 兩層預留與不可變用量收據、真 HTTP／專用 worker、遮罩品質與 fit-only 結構、取消／恢復與私有事件；正式封存及 READY 尚未開放 |
 | M0→M1／T07（正式封存與曝光帳本） | [封存登記設計](<M0/T07-正式封存與曝光帳本設計.md>) | [驗證紀錄](<M0/T07-正式封存與曝光帳本驗證紀錄.md>) | Evaluator 私有 SQLite authority、tenant-scoped 曝光 token 與 append-only journal、Unix socket RPC 及 UID 10002／10004 隔離；真 HTTP→INGEST→PROFILE→封存→READY 與 `formal_seal: IMPLEMENTED` 已實測，SEARCH／候選凍結／最終評分仍待後續 |
-| M0→M1／T07（證據包） | [證據包設計](<M0/T07-證據包設計.md>) | [驗證紀錄](<M0/T07-證據包驗證紀錄.md>) | READY 同交易自動登記不可變證據包、租戶與撤權一致 404、複合 FK 與引用 guard；真 HTTP 直取與前端同源皆實測，`/revoke`、validation 引用、SEARCH 與發布仍待後續 |
+| M0→M1／T07（證據包） | [證據包設計](<M0/T07-證據包設計.md>) | [驗證紀錄](<M0/T07-證據包驗證紀錄.md>) | READY 同交易自動登記不可變證據包、租戶一致 404、複合 FK 與引用 guard；真 HTTP 直取與前端同源皆實測，validation 引用、SEARCH 與交付仍待後續 |
 
-企劃中的產品驗收維持 NOT_RUN。T04 控制設計見 [Run／Attempt 控制核心](<M0/T04-Run與Attempt控制核心.md>)，實測見 [控制核心驗證](<M0/T04-Run與Attempt驗證紀錄.md>)。T05 已完成本機租戶／物件版本／上傳授權基線；T06 已提供本機有界安全 DSL 求值；T07 已交有界解析及明確啟用的真正 INGEST／Artifact；已續交人工語意與 ResearchVersion 草稿，已續交本機可信品質預檢與已知公式整合，已續交明確啟用的 PROFILE 任務與研究帳本，已續交 Evaluator 專用封存登記與曝光帳本，已續交 READY 版本唯讀證據包（品質報告與結構評估兩項封存產物），下一步接工作台與最終評估前置。不因骨架測試通過就啟用 AI、正式盲測或對外發布。
+企劃中的產品驗收維持 NOT_RUN。T04 控制設計見 [Run／Attempt 控制核心](<M0/T04-Run與Attempt控制核心.md>)，實測見 [控制核心驗證](<M0/T04-Run與Attempt驗證紀錄.md>)。T05 已完成本機租戶／物件版本／上傳基線；T06 已提供本機有界安全 DSL 求值；T07 已交有界解析及明確啟用的真正 INGEST／Artifact；已續交人工語意與 ResearchVersion 草稿，已續交本機可信品質預檢與已知公式整合，已續交明確啟用的 PROFILE 任務與研究帳本，已續交 Evaluator 專用封存登記與曝光帳本，已續交 READY 版本唯讀證據包（品質報告與結構評估兩項封存產物），下一步接工作台與最終評估前置。不因骨架測試通過就啟用 AI、正式盲測或對外開放。
 
-人員基線：只有使用者本人開發；Backend／Frontend／Math／QA／SRE 為兼任責任，不是招募需求。工作票預設依序執行，不把自我檢查標為獨立研究成果審核。
+人員基線：只有使用者本人開發；Backend／Frontend／Math／QA／SRE 為兼任責任，不是招募需求。工作票預設依序執行，自我檢查為單人流程紀錄，不冒充獨立覆核。
 
 T01 的 JSON 保存當時規劃快照，實際技術交付進度與重現證據以本索引及各輪驗證紀錄為準。
 

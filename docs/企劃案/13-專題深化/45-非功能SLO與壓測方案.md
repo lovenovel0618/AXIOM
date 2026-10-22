@@ -76,7 +76,7 @@
 |---|---|---|
 | AC-45-01 | 100並發混合查詢 | 固定環境、冷熱快取、成功與錯誤率分開報 |
 | AC-45-02 | 5%請求逾時但成功p95達標 | 缺錯誤率門檻則BLOCKED，不能宣稱SLO通過 |
-| AC-45-03 | worker crash後舊attempt提交 | STALE_ATTEMPT且不重扣／重發布 |
+| AC-45-03 | worker crash後舊attempt提交 | STALE_ATTEMPT且不重扣／重複外送 |
 | AC-45-04 | D-06未定RTO仍填通過 | G7 BLOCKED |
 
 ## SLO 完整性

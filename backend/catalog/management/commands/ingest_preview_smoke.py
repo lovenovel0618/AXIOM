@@ -20,7 +20,7 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         password = secrets.token_urlsafe(24)
         user = User.objects.create_user(username="preview-" + uuid4().hex, password=password)
-        actor = Account.objects.create(user=user, tenant=Tenant.objects.create(name="synthetic-preview-" + uuid4().hex), role="RESEARCHER")
+        actor = Account.objects.create(user=user, tenant=Tenant.objects.create(name="synthetic-preview-" + uuid4().hex))
         browser = Browser()
         browser.login(user.get_username(), password)
         status, dataset = browser.post("/api/v2/datasets", {"name": "公開合成匯入預覽"})

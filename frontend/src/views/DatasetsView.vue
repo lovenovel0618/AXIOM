@@ -35,7 +35,6 @@ const stageLabel: Record<UploadStage, string> = {
 const statusLabel: Record<DatasetVersionStatus, string> = {
   AVAILABLE: '可用',
   UNAVAILABLE: '不可用',
-  REVOKED: '已撤銷',
 }
 
 const unsupportedNotice = '支援格式：CSV、JSON、PARQUET（上限 50 MiB）。'

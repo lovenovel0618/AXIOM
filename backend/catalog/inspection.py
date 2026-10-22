@@ -7,7 +7,7 @@ from django.db import transaction
 from catalog.ingest import Meter
 from catalog.ingest_manifest import environment
 from catalog.models import Account, Audit, ResearchInspection, ResearchState, ResearchVersion
-from catalog.research import available_version, version_for, writable
+from catalog.research import available_version, version_for
 from catalog.services import actor_for
 from catalog.storage import LocalVersionStore, ObjectRef
 from catalog.validation import ApiError
@@ -22,14 +22,13 @@ import json
 
 
 def current(actor_id: UUID, version_id: UUID, *, allow_validating: bool = False) -> tuple[Account, ResearchVersion, ObjectRef]:
-    """可信 CLI 仍須重驗 actor、研究 owner、Dataset 寫權及來源；正式 PROFILE 執行中不得旁路預檢。"""
+    """可信 CLI 仍須重驗 actor、研究 owner、租戶分區及來源；正式 PROFILE 執行中不得旁路預檢。"""
     account = Account.objects.filter(pk=actor_id).first()
     if account is None:
         raise ApiError("FORBIDDEN", 403)
     actor = actor_for(account.user_id)
     if not actor.user.is_active:
         raise ApiError("FORBIDDEN", 403)
-    writable(actor)
     version = version_for(actor, version_id)
     dataset = available_version(actor, version.dataset_version_id)
     if version.document["status"] != "DRAFT" or (not allow_validating and ResearchState.objects.filter(research_version=version,status="VALIDATING").exists()):

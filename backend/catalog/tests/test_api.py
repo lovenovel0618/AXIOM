@@ -16,8 +16,8 @@ from typing import Protocol
 from django.test import Client, TestCase
 from runtime.contracts import JsonObject
 from runtime.records import db_now
-from catalog.models import Account, Audit, Dataset, Grant, LoginThrottle, Provenance, StoredObject, Tenant, Upload
-from catalog.services import actor_for, create_dataset, set_grant
+from catalog.models import Account, Audit, Dataset, LoginThrottle, Provenance, StoredObject, Tenant, Upload
+from catalog.services import actor_for, create_dataset
 from catalog.storage import LocalVersionStore, ObjectRef
 from catalog.validation import validate_api
 
@@ -54,17 +54,15 @@ class CatalogTests(TestCase):
         self.addCleanup(override.disable)
         self.tenant = Tenant.objects.create(name="A")
         self.other_tenant = Tenant.objects.create(name="B")
-        self.owner = self.account(self.tenant, "RESEARCHER")
-        self.other = self.account(self.other_tenant, "RESEARCHER")
-        self.reader = self.account(self.tenant, "VIEWER")
-        self.admin = self.account(self.tenant, "ADMIN")
+        self.owner = self.account(self.tenant)
+        self.other = self.account(self.other_tenant)
         with transaction.atomic():
             self.dataset = UUID(create_dataset(actor_for(self.owner.user_id), {"name": "公開合成資料"})["id"])
         self.client = self.as_actor(self.owner)
 
-    def account(self, tenant: Tenant, role: str) -> Account:
+    def account(self, tenant: Tenant) -> Account:
         user = User.objects.create(username=uuid4().hex, password=PASSWORD_HASH)
-        return Account.objects.create(user=user, tenant=tenant, role=role)
+        return Account.objects.create(user=user, tenant=tenant)
 
     def as_actor(self, actor: Account) -> Client:
         client = Client(enforce_csrf_checks=True)
@@ -151,23 +149,15 @@ class CatalogTests(TestCase):
                 self.assertEqual(document(response)["code"], "INVALID_JSON")
         self.assertEqual(Dataset.objects.count(), 1)
 
-    def test_cross_tenant_and_hidden_same_tenant_ids_return_404(self) -> None:
-        for actor in [self.other, self.admin]:
-            client = self.as_actor(actor)
-            response = self.post(f"/api/v2/datasets/{self.dataset}/uploads", {}, client)
-            self.assertEqual((response.status_code, document(response)["code"]), (404, "NOT_FOUND"))
-            page = document(client.get("/api/v2/datasets"))
-            self.assertEqual(page["items"], [])
+    def test_cross_tenant_ids_return_404(self) -> None:
+        client = self.as_actor(self.other)
+        response = self.post(f"/api/v2/datasets/{self.dataset}/uploads", {}, client)
+        self.assertEqual((response.status_code, document(response)["code"]), (404, "NOT_FOUND"))
+        page = document(client.get("/api/v2/datasets"))
+        self.assertEqual(page["items"], [])
 
-    def test_viewer_cannot_create_or_upload(self) -> None:
-        set_grant(self.admin.id, self.reader.id, self.dataset, "READER")
-        client = self.as_actor(self.reader)
-        self.assertEqual(self.post("/api/v2/datasets", {"name": "no"}, client).status_code, 403)
-        self.assertEqual(self.post(f"/api/v2/datasets/{self.dataset}/uploads", {}, client).status_code, 403)
-        self.assertEqual(len(document(client.get("/api/v2/datasets"))["items"]), 1)
-
-    def test_headers_cannot_select_tenant_or_role(self) -> None:
-        headers = self.headers() | {"X-Tenant-ID": str(self.other_tenant.id), "X-Role": "ADMIN"}
+    def test_headers_cannot_select_tenant(self) -> None:
+        headers = self.headers() | {"X-Tenant-ID": str(self.other_tenant.id)}
         response = self.client.get("/api/v2/datasets", headers=headers)
         self.assertEqual(document(response)["items"][0]["tenant_id"], str(self.tenant.id))
 
@@ -176,14 +166,6 @@ class CatalogTests(TestCase):
         Account.objects.filter(pk=self.owner.id).update(enabled=False)
         self.assertEqual(self.post("/api/v2/datasets", {"name": "new"}).status_code, 403)
         self.assertTrue(Audit.objects.filter(action="API_DENY", actor_id=self.owner.id, code="FORBIDDEN").exists())
-
-    def test_revocation_blocks_cached_response_and_put(self) -> None:
-        upload = self.upload()
-        set_grant(self.admin.id, self.owner.id, self.dataset, None)
-        response = self.post(f"/api/v2/datasets/{self.dataset}/uploads", {"filename": "../../private.csv", "format": "CSV", "size_bytes": len(CONTENT), "sha256": CHECKSUM}, key="upload")
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(self.put(upload).status_code, 404)
-        self.assertEqual(StoredObject.objects.count(), 0)
 
     def test_upload_is_private_versioned_and_idempotent(self) -> None:
         upload = self.upload()
@@ -217,9 +199,8 @@ class CatalogTests(TestCase):
 
     def test_token_cannot_move_between_actors_or_uploads(self) -> None:
         upload = self.upload()
-        editor = self.account(self.tenant, "RESEARCHER")
-        set_grant(self.admin.id, editor.id, self.dataset, "EDITOR")
-        self.assertEqual(self.put(upload, client=self.as_actor(editor)).status_code, 403)
+        other = self.account(self.tenant)
+        self.assertEqual(self.put(upload, client=self.as_actor(other)).status_code, 403)
         another = self.upload(key="another")
         another["required_headers"] = upload["required_headers"]
         self.assertEqual(self.put(another).status_code, 403)
@@ -243,12 +224,6 @@ class CatalogTests(TestCase):
         response = self.post(path, data)
         self.assertEqual((response.status_code, document(response)["code"]), (415, "UNSUPPORTED_MEDIA_TYPE"))
 
-    def test_role_downgrade_overrides_existing_editor_grant(self) -> None:
-        upload = self.upload()
-        Account.objects.filter(pk=self.owner.id).update(role="VIEWER")
-        self.assertEqual(self.put(upload).status_code, 403)
-        self.assertEqual(StoredObject.objects.count(), 0)
-
     def test_complete_never_fabricates_ingest(self) -> None:
         upload = self.upload()
         self.put(upload)
@@ -268,21 +243,16 @@ class CatalogTests(TestCase):
         response = self.post("/api/v2/uploads/" + upload["id"] + "/complete", {"checksum": CHECKSUM})
         self.assertEqual((response.status_code, document(response)["code"]), (409, "UPLOAD_OBJECT_CHANGED"))
 
-    def test_cursor_is_scoped_and_rechecks_current_acl(self) -> None:
+    def test_cursor_is_scoped_to_tenant(self) -> None:
         self.post("/api/v2/datasets", {"name": "new"})
         page = document(self.client.get("/api/v2/datasets?limit=1"))
         self.assertIsNotNone(page["next_cursor"])
         other = self.as_actor(self.other)
         response = other.get("/api/v2/datasets", {"cursor": page["next_cursor"], "limit": 1})
         self.assertEqual((response.status_code, document(response)["code"]), (400, "INVALID_CURSOR"))
-        set_grant(self.admin.id, self.owner.id, self.dataset, None)
-        response = self.client.get("/api/v2/datasets", {"cursor": page["next_cursor"], "limit": 1})
-        self.assertEqual(document(response)["items"], [])
 
-    def test_database_blocks_cross_tenant_grant_and_upload(self) -> None:
+    def test_database_blocks_cross_tenant_upload(self) -> None:
         row = Dataset.objects.get(pk=self.dataset)
-        with self.assertRaises(IntegrityError):
-            enforce(lambda: Grant.objects.create(actor=self.other, dataset=row, tenant=self.tenant, permission="EDITOR"))
         with self.assertRaises(IntegrityError):
             enforce(lambda: Upload.objects.create(tenant=self.other_tenant, dataset=row, actor=self.other, filename="x", format="CSV", size_bytes=1, sha256="0" * 64, expires_at=db_now() + timedelta(minutes=15)))
 

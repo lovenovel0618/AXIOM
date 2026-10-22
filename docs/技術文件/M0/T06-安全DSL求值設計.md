@@ -4,7 +4,7 @@
 
 ## 介面與信任邊界
 
-新增純 Python mathematics 套件，不需 DB migration。compile_dsl(bytes) 是唯一編譯入口，接受權威 dsl-v1 schema 的 JSON envelope，產生不可變 Plan（canonical bytes、SHA-256、輸出 SI 維度、節點數）。evaluate(plan, rows, parameters) 產生每列 value／valid_mask／reason，precision_bits=53；參數採十進位字串，資料列採有限 float／安全整數。不得使用 eval、exec、動態 import、SymPy 字串解析、網路或檔案操作。此輪無公開 HTTP 求值入口，後續接入仍須租戶 ACL、Run 與 manifest。
+新增純 Python mathematics 套件，不需 DB migration。compile_dsl(bytes) 是唯一編譯入口，接受權威 dsl-v1 schema 的 JSON envelope，產生不可變 Plan（canonical bytes、SHA-256、輸出 SI 維度、節點數）。evaluate(plan, rows, parameters) 產生每列 value／valid_mask／reason，precision_bits=53；參數採十進位字串，資料列採有限 float／安全整數。不得使用 eval、exec、動態 import、SymPy 字串解析、網路或檔案操作。此輪無公開 HTTP 求值入口，後續接入仍須租戶分區與 access_class、Run 與 manifest。
 
 先檢查傳輸 256KiB、JSON 容器深度32、重複 key、UTF-8／非有限／浮點常數，再檢查 AST 深度10（root=1）、節點1024、運算白名單，最後執行離線 schema 及語意檢查。宣告最多128項；十進位界限及 binding 最多128字元；有理數分子／分母最多128位。限制是本機安全預設，非效能或正式產品政策。
 

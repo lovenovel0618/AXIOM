@@ -1,4 +1,4 @@
-"""Current-ACL reads for committed local versions and safe JSON artifacts."""
+"""Tenant-scoped reads for committed local versions and safe JSON artifacts."""
 from datetime import datetime
 import hashlib
 from uuid import UUID
@@ -19,7 +19,7 @@ from runtime.models import RuntimeRun
 @allowed_methods(["GET"])
 @api
 def versions(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
-    """以現行 Dataset ACL 查分頁版本，簽章 cursor 綁 actor／資料集且有期限。"""
+    """以租戶分區查分頁版本，簽章 cursor 綁 actor／資料集且有期限。"""
     dataset_for(actor, identity)
     if set(request.GET).difference({"cursor", "limit"}):
         raise ApiError("INVALID_SCHEMA", 422)
@@ -51,7 +51,7 @@ def versions(request: HttpRequest, actor: Account, identity: UUID) -> JsonRespon
 
 
 def run_for(actor: Account, identity: UUID) -> RuntimeRun:
-    """拒絕 control probe；PROFILE 額外驗研究 owner，INGEST 驗 Dataset ACL。"""
+    """拒絕 control probe；PROFILE 額外驗研究 owner，INGEST 驗租戶分區。"""
     row = RuntimeRun.objects.filter(pk=identity,tenant_id=actor.tenant_id,control_only=False).first()
     if row is None:
         raise ApiError("NOT_FOUND",404)
@@ -87,7 +87,7 @@ def run_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonRes
 @allowed_methods(["GET"])
 @api
 def artifact_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
-    """重新驗存取權後回 metadata，不能藉舊列表或 UUID 繞過撤權。"""
+    """重新驗租戶與 access class 後回 metadata，不能藉舊列表或 UUID 繞過。"""
     row = authorized(actor, identity)
     validate_api(row.document, "Artifact")
     return JsonResponse(row.document)
@@ -96,7 +96,7 @@ def artifact_detail(_request: HttpRequest, actor: Account, identity: UUID) -> Js
 @allowed_methods(["GET"])
 @api
 def evidence_bundle_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
-    """重新驗租戶與研究存取權後回證據包，並附目前控制 revision。"""
+    """重新驗租戶與研究 owner 後回證據包，並附目前控制 revision。"""
     row = evidence_bundle(actor,identity)
     response = JsonResponse(row.document)
     response["X-Control-Revision"] = str(row.document["revision"])

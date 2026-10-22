@@ -3,7 +3,6 @@ import { ApiError } from '../api/client'
 
 const MESSAGES: Record<string, string> = {
   AUTH_REQUIRED: '請先登入。',
-  FORBIDDEN: '目前身分沒有執行這個操作的權限。',
   NOT_FOUND: '找不到指定的資源。',
   INVALID_SCHEMA: '輸入內容不符合規格。',
   INVALID_JSON: '請求內容不是有效的 JSON。',

@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ('tenant', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='catalog.tenant')),
             ],
             options={
-                'constraints': [models.UniqueConstraint(fields=('id', 'tenant'), name='evidence_bundle_tenant_identity'), models.CheckConstraint(condition=models.Q(('status__in', ['ACTIVE', 'REVOKED', 'QUARANTINED'])), name='evidence_bundle_valid_status')],
+                'constraints': [models.UniqueConstraint(fields=('id', 'tenant'), name='evidence_bundle_tenant_identity'), models.CheckConstraint(condition=models.Q(('status__in', ['ACTIVE', 'QUARANTINED'])), name='evidence_bundle_valid_status')],
             },
         ),
     ]

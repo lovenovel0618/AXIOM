@@ -12,7 +12,7 @@
 
 ## 適用範圍與環境矩陣
 
-| 角色 | 平台 | Docker 執行方式 | 映像架構 | GPU |
+| 環境 | 平台 | Docker 執行方式 | 映像架構 | GPU |
 |---|---|---|---|---|
 | 開發 | macOS（Apple Silicon／Intel）+ Docker Desktop | Linux 虛擬機 | arm64（必要時 amd64） | 無直通 |
 | 架設 | Windows 11 + WSL2（Linux 發行版）+ Docker | Linux 原生核心 | amd64 | 依宿主是否具 NVIDIA GPU，待確認（D-02） |
@@ -27,7 +27,7 @@
 
 T07 封存切片另加入三個服務與一個內部通道：Evaluator 專用的 `profile` worker（UID 10002、raw GID 10003、獨立 `sealed-data`／`sealed-keys` volume）、`ingest` worker（object-data 唯讀），以及 UID 10004 的 `journal` authority（`journal-data`／`journal-authority` volume）。`journal` 以 `network_mode: none` 執行、不接任何網路、不映射宿主埠，僅透過 `journal-socket` 具名 volume 上的 Unix domain socket 與 `profile` 交換 append／read 訊息；此通道需額外設定 AXIOM_JOURNAL_TOKEN。三個自建映像（backend、compatibility、benchmark）的 Python 基底一律以 digest 固定，不使用可變 tag。
 
-執行指令與測試見 [infra 說明](<../../../infra/README.md>)、[T04 技術設計](<../../技術文件/M0/T04-產品工程骨架.md>)。已實作健康端點固定為 /health/live/、/health/ready/；worker 另以 probe_smoke 實測。Windows WSL2 未實測，不能由 macOS arm64 結果推論通過。下列完整拓樸與尚未實作的設定是後續目標，不是目前 Compose 功能；T05 已加入資料集登入帳號、租戶ACL與web專用object-data本地volume；MinIO／S3、正式業務Run、AI與proof均未啟用。
+執行指令與測試見 [infra 說明](<../../../infra/README.md>)、[T04 技術設計](<../../技術文件/M0/T04-產品工程骨架.md>)。已實作健康端點固定為 /health/live/、/health/ready/；worker 另以 probe_smoke 實測。Windows WSL2 未實測，不能由 macOS arm64 結果推論通過。下列完整拓樸與尚未實作的設定是後續目標，不是目前 Compose 功能；T05 已加入資料集登入帳號、租戶分區與web專用object-data本地volume；MinIO／S3、正式業務Run、AI與proof均未啟用。
 
 ## 目標容器拓樸
 
@@ -86,7 +86,7 @@ flowchart TB
 ## 資料卷與持久化
 
 - 具名卷：`pgdata`、`redisdata`、`miniodata`、`static`、`media`、`ollama-models`（若容器化 Ollama）。
-- 原始資料與已發布研究證據不得覆寫；`media`（上傳原始檔）與 `miniodata`（產出物件）分離，避免清理時誤刪證據。
+- 原始資料與既有研究證據不得覆寫；`media`（上傳原始檔）與 `miniodata`（產出物件）分離，避免清理時誤刪證據。
 - 僅原始碼以 bind mount 掛載以支援熱重載，並排除 `.DS_Store` 等平台干擾檔。
 - WSL2 架設時，專案目錄與具名卷必須位於 WSL2 的 Linux 檔案系統（如 `/home/<user>/...`），不得使用 `/mnt/c/...`；跨檔案系統 I/O 效能顯著下降。
 - `redisdata` 不作為唯一永久來源，允許重建。
@@ -109,7 +109,7 @@ flowchart TB
 
 - 依賴以 `depends_on: condition: service_healthy` 表達，不以固定 `sleep` 取代。
 - 健康檢查端點：postgres `pg_isready`、redis `redis-cli ping`、minio `/minio/health/live`、web `/health/live/`（程序存活、不查 schema）及 `/health/ready/`（DB schema、必要服務與 init version 已就緒）、nginx 反向探測 `/health/ready/`。
-- 首次啟動先啟動 PostgreSQL／Redis／MinIO 並等待基礎服務健康，再執行一次性 init job（遷移、bucket／最小權限帳號、管理員與公開 fixture），最後啟動 web／worker／nginx。init 失敗即停止，不先等待依賴 schema 的 web 就緒。
+- 首次啟動先啟動 PostgreSQL／Redis／MinIO 並等待基礎服務健康，再執行一次性 init job（遷移、bucket／最小權限帳號、初始維運帳號與公開 fixture），最後啟動 web／worker／nginx。init 失敗即停止，不先等待依賴 schema 的 web 就緒。
 - 任一必要服務不健康時，web 不得對外提供服務；此為 Pre-flight 閘門，避免半啟動狀態產生不可信結果。
 
 ## macOS 開發環境注意事項
@@ -158,7 +158,7 @@ proof／sandbox 採無網路模式時，不可直接連接 PostgreSQL、Redis �
 | 檢視狀態與健康 | `docker compose ps` |
 | 追蹤日誌 | `docker compose logs -f web worker` |
 | 執行資料庫遷移 | `docker compose exec web python manage.py migrate` |
-| 建立管理員 | `docker compose exec web python manage.py createsuperuser` |
+| 建立初始維運帳號 | `docker compose exec web python manage.py createsuperuser` |
 | 進容器除錯 | `docker compose exec web bash` |
 | 停止並保留資料 | `docker compose down` |
 | 完全重置（含資料卷） | `docker compose down -v` |
@@ -189,7 +189,7 @@ proof／sandbox 採無網路模式時，不可直接連接 PostgreSQL、Redis �
 
 以下為預定測試，狀態皆 NOT_RUN；實際證據依 AX-46 登錄。
 
-minio-init 可用 root 憑證建 bucket／service policy，但 web、worker 只拿各自最小權限帳號，不能共用 MINIO_ROOT_USER／PASSWORD。平台差異以覆寫檔與 capabilities 檢查表表達；資料層宿主埠綁 127.0.0.1，不能因省略 host IP 而意外對外監聽。CHATGPT_API_KEY 僅在已核准外部路由啟用時必填；MVP 外部路由關閉，不因缺該 key 而阻止本地規則啟動。
+minio-init 可用 root 憑證建 bucket／service policy，但 web、worker 只拿各自最小權限帳號，不能共用 MINIO_ROOT_USER／PASSWORD。平台差異以覆寫檔與 capabilities 檢查表表達；資料層宿主埠綁 127.0.0.1，不能因省略 host IP 而意外對外監聽。CHATGPT_API_KEY 僅在已啟用外部路由時必填；MVP 外部路由關閉，不因缺該 key 而阻止本地規則啟動。
 
 本節其餘命令為目標操作介面。compose.yaml、backend Dockerfile 與 Django 管理命令自 T04 起逐步交付，T07 已擴充至封存與 journal 服務；但完整 MinIO／nginx 拓樸、`.env.example` 以外的秘密注入、backup/restore 與產品 smoke 驗收仍未交付，不得宣稱可在空倉庫直接完成正式架設。
 

@@ -1,6 +1,6 @@
-"""明確啟用的真正匯入：固定原檔、隔離解析、重驗授權與原子版本提交。
+"""明確啟用的真正匯入：固定原檔、隔離解析、重驗租戶歸屬與原子版本提交。
 
-Opt-in business INGEST: immutable enqueue, current ACL and fenced commit."""
+Opt-in business INGEST: immutable enqueue, tenant-scoped reads and fenced commit."""
 import hashlib
 import math
 import resource
@@ -25,7 +25,7 @@ from runtime.records import ControlError, db_now, public_run, snapshot_for
 
 
 def complete_upload(actor: Account, row: Upload, checksum: str, key: str) -> JsonObject:
-    """驗 checksum 與固定物件後建立真正 INGEST；重送同 upload 回同 root 並重查授權。"""
+    """驗 checksum 與固定物件後建立真正 INGEST；重送同 upload 回同租戶 root。"""
     require_key(key)
     if checksum != row.sha256:
         raise ApiError("CHECKSUM_MISMATCH", 422)
@@ -51,7 +51,7 @@ def complete_upload(actor: Account, row: Upload, checksum: str, key: str) -> Jso
 
 
 def current(binding: IngestBinding) -> tuple[Account, Upload]:
-    """背景執行也重新驗 User／Account 與資料集授權，不能沿用派送時已撤銷的權限。"""
+    """背景執行也重新驗 User／Account 與租戶資料集歸屬，不沿用派送時的查詢結果。"""
     account = Account.objects.get(pk=binding.actor_id, tenant_id=binding.tenant_id)
     actor = actor_for(account.user_id)
     if not actor.user.is_active:
@@ -109,7 +109,7 @@ def failed(binding: IngestBinding, run: RuntimeRun, code: str) -> None:
 
 
 def submit(binding: IngestBinding, lease: Lease, metadata: JsonObject, usage: object) -> None:
-    """結果提交前重驗授權及來源；版本、Artifact 與 Run 終態在同一交易。"""
+    """結果提交前重驗租戶歸屬及來源；版本、Artifact 與 Run 終態在同一交易。"""
     with transaction.atomic():
         actor, _upload = current(binding)
         verify_staged(actor, binding.upload_id)

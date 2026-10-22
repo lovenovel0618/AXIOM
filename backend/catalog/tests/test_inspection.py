@@ -1,4 +1,4 @@
-"""Real ingestion, PostgreSQL, current ACL and immutable preflight records."""
+"""Real ingestion, PostgreSQL, tenant-scope and immutable preflight records."""
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from io import BytesIO
@@ -13,7 +13,7 @@ from django.db import IntegrityError, connection, connections, transaction
 from django.test import TransactionTestCase, override_settings
 from catalog.ingest import complete_upload, ingest_tick
 from catalog.inspection import parameters_from, preflight
-from catalog.models import Account, Dataset, DatasetVersion, Grant, ResearchInspection, ResearchVersion, Tenant, Upload
+from catalog.models import Account, Dataset, DatasetVersion, ResearchInspection, ResearchVersion, Tenant, Upload
 from catalog.research import create_research, create_version
 from catalog.services import actor_for, create_dataset, create_upload, put_upload
 from catalog.storage import LocalVersionStore, ObjectRef, StorageRejected
@@ -33,7 +33,7 @@ class InspectionTests(TransactionTestCase):
         override.enable()
         self.addCleanup(override.disable)
         user = User.objects.create(username=uuid4().hex,password="!")
-        self.actor = Account.objects.create(user=user,tenant=Tenant.objects.create(name="synthetic"),role="RESEARCHER")
+        self.actor = Account.objects.create(user=user,tenant=Tenant.objects.create(name="synthetic"))
         content = b'x,y\n' + b''.join(f'{i},{2*i+1}\n'.encode() for i in range(10))
         with transaction.atomic():
             actor = actor_for(user.pk)
@@ -77,22 +77,6 @@ class InspectionTests(TransactionTestCase):
         self.assertIsNone(self.version.document["quality_report_id"])
         self.assertEqual(self.client.post(f'/api/v2/research-versions/{self.version.id}/validate').status_code,503)
 
-    def test_cached_report_still_requires_current_grant(self) -> None:
-        self.inspect()
-        Grant.objects.filter(actor=self.actor).delete()
-        with self.assertRaises(ApiError) as raised:
-            self.inspect()
-        self.assertEqual(raised.exception.code,"NOT_FOUND")
-
-    def test_revocation_during_worker_prevents_commit(self) -> None:
-        def revoke(*args: object, **kwargs: object) -> dict[str, object]:
-            Grant.objects.filter(actor=self.actor).delete()
-            return {"policy_version":POLICY,"quality":"BLOCKED","blocking_code":"DATA_QUALITY_BLOCKED","precision_bits":53,"fit_summary":None,"model_evaluation":None}
-        with patch("catalog.inspection.inspect_research",side_effect=revoke):
-            with self.assertRaises(ApiError):
-                self.inspect()
-        self.assertFalse(ResearchInspection.objects.exists())
-
     def test_source_change_during_worker_prevents_commit(self) -> None:
         path = self.raw_path()
         def replace_source(*args: object, **kwargs: object) -> dict[str, object]:
@@ -112,24 +96,20 @@ class InspectionTests(TransactionTestCase):
         self.assertEqual(raised.exception.code,"CHECKPOINT_INCOMPATIBLE")
         self.assertFalse(ResearchInspection.objects.exists())
 
-    def test_disabled_actor_and_read_only_grant_never_parse(self) -> None:
-        for change in ("disabled","viewer","reader","inactive"):
+    def test_disabled_and_inactive_actor_never_parse(self) -> None:
+        for change in ("disabled","inactive"):
             with self.subTest(change=change):
-                Account.objects.filter(pk=self.actor.id).update(enabled=True,role="RESEARCHER")
+                Account.objects.filter(pk=self.actor.id).update(enabled=True)
                 User.objects.filter(pk=self.actor.user_id).update(is_active=True)
-                Grant.objects.filter(actor=self.actor).update(permission="OWNER")
                 if change=="disabled": Account.objects.filter(pk=self.actor.id).update(enabled=False)
-                elif change=="viewer": Account.objects.filter(pk=self.actor.id).update(role="VIEWER")
-                elif change=="reader": Grant.objects.filter(actor=self.actor).update(permission="READER")
                 else: User.objects.filter(pk=self.actor.user_id).update(is_active=False)
                 with patch("catalog.inspection.inspect_research") as worker:
                     with self.assertRaises(ApiError): self.inspect()
                     worker.assert_not_called()
 
-    def test_same_tenant_administrator_has_no_research_access(self) -> None:
+    def test_same_tenant_account_has_no_research_access(self) -> None:
         user = User.objects.create(username=uuid4().hex,password="!")
-        other = Account.objects.create(user=user,tenant=self.actor.tenant,role="ADMIN")
-        Grant.objects.create(actor=other,dataset=self.dataset,tenant=self.actor.tenant,permission="OWNER")
+        other = Account.objects.create(user=user,tenant=self.actor.tenant)
         with self.assertRaises(ApiError) as raised:
             preflight(other.id,self.version.id,LIMITS)
         self.assertEqual(raised.exception.code,"NOT_FOUND")

@@ -1,5 +1,5 @@
-"""租戶與檔案業務邊界：每次讀寫重驗角色及 Dataset grant；物件固定版本後不可覆寫。
-冪等回放仍重驗目前授權；撤權不靠刪資料或重設請求身分處理。
+"""租戶業務邊界：每次讀寫重驗租戶分區；物件固定版本後不可覆寫。
+冪等回放仍重驗租戶歸屬；資源被刪除或隔離後一律 404。
 
 Authenticated catalog operations; callers hold the current actor row lock."""
 from collections.abc import Callable
@@ -7,15 +7,12 @@ from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 from django.conf import settings
 from django.core import signing
-from django.db import transaction
 from django.db.models import Q, QuerySet
 from runtime.contracts import JsonObject, identity_hash, validate
 from runtime.records import db_now
-from catalog.models import Account, Audit, Dataset, Grant, IdempotentResult, Provenance, StoredObject, Upload
+from catalog.models import Account, Audit, Dataset, IdempotentResult, Provenance, StoredObject, Upload
 from catalog.storage import LocalVersionStore, ObjectRef, StorageRejected, Readable
 from catalog.validation import ApiError, validate_api
-
-WRITE_PERMISSIONS = {"OWNER", "EDITOR"}
 
 
 def actor_for(user_id: int) -> Account:
@@ -29,11 +26,6 @@ def dataset_for(actor: Account, identity: UUID, write: bool = False) -> Dataset:
     row = Dataset.objects.select_for_update().filter(pk=identity, tenant_id=actor.tenant_id).first()
     if row is None:
         raise ApiError("NOT_FOUND", 404)
-    grant = Grant.objects.filter(actor=actor, dataset=row, tenant_id=actor.tenant_id).first()
-    if grant is None:
-        raise ApiError("NOT_FOUND", 404)
-    if write and (grant.permission not in WRITE_PERMISSIONS or actor.role not in {"RESEARCHER", "ADMIN"}):
-        raise ApiError("FORBIDDEN", 403)
     return row
 
 
@@ -57,12 +49,9 @@ def provenance(actor: Account, resource_type: str, resource_id: UUID, identity: 
 
 
 def create_dataset(actor: Account, data: JsonObject) -> JsonObject:
-    if actor.role not in {"RESEARCHER", "ADMIN"}:
-        raise ApiError("FORBIDDEN", 403)
     identity, source = uuid4(), uuid4()
     provenance(actor, "Dataset", identity, source)
     row = Dataset.objects.create(id=identity, tenant_id=actor.tenant_id, owner=actor, name=data["name"], provenance_id=source)
-    Grant.objects.create(tenant_id=actor.tenant_id, actor=actor, dataset=row, permission="OWNER")
     Audit.objects.create(tenant_id=actor.tenant_id, actor_id=actor.id, action="CREATE_DATASET", code="OK")
     return dataset_dto(row)
 
@@ -169,7 +158,7 @@ def verify_staged(actor: Account, upload_id: UUID) -> ObjectRef:
 
 
 def list_datasets(actor: Account, cursor: str, limit: int) -> JsonObject:
-    rows: QuerySet[Dataset] = Dataset.objects.filter(tenant_id=actor.tenant_id, grants__actor=actor, grants__tenant_id=actor.tenant_id).order_by("-created_at", "-id")
+    rows: QuerySet[Dataset] = Dataset.objects.filter(tenant_id=actor.tenant_id).order_by("-created_at", "-id")
     if cursor:
         rows = _after_cursor(rows, actor, cursor)
     page = list(rows[:limit + 1])
@@ -189,22 +178,3 @@ def _after_cursor(rows: QuerySet[Dataset], actor: Account, cursor: str) -> Query
         return rows.filter(Q(created_at__lt=created) | Q(created_at=created, id__lt=identity))
     except (signing.BadSignature, ValueError, KeyError, TypeError) as error:
         raise ApiError("INVALID_CURSOR", 400) from error
-
-
-def set_grant(administrator_id: UUID, target_id: UUID, dataset_id: UUID, permission: str | None) -> None:
-    if permission not in {None, "READER", "EDITOR", "OWNER"}:
-        raise ApiError("INVALID_SCHEMA", 422)
-    with transaction.atomic():
-        actors = list(Account.objects.select_for_update().filter(id__in=[administrator_id, target_id]).order_by("id"))
-        indexed = {actor.id: actor for actor in actors}
-        administrator, target = indexed.get(administrator_id), indexed.get(target_id)
-        if administrator is None or target is None or not administrator.enabled or administrator.role != "ADMIN":
-            raise ApiError("FORBIDDEN", 403)
-        row = Dataset.objects.select_for_update().filter(pk=dataset_id, tenant_id=administrator.tenant_id).first()
-        if row is None or target.tenant_id != administrator.tenant_id:
-            raise ApiError("NOT_FOUND", 404)
-        if permission is None:
-            Grant.objects.filter(actor=target, dataset=row).delete()
-        else:
-            Grant.objects.update_or_create(actor=target, dataset=row, defaults={"tenant_id": row.tenant_id, "permission": permission})
-        Audit.objects.create(tenant_id=row.tenant_id, actor_id=administrator.id, action="SET_GRANT", code="OK")

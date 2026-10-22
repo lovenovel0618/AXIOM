@@ -51,7 +51,7 @@
   },
   "backend/catalog/models.py": {
     "Any": 0,
-    "JsonObject": 32,
+    "JsonObject": 30,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/research.py": {
@@ -200,7 +200,7 @@
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/tests/test_profile.py": {
-    "Any": 6,
+    "Any": 4,
     "JsonObject": 0,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
@@ -215,11 +215,6 @@
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/management/commands/provision_account.py": {
-    "Any": 2,
-    "JsonObject": 0,
-    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
-  },
-  "backend/catalog/management/commands/grant_dataset.py": {
     "Any": 2,
     "JsonObject": 0,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"

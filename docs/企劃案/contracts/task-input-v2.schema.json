@@ -18,8 +18,7 @@
         "PROFILE",
         "SEARCH",
         "FIT",
-        "VALIDATE",
-        "REVOKE"
+        "VALIDATE"
       ]
     },
     "research_version_id": {
@@ -467,49 +466,6 @@
           "observation_split_id": {
             "type": "string",
             "format": "uuid"
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "type": {
-            "const": "REVOKE"
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "payload": {
-            "type": "object",
-            "properties": {
-              "evidence_bundle_id": {
-                "type": "string",
-                "format": "uuid"
-              },
-              "revocation_id": {
-                "type": "string",
-                "format": "uuid"
-              },
-              "policy_version": {
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": [
-              "evidence_bundle_id",
-              "revocation_id",
-              "policy_version"
-            ],
-            "additionalProperties": false
-          },
-          "research_version_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "observation_split_id": {
-            "type": "null"
           }
         }
       }

@@ -322,7 +322,7 @@ def check_api_examples(folder: Path, api: JsonObject) -> int:
 def check_operation_headers(path: str, method: str, operation: JsonObject) -> None:
     headers = {p["name"] for p in operation.get("parameters", []) if p.get("in") == "header"}
     check("If-Match" not in headers, "Business control revision must not masquerade as representation ETag")
-    if method == "post" and any(path.endswith(suffix) for suffix in ["/validate", "/runs", "/cancel", "/reviews", "/revoke", "/released-summaries"]):
+    if method == "post" and any(path.endswith(suffix) for suffix in ["/validate", "/runs", "/cancel"]):
         check("If-Control-Revision" in headers, "Control precondition missing")
 
 
@@ -373,11 +373,8 @@ def check_scenario_context(suite: JsonObject, schemas: dict[str, JsonObject], re
 
 
 def check_recovery_contracts(definitions: JsonObject, runtime: JsonObject, api: JsonObject, dsl: JsonObject) -> None:
-    for field in ["evidence_bundle_ids", "review_ids", "quality_report_id"]:
+    for field in ["evidence_bundle_ids", "quality_report_id"]:
         check(field in definitions["ResearchVersion"]["required"], "Snapshot recovery reference missing: " + field)
-    check(api["paths"]["/review-decisions/{id}"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
-          == {"$ref": "#/components/schemas/ReviewDecision"}, "Review history cannot be recovered")
-    check(definitions["ReviewDecision"]["properties"]["decision"]["enum"] == ["APPROVE", "REJECT"], "Review enum drift")
     check("dispatch_stage" not in definitions["Run"]["properties"], "Private dispatch control leaked")
     check("outcome_status" in definitions["Run"]["required"] and "skipped_phases" in definitions["Run"]["required"],
           "Run outcome/skip projection missing")
@@ -388,7 +385,7 @@ def check_recovery_contracts(definitions: JsonObject, runtime: JsonObject, api: 
     check("FinalEvaluationSlot" in runtime and "FinalEvaluationSlot" not in api["components"]["schemas"],
           "Final slot missing or leaked into HTTP")
     for path in ["/validation-runs/{id}", "/artifacts/{id}", "/artifacts/{id}/content",
-                 "/evidence-bundles/{id}", "/published-artifacts/{id}"]:
+                 "/evidence-bundles/{id}"]:
         operation = api["paths"][path]["get"]
         check(operation.get("x-axiom-access-policy") == "artifact-class-and-lineage-v1"
               and "404" in operation["responses"], "Sealed-read endpoint policy missing: " + path)
@@ -498,18 +495,10 @@ def check_lifecycle_contracts(definitions: JsonObject, runtime: JsonObject, api:
     for column in [definitions["SemanticProfile"]["properties"]["inputs"]["items"],
                    definitions["SemanticProfile"]["properties"]["target"]]:
         check("conversion" in column["required"], "Canonical conversion missing")
-    for name in ["PublicationClaim", "ReleasedSummary"]:
-        check(name in api["components"]["schemas"], "Missing publication projection: " + name)
-    for name in ["ResourceProvenance", "ExecutionManifest", "UploadRecord", "SummaryLineage"]:
+    for name in ["ResourceProvenance", "ExecutionManifest", "UploadRecord"]:
         check(name in runtime and name not in api["components"]["schemas"], "Private record missing or leaked: " + name)
     for field in ["selected_count", "valid_count", "failed_count"]:
         check(field in definitions["ValidationRun"]["required"], "Evaluation denominator missing: " + field)
-    check("released_summary_ids" in definitions["ResearchVersion"]["required"], "Summary recovery missing")
-    check("claim" in api["components"]["schemas"]["CreateReview"]["required"], "Review claim missing")
-    check("publication_claim_id" in definitions["PublishedArtifact"]["required"], "Publication snapshot missing")
-    summary_fields = set(definitions["ReleasedSummary"]["properties"])
-    check(not summary_fields & {"evidence_bundle_id", "publication_claim_id", "published_artifact_id"},
-          "Sealed source reference leaked into summary")
 
 
 def check_attachment_source(source: JsonObject) -> None:
@@ -559,7 +548,7 @@ def check_learning_boundaries(schemas: dict[str, JsonObject], api: JsonObject) -
     check("research_trace_artifact_ids" in definitions["Run"]["required"], "Run trace navigation missing")
     check(definitions["SemanticProfile"]["properties"]["inputs"]["maxItems"] == 1,
           "Future representation payload must not silently widen the public single-input profile")
-    check(definitions["Run"]["properties"]["type"]["enum"] == ["INGEST", "PROFILE", "SEARCH", "FIT", "VALIDATE", "REVOKE"],
+    check(definitions["Run"]["properties"]["type"]["enum"] == ["INGEST", "PROFILE", "SEARCH", "FIT", "VALIDATE"],
           "Learning jobs must not masquerade as current public Run types")
     for name, definition in payload[DEFINITIONS_KEY].items():
         check(name not in api["components"]["schemas"], "Internal learning payload leaked as HTTP DTO: " + name)

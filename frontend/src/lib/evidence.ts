@@ -27,7 +27,7 @@ const REMAINING_LABELS: Record<string, string> = {
   SEALED_TEST_NOT_REGISTERED: '尚未完成正式封存測試登記',
 }
 
-export type EvidenceStatus = 'ACTIVE' | 'REVOKED' | 'QUARANTINED'
+export type EvidenceStatus = 'ACTIVE' | 'QUARANTINED'
 
 /** READY 版本才有的證據包；只引用既有產物，不生成新的科學主張。 */
 export interface EvidenceBundle {
@@ -46,7 +46,6 @@ export const QUALITY_LABELS: Record<QualityOutcome, string> = {
 
 export const EVIDENCE_STATUS_LABELS: Record<EvidenceStatus, string> = {
   ACTIVE: '有效',
-  REVOKED: '已撤銷',
   QUARANTINED: '已隔離',
 }
 
@@ -140,7 +139,7 @@ export function parseEvidenceBundle(value: unknown): EvidenceBundle | null {
   if (!('kind' in value) || value.kind !== 'EvidenceBundle') return null
   if (!('id' in value) || typeof value.id !== 'string' || value.id === '') return null
   if (!('research_version_id' in value) || typeof value.research_version_id !== 'string' || value.research_version_id === '') return null
-  if (!('status' in value) || (value.status !== 'ACTIVE' && value.status !== 'REVOKED' && value.status !== 'QUARANTINED')) return null
+  if (!('status' in value) || (value.status !== 'ACTIVE' && value.status !== 'QUARANTINED')) return null
   if (!('revision' in value) || typeof value.revision !== 'number' || !Number.isSafeInteger(value.revision) || value.revision < 0) return null
   const validationIds = parseStringList('validation_ids' in value ? value.validation_ids : null)
   const proofArtifactIds = parseStringList('proof_artifact_ids' in value ? value.proof_artifact_ids : null)

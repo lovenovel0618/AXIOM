@@ -1,13 +1,13 @@
-"""Immutable research drafts with owner and live dataset-grant intersection."""
+"""Immutable research drafts scoped to owner and tenant."""
 from collections.abc import Callable
 from datetime import datetime
 from typing import TypeVar
 from uuid import UUID, uuid4
 from django.core import signing
 from django.db.models import Q, QuerySet
-from catalog.models import Account, Audit, DatasetVersion, Grant, Provenance, Research, ResearchVersion
+from catalog.models import Account, Audit, DatasetVersion, Provenance, Research, ResearchVersion
 from catalog.research_validation import confirm, require
-from catalog.services import dataset_for, provenance
+from catalog.services import provenance
 from catalog.validation import ApiError, validate_api
 from runtime.contracts import JsonObject, identity_hash
 from runtime.records import db_now
@@ -15,14 +15,8 @@ from runtime.records import db_now
 T = TypeVar("T", Research, ResearchVersion)
 
 
-def writable(actor: Account) -> None:
-    """全域 VIEWER 不能因資料集 grant 升級為研究寫入者。"""
-    if actor.role not in {"RESEARCHER", "ADMIN"}:
-        raise ApiError("FORBIDDEN", 403)
-
-
 def research_for(actor: Account, identity: UUID) -> Research:
-    """以 owner／租戶定位並鎖研究容器；ADMIN 沒有隱含讀取他人研究權。"""
+    """以 owner／租戶定位並鎖研究容器。"""
     row = Research.objects.select_for_update().filter(pk=identity, tenant_id=actor.tenant_id, owner=actor).first()
     if row is None:
         raise ApiError("NOT_FOUND", 404)
@@ -30,11 +24,10 @@ def research_for(actor: Account, identity: UUID) -> Research:
 
 
 def version_for(actor: Account, identity: UUID) -> ResearchVersion:
-    """版本存取必須同時滿足 owner 與目前 Dataset grant，撤權後立即拒絕。"""
+    """版本存取必須同時滿足 owner 與租戶分區；不符或已隔離一律 404。"""
     row = ResearchVersion.objects.filter(pk=identity, tenant_id=actor.tenant_id, research__owner=actor).first()
     if row is None:
         raise ApiError("NOT_FOUND", 404)
-    dataset_for(actor, row.dataset_version.dataset_id)
     return row
 
 
@@ -47,7 +40,6 @@ def research_dto(row: Research) -> JsonObject:
 
 def create_research(actor: Account, data: JsonObject) -> JsonObject:
     """原子建立 owner 私有研究及來源／稽核，不假設資料權隨研究容器存在。"""
-    writable(actor)
     require(bool(data["name"].strip()))
     identity, source = uuid4(), uuid4()
     provenance(actor, "Research", identity, source)
@@ -57,11 +49,10 @@ def create_research(actor: Account, data: JsonObject) -> JsonObject:
 
 
 def available_version(actor: Account, identity: UUID) -> DatasetVersion:
-    """建立及執行前要求可用版本與現行寫權，避免引用尚未提交或已封鎖的來源。"""
+    """建立及執行前要求可用版本，避免引用尚未提交或已封鎖的來源。"""
     row = DatasetVersion.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
     if row is None:
         raise ApiError("NOT_FOUND", 404)
-    dataset_for(actor, row.dataset_id, write=True)
     if row.document["status"] != "AVAILABLE" or row.preview.document["status"] != "AVAILABLE":
         raise ApiError("ARTIFACT_UNAVAILABLE", 409)
     return row
@@ -77,7 +68,7 @@ def draft_document(actor: Account, research: Research, dataset: DatasetVersion, 
         "kind": "ResearchVersion", "id": str(identity), "tenant_id": str(actor.tenant_id), "schema_version": "2.0", "created_at": created.isoformat(),
         "research_id": str(research.id), "dataset_version_id": str(dataset.id), "semantic_profile": data["semantic_profile"], "budget": data["budget"], "purpose": data["purpose"],
         "status": "DRAFT", "revision": 0, "observation_split": split, "current_event_cursor": f"RESEARCH:{identity}:0",
-        "frozen_submission_ids": [], "review_ids": [], "published_artifact_ids": [], "evidence_bundle_ids": [], "released_summary_ids": [],
+        "frozen_submission_ids": [], "evidence_bundle_ids": [],
         "quality_report_id": None, "refit_policy_artifact_id": None, "structure_assessment_artifact_id": None,
         "domain": data["domain"], "evaluation_policy": data["evaluation_policy"], "evaluation_policy_hash": identity_hash(data["evaluation_policy"]),
         "research_budget_usage": {"cpu_seconds": 0, "gpu_seconds": 0, "tokens": 0, "peak_memory_bytes": 0, "elapsed_wall_seconds": 0, "candidates_generated": 0, "candidates_accepted": 0},
@@ -86,7 +77,6 @@ def draft_document(actor: Account, research: Research, dataset: DatasetVersion, 
 
 def create_version(actor: Account, research: Research, data: JsonObject) -> JsonObject:
     """不可變草稿、來源與零起始研究帳本同交易建立，不能漏建帳本或洗掉歷史用量。"""
-    writable(actor)
     dataset = available_version(actor, UUID(data["dataset_version_id"]))
     identity, source, created = uuid4(), uuid4(), db_now()
     document = draft_document(actor, research, dataset, data, identity, created)
@@ -101,9 +91,8 @@ def create_version(actor: Account, research: Research, data: JsonObject) -> Json
 
 
 def visible_versions(actor: Account, research: Research) -> QuerySet[ResearchVersion]:
-    """只列目前 Dataset grant 仍允許的 owner 版本，不藉列表洩漏已撤權資料。"""
-    permitted = Grant.objects.filter(actor=actor, tenant_id=actor.tenant_id).values("dataset_id")
-    return ResearchVersion.objects.filter(tenant_id=actor.tenant_id, research=research, dataset_version__dataset_id__in=permitted)
+    """只列同一租戶的 owner 版本，不藉列表洩漏其他租戶資料。"""
+    return ResearchVersion.objects.filter(tenant_id=actor.tenant_id, research=research)
 
 
 def page(rows: QuerySet[T], actor: Account, scope: str, cursor: str, limit: int, dto: Callable[[T], JsonObject]) -> JsonObject:

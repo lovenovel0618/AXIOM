@@ -11,7 +11,6 @@ from catalog.management.commands.business_ingest_smoke import upload, wait_run
 from catalog.management.commands.catalog_smoke import Browser
 from catalog.management.commands.research_draft_smoke import check, configuration
 from catalog.models import Account, ProfileBinding, ResearchBudget, Reservation, RootBudget, SealRegistration, Tenant, UsageReceipt
-from catalog.services import set_grant
 from runtime.contracts import JsonObject, identity_hash
 
 MEMORY = 2*1024**3
@@ -92,12 +91,12 @@ def verified_profile(browser: Browser, version: JsonObject, revision: int, key: 
 
 
 class Command(BaseCommand):
-    help = "Verify real PROFILE queue/worker, artifacts, paired ledgers, quota and revoked reads"
+    help = "Verify real PROFILE queue/worker, artifacts, paired ledgers and quota"
 
     def handle(self,*args: Any,**options: Any) -> None:
         password = secrets.token_urlsafe(24)
         user = User.objects.create_user(username="profile-"+uuid4().hex,password=password)
-        actor = Account.objects.create(user=user,tenant=Tenant.objects.create(name="profile-synthetic"),role="ADMIN")
+        Account.objects.create(user=user,tenant=Tenant.objects.create(name="profile-synthetic"))
         browser = Browser()
         browser.login(user.get_username(),password)
         status,dataset = browser.post('/api/v2/datasets',{"name":"profile-three-formats"})
@@ -123,11 +122,5 @@ class Command(BaseCommand):
         check(account.document["usage"]==tiny_result["run_usage"] and not account.document["reservations"],"Quota denial modified ledger")
         status,events = browser.request(f'/api/v2/research-versions/{versions[0]["id"]}/events',headers={"Last-Event-ID":f'RESEARCH:{versions[0]["id"]}:1'})
         check(status==200 and b'ResearchVersionStateChanged' in events,"Research event replay failed")
-        set_grant(actor.id,actor.id,UUID(dataset["id"]),None)
-        for path in (f'/api/v2/runs/{second["run_id"]}',f'/api/v2/artifacts/{second["quality_report_id"]}/content',f'/api/v2/research-versions/{versions[0]["id"]}/events'):
-            status,_raw = browser.request(path)
-            check(status==404,"Revoked research remained readable")
-        status,_response = start(browser,versions[0]["id"],0,"profile-CSV")
-        check(status==404,"Cached operation bypassed revoked grant")
         self.stdout.write(json.dumps({"scope":"T07_ACTUAL_PROFILE","status":"PASS","results":results,"second_root":second,"masked":bad,"quota_case":tiny_result,
-            "quota_denial_status":429,"revoked_status":404,"research_status":"READY","formal_seal":"IMPLEMENTED","product_gate_status":"NOT_RUN"},indent=2))
+            "quota_denial_status":429,"research_status":"READY","formal_seal":"IMPLEMENTED","product_gate_status":"NOT_RUN"},indent=2))

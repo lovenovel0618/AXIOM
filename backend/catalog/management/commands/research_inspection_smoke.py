@@ -9,14 +9,12 @@ from uuid import UUID, uuid4
 import polars as pl
 from django.contrib.auth.models import User
 from django.core.management import call_command
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from catalog.inspection import preflight
 from catalog.management.commands.business_ingest_smoke import upload
 from catalog.management.commands.catalog_smoke import Browser
 from catalog.management.commands.research_draft_smoke import check, configuration
 from catalog.models import Account, Tenant
-from catalog.services import set_grant
-from catalog.validation import ApiError
 from ingestion.limits import ImportLimits
 from runtime.contracts import JsonObject, identity_hash
 
@@ -64,12 +62,12 @@ def inspect_version(browser: Browser, actor: Account, dataset: str, content: byt
 
 
 class Command(BaseCommand):
-    help = "Verify three actual INGEST/draft formats, known formula inspection, final masking and revocation"
+    help = "Verify three actual INGEST/draft formats, known formula inspection and final masking"
 
     def handle(self,*args: Any,**options: Any) -> None:
         password = secrets.token_urlsafe(24)
         user = User.objects.create_user(username="inspection-"+uuid4().hex,password=password)
-        actor = Account.objects.create(user=user,tenant=Tenant.objects.create(name="inspection-synthetic"),role="ADMIN")
+        actor = Account.objects.create(user=user,tenant=Tenant.objects.create(name="inspection-synthetic"))
         browser = Browser()
         browser.login(user.get_username(),password)
         status,dataset = browser.post('/api/v2/datasets',{"name":"three-format-inspection"})
@@ -83,13 +81,5 @@ class Command(BaseCommand):
         invalid = ('觀測值,量測值\n'+''.join(f'{x},{y if x<9 else "private-final-marker"}\n' for x,y in rows)).encode()
         masked = inspect_version(browser,actor,dataset["id"],invalid,"CSV","BLOCKED")
         check("private-final-marker" not in json.dumps(masked),"Raw value exposed")
-        set_grant(actor.id,actor.id,UUID(dataset["id"]),None)
-        try:
-            first = results[0]
-            preflight(actor.id,UUID(first["research_version_id"]),LIMITS,json.dumps(first["model"]).encode())
-        except ApiError as error:
-            check(error.code=="NOT_FOUND","Unexpected revocation code")
-        else:
-            raise CommandError("Cached inspection bypassed revocation")
         for result in [*results,masked]: result.pop("model")
         self.stdout.write(json.dumps({"scope":"T07_LOCAL_RESEARCH_INSPECTION","status":"PASS","results":results,"masked":masked,"final_evaluation":"NOT_RUN","profile_run":"NOT_EXECUTED_BY_CLI","research_status":"DRAFT","product_gate_status":"NOT_RUN"},indent=2))

@@ -33,7 +33,7 @@ def register(actor: Account, binding: ProfileBinding, run: RuntimeRun, proof_art
 
 
 def authorized(actor: Account, identity: UUID) -> EvidenceBundle:
-    """重新驗租戶與現行研究存取權；不符或已撤權一律 404，不藉 UUID 繞過授權。"""
+    """重新驗租戶與現行研究 owner；不符一律 404，不藉 UUID 繞過。"""
     row = EvidenceBundle.objects.filter(pk=identity,tenant_id=actor.tenant_id).first()
     if row is None:
         raise ApiError("NOT_FOUND",404)

@@ -22,7 +22,7 @@ class ConcurrencyTests(TransactionTestCase):
         self.addCleanup(override.disable)
         tenant = Tenant.objects.create(name="concurrency")
         user = User.objects.create_user(username=uuid4().hex)
-        self.actor = Account.objects.create(user=user, tenant=tenant, role="RESEARCHER")
+        self.actor = Account.objects.create(user=user, tenant=tenant)
 
     def test_same_key_parallel_creation_has_one_resource(self) -> None:
         def create(_index: int) -> str:

@@ -211,20 +211,6 @@
     {
       "kind": "TaskInput",
       "schema_version": "2.0",
-      "run_id": "00000000-0000-4000-8000-000000000099",
-      "type": "REVOKE",
-      "research_version_id": "00000000-0000-4000-8000-000000000003",
-      "observation_split_id": null,
-      "payload": {
-        "evidence_bundle_id": "00000000-0000-4000-8000-000000000010",
-        "revocation_id": "00000000-0000-4000-8000-000000000101",
-        "policy_version": "2.0"
-      },
-      "execution_manifest_id": "00000000-0000-4000-8000-000000000701"
-    },
-    {
-      "kind": "TaskInput",
-      "schema_version": "2.0",
       "run_id": "00000000-0000-4000-8000-000000000063",
       "type": "FIT",
       "research_version_id": "00000000-0000-4000-8000-000000000003",

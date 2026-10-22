@@ -5,8 +5,6 @@ FORWARD = """
 ALTER TABLE catalog_upload ADD CONSTRAINT upload_ingest_tenant_fk FOREIGN KEY(ingest_run_id,tenant_id) REFERENCES runtime_runtimerun(id,tenant_id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE catalog_dataset ADD CONSTRAINT dataset_owner_tenant_fk FOREIGN KEY(owner_id,tenant_id) REFERENCES catalog_account(id,tenant_id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE catalog_dataset ADD CONSTRAINT dataset_provenance_tenant_fk FOREIGN KEY(provenance_id,tenant_id) REFERENCES catalog_provenance(id,tenant_id) DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE catalog_grant ADD CONSTRAINT grant_actor_tenant_fk FOREIGN KEY(actor_id,tenant_id) REFERENCES catalog_account(id,tenant_id) DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE catalog_grant ADD CONSTRAINT grant_dataset_tenant_fk FOREIGN KEY(dataset_id,tenant_id) REFERENCES catalog_dataset(id,tenant_id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE catalog_upload ADD CONSTRAINT upload_actor_tenant_fk FOREIGN KEY(actor_id,tenant_id) REFERENCES catalog_account(id,tenant_id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE catalog_upload ADD CONSTRAINT upload_dataset_tenant_fk FOREIGN KEY(dataset_id,tenant_id) REFERENCES catalog_dataset(id,tenant_id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE catalog_storedobject ADD CONSTRAINT object_upload_tenant_fk FOREIGN KEY(upload_id,dataset_id,tenant_id) REFERENCES catalog_upload(id,dataset_id,tenant_id) DEFERRABLE INITIALLY DEFERRED;
@@ -83,8 +81,6 @@ ALTER TABLE catalog_storedobject DROP CONSTRAINT object_provenance_tenant_fk;
 ALTER TABLE catalog_storedobject DROP CONSTRAINT object_upload_tenant_fk;
 ALTER TABLE catalog_upload DROP CONSTRAINT upload_dataset_tenant_fk;
 ALTER TABLE catalog_upload DROP CONSTRAINT upload_actor_tenant_fk;
-ALTER TABLE catalog_grant DROP CONSTRAINT grant_dataset_tenant_fk;
-ALTER TABLE catalog_grant DROP CONSTRAINT grant_actor_tenant_fk;
 ALTER TABLE catalog_dataset DROP CONSTRAINT dataset_provenance_tenant_fk;
 ALTER TABLE catalog_dataset DROP CONSTRAINT dataset_owner_tenant_fk;
 """

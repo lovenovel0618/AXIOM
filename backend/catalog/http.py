@@ -119,8 +119,6 @@ def datasets(request: HttpRequest, actor: Account) -> JsonResponse:
             raise ApiError("INVALID_SCHEMA", 422)
         return JsonResponse(list_datasets(actor, request.GET.get("cursor", ""), limit))
     data = body(request, "CreateDataset")
-    if actor.role not in {"RESEARCHER", "ADMIN"}:
-        raise ApiError("FORBIDDEN", 403)
     def authorize(previous: JsonObject) -> None:
         dataset_for(actor, UUID(previous["id"]))
     response = replay(actor, request.path, request.headers.get("Idempotency-Key", ""), data, lambda: create_dataset(actor, data), authorize)

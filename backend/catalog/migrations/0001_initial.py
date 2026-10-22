@@ -46,7 +46,6 @@ class Migration(migrations.Migration):
             name='Account',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('role', models.CharField(default='VIEWER', max_length=10)),
                 ('enabled', models.BooleanField(default=True)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
                 ('tenant', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='catalog.tenant')),
@@ -121,19 +120,6 @@ class Migration(migrations.Migration):
                 'constraints': [models.UniqueConstraint(fields=('id', 'tenant'), name='provenance_tenant_identity'), models.UniqueConstraint(fields=('resource_type', 'resource_id'), name='provenance_resource_unique')],
             },
         ),
-        migrations.CreateModel(
-            name='Grant',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('permission', models.CharField(max_length=6)),
-                ('actor', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='catalog.account')),
-                ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='grants', to='catalog.dataset')),
-                ('tenant', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='catalog.tenant')),
-            ],
-            options={
-                'constraints': [models.UniqueConstraint(fields=('actor', 'dataset'), name='dataset_actor_grant_unique'), models.CheckConstraint(condition=models.Q(('permission__in', ['OWNER', 'EDITOR', 'READER'])), name='grant_valid_permission')],
-            },
-        ),
         migrations.AddConstraint(
             model_name='dataset',
             constraint=models.UniqueConstraint(fields=('id', 'tenant'), name='dataset_tenant_identity'),
@@ -141,10 +127,6 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='account',
             constraint=models.UniqueConstraint(fields=('id', 'tenant'), name='account_tenant_identity'),
-        ),
-        migrations.AddConstraint(
-            model_name='account',
-            constraint=models.CheckConstraint(condition=models.Q(('role__in', ['RESEARCHER', 'VIEWER', 'ADMIN'])), name='account_valid_role'),
         ),
         migrations.AddConstraint(
             model_name='upload',

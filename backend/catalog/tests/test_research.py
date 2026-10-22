@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError, connection, connections, transaction
 from django.test import TransactionTestCase, override_settings
 from catalog.ingest import complete_upload, ingest_tick
-from catalog.models import Account, Audit, Dataset, DatasetVersion, Grant, IdempotentResult, Provenance, Research, ResearchVersion, Tenant, Upload
+from catalog.models import Account, Audit, Dataset, DatasetVersion, IdempotentResult, Provenance, Research, ResearchVersion, Tenant, Upload
 from catalog.research import create_research, create_version, research_for
 from catalog.research_validation import iid_rows
 from catalog.services import actor_for, create_dataset, create_upload, put_upload, provenance
@@ -60,9 +60,9 @@ class ResearchTests(TransactionTestCase):
         self.path = f"/api/v2/researches/{self.research}/versions"
         self.client.force_login(self.actor.user)
 
-    def account(self, tenant: Tenant, role: str = "RESEARCHER") -> Account:
+    def account(self, tenant: Tenant) -> Account:
         user = User.objects.create(username=uuid4().hex, password="!")
-        return Account.objects.create(user=user, tenant=tenant, role=role)
+        return Account.objects.create(user=user, tenant=tenant)
 
     def post(self, data: JsonObject | None = None, key: str = "create") -> tuple[int, JsonObject]:
         response = self.client.post(self.path, json.dumps(self.data if data is None else data), content_type="application/json", headers={"Idempotency-Key": key})
@@ -176,21 +176,9 @@ class ResearchTests(TransactionTestCase):
         self.assertEqual(self.post(data)[0], 503)
         self.assertFalse(ResearchVersion.objects.exists())
 
-    def test_revocation_and_readonly_grant_apply_to_replay(self) -> None:
+    def test_owner_scope_even_for_same_tenant_account(self) -> None:
         _, value = self.post()
-        Grant.objects.filter(actor=self.actor).update(permission="READER")
-        self.assertEqual(self.post()[0], 403)
-        url = f'/api/v2/research-versions/{value["id"]}'
-        self.assertEqual(self.client.get(url).status_code, 200)
-        Grant.objects.filter(actor=self.actor).delete()
-        self.assertEqual(self.post()[0], 404)
-        self.assertEqual(self.client.get(url).status_code, 404)
-        self.assertEqual(json.loads(self.client.get(self.path).content)["items"], [])
-
-    def test_owner_scope_even_for_same_tenant_administrator(self) -> None:
-        _, value = self.post()
-        other = self.account(self.actor.tenant, "ADMIN")
-        Grant.objects.create(tenant=self.actor.tenant, actor=other, dataset=self.dataset, permission="OWNER")
+        other = self.account(self.actor.tenant)
         self.client.force_login(other.user)
         self.assertEqual(self.post()[0], 404)
         self.assertEqual(self.client.get(f'/api/v2/research-versions/{value["id"]}').status_code, 404)
@@ -198,24 +186,22 @@ class ResearchTests(TransactionTestCase):
         self.assertEqual(json.loads(self.client.get('/api/v2/researches').content)["items"], [])
 
     def test_other_tenant_and_disabled_actor_are_rejected(self) -> None:
-        other = self.account(Tenant.objects.create(name="other"), "ADMIN")
+        other = self.account(Tenant.objects.create(name="other"))
         self.client.force_login(other.user)
         self.assertEqual(self.post()[0], 404)
         self.client.force_login(self.actor.user)
         Account.objects.filter(pk=self.actor.id).update(enabled=False)
         self.assertEqual(self.post()[0], 403)
 
-    def test_research_create_idempotency_and_viewer_write_denial(self) -> None:
+    def test_research_create_idempotency(self) -> None:
         self.path = "/api/v2/researches"
         first = self.post({"name": "new"})
         self.assertEqual(first[0], 201)
         self.assertEqual(self.post({"name": "new"}), first)
         self.assertEqual(self.post({"name": "different"})[0], 409)
-        Account.objects.filter(pk=self.actor.id).update(role="VIEWER")
-        self.assertEqual(self.post({"name": "new"})[0], 403)
         self.assertEqual(self.client.get(f'/api/v2/researches/{self.research}').status_code, 200)
 
-    def test_cursor_scope_limits_and_current_acl_filter(self) -> None:
+    def test_cursor_scope_limits(self) -> None:
         self.post()
         self.post(key="second")
         response = json.loads(self.client.get(self.path, {"limit": 1}).content)
@@ -227,8 +213,6 @@ class ResearchTests(TransactionTestCase):
         self.assertEqual(self.client.get('/api/v2/researches', {"cursor": cursor}).status_code, 400)
         for params in [{"cursor": "bad"}, {"limit": 0}, {"limit": 201}, {"limit": "x"}, {"unexpected": 1}]:
             self.assertIn(self.client.get(self.path, params).status_code, {400,422})
-        Grant.objects.filter(actor=self.actor).delete()
-        self.assertEqual(json.loads(self.client.get(self.path, {"cursor": cursor}).content)["items"], [])
 
     def test_atomic_failure_rolls_back_provenance_audit_and_idempotency(self) -> None:
         before = (Provenance.objects.count(), Audit.objects.count(), IdempotentResult.objects.count())

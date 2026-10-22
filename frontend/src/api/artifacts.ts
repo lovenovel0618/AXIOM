@@ -2,7 +2,7 @@
 import type { ApiClient } from './client'
 
 export type ArtifactStatus = 'AVAILABLE' | 'QUARANTINED' | 'DELETED'
-export type ArtifactAccessClass = 'PROJECT' | 'SEALED_DETAIL' | 'RELEASED_AGGREGATE'
+export type ArtifactAccessClass = 'PROJECT' | 'SEALED_DETAIL'
 
 export interface Artifact {
   kind: 'Artifact'

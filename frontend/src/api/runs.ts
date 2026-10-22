@@ -2,7 +2,7 @@
 import { newKey, type ApiClient } from './client'
 import { parseEventBatch, type RunEventEnvelope } from '../lib/events'
 
-export type RunType = 'INGEST' | 'PROFILE' | 'SEARCH' | 'FIT' | 'VALIDATE' | 'REVOKE'
+export type RunType = 'INGEST' | 'PROFILE' | 'SEARCH' | 'FIT' | 'VALIDATE'
 export type RunStatus = 'QUEUED' | 'RUNNING' | 'CANCEL_REQUESTED' | 'SUCCEEDED' | 'FAILED' | 'CANCELLED'
 export type RunPhase =
   | 'PROFILING'

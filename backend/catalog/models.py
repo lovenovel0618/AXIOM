@@ -24,11 +24,10 @@ class Account(models.Model):
     user_id: int
     tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
     tenant_id: UUID
-    role: models.CharField[str, str] = models.CharField(max_length=10, default="VIEWER")
     enabled: models.BooleanField[bool, bool] = models.BooleanField(default=True)
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="account_tenant_identity"), models.CheckConstraint(condition=models.Q(role__in=["RESEARCHER", "VIEWER", "ADMIN"]), name="account_valid_role")]
+        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="account_tenant_identity")]
 
 
 class Provenance(models.Model):
@@ -55,19 +54,6 @@ class Dataset(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="dataset_tenant_identity")]
-
-
-class Grant(models.Model):
-    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
-    tenant_id: UUID
-    actor: models.ForeignKey[Account, Account] = models.ForeignKey(Account, on_delete=models.PROTECT)
-    actor_id: UUID
-    dataset: models.ForeignKey[Dataset, Dataset] = models.ForeignKey(Dataset, on_delete=models.PROTECT, related_name="grants")
-    dataset_id: UUID
-    permission: models.CharField[str, str] = models.CharField(max_length=6)
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=["actor", "dataset"], name="dataset_actor_grant_unique"), models.CheckConstraint(condition=models.Q(permission__in=["OWNER", "EDITOR", "READER"]), name="grant_valid_permission")]
 
 
 class Upload(models.Model):
@@ -382,25 +368,4 @@ class EvidenceBundle(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["id","tenant"],name="evidence_bundle_tenant_identity"),
-                       models.CheckConstraint(condition=models.Q(status__in=["ACTIVE","REVOKED","QUARANTINED"]),name="evidence_bundle_valid_status")]
-
-
-class EvidenceRevocation(models.Model):
-    """撤銷登記：同交易排除權威有效性，狀態由撤銷工作推進，身分與理由不可改。"""
-    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True,default=uuid4,editable=False)
-    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant,on_delete=models.PROTECT)
-    tenant_id: UUID
-    evidence_bundle: models.ForeignKey[EvidenceBundle, EvidenceBundle] = models.ForeignKey(EvidenceBundle,on_delete=models.PROTECT)
-    evidence_bundle_id: UUID
-    run: models.OneToOneField[RuntimeRun, RuntimeRun] = models.OneToOneField(RuntimeRun,on_delete=models.PROTECT)
-    run_id: UUID
-    actor: models.ForeignKey[Account, Account] = models.ForeignKey(Account,on_delete=models.PROTECT)
-    actor_id: UUID
-    counterexample_artifact_id: models.UUIDField[UUID | None, UUID | None] = models.UUIDField(null=True)
-    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
-    status: models.CharField[str, str] = models.CharField(max_length=12,default="REQUESTED")
-    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=["id","tenant"],name="evidence_revocation_tenant_identity"),
-                       models.CheckConstraint(condition=models.Q(status__in=["REQUESTED","BLOCKED","PROPAGATING","COMPLETED","FAILED"]),name="evidence_revocation_valid_status")]
+                       models.CheckConstraint(condition=models.Q(status__in=["ACTIVE","QUARANTINED"]),name="evidence_bundle_valid_status")]
