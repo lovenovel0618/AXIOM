@@ -43,3 +43,7 @@
 本批同時在開發堆疊觀察到資料庫漂移：規格級反轉重寫 `0001_initial` 後，既有開發資料庫仍保有已移除的 `catalog_account.role` 與 `catalog_grant`，導致帳號寫入違反 not-null。已重建本機開發資料庫（`axiom-dev` 的 `axiom` 資料庫）並重跑遷移後取證；此為本機可丟棄開發堆疊的處置，未觸及其他專案或部署環境。
 
 下一步為對外刪除政策的決策（D-05）、outbox 與異步清除索引／快取、validation 引用、SEARCH 與候選比較、對外交付。工作台與盲測最終評估仍待後續；M0／M1 與企劃驗收維持 NOT_RUN。
+
+## 提交後 CI 補批
+
+日期：2026-10-22；承接 3eb3363。三個工作流於本提交全部成功：`docs-check` 36s、`compatibility-check` 48s、`product-check` 5m56s。因此 Linux amd64 上的完整後端測試與 `research_draft_smoke`（含本批新增的失效宣告段：宣告後 artifact 轉 409、證據包轉 404、二次宣告 409）皆為實際往返，不是由本機推論。產品 Gate 仍 NOT_RUN。
