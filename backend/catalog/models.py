@@ -428,3 +428,20 @@ class Tombstone(models.Model):
     class Meta:
         constraints = [models.UniqueConstraint(fields=["tenant", "object_type", "object_id"], name="tombstone_object_unique"),
                        models.CheckConstraint(condition=models.Q(object_type__in=["DatasetVersion", "Artifact", "ResearchVersion", "EvidenceBundle"]), name="tombstone_object_type")]
+
+
+class EquationVersion(models.Model):
+    """不可變公式版本；身分即 canonical DSL 的 SHA-256，同租戶同身分只留一列。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+    identity_hash: models.CharField[str, str] = models.CharField(max_length=64)
+    dsl_version: models.CharField[str, str] = models.CharField(max_length=8)
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="equation_version_tenant_identity"),
+                       models.UniqueConstraint(fields=["tenant", "identity_hash", "dsl_version"], name="equation_version_identity_hash"),
+                       models.CheckConstraint(condition=models.Q(dsl_version="1.0"), name="equation_version_dsl_version"),
+                       models.CheckConstraint(condition=models.Q(identity_hash__regex="^[0-9a-f]{64}$"), name="equation_version_identity_hash_format")]

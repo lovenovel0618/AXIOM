@@ -51,7 +51,7 @@
   },
   "backend/catalog/models.py": {
     "Any": 0,
-    "JsonObject": 30,
+    "JsonObject": 32,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/research.py": {
@@ -93,6 +93,11 @@
     "Any": 0,
     "JsonObject": 2,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/equations.py": {
+    "Any": 0,
+    "JsonObject": 2,
+    "reason": "公式版本在 schema 邊界仍以 JSON 文件流動；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/research_validation.py": {
     "Any": 0,
@@ -174,6 +179,21 @@
     "JsonObject": 2,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
+  "backend/mathematics/metrics.py": {
+    "Any": 3,
+    "JsonObject": 0,
+    "reason": "指標回傳在 schema 邊界仍以 JSON 物件流動；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/mathematics/search.py": {
+    "Any": 0,
+    "JsonObject": 32,
+    "reason": "搜尋執行器的策略輸入／輸出與 manifest 仍以 JSON 物件流動；`_linear` 的候選參數清單補上必要標註後 +1，其餘維持原額度，不代表核心已具體型別化。"
+  },
+  "backend/mathematics/test_search.py": {
+    "Any": 0,
+    "JsonObject": 5,
+    "reason": "搜尋執行器測試以 JSON 物件組裝請求與解析報告；額度只可收斂，不代表核心已具體型別化。"
+  },
   "backend/foundation/management/commands/probe_smoke.py": {
     "Any": 2,
     "JsonObject": 0,
@@ -218,6 +238,11 @@
     "Any": 0,
     "JsonObject": 2,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/tests/test_equations.py": {
+    "Any": 0,
+    "JsonObject": 3,
+    "reason": "公式版本測試以 JSON 文件組裝 DSL 與讀回結果；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/management/commands/provision_account.py": {
     "Any": 2,

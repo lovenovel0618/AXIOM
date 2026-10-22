@@ -68,7 +68,7 @@ class InspectionEngineTests(TestCase):
         baseline = self.inspect()
         rows: list[tuple[object, object]] = [(i, 2*i+1 if i < 8 else 987654321123) for i in range(10)]
         self.assertEqual(self.inspect(rows), baseline)
-        with patch("ingestion.research.evaluate", wraps=evaluate) as evaluator:
+        with patch("mathematics.metrics.evaluate", wraps=evaluate) as evaluator:
             self.inspect(rows)
             evaluated = [point["x"] for call in evaluator.call_args_list for point in call.args[1]]
             self.assertEqual(evaluated, list(range(8)))

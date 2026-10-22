@@ -1,0 +1,1356 @@
+{
+  "candidates": [
+    {
+      "cost_shape": {
+        "development_rows": 2,
+        "fit_rows": 6,
+        "memory_bytes": 268435456,
+        "nodes": 5,
+        "pivots": 0,
+        "resource_class": "CPU_LOCAL",
+        "timeout_seconds": 30,
+        "unknowns": 2
+      },
+      "development": {
+        "coverage": "1",
+        "failed_count": 0,
+        "mae": "0",
+        "rmse": "0",
+        "selected_count": 2,
+        "valid_count": 2
+      },
+      "dsl": {
+        "domain": [
+          {
+            "lower": {
+              "denominator": "1",
+              "numerator": "-10"
+            },
+            "lower_closed": true,
+            "name": "t",
+            "upper": {
+              "denominator": "1",
+              "numerator": "10"
+            },
+            "upper_closed": true
+          }
+        ],
+        "dsl_version": "1.0",
+        "parameters": [
+          {
+            "lower": "3",
+            "name": "c0",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "3"
+          },
+          {
+            "lower": "-2",
+            "name": "c1",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "-2"
+          }
+        ],
+        "root": {
+          "args": [
+            {
+              "args": [
+                {
+                  "name": "c1",
+                  "op": "param"
+                },
+                {
+                  "name": "t",
+                  "op": "var"
+                }
+              ],
+              "op": "mul"
+            },
+            {
+              "name": "c0",
+              "op": "param"
+            }
+          ],
+          "op": "add"
+        },
+        "variables": [
+          {
+            "name": "t",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "identity_hash": "a6a6c14182579042c683b787d5a4c648ab089cd1a3e2cfa3ad1b16663c8901ef",
+      "node_count": 5,
+      "origins": [
+        {
+          "cost_shape": {
+            "development_rows": 2,
+            "fit_rows": 6,
+            "memory_bytes": 268435456,
+            "nodes": 5,
+            "pivots": 0,
+            "resource_class": "CPU_LOCAL",
+            "timeout_seconds": 30,
+            "unknowns": 2
+          },
+          "source": "linear-fit:least-squares"
+        }
+      ]
+    },
+    {
+      "cost_shape": {
+        "development_rows": 2,
+        "fit_rows": 6,
+        "memory_bytes": 268435456,
+        "nodes": 10,
+        "pivots": 0,
+        "resource_class": "CPU_LOCAL",
+        "timeout_seconds": 30,
+        "unknowns": 3
+      },
+      "development": {
+        "coverage": "1",
+        "failed_count": 0,
+        "mae": "8.8817841970012523e-16",
+        "rmse": "8.8817841970012523e-16",
+        "selected_count": 2,
+        "valid_count": 2
+      },
+      "dsl": {
+        "domain": [
+          {
+            "lower": {
+              "denominator": "1",
+              "numerator": "-10"
+            },
+            "lower_closed": true,
+            "name": "t",
+            "upper": {
+              "denominator": "1",
+              "numerator": "10"
+            },
+            "upper_closed": true
+          }
+        ],
+        "dsl_version": "1.0",
+        "parameters": [
+          {
+            "lower": "3",
+            "name": "c0",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "3"
+          },
+          {
+            "lower": "-2",
+            "name": "c1",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "-2"
+          },
+          {
+            "lower": "0.000000000000000030008261153646876",
+            "name": "c2",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "0.000000000000000030008261153646876"
+          }
+        ],
+        "root": {
+          "args": [
+            {
+              "args": [
+                {
+                  "args": [
+                    {
+                      "name": "t",
+                      "op": "var"
+                    },
+                    {
+                      "op": "const",
+                      "value": {
+                        "denominator": "1",
+                        "numerator": "2"
+                      }
+                    }
+                  ],
+                  "op": "pow"
+                },
+                {
+                  "name": "c2",
+                  "op": "param"
+                }
+              ],
+              "op": "mul"
+            },
+            {
+              "args": [
+                {
+                  "name": "c1",
+                  "op": "param"
+                },
+                {
+                  "name": "t",
+                  "op": "var"
+                }
+              ],
+              "op": "mul"
+            },
+            {
+              "name": "c0",
+              "op": "param"
+            }
+          ],
+          "op": "add"
+        },
+        "variables": [
+          {
+            "name": "t",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "identity_hash": "9e73950a91ee837d5e05fe7493f55213b325434e7d9d66c2ebe9484d6659dc27",
+      "node_count": 10,
+      "origins": [
+        {
+          "cost_shape": {
+            "development_rows": 2,
+            "fit_rows": 6,
+            "memory_bytes": 268435456,
+            "nodes": 10,
+            "pivots": 0,
+            "resource_class": "CPU_LOCAL",
+            "timeout_seconds": 30,
+            "unknowns": 3
+          },
+          "source": "polynomial-fit:degree-2"
+        }
+      ]
+    },
+    {
+      "cost_shape": {
+        "development_rows": 2,
+        "fit_rows": 6,
+        "memory_bytes": 268435456,
+        "nodes": 15,
+        "pivots": 0,
+        "resource_class": "CPU_LOCAL",
+        "timeout_seconds": 30,
+        "unknowns": 4
+      },
+      "development": {
+        "coverage": "1",
+        "failed_count": 0,
+        "mae": "8.8817841970012523e-16",
+        "rmse": "8.8817841970012523e-16",
+        "selected_count": 2,
+        "valid_count": 2
+      },
+      "dsl": {
+        "domain": [
+          {
+            "lower": {
+              "denominator": "1",
+              "numerator": "-10"
+            },
+            "lower_closed": true,
+            "name": "t",
+            "upper": {
+              "denominator": "1",
+              "numerator": "10"
+            },
+            "upper_closed": true
+          }
+        ],
+        "dsl_version": "1.0",
+        "parameters": [
+          {
+            "lower": "3",
+            "name": "c0",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "3"
+          },
+          {
+            "lower": "-2",
+            "name": "c1",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "-2"
+          },
+          {
+            "lower": "0.000000000000000028221428754326669",
+            "name": "c2",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "0.000000000000000028221428754326669"
+          },
+          {
+            "lower": "0.0000000000000000011912215995468054",
+            "name": "c3",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "0.0000000000000000011912215995468054"
+          }
+        ],
+        "root": {
+          "args": [
+            {
+              "args": [
+                {
+                  "args": [
+                    {
+                      "name": "t",
+                      "op": "var"
+                    },
+                    {
+                      "op": "const",
+                      "value": {
+                        "denominator": "1",
+                        "numerator": "2"
+                      }
+                    }
+                  ],
+                  "op": "pow"
+                },
+                {
+                  "name": "c2",
+                  "op": "param"
+                }
+              ],
+              "op": "mul"
+            },
+            {
+              "args": [
+                {
+                  "args": [
+                    {
+                      "name": "t",
+                      "op": "var"
+                    },
+                    {
+                      "op": "const",
+                      "value": {
+                        "denominator": "1",
+                        "numerator": "3"
+                      }
+                    }
+                  ],
+                  "op": "pow"
+                },
+                {
+                  "name": "c3",
+                  "op": "param"
+                }
+              ],
+              "op": "mul"
+            },
+            {
+              "args": [
+                {
+                  "name": "c1",
+                  "op": "param"
+                },
+                {
+                  "name": "t",
+                  "op": "var"
+                }
+              ],
+              "op": "mul"
+            },
+            {
+              "name": "c0",
+              "op": "param"
+            }
+          ],
+          "op": "add"
+        },
+        "variables": [
+          {
+            "name": "t",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "identity_hash": "8482fac4faf359cd21e8c98cdad85ec2fbcedca5cf74d72b6767ffc24dd147b8",
+      "node_count": 15,
+      "origins": [
+        {
+          "cost_shape": {
+            "development_rows": 2,
+            "fit_rows": 6,
+            "memory_bytes": 268435456,
+            "nodes": 15,
+            "pivots": 0,
+            "resource_class": "CPU_LOCAL",
+            "timeout_seconds": 30,
+            "unknowns": 4
+          },
+          "source": "polynomial-fit:degree-3"
+        }
+      ]
+    },
+    {
+      "cost_shape": {
+        "development_rows": 2,
+        "fit_rows": 6,
+        "memory_bytes": 268435456,
+        "nodes": 1,
+        "pivots": 0,
+        "resource_class": "CPU_LOCAL",
+        "timeout_seconds": 30,
+        "unknowns": 1
+      },
+      "development": {
+        "coverage": "1",
+        "failed_count": 0,
+        "mae": "6",
+        "rmse": "6.0827625302982193",
+        "selected_count": 2,
+        "valid_count": 2
+      },
+      "dsl": {
+        "domain": [
+          {
+            "lower": {
+              "denominator": "1",
+              "numerator": "-10"
+            },
+            "lower_closed": true,
+            "name": "t",
+            "upper": {
+              "denominator": "1",
+              "numerator": "10"
+            },
+            "upper_closed": true
+          }
+        ],
+        "dsl_version": "1.0",
+        "parameters": [
+          {
+            "lower": "0",
+            "name": "c0",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "0"
+          }
+        ],
+        "root": {
+          "name": "c0",
+          "op": "param"
+        },
+        "variables": [
+          {
+            "name": "t",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "identity_hash": "e59355550c67936391fd01b6479cf50e7b65f793e051ad77b9738bae54c93018",
+      "node_count": 1,
+      "origins": [
+        {
+          "cost_shape": {
+            "development_rows": 2,
+            "fit_rows": 6,
+            "memory_bytes": 268435456,
+            "nodes": 1,
+            "pivots": 0,
+            "resource_class": "CPU_LOCAL",
+            "timeout_seconds": 30,
+            "unknowns": 1
+          },
+          "source": "linear-fit:zero"
+        }
+      ]
+    },
+    {
+      "cost_shape": {
+        "development_rows": 2,
+        "fit_rows": 6,
+        "memory_bytes": 268435456,
+        "nodes": 14,
+        "pivots": 0,
+        "resource_class": "CPU_LOCAL",
+        "timeout_seconds": 30,
+        "unknowns": 3
+      },
+      "development": {
+        "coverage": "1",
+        "failed_count": 0,
+        "mae": "7.8819660112478482",
+        "rmse": "7.897809076095041",
+        "selected_count": 2,
+        "valid_count": 2
+      },
+      "dsl": {
+        "domain": [
+          {
+            "lower": {
+              "denominator": "1",
+              "numerator": "-10"
+            },
+            "lower_closed": true,
+            "name": "t",
+            "upper": {
+              "denominator": "1",
+              "numerator": "10"
+            },
+            "upper_closed": true
+          }
+        ],
+        "dsl_version": "1.0",
+        "parameters": [
+          {
+            "lower": "2",
+            "name": "c0",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "2"
+          },
+          {
+            "lower": "-0.20081141589255319",
+            "name": "c1",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "-0.20081141589255319"
+          },
+          {
+            "lower": "-0.61803398876699989",
+            "name": "c2",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "-0.61803398876699989"
+          },
+          {
+            "lower": "3.76991118431",
+            "name": "omega",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "3.76991118431"
+          }
+        ],
+        "root": {
+          "args": [
+            {
+              "args": [
+                {
+                  "args": [
+                    {
+                      "args": [
+                        {
+                          "name": "omega",
+                          "op": "param"
+                        },
+                        {
+                          "name": "t",
+                          "op": "var"
+                        }
+                      ],
+                      "op": "mul"
+                    }
+                  ],
+                  "op": "cos"
+                },
+                {
+                  "name": "c2",
+                  "op": "param"
+                }
+              ],
+              "op": "mul"
+            },
+            {
+              "args": [
+                {
+                  "args": [
+                    {
+                      "args": [
+                        {
+                          "name": "omega",
+                          "op": "param"
+                        },
+                        {
+                          "name": "t",
+                          "op": "var"
+                        }
+                      ],
+                      "op": "mul"
+                    }
+                  ],
+                  "op": "sin"
+                },
+                {
+                  "name": "c1",
+                  "op": "param"
+                }
+              ],
+              "op": "mul"
+            },
+            {
+              "name": "c0",
+              "op": "param"
+            }
+          ],
+          "op": "add"
+        },
+        "variables": [
+          {
+            "name": "t",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "identity_hash": "441f32a56d4f36a84a33442bc0d3c9ab13f11c08693e8f5cad754762470b9722",
+      "node_count": 14,
+      "origins": [
+        {
+          "cost_shape": {
+            "development_rows": 2,
+            "fit_rows": 6,
+            "memory_bytes": 268435456,
+            "nodes": 14,
+            "pivots": 0,
+            "resource_class": "CPU_LOCAL",
+            "timeout_seconds": 30,
+            "unknowns": 3
+          },
+          "source": "harmonic-fit:k=3"
+        }
+      ]
+    },
+    {
+      "cost_shape": {
+        "development_rows": 2,
+        "fit_rows": 6,
+        "memory_bytes": 268435456,
+        "nodes": 14,
+        "pivots": 0,
+        "resource_class": "CPU_LOCAL",
+        "timeout_seconds": 30,
+        "unknowns": 3
+      },
+      "development": {
+        "coverage": "1",
+        "failed_count": 0,
+        "mae": "7.8819660112482639",
+        "rmse": "7.8978090760956556",
+        "selected_count": 2,
+        "valid_count": 2
+      },
+      "dsl": {
+        "domain": [
+          {
+            "lower": {
+              "denominator": "1",
+              "numerator": "-10"
+            },
+            "lower_closed": true,
+            "name": "t",
+            "upper": {
+              "denominator": "1",
+              "numerator": "10"
+            },
+            "upper_closed": true
+          }
+        ],
+        "dsl_version": "1.0",
+        "parameters": [
+          {
+            "lower": "2",
+            "name": "c0",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "2"
+          },
+          {
+            "lower": "0.20081141589138901",
+            "name": "c1",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "0.20081141589138901"
+          },
+          {
+            "lower": "-0.61803398876385218",
+            "name": "c2",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "-0.61803398876385218"
+          },
+          {
+            "lower": "2.51327412287",
+            "name": "omega",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "2.51327412287"
+          }
+        ],
+        "root": {
+          "args": [
+            {
+              "args": [
+                {
+                  "args": [
+                    {
+                      "args": [
+                        {
+                          "name": "omega",
+                          "op": "param"
+                        },
+                        {
+                          "name": "t",
+                          "op": "var"
+                        }
+                      ],
+                      "op": "mul"
+                    }
+                  ],
+                  "op": "cos"
+                },
+                {
+                  "name": "c2",
+                  "op": "param"
+                }
+              ],
+              "op": "mul"
+            },
+            {
+              "args": [
+                {
+                  "args": [
+                    {
+                      "args": [
+                        {
+                          "name": "omega",
+                          "op": "param"
+                        },
+                        {
+                          "name": "t",
+                          "op": "var"
+                        }
+                      ],
+                      "op": "mul"
+                    }
+                  ],
+                  "op": "sin"
+                },
+                {
+                  "name": "c1",
+                  "op": "param"
+                }
+              ],
+              "op": "mul"
+            },
+            {
+              "name": "c0",
+              "op": "param"
+            }
+          ],
+          "op": "add"
+        },
+        "variables": [
+          {
+            "name": "t",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "identity_hash": "c3dd4604d00e5610eea10546cf02f53c7f88e796501c2c2bca0c71831a64d6ca",
+      "node_count": 14,
+      "origins": [
+        {
+          "cost_shape": {
+            "development_rows": 2,
+            "fit_rows": 6,
+            "memory_bytes": 268435456,
+            "nodes": 14,
+            "pivots": 0,
+            "resource_class": "CPU_LOCAL",
+            "timeout_seconds": 30,
+            "unknowns": 3
+          },
+          "source": "harmonic-fit:k=2"
+        }
+      ]
+    },
+    {
+      "cost_shape": {
+        "development_rows": 2,
+        "fit_rows": 6,
+        "memory_bytes": 268435456,
+        "nodes": 1,
+        "pivots": 0,
+        "resource_class": "CPU_LOCAL",
+        "timeout_seconds": 30,
+        "unknowns": 1
+      },
+      "development": {
+        "coverage": "1",
+        "failed_count": 0,
+        "mae": "8",
+        "rmse": "8.0622577482985491",
+        "selected_count": 2,
+        "valid_count": 2
+      },
+      "dsl": {
+        "domain": [
+          {
+            "lower": {
+              "denominator": "1",
+              "numerator": "-10"
+            },
+            "lower_closed": true,
+            "name": "t",
+            "upper": {
+              "denominator": "1",
+              "numerator": "10"
+            },
+            "upper_closed": true
+          }
+        ],
+        "dsl_version": "1.0",
+        "parameters": [
+          {
+            "lower": "2",
+            "name": "c0",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "2"
+          }
+        ],
+        "root": {
+          "name": "c0",
+          "op": "param"
+        },
+        "variables": [
+          {
+            "name": "t",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "identity_hash": "ece64f2e7a11480af516f8a5be5b3e9cd93ced00b5462e597afa79563c7cac57",
+      "node_count": 1,
+      "origins": [
+        {
+          "cost_shape": {
+            "development_rows": 2,
+            "fit_rows": 6,
+            "memory_bytes": 268435456,
+            "nodes": 1,
+            "pivots": 0,
+            "resource_class": "CPU_LOCAL",
+            "timeout_seconds": 30,
+            "unknowns": 1
+          },
+          "source": "linear-fit:mean"
+        }
+      ]
+    },
+    {
+      "cost_shape": {
+        "development_rows": 2,
+        "fit_rows": 6,
+        "memory_bytes": 268435456,
+        "nodes": 14,
+        "pivots": 1,
+        "resource_class": "CPU_LOCAL",
+        "timeout_seconds": 30,
+        "unknowns": 3
+      },
+      "development": {
+        "coverage": "1",
+        "failed_count": 0,
+        "mae": "10.118033988704434",
+        "rmse": "10.130380634337435",
+        "selected_count": 2,
+        "valid_count": 2
+      },
+      "dsl": {
+        "domain": [
+          {
+            "lower": {
+              "denominator": "1",
+              "numerator": "-10"
+            },
+            "lower_closed": true,
+            "name": "t",
+            "upper": {
+              "denominator": "1",
+              "numerator": "10"
+            },
+            "upper_closed": true
+          }
+        ],
+        "dsl_version": "1.0",
+        "parameters": [
+          {
+            "lower": "2",
+            "name": "c0",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "2"
+          },
+          {
+            "lower": "-2.22703272878723",
+            "name": "c1",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "-2.22703272878723"
+          },
+          {
+            "lower": "1.6180339887306974",
+            "name": "c2",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "1.6180339887306974"
+          },
+          {
+            "lower": "1.25663706144",
+            "name": "omega",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "upper": "1.25663706144"
+          }
+        ],
+        "root": {
+          "args": [
+            {
+              "args": [
+                {
+                  "args": [
+                    {
+                      "args": [
+                        {
+                          "name": "omega",
+                          "op": "param"
+                        },
+                        {
+                          "name": "t",
+                          "op": "var"
+                        }
+                      ],
+                      "op": "mul"
+                    }
+                  ],
+                  "op": "cos"
+                },
+                {
+                  "name": "c2",
+                  "op": "param"
+                }
+              ],
+              "op": "mul"
+            },
+            {
+              "args": [
+                {
+                  "args": [
+                    {
+                      "args": [
+                        {
+                          "name": "omega",
+                          "op": "param"
+                        },
+                        {
+                          "name": "t",
+                          "op": "var"
+                        }
+                      ],
+                      "op": "mul"
+                    }
+                  ],
+                  "op": "sin"
+                },
+                {
+                  "name": "c1",
+                  "op": "param"
+                }
+              ],
+              "op": "mul"
+            },
+            {
+              "name": "c0",
+              "op": "param"
+            }
+          ],
+          "op": "add"
+        },
+        "variables": [
+          {
+            "name": "t",
+            "unit": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "identity_hash": "51c163d1eff5aef0265f1aff61e58d7cc7452bbf36a818460adfa7ae224660ae",
+      "node_count": 14,
+      "origins": [
+        {
+          "cost_shape": {
+            "development_rows": 2,
+            "fit_rows": 6,
+            "memory_bytes": 268435456,
+            "nodes": 14,
+            "pivots": 1,
+            "resource_class": "CPU_LOCAL",
+            "timeout_seconds": 30,
+            "unknowns": 3
+          },
+          "source": "harmonic-fit:k=1"
+        }
+      ]
+    }
+  ],
+  "development_rows": 2,
+  "diagnostics": [],
+  "duplicate_count": 0,
+  "fit_rows": 6,
+  "policy_version": "local-search-execution-v1",
+  "precision_bits": 53,
+  "product_status": "NOT_RUN",
+  "proposed_count": 8,
+  "strategies": [
+    {
+      "checkpoint_version": "1",
+      "determinism": "DETERMINISTIC",
+      "diagnostics": [],
+      "family": "LINEAR",
+      "input_schema_version": "dsl-v1/1.0",
+      "input_types": [
+        "numeric_rows",
+        "dsl_declarations"
+      ],
+      "memory_bytes": 268435456,
+      "operators": [
+        "add",
+        "mul"
+      ],
+      "output_schema_version": "dsl-v1/1.0",
+      "output_types": [
+        "dsl_expression",
+        "identity_hash"
+      ],
+      "plugin_id": "linear-fit",
+      "precision_support": [
+        53
+      ],
+      "proposed_count": 3,
+      "resource_class": "CPU_LOCAL",
+      "seed_support": false,
+      "status": "EXECUTED",
+      "timeout_seconds": 30,
+      "version": "1.0"
+    },
+    {
+      "checkpoint_version": "1",
+      "determinism": "DETERMINISTIC",
+      "diagnostics": [],
+      "family": "POLYNOMIAL",
+      "input_schema_version": "dsl-v1/1.0",
+      "input_types": [
+        "numeric_rows",
+        "dsl_declarations"
+      ],
+      "memory_bytes": 268435456,
+      "operators": [
+        "add",
+        "mul",
+        "pow"
+      ],
+      "output_schema_version": "dsl-v1/1.0",
+      "output_types": [
+        "dsl_expression",
+        "identity_hash"
+      ],
+      "plugin_id": "polynomial-fit",
+      "precision_support": [
+        53
+      ],
+      "proposed_count": 2,
+      "resource_class": "CPU_LOCAL",
+      "seed_support": false,
+      "status": "EXECUTED",
+      "timeout_seconds": 30,
+      "version": "1.0"
+    },
+    {
+      "checkpoint_version": "1",
+      "determinism": "DETERMINISTIC",
+      "diagnostics": [
+        {
+          "code": "FIXED_PRECISION_FREQUENCY",
+          "detail": "k=1 T=5.0 omega_raw=1.2566370614359172 omega=1.25663706144 digits=12"
+        },
+        {
+          "code": "FIXED_PRECISION_FREQUENCY",
+          "detail": "k=2 T=5.0 omega_raw=2.5132741228718345 omega=2.51327412287 digits=12"
+        },
+        {
+          "code": "FIXED_PRECISION_FREQUENCY",
+          "detail": "k=3 T=5.0 omega_raw=3.7699111843077517 omega=3.76991118431 digits=12"
+        },
+        {
+          "code": "ALIASING_RISK",
+          "detail": "omega*spacing=3.76991118431 reaches pi"
+        }
+      ],
+      "family": "HARMONIC",
+      "input_schema_version": "dsl-v1/1.0",
+      "input_types": [
+        "numeric_rows",
+        "dsl_declarations"
+      ],
+      "memory_bytes": 268435456,
+      "operators": [
+        "add",
+        "mul",
+        "sin",
+        "cos"
+      ],
+      "output_schema_version": "dsl-v1/1.0",
+      "output_types": [
+        "dsl_expression",
+        "identity_hash"
+      ],
+      "plugin_id": "harmonic-fit",
+      "precision_support": [
+        53
+      ],
+      "proposed_count": 3,
+      "resource_class": "CPU_LOCAL",
+      "seed_support": false,
+      "status": "EXECUTED",
+      "timeout_seconds": 30,
+      "version": "1.0"
+    }
+  ],
+  "usage_scope": "LOCAL_SEARCH_EXECUTION_ONLY"
+}

@@ -1,0 +1,123 @@
+{
+  "date": "2026-10-22",
+  "scope": "T07_SEARCH_EXECUTION_OFFLINE_STRATEGY_CORE_AND_EQUATION_VERSION",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "90c1430105b9f2c15ac84fada2e9e2fa38218380",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "IMPLEMENTED",
+  "product_gate_status": "NOT_RUN",
+  "delivery_boundary": {
+    "strategies": [
+      "linear-fit:zero",
+      "linear-fit:mean",
+      "linear-fit:least-squares",
+      "polynomial-fit:degree-2",
+      "polynomial-fit:degree-3",
+      "harmonic-fit:k=1",
+      "harmonic-fit:k=2",
+      "harmonic-fit:k=3"
+    ],
+    "endpoints_added": [],
+    "search_run": "NOT_CREATED",
+    "candidate_or_fit_run_rows": "NOT_CREATED",
+    "candidate_freezing": "NOT_IMPLEMENTED",
+    "final_test_evaluation": "NOT_IN_INPUT_SURFACE",
+    "persistence_added": "EquationVersion（migration 0017 兩唯一鍵與 dsl_version 值域；migration 0018 原生 guard 與 UPDATE／DELETE 拒絕）",
+    "shared_scoring_module": "mathematics/metrics.py：研究檢視與 SEARCH 共用 score／quantile；ingestion/research.py 改為引用，行為不變",
+    "measurement_markers": "usage_scope=LOCAL_SEARCH_EXECUTION_ONLY、product_status=NOT_RUN、precision_bits=53"
+  },
+  "tests": {
+    "postgresql_backend": 304,
+    "previous_backend": 284,
+    "new_slice_tests": 20,
+    "new_tests_breakdown": {
+      "mathematics/test_linalg.py": 7,
+      "mathematics/test_search.py": 7,
+      "catalog/tests/test_equations.py": 6
+    },
+    "unittest_command": "docker compose -p axiom-dev run --rm -T web python manage.py test",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "PASS",
+      "typecheck": "strict 0 error",
+      "vitest": "9 檔 77／77",
+      "build": "63 modules；js 144.31 kB、css 9.87 kB",
+      "command": "docker compose -p axiom-dev run --rm -T frontend sh -c 'npm run typecheck && npm test && npm run build'"
+    }
+  },
+  "strict_pyright": {
+    "version": "1.1.414",
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0
+  },
+  "typing_policy": "PASS",
+  "engineering_tools": {
+    "unittest": "80/80",
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS",
+    "docs_check": "exit 0（product_test_status: NOT_RUN、manifest_files: 86）",
+    "public_oracle": "PASS（python -m mathematics.smoke）"
+  },
+  "integration": {
+    "offline_search_fixture": "PASS（proposed_count=8、duplicate_count=0、三策略 EXECUTED 3／2／3；linear-fit:least-squares MAE 0、c0=3、c1=-2；polynomial degree-2／3 MAE 8.8817841970012523e-16；harmonic k=1／2／3 MAE 10.118033988704434／7.8819660112482639／7.8819660112478482；診斷 3 條 FIXED_PRECISION_FREQUENCY 與 1 條 ALIASING_RISK）",
+    "makemigrations_check": "No changes detected",
+    "product_gate_status": "NOT_RUN"
+  },
+  "live_services": {
+    "project": "axiom-dev",
+    "retained_running": true,
+    "health_http_status": {
+      "http://127.0.0.1:18000/health/ready/": 200,
+      "http://127.0.0.1:15173/health/ready/": 200,
+      "http://127.0.0.1:15173/": 200
+    },
+    "services": [
+      { "name": "frontend", "state": "running", "health": "healthy", "ports": "127.0.0.1:15173->5173/tcp" },
+      { "name": "ingest", "state": "running", "health": "", "ports": "" },
+      { "name": "journal", "state": "running", "health": "healthy", "ports": "network_mode:none" },
+      { "name": "postgres", "state": "running", "health": "healthy", "ports": "5432/tcp" },
+      { "name": "profile", "state": "running", "health": "", "ports": "" },
+      { "name": "redis", "state": "running", "health": "healthy", "ports": "6379/tcp" },
+      { "name": "relay", "state": "running", "health": "", "ports": "" },
+      { "name": "web", "state": "running", "health": "healthy", "ports": "127.0.0.1:18000->8000/tcp" },
+      { "name": "worker", "state": "running", "health": "", "ports": "" }
+    ]
+  },
+  "changed_sources": {
+    ".github/workflows/product-check.yml": "a6c37b0b430d6f32206dd7abf3b3f6a341a270e66e48a12522a8f40db9a9cbc0",
+    "README.md": "7ab667b5de022ffe10912cf80931732430d5ab709c9c2bc2552e99a0ba17a273",
+    "backend/catalog/equations.py": "9f5d68516868a3ac2d85fee934e1a35d298138118999a6458bfe468b61937ace",
+    "backend/catalog/migrations/0017_equationversion.py": "cec9b09a43562f58b9b57403a059deb855ad8fe5b6551c3564207e66a2dcc7aa",
+    "backend/catalog/migrations/0018_equation_version_guards.py": "f208aaf701daab0b3cb52bbdf4f59f9058be5553e78cf125d05b92baf27a01c9",
+    "backend/catalog/models.py": "fb82aa7c4b68b5bd29ec203bf492ba54a27f3d72f326924a964f5153e05b23b9",
+    "backend/catalog/tests/test_equations.py": "0c7c673f485478e18a27762f37b7bdda5beaf7dce3f4eb0c06d31b8663857c54",
+    "backend/catalog/tests/test_inspection_engine.py": "7c279cd2a0ff6747507b07af06a60ac8ccdcfcf5a419cd4df6be779f650b187e",
+    "backend/ingestion/research.py": "85009c7fa5d87db70507d7b094a4043eeaf2ee480ce8009abb9842cb8c8a465a",
+    "backend/mathematics/linalg.py": "aecdb92aee421c8b373ff7fea6e3842bd5590b33e5ff45079ae058d2ce3f51b7",
+    "backend/mathematics/metrics.py": "e4015fb67fd775e079dac99766eda165f174c7a8c2ff734286fcf27b08e434a9",
+    "backend/mathematics/search.py": "c0269f992e7ebd6eeecbde388eb6a85b0ca8e5e79eb38fcedc1ff83f44caaebd",
+    "backend/mathematics/test_linalg.py": "04e85c4916f5c8e716bc1259faa868f2b842ac4b392fed5c5cde986282572471",
+    "backend/mathematics/test_search.py": "a2dc87902f595b58483ad1c6130cbcf9cad11a48c1190915bac7861ab6a39761",
+    "tools/typing-boundaries.json": "3b8694c082bca636a1ebf8a09be0363e7fe6520c835cd2ca700865973dfdd5f7",
+    "docs/技術文件/缺口清單.md": "44fc74dc60f81e22c303c2057c0c19460a7fe7eded95a70dfb32af7d9690988d",
+    "docs/技術文件/README.md": "c44c702a8f5b6c938c1cc13c6b344bf6cc75fc9b5b2d0a143ce6a9b63d120ca8",
+    "docs/技術文件/M0/T07-SEARCH執行器設計.md": "650cca1f69cae6f89114df14af1d76f1e72efc5590bee65ac0d66b3b806d9cbd",
+    "docs/技術文件/M0/T07-SEARCH執行器驗證紀錄.md": "7acd5131b328cc2f77ba8fe0679d3556209fb1892cd78c9c140940df599741bf"
+  },
+  "known_limits": [
+    "本批不含 SEARCH run 與派送／租約／checkpoint，未建立任何 run 或 Candidate／FitRun／FrozenCandidate 資料列",
+    "候選凍結與對外 API 未實作；本批只輸出離線候選順序，未持久化 development_rank",
+    "final_test 不在輸入介面，本批未評估最終測試；頻率不能由 final 選擇",
+    "EquationVersion 目前無任何資料表引用，故未加複合 FK；待 Candidate 切片再補 (equation_version_id, tenant_id)",
+    "成本形狀只是確定性計數，不是 BudgetUsage；未建立帳本列，也不以牆鐘時間參與排序",
+    "諧波頻率為固定精度近似（12 位有效數字），診斷另記未取整值；疑似混疊只保存診斷，未阻擋或修正",
+    "Sonar 本批未重跑：本機需 token，工作區無可用憑證，不以舊的零項目結果頂替",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}

@@ -14,6 +14,7 @@ from ingestion.limits import ImportLimits, ImportRejected, require
 from ingestion.parser import parse
 from mathematics.compiler import Plan, compile_dsl
 from mathematics.evaluator import evaluate
+from mathematics.metrics import metrics, quantile
 from mathematics.syntax import DslError
 from runtime.contracts import canonical_bytes, identity_hash
 
@@ -115,30 +116,6 @@ class Inspector:
             result["model_evaluation"] = {name: metrics(self.plan, self.parameters, rows, self.research["semantic_profile"]["inputs"][0]["name"])
                 for name, rows in self.selected.items()}
         return result
-
-
-def quantile(values: list[Fraction], probability: Fraction) -> Fraction:
-    position = (len(values) - 1) * probability
-    left = position.numerator // position.denominator
-    right = min(left + 1, len(values) - 1)
-    return values[left] + (values[right] - values[left]) * (position - left)
-
-
-def metrics(plan: Plan, parameters: dict[str, str], rows: list[tuple[Fraction, float, float]], alias: str) -> dict[str, Any]:
-    points = evaluate(plan, [{alias: row[1]} for row in rows], parameters).points
-    differences: list[float] = []
-    for point, row in zip(points, rows, strict=True):
-        if point.valid_mask and point.value is not None and math.isfinite(point.value - row[2]):
-            differences.append(abs(point.value - row[2]))
-    selected, valid = len(rows), len(differences)
-    result: dict[str, Any] = {"selected_count": selected, "valid_count": valid, "failed_count": selected - valid, "coverage": str(Fraction(valid, selected)), "mae": None, "rmse": None}
-    if valid == selected:
-        scale = max(differences)
-        mae = 0 if scale == 0 else scale * min(1.0, math.fsum(value / scale / selected for value in differences))
-        result["mae"] = format(mae, ".17g")
-        rmse = 0 if scale == 0 else scale * math.sqrt(min(1.0, math.fsum((value / scale)**2 / selected for value in differences)))
-        result["rmse"] = format(rmse, ".17g")
-    return result
 
 
 def inspect_file(path: Path, format_name: str, limits: ImportLimits, config: dict[str, Any]) -> dict[str, Any]:

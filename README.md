@@ -56,7 +56,7 @@ docker compose exec -T web python manage.py ingest_preview_smoke
 開啟 <http://127.0.0.1:15173>。產品交易測試與前端檢查：
 
 ```sh
-docker compose run --rm web python manage.py test foundation.tests runtime.tests catalog.tests mathematics.tests ingestion.tests -v 2
+docker compose run --rm web python manage.py test foundation.tests runtime.tests catalog.tests mathematics.tests mathematics.test_linalg mathematics.test_search ingestion.tests -v 2
 docker compose run --rm frontend sh -c 'npm run typecheck && npm test && npm run build'
 ```
 
