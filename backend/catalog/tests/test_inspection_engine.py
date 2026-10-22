@@ -31,7 +31,7 @@ def linear_model(domain: list[JsonObject]) -> JsonObject:
 def config_for(model: bool = True) -> JsonObject:
     research = draft_data(uuid4())
     split = research["observation_split"]
-    split["row_ids_hash"] = identity_hash({key: split[key] for key in ("fit", "development", "final_test")})
+    split["row_ids_hash"] = identity_hash({key: split[key] for key in ("fit", "development", "final_test", "gap_rows", "lookback_rows", "horizon_rows")})
     return {"research": research, "metadata": {"row_count": 10, "columns": [{"name": "x", "physical_type": "CSV_TEXT"}, {"name": "y", "physical_type": "CSV_TEXT"}]},
         "model": linear_model(research["domain"]) if model else None, "parameters": {}}
 

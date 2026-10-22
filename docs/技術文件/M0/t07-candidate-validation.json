@@ -1,0 +1,125 @@
+{
+  "date": "2026-10-22",
+  "scope": "T07_CANDIDATE_FIT_AND_FREEZE",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "77b4d2e6b343ffca4cc9bca639b9fc7eef73fbba",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "IMPLEMENTED",
+  "product_gate_status": "NOT_RUN",
+  "delivery_boundary": {
+    "tables_added": [
+      "catalog_candidate",
+      "catalog_fitrun",
+      "catalog_frozencandidate",
+      "catalog_observationsplit",
+      "catalog_representationspec"
+    ],
+    "service_modules": [
+      "backend/catalog/candidates.py",
+      "backend/catalog/freezing.py",
+      "backend/catalog/search_run.py"
+    ],
+    "endpoints_added": [],
+    "search_and_fit_run": "CREATED_AS_MINIMAL_AUTHORITATIVE_ROOT：RuntimeRun、control_only=false、狀態停在 QUEUED；不派 worker、不建 attempt／InputSnapshot／RootBudget／Reservation／帳本列，且不被 catalog/tasks.py 的 INGEST／ProfileBinding 兩個 relay 撿走",
+    "candidate_freezing": "IMPLEMENTED（只落 FrozenCandidate；不建 FrozenSubmission、不含 snapshot_hash）",
+    "final_test_evaluation": "NOT_IN_INPUT_SURFACE",
+    "persistence_added": "migration 0019 建五表與唯一鍵／索引；0020 補原生 guard（document 與資料列同步、UPDATE／DELETE 一律拒絕）與 (equation_version_id, tenant)、(dataset_version_id, tenant)、(observation_split_id, tenant)、(representation_artifact_id, tenant)、runtime (run_id, tenant) 複合外鍵（DEFERRABLE INITIALLY DEFERRED）；runtime 0006 擴充 run guard 允許 SEARCH／FIT",
+    "row_ids_hash_fix": "row_ids_hash 的雜湊輸入改取 {fit, development, final_test, gap_rows, lookback_rows, horizon_rows} 六鍵 canonical JSON；catalog/research_validation.py 與 ingestion/research.py 同步，既有測試期望值一併更新",
+    "fit_rows_hash": "FitRun 補 fit_rows_hash 欄位（＝fit 列陣列 canonical SHA-256，與 RepresentationSpec.fit_rows_hash、profile.py 既有規則同值），含 ^[0-9a-f]{64}$ CheckConstraint",
+    "measurement_markers": "usage_scope=LOCAL_SEARCH_EXECUTION_ONLY、product_status=NOT_RUN、precision_bits=53"
+  },
+  "tests": {
+    "postgresql_backend": 314,
+    "previous_backend": 304,
+    "new_slice_tests": 10,
+    "new_tests_breakdown": {
+      "catalog/tests/test_candidates.py": 10
+    },
+    "unittest_command": "docker compose -p axiom-dev run --rm -T web python manage.py test",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "NO_SOURCE_CHANGE",
+      "prior_evidence": "t07-search-validation.json: strict typecheck 0 error、vitest 9 檔 77／77、build 63 modules PASS"
+    }
+  },
+  "strict_pyright": {
+    "version": "1.1.414",
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0,
+    "informations": 0
+  },
+  "typing_policy": "PASS",
+  "engineering_tools": {
+    "unittest": "80/80",
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS",
+    "docs_check": "exit 0（product_test_status: NOT_RUN、manifest_files: 86）",
+    "public_oracle": "PASS（python -m tools.benchmark.public_oracle）",
+    "mathematics_smoke": "PASS（容器內 python -m mathematics.smoke、decimal_reference_digits: 70、exp_absolute_error: 0.0）"
+  },
+  "integration": {
+    "freeze_decision": "PASS（先達 ACCEPT，再逐條觸發 10 種拒絕碼：EVALUATION_POLICY_MISMATCH、VERIFICATION_PLAN_MISMATCH、REPRESENTATION_MISMATCH、FIT_REFERENCE_MISMATCH、EQUATION_MISMATCH、BINDING_MISMATCH、PARAMETER_NOT_CANONICAL、BINDING_HASH_MISMATCH、SNAPSHOT_MISMATCH、RANK_MISMATCH）",
+    "parameter_binding_hash": "PASS（binding_hash({\"a\":\"2\",\"b\":\"1\"}) 前綴 f7a837dc，與 conformance 範例一致；canonical_decimal 去尾零、-0 折成 0、拒絕指數記法）",
+    "empty_search_decision": "PASS（FAILED／SUCCEEDED:INSUFFICIENT_EVIDENCE:NO_VALID_CANDIDATE／SUCCEEDED:INSUFFICIENT_EVIDENCE:BUDGET_EXHAUSTED／FREEZE_AND_EVALUATE 四分支）",
+    "database_guards": "PASS（真 PostgreSQL 上四組唯一鍵、複合外鍵跨租戶拒絕、UPDATE／DELETE 一律拒絕）",
+    "relay_exclusion": "PASS（SEARCH／FIT root 皆 control_only=false、QUEUED，未建 attempt／InputSnapshot／RunEvent／RootBudget／Reservation）",
+    "makemigrations_check": "No changes detected",
+    "product_gate_status": "NOT_RUN"
+  },
+  "live_services": {
+    "project": "axiom-dev",
+    "retained_running": true,
+    "health_http_status": {
+      "http://127.0.0.1:18000/health/ready/": 200,
+      "http://127.0.0.1:15173/health/ready/": 200,
+      "http://127.0.0.1:15173/": 200
+    },
+    "services": [
+      { "name": "frontend", "state": "running", "health": "healthy", "ports": "127.0.0.1:15173->5173/tcp" },
+      { "name": "ingest", "state": "running", "health": "", "ports": "" },
+      { "name": "journal", "state": "running", "health": "healthy", "ports": "" },
+      { "name": "postgres", "state": "running", "health": "healthy", "ports": "5432/tcp" },
+      { "name": "profile", "state": "running", "health": "", "ports": "" },
+      { "name": "redis", "state": "running", "health": "healthy", "ports": "6379/tcp" },
+      { "name": "relay", "state": "running", "health": "", "ports": "" },
+      { "name": "web", "state": "running", "health": "healthy", "ports": "127.0.0.1:18000->8000/tcp" },
+      { "name": "worker", "state": "running", "health": "", "ports": "" }
+    ]
+  },
+  "changed_sources": {
+    "backend/catalog/candidates.py": "4e9b4369a48c2684ec8109e68738a4bf79c4dca17766c19896c0adc2eb27da0d",
+    "backend/catalog/freezing.py": "445731457c5cf868c25a9169b6e54b0c08ee85007f56961c0925135f919a8e4f",
+    "backend/catalog/search_run.py": "a1a8345146a12e93873e6c459fdce58a71330ad29b6e6b6be2a0918179256632",
+    "backend/catalog/migrations/0019_candidate_fit_and_freeze.py": "2783352e20815282810cdb6abab0b6393f181744b51fb50c60a877089925817c",
+    "backend/catalog/migrations/0020_candidate_guards.py": "23ed6b49820e4574418d828bbec222036985601c9fdb349a58fa59898abe62e6",
+    "backend/runtime/migrations/0006_search_roots.py": "e0c2e8b29e12ce97d2610e2d68aea624e6ac767b7f97bddcfc91f5918bfddf4d",
+    "backend/catalog/tests/test_candidates.py": "6d89c58913bbf6475e7909f29f4a6e8be9318293765f0dd62d944c6a6185018f",
+    "backend/catalog/models.py": "6d0eaeeb7deeaf2ffff2703609b90b5cf4c233d48bf6d638ccd1472ce44f9448",
+    "backend/catalog/research_validation.py": "47b8b46e1748faed5360f01131acd1fb5b9aa618b1bff6685983807abb03df3b",
+    "backend/catalog/tests/test_inspection_engine.py": "3fdab59580d1c5acdbdda4569e3800b97320c2ba032093cec34c4b82751e94dc",
+    "backend/catalog/tests/test_research.py": "d34557fe2ad1b8d676c34b06f6ee236c3cb2dd3de6fc073ade552daf56e4c912",
+    "backend/foundation/health.py": "69c331da029ee4b33e5408be65a3a973a10db9562a64eb1ecf108a10398d6cc6",
+    "backend/ingestion/research.py": "3c93f7e7407fb3e91b75496e19966b08005ca3032d454d06746d176daaf02747",
+    "tools/typing-boundaries.json": "dfe697bb56a9e0f46816b7385d73760e908245d73fe5247062e527b5fb8f7c76",
+    "docs/技術文件/M0/T07-候選凍結與比較設計.md": "82d799d0de5530f0111b196d29d50164bb05a82014eb55f28feec9cddc4f79ac",
+    "docs/技術文件/M0/T07-候選凍結與比較驗證紀錄.md": "2544ec7f31dd48bbddeaefd8dcb6fc791f096c804b7df01a23a39e2152d13666",
+    "docs/技術文件/缺口清單.md": "db2dc3dc3418c4c5d54c06f8e314773b7f520889ad0fbd59c4ddb31babaf3cea",
+    "docs/技術文件/README.md": "489b5ac0a4291a0b12244da753b980907e1ca62a71ae2da8009ccd2e8f847d95"
+  },
+  "known_limits": [
+    "FrozenSubmission 與 snapshot_hash、SealedTest／BenchmarkPartition／EvaluationPolicy／VerificationPlan 及其 recipe 未實作；SNAPSHOT_MISMATCH 分支只在純函式對照被觸發，落庫路徑不觸及",
+    "SEARCH／FIT run 只是最小權威身分列：未派送、無租約、無 checkpoint、無帳本列，故不宣稱搜尋已執行",
+    "final_test 不在任何輸入介面，本批未評估最終測試",
+    "validation 引用（#2）的前置阻塞已由本批的 FitRun／FrozenCandidate 解除，但尚無 VALIDATE 流程能產生非空 validation_ids",
+    "對外端點與工作台整合未實作；本批只輸出離線候選、擬合與凍結身分",
+    "前端原始碼本批未改動，未重跑前端；沿用 #3 已通過的證據",
+    "Sonar 本批未重跑：本機需 token，工作區無可用憑證，不以舊的零項目結果頂替",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}

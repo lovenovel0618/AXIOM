@@ -79,7 +79,7 @@ class ResearchTests(TransactionTestCase):
         self.assertIsNone(value["observation_split"]["sealed_test_id"])
         self.assertIsNone(value["structure_assessment_artifact_id"])
         self.assertEqual(value["evaluation_policy_hash"], identity_hash(self.data["evaluation_policy"]))
-        self.assertEqual(value["observation_split"]["row_ids_hash"], identity_hash({name: self.data["observation_split"][name] for name in ("fit", "development", "final_test")}))
+        self.assertEqual(value["observation_split"]["row_ids_hash"], identity_hash({name: self.data["observation_split"][name] for name in ("fit", "development", "final_test", "gap_rows", "lookback_rows", "horizon_rows")}))
         response = self.client.get(f'/api/v2/research-versions/{value["id"]}')
         self.assertEqual(json.loads(response.content), value)
         self.assertEqual(response["Cache-Control"], "no-store")

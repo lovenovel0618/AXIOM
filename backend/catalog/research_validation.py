@@ -5,6 +5,7 @@ from runtime.contracts import JsonObject, identity_hash
 from catalog.validation import ApiError
 
 PARTITIONS = ("fit", "development", "final_test")
+HASH_FIELDS = PARTITIONS + ("gap_rows", "lookback_rows", "horizon_rows")
 INVALID_POLICY = "EVALUATION_POLICY_INVALID"
 
 
@@ -113,7 +114,7 @@ def split_check(data: JsonObject, count: int) -> JsonObject:
         require(all(split[name] == expected[name] for name in PARTITIONS))
     else:
         require(bool(split["splitter_version"].strip()))
-    split.update(id=str(uuid4()), row_ids_hash=identity_hash({name: split[name] for name in PARTITIONS}), sealed_test_id=None, benchmark_partition_id=None, benchmark_case_id=None)
+    split.update(id=str(uuid4()), row_ids_hash=identity_hash({name: split[name] for name in HASH_FIELDS}), sealed_test_id=None, benchmark_partition_id=None, benchmark_case_id=None)
     return split
 
 

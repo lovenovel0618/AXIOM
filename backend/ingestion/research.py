@@ -21,6 +21,7 @@ from runtime.contracts import canonical_bytes, identity_hash
 MAX_ROWS = 4096
 POLICY = "local-research-inspection-v1"
 PARTITIONS = ("fit", "development", "final_test")
+HASH_FIELDS = PARTITIONS + ("gap_rows", "lookback_rows", "horizon_rows")
 NUMBER = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?", flags=re.ASCII)
 
 
@@ -76,7 +77,7 @@ class Inspector:
         count = sum(len(split[name]) for name in PARTITIONS)
         require(count <= MAX_ROWS and len(self.members) == count)
         require(set(self.members) == set(range(count)))
-        require(split["row_ids_hash"] == identity_hash({name: split[name] for name in PARTITIONS}))
+        require(split["row_ids_hash"] == identity_hash({name: split[name] for name in HASH_FIELDS}))
         require(split["kind"] in {"IID_ROWS", "EXPLICIT"} and not self.research["semantic_profile"]["time_ordered"])
         require(self.research["semantic_profile"]["group_column"] is None)
         self.plan = model_for(config)

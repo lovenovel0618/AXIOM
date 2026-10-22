@@ -445,3 +445,116 @@ class EquationVersion(models.Model):
                        models.UniqueConstraint(fields=["tenant", "identity_hash", "dsl_version"], name="equation_version_identity_hash"),
                        models.CheckConstraint(condition=models.Q(dsl_version="1.0"), name="equation_version_dsl_version"),
                        models.CheckConstraint(condition=models.Q(identity_hash__regex="^[0-9a-f]{64}$"), name="equation_version_identity_hash_format")]
+
+
+class ObservationSplit(models.Model):
+    """單題觀測切分的不可變 recipe；同資料版本同 row_ids_hash 只留一列，不重建身分。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    dataset_version: models.ForeignKey[DatasetVersion, DatasetVersion] = models.ForeignKey(DatasetVersion, on_delete=models.PROTECT)
+    dataset_version_id: UUID
+    row_ids_hash: models.CharField[str, str] = models.CharField(max_length=64)
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="observation_split_tenant_identity"),
+                       models.UniqueConstraint(fields=["dataset_version", "row_ids_hash"], name="observation_split_row_hash_unique"),
+                       models.CheckConstraint(condition=models.Q(row_ids_hash__regex="^[0-9a-f]{64}$"), name="observation_split_row_hash_format")]
+
+
+class RepresentationSpec(models.Model):
+    """M1 的識別表徵 recipe；FitRun 與 FrozenCandidate 必須引用同一份不可變表徵。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    research_version: models.ForeignKey[ResearchVersion, ResearchVersion] = models.ForeignKey(ResearchVersion, on_delete=models.PROTECT)
+    research_version_id: UUID
+    dataset_version: models.ForeignKey[DatasetVersion, DatasetVersion] = models.ForeignKey(DatasetVersion, on_delete=models.PROTECT)
+    dataset_version_id: UUID
+    observation_split: models.ForeignKey[ObservationSplit, ObservationSplit] = models.ForeignKey(ObservationSplit, on_delete=models.PROTECT)
+    observation_split_id: UUID
+    fit_rows_hash: models.CharField[str, str] = models.CharField(max_length=64)
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="representation_spec_tenant_identity"),
+                       models.UniqueConstraint(fields=["research_version", "observation_split", "fit_rows_hash"], name="representation_spec_identity_unique"),
+                       models.CheckConstraint(condition=models.Q(fit_rows_hash__regex="^[0-9a-f]{64}$"), name="representation_spec_fit_rows_hash_format")]
+
+
+class Candidate(models.Model):
+    """同一搜尋內的同結構候選只留一列；參數估計與凍結副本另存 FitRun 與 FrozenCandidate。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    search_run: models.ForeignKey[RuntimeRun, RuntimeRun] = models.ForeignKey(RuntimeRun, on_delete=models.PROTECT)
+    search_run_id: UUID
+    equation_version: models.ForeignKey[EquationVersion, EquationVersion] = models.ForeignKey(EquationVersion, on_delete=models.PROTECT)
+    equation_version_id: UUID
+    development_rank: models.PositiveIntegerField[int, int] = models.PositiveIntegerField()
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        indexes = [models.Index(fields=["search_run", "development_rank"], name="candidate_rank_index")]
+        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="candidate_tenant_identity"),
+                       models.UniqueConstraint(fields=["search_run", "equation_version"], name="candidate_search_structure_unique"),
+                       models.CheckConstraint(condition=models.Q(development_rank__gte=1), name="candidate_development_rank")]
+
+
+class FitRun(models.Model):
+    """一次擬合的完整結果；run 與公式／資料／切分／表徵引用皆不可變且同租戶。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    run: models.OneToOneField[RuntimeRun, RuntimeRun] = models.OneToOneField(RuntimeRun, on_delete=models.PROTECT)
+    run_id: UUID
+    equation_version: models.ForeignKey[EquationVersion, EquationVersion] = models.ForeignKey(EquationVersion, on_delete=models.PROTECT)
+    equation_version_id: UUID
+    dataset_version: models.ForeignKey[DatasetVersion, DatasetVersion] = models.ForeignKey(DatasetVersion, on_delete=models.PROTECT)
+    dataset_version_id: UUID
+    observation_split: models.ForeignKey[ObservationSplit, ObservationSplit] = models.ForeignKey(ObservationSplit, on_delete=models.PROTECT)
+    observation_split_id: UUID
+    representation_artifact: models.ForeignKey[RepresentationSpec, RepresentationSpec] = models.ForeignKey(RepresentationSpec, on_delete=models.PROTECT)
+    representation_artifact_id: UUID
+    fit_rows_hash: models.CharField[str, str] = models.CharField(max_length=64)
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="fit_run_tenant_identity"),
+                       models.CheckConstraint(condition=models.Q(fit_rows_hash__regex="^[0-9a-f]{64}$"), name="fit_run_fit_rows_hash_format")]
+
+
+class FrozenCandidate(models.Model):
+    """凍結後的候選副本；明確綁定單一 FitRun，凍結後參數、排名與來源皆不可改。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant: models.ForeignKey[Tenant, Tenant] = models.ForeignKey(Tenant, on_delete=models.PROTECT)
+    tenant_id: UUID
+    candidate: models.ForeignKey[Candidate, Candidate] = models.ForeignKey(Candidate, on_delete=models.PROTECT)
+    candidate_id: UUID
+    fit_run: models.ForeignKey[FitRun, FitRun] = models.ForeignKey(FitRun, on_delete=models.PROTECT)
+    fit_run_id: UUID
+    equation_version: models.ForeignKey[EquationVersion, EquationVersion] = models.ForeignKey(EquationVersion, on_delete=models.PROTECT)
+    equation_version_id: UUID
+    dataset_version: models.ForeignKey[DatasetVersion, DatasetVersion] = models.ForeignKey(DatasetVersion, on_delete=models.PROTECT)
+    dataset_version_id: UUID
+    observation_split: models.ForeignKey[ObservationSplit, ObservationSplit] = models.ForeignKey(ObservationSplit, on_delete=models.PROTECT)
+    observation_split_id: UUID
+    representation_artifact: models.ForeignKey[RepresentationSpec, RepresentationSpec] = models.ForeignKey(RepresentationSpec, on_delete=models.PROTECT)
+    representation_artifact_id: UUID
+    development_rank: models.PositiveIntegerField[int, int] = models.PositiveIntegerField()
+    dsl_identity_hash: models.CharField[str, str] = models.CharField(max_length=64)
+    parameter_binding_hash: models.CharField[str, str] = models.CharField(max_length=64)
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="frozen_candidate_tenant_identity"),
+                       models.UniqueConstraint(fields=["candidate", "fit_run"], name="frozen_candidate_selection_unique"),
+                       models.CheckConstraint(condition=models.Q(development_rank__gte=1), name="frozen_candidate_development_rank"),
+                       models.CheckConstraint(condition=models.Q(dsl_identity_hash__regex="^[0-9a-f]{64}$"), name="frozen_candidate_dsl_identity_format"),
+                       models.CheckConstraint(condition=models.Q(parameter_binding_hash__regex="^[0-9a-f]{64}$"), name="frozen_candidate_binding_hash_format")]

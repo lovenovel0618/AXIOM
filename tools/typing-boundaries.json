@@ -51,8 +51,8 @@
   },
   "backend/catalog/models.py": {
     "Any": 0,
-    "JsonObject": 32,
-    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+    "JsonObject": 42,
+    "reason": "既有 JSON／schema／框架相容邊界；新增候選、擬合與凍結五表的 document／configuration 欄位後同步擴列，之後只可收斂。"
   },
   "backend/catalog/research.py": {
     "Any": 0,
@@ -98,6 +98,26 @@
     "Any": 0,
     "JsonObject": 2,
     "reason": "公式版本在 schema 邊界仍以 JSON 文件流動；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/search_run.py": {
+    "Any": 0,
+    "JsonObject": 1,
+    "reason": "Run 身分仍以 schema 文件流動；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/candidates.py": {
+    "Any": 0,
+    "JsonObject": 11,
+    "reason": "候選、擬合與兩個 recipe 皆為 schema 文件邊界；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/freezing.py": {
+    "Any": 0,
+    "JsonObject": 10,
+    "reason": "凍結決策以 schema 文件為輸入並落庫凍結副本；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/tests/test_candidates.py": {
+    "Any": 0,
+    "JsonObject": 8,
+    "reason": "測試以 schema 文件組出凍結情境；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/research_validation.py": {
     "Any": 0,
