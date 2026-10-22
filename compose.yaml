@@ -76,12 +76,18 @@ services:
       retries: 20
   migrate:
     <<: *backend
+    environment:
+      <<: *environment
+      AXIOM_BOOTSTRAP_USER: ${AXIOM_BOOTSTRAP_USER:-}
+      AXIOM_BOOTSTRAP_PASSWORD: ${AXIOM_BOOTSTRAP_PASSWORD:-}
+      AXIOM_BOOTSTRAP_TENANT: ${AXIOM_BOOTSTRAP_TENANT:-local}
     command:
       - sh
       - -c
       - >-
         python manage.py prepare_raw_access &&
-        python manage.py migrate --noinput
+        python manage.py migrate --noinput &&
+        python manage.py bootstrap_account
     volumes: [object-data:/var/lib/axiom/objects]
     depends_on:
       postgres: {condition: service_healthy}

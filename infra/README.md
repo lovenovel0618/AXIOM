@@ -77,6 +77,8 @@ docker compose exec web python manage.py provision_account dino local
 
 每帳號固定一租戶；不要用請求 header 選租戶。命令輸出 actor／tenant UUID，不輸出密碼。後續同租戶帳號使用相同 tenant 名稱；需要不同行政租戶時使用不同名稱。帳號管理是本機受信任管理操作，沒有遠端邀請／註冊／公開分享。
 
+資料庫重建（含 `down --volumes`）後為空，`migrate` 服務會在遷移完成後接著執行 `bootstrap_account`：讀 `AXIOM_BOOTSTRAP_USER`／`AXIOM_BOOTSTRAP_PASSWORD`（選配 `AXIOM_BOOTSTRAP_TENANT`，預設 `local`）建立 User＋租戶＋Account。命令冪等：帳號已存在即不改密碼、不重建，只有 Django user 缺 catalog account 時補建（輸出 `status=CREATED`／`REPAIRED`／`EXISTS`）。未設 `AXIOM_BOOTSTRAP_USER` 或值為空白時輸出 `status=SKIPPED` 且不寫入任何資料，因此 CI 與未配置環境不受影響。密碼不足 12 字元即非零退出（Fail-Closed），migrate 失敗時 web 不會啟動。
+
 開啟 <http://127.0.0.1:15173/auth/login> 或後端18000的同一路徑。GET表單取得 axiom_csrf，POST帳密成功回status=ok並輪替 axiom_session；cookie名與其他 localhost 專案分開。/auth/logout只可POST＋X-CSRFToken。後續請求需目前session及CSRF header；Idempotency-Key為研究資源POST的必填header。
 
 | 入口 | 目前行為 |

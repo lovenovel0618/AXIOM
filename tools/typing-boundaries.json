@@ -264,6 +264,11 @@
     "JsonObject": 3,
     "reason": "公式版本測試以 JSON 文件組裝 DSL 與讀回結果；額度只可收斂，不代表核心已具體型別化。"
   },
+  "backend/catalog/management/commands/bootstrap_account.py": {
+    "Any": 2,
+    "JsonObject": 0,
+    "reason": "重建後帳號 bootstrap 只讀環境變數與具體模型；Any 僅用於 BaseCommand 的 args／options 框架簽章，未新增動態型別通道。"
+  },
   "backend/catalog/management/commands/provision_account.py": {
     "Any": 2,
     "JsonObject": 0,
