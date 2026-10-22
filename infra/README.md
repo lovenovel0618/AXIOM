@@ -79,6 +79,22 @@ docker compose exec web python manage.py provision_account dino local
 
 資料庫重建（含 `down --volumes`）後為空，`migrate` 服務會在遷移完成後接著執行 `bootstrap_account`：讀 `AXIOM_BOOTSTRAP_USER`／`AXIOM_BOOTSTRAP_PASSWORD`（選配 `AXIOM_BOOTSTRAP_TENANT`，預設 `local`）建立 User＋租戶＋Account。命令冪等：帳號已存在即不改密碼、不重建，只有 Django user 缺 catalog account 時補建（輸出 `status=CREATED`／`REPAIRED`／`EXISTS`）。未設 `AXIOM_BOOTSTRAP_USER` 或值為空白時輸出 `status=SKIPPED` 且不寫入任何資料，因此 CI 與未配置環境不受影響。密碼不足 12 字元即非零退出（Fail-Closed），migrate 失敗時 web 不會啟動。
 
+```sh
+# 看 bootstrap 結果（status=CREATED／REPAIRED／EXISTS／SKIPPED）
+docker compose logs migrate
+
+# 只重跑一次性工作：prepare_raw_access → migrate → bootstrap_account
+docker compose up migrate
+
+# 變更既有帳號密碼（互動輸入兩次，不寫入 shell history）
+docker compose exec web python manage.py changepassword dino
+
+# 登入被鎖：同 IP＋帳號連續失敗 5 次鎖 5 分鐘；清除計數即可立刻重試
+docker compose exec -T postgres psql -U axiom -d axiom -c 'truncate catalog_loginthrottle'
+```
+
+`AXIOM_BOOTSTRAP_*` 只注入 `migrate` 服務，刻意不給 web／worker／frontend；因此在 web 直接執行 `bootstrap_account` 會回報 SKIPPED，要手動建立其他帳號請用 `provision_account`。`bootstrap_account` 與 `provision_account` 要求至少 12 字元；`changepassword` 走 Django 密碼驗證器，本專案未設 `AUTH_PASSWORD_VALIDATORS`，不檢查長度。
+
 開啟 <http://127.0.0.1:15173/auth/login> 或後端18000的同一路徑。GET表單取得 axiom_csrf，POST帳密成功回status=ok並輪替 axiom_session；cookie名與其他 localhost 專案分開。/auth/logout只可POST＋X-CSRFToken。後續請求需目前session及CSRF header；Idempotency-Key為研究資源POST的必填header。
 
 | 入口 | 目前行為 |

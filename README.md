@@ -62,7 +62,15 @@ docker compose run --rm frontend sh -c 'npm run typecheck && npm test && npm run
 
 ## 本機帳號與上傳
 
-沒有預設帳密或公開註冊。依 [帳號與上傳操作說明](infra/README.md#帳號與上傳操作t05) 預先建立帳號，從 <http://127.0.0.1:15173/auth/login> 登入。前台已有可用 MVP：登入後可建立資料集、以檔案選擇器上傳（前端自行計算 SHA-256）、查看版本列表，並進入任務詳情追蹤事件與檢視 PROJECT 產物；亦可在研究頁建立研究容器、以引導式表單完成語意確認與不可變 ResearchVersion 草稿，並以控制 revision 觸發 PROFILE。候選比較與證據檢視仍屬後續里程碑。同源 /api/v2/datasets 與上傳 API 也可直接測試。上傳僅保存私有原始 bytes，complete 預設回503；依 infra/README.md 明確啟用 ingest profile 及完整限制後，回202並由專用worker產生版本與純結構預覽。已支援人工語意確認與不可變 ResearchVersion 草稿；已有本機品質與已知公式預檢，另可明確啟用 PROFILE 任務／研究帳本，依 [操作說明](infra/README.md#研究帳本與profile任務t07第五切片) 取得品質及 fit-only 報告。正式封存／曝光尚未完成，研究保持 DRAFT。
+沒有預設帳密或公開註冊。依 [帳號與上傳操作說明](infra/README.md#帳號與上傳操作t05) 預先建立帳號，從 <http://127.0.0.1:15173/auth/login> 登入。在 `.env` 設好 `AXIOM_BOOTSTRAP_USER`／`AXIOM_BOOTSTRAP_PASSWORD` 後，資料庫重建（含 `down --volumes`）不需再手動建帳號：
+
+```sh
+docker compose up --build -d --wait --wait-timeout 120   # migrate 依 .env 自動建立本機帳號
+docker compose logs migrate                              # status=CREATED／REPAIRED／EXISTS／SKIPPED
+docker compose exec web python manage.py changepassword dino
+```
+
+前台已有可用 MVP：登入後可建立資料集、以檔案選擇器上傳（前端自行計算 SHA-256）、查看版本列表，並進入任務詳情追蹤事件與檢視 PROJECT 產物；亦可在研究頁建立研究容器、以引導式表單完成語意確認與不可變 ResearchVersion 草稿，並以控制 revision 觸發 PROFILE。候選比較與證據檢視仍屬後續里程碑。同源 /api/v2/datasets 與上傳 API 也可直接測試。上傳僅保存私有原始 bytes，complete 預設回503；依 infra/README.md 明確啟用 ingest profile 及完整限制後，回202並由專用worker產生版本與純結構預覽。已支援人工語意確認與不可變 ResearchVersion 草稿；已有本機品質與已知公式預檢，另可明確啟用 PROFILE 任務／研究帳本，依 [操作說明](infra/README.md#研究帳本與profile任務t07第五切片) 取得品質及 fit-only 報告。正式封存／曝光尚未完成，研究保持 DRAFT。
 
 ## 未決事項
 
