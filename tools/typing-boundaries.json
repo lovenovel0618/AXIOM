@@ -119,6 +119,11 @@
     "JsonObject": 1,
     "reason": "槽位文件仍以 schema 契約流動；額度只可收斂，不代表核心已具體型別化。"
   },
+  "backend/catalog/final_manifest.py": {
+    "Any": 0,
+    "JsonObject": 10,
+    "reason": "FINAL_TEST 的 TaskInput／ExecutionManifest／BudgetAccount 快照仍以 schema 文件組裝；額度只可收斂，不代表核心已具體型別化。"
+  },
   "backend/catalog/tests/test_candidates.py": {
     "Any": 0,
     "JsonObject": 10,
@@ -171,8 +176,8 @@
   },
   "backend/runtime/records.py": {
     "Any": 0,
-    "JsonObject": 17,
-    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+    "JsonObject": 20,
+    "reason": "既有 JSON／schema／框架相容邊界；新增 FINAL_TEST 的 `final_bindings` 交叉身分核對後同步擴列，之後只可收斂。"
   },
   "backend/runtime/contracts.py": {
     "Any": 1,

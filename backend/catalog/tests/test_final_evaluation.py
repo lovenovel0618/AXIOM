@@ -16,6 +16,7 @@ from django.test import TransactionTestCase, override_settings
 from catalog.artifacts import register as register_artifact
 from catalog.candidates import persist
 from catalog.final_evaluation import acquire, settle
+from catalog.final_manifest import documents, limit_for
 from catalog.freezing import frozen_candidate, frozen_submission
 from catalog.ingest import complete_upload, ingest_tick
 from catalog.models import Account, Artifact, Candidate, Dataset, DatasetVersion, FitRun, FrozenCandidate, FrozenSubmission, Provenance, RepresentationSpec, ResearchBudget, ResearchVersion, SealRegistration, Tenant, Upload
@@ -25,10 +26,14 @@ from catalog.tasks import relay_ingest, relay_profile
 from catalog.tests.test_research import CONTENT, LIMITS, draft_data
 from catalog.validation import ApiError
 from mathematics.search import Domain, Request, Variable, search
-from runtime.contracts import validate
-from runtime.models import FinalEvaluationSlot, InputSnapshot, RuntimeAttempt, RuntimeRun
+from runtime.contracts import identity_hash, validate
+from runtime.control import enqueue
+from runtime.models import FinalEvaluationSlot, RunEvent, RuntimeAttempt, RuntimeRun
+from runtime.records import ControlError, snapshot_for
 
 DIMENSIONLESS = (0,) * 7
+FINAL_BUDGET = {"cpu_seconds": 120, "gpu_seconds": 0, "wall_seconds": 600, "tokens": 0,
+    "candidate_limit": 10, "memory_bytes": 4 * 1024**3}
 
 
 def request(fit: list[tuple[float, float]], development: list[tuple[float, float]]) -> Request:
@@ -80,7 +85,9 @@ class FinalEvaluationTests(TransactionTestCase):
         with transaction.atomic():
             actor = actor_for(self.actor.user_id)
             research = research_for(actor, UUID(create_research(actor, {"name": "final-evaluation"})["id"]))
-            document = create_version(actor, research, draft_data(version_row.id))
+            data = draft_data(version_row.id)
+            data["budget"] = dict(FINAL_BUDGET)
+            document = create_version(actor, research, data)
         return ResearchVersion.objects.get(pk=UUID(document["id"]))
 
     def store(self) -> list[Candidate]:
@@ -142,7 +149,70 @@ class FinalEvaluationTests(TransactionTestCase):
         self.assertEqual(run.document["research_budget_account_id"], str(self.budget.id))
         self.assertEqual(run.document["equation_version_id"], str(self.frozen.equation_version_id))
         self.assertFalse(RuntimeAttempt.objects.filter(run=run).exists())
-        self.assertFalse(InputSnapshot.objects.filter(run=run).exists())
+        snapshot = snapshot_for(run)
+        self.assertEqual(snapshot.content_hash, identity_hash([snapshot.task_input, snapshot.execution, snapshot.budget]))
+        self.assertEqual((snapshot.task_input["type"], snapshot.task_input["payload"]["split_role"]), ("VALIDATE", "FINAL_TEST"))
+        self.assertEqual(snapshot.task_input["payload"]["frozen_candidate_id"], str(self.frozen.id))
+        self.assertEqual(snapshot.task_input["payload"]["submission_id"], str(self.submission.id))
+        self.assertEqual(snapshot.execution["semantic_profile_hash"], identity_hash(self.version.document["semantic_profile"]))
+        self.assertEqual(snapshot.execution["retry_policy"]["max_attempts"], 1)
+        events = RunEvent.objects.filter(run=run).order_by("sequence")
+        self.assertEqual([event.document["event_type"] for event in events], ["RunQueued"])
+        self.assertEqual(events[0].document["producer_version"], "t07-validate-v1")
+
+    def test_final_bindings_refuse_non_final_test_manifests(self) -> None:
+        """最終評估 root 只接受凍結後的 FINAL_TEST 身分，冒充探索或重試必須在入庫前被拒。"""
+        account = ResearchBudget.objects.get(pk=self.budget.id)
+        for case in ("stage", "role", "split", "retry"):
+            with self.subTest(case=case):
+                record, task, execution, budget = documents(self.actor, self.version, account, limit_for(account), self.submission, self.frozen)
+                if case == "stage":
+                    record["dispatch_stage"] = "SEARCH_OPEN"
+                elif case == "role":
+                    task["payload"]["split_role"] = "FIT"
+                elif case == "split":
+                    task["observation_split_id"] = str(uuid4())
+                else:
+                    execution["retry_policy"]["max_attempts"] = 2
+                with self.assertRaisesRegex(ValueError, "FINAL TEST binding mismatch"):
+                    enqueue(self.actor.tenant_id, record, task, execution, budget, control_only=False)
+                self.assertFalse(RuntimeRun.objects.filter(document__type="VALIDATE").exists())
+
+    def test_final_root_must_stay_a_root(self) -> None:
+        """最終評估仍走最小權威入口：非 root 的 VALIDATE 一律 FEATURE_DISABLED，不建立任何 root。"""
+        account = ResearchBudget.objects.get(pk=self.budget.id)
+        record, task, execution, budget = documents(self.actor, self.version, account, limit_for(account), self.submission, self.frozen)
+        record["is_root"] = False
+        with self.assertRaisesRegex(ControlError, "FEATURE_DISABLED"):
+            enqueue(self.actor.tenant_id, record, task, execution, budget, control_only=False)
+        self.assertFalse(RuntimeRun.objects.filter(document__type="VALIDATE").exists())
+
+    def test_manifest_rejects_a_candidate_outside_the_frozen_submission(self) -> None:
+        """候選不在凍結提交的固定排序內時，manifest 產生階段即 Fail-Closed，不建立任何 root。"""
+        account = ResearchBudget.objects.get(pk=self.budget.id)
+        with self.assertRaises(ApiError) as denied:
+            documents(self.actor, self.version, account, limit_for(account), self.submission, self.outsider)
+        self.assertEqual(denied.exception.code, "FIT_REFERENCE_MISMATCH")
+        self.assertFalse(RuntimeRun.objects.filter(document__type="VALIDATE").exists())
+
+    def test_final_limit_requests_the_full_reservation(self) -> None:
+        """最終評估的固定預留需求來自 manifest 常數，不被較小的假預留超賣研究容量。"""
+        limit = limit_for(ResearchBudget.objects.get(pk=self.budget.id))
+        self.assertEqual(limit["cpu_seconds"], 60)
+        self.assertEqual(limit["wall_seconds"], 300)
+        self.assertEqual(limit["memory_bytes"], 2 * 1024**3)
+
+    def test_final_limit_refuses_undersized_or_spent_research_budgets(self) -> None:
+        """研究設定限額或剩餘不足以涵蓋固定需求時，各自回穩定代碼而不是縮小預留。"""
+        account = ResearchBudget.objects.get(pk=self.budget.id)
+        account.document = dict(account.document) | {"limit": dict(FINAL_BUDGET) | {"cpu_seconds": 1}}
+        with self.assertRaises(ApiError) as configured:
+            limit_for(account)
+        self.assertEqual(configured.exception.code, "RUN_BUDGET_EXHAUSTED")
+        account.document = dict(account.document) | {"limit": dict(FINAL_BUDGET), "usage": dict(account.document["usage"]) | {"cpu_seconds": 10**6}}
+        with self.assertRaises(ApiError) as spent:
+            limit_for(account)
+        self.assertEqual(spent.exception.code, "RESEARCH_BUDGET_EXHAUSTED")
 
     def test_dispatch_root_is_invisible_to_the_ingest_and_profile_relays(self) -> None:
         slot, _created = acquire(self.actor, self.submission, self.frozen)

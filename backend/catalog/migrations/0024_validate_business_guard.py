@@ -1,8 +1,9 @@
-"""讓 business guard 對最小權威 VALIDATE root 早退。
+"""讓 business guard 對 VALIDATE root 早退。
 
-`VALIDATE` 由 `catalog.final_evaluation` 在派送最終評估時建立，與 SEARCH／FIT 一樣只承載身分，
-沒有 ingest 綁定、快照或帳本列；它仍受 runtime run guard 與複合外鍵保護，因此 business guard
-必須比照 SEARCH／FIT 早退，否則合法的最終評估 root 會在提交時被誤判為缺少 ingest 綁定。"""
+`VALIDATE` 由 `catalog.final_evaluation` 在派送最終評估時建立，與 SEARCH／FIT 一樣沒有 ingest
+綁定與帳本列（固定輸入由 runtime 層的 InputSnapshot 承載）；它仍受 runtime run guard 與複合外鍵
+保護，因此 business guard 必須比照 SEARCH／FIT 早退，否則合法的最終評估 root 會在提交時被誤判
+為缺少 ingest 綁定。"""
 from importlib import import_module
 from django.db import migrations
 

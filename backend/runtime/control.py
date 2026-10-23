@@ -28,8 +28,12 @@ class Lease:
 
 
 def _initial(record: JsonObject, budget: JsonObject) -> None:
-    """新 root 必須零用量、無預留且處於 pristine QUEUED；不能挾帶偽造終態入庫。"""
-    required: JsonObject = {"status": QUEUED, "revision": 0, "active_attempt_id": None, "lease_generation": 0, "cancellation_epoch": 0, "root_epoch_at_dispatch": 0, "cancel_requested_at": None, "dispatch_stage": "SEARCH_OPEN", "phase": None, "stop_reason": None, "evidence_bundle_ids": [], "diagnostic_artifact_ids": [], "research_trace_artifact_ids": [], "skipped_phases": [], "outcome_status": None, "current_event_cursor": f"RUN:{record['id']}:0", "budget_reservations": []}
+    """新 root 必須零用量、無預留且處於 pristine QUEUED；不能挾帶偽造終態入庫。
+
+    起始 `dispatch_stage` 由型別裁決：`VALIDATE` 只以 `FINAL_ONLY` 派送，其餘 root 從
+    `SEARCH_OPEN` 開始探索，呼叫端不得自選。"""
+    stage = "FINAL_ONLY" if record["type"] == "VALIDATE" else "SEARCH_OPEN"
+    required: JsonObject = {"status": QUEUED, "revision": 0, "active_attempt_id": None, "lease_generation": 0, "cancellation_epoch": 0, "root_epoch_at_dispatch": 0, "cancel_requested_at": None, "dispatch_stage": stage, "phase": None, "stop_reason": None, "evidence_bundle_ids": [], "diagnostic_artifact_ids": [], "research_trace_artifact_ids": [], "skipped_phases": [], "outcome_status": None, "current_event_cursor": f"RUN:{record['id']}:0", "budget_reservations": []}
     if any(record[key] != value for key, value in required.items()):
         raise ValueError("New root must have pristine queued state")
     if budget["status"] != "OPEN" or budget["research_budget_account_id"] != record["research_budget_account_id"] or budget["reservations"]:

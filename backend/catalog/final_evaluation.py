@@ -5,10 +5,13 @@ Evaluator execution, sealed-test reservation and exposure ledger stay out of thi
 from datetime import datetime
 from uuid import UUID, uuid4
 from django.db import IntegrityError, transaction
-from catalog.models import Account, FrozenCandidate, FrozenSubmission, ResearchBudget, ResearchVersion
-from catalog.search_run import create as create_root_run
+from catalog.final_manifest import documents, limit_for
+from catalog.models import Account, FrozenCandidate, FrozenSubmission, Provenance, ResearchBudget, ResearchVersion
+from catalog.services import provenance
 from catalog.validation import ApiError
+from runtime.budget_types import BudgetLimit
 from runtime.contracts import JsonObject, validate
+from runtime.control import enqueue
 from runtime.models import FinalEvaluationSlot, RuntimeRun
 from runtime.records import db_now
 
@@ -57,10 +60,17 @@ def slot_document(identity: UUID, tenant_id: UUID, submission_id: UUID, candidat
         "metric_version": metric_version, "run_id": str(run_id), "validation_run_id": None, "status": "PENDING"}
 
 
-def _validate_root(actor: Account, version: ResearchVersion, candidate: FrozenCandidate) -> RuntimeRun:
-    """建立 FINAL_ONLY 的唯一 VALIDATE root；只承載身分，不派送、不建快照也不建帳本列。"""
-    budget = ResearchBudget.objects.get(research_version_id=version.id)
-    return create_root_run(actor, version, budget, "VALIDATE", candidate.equation_version, dispatch_stage="FINAL_ONLY")
+def _validate_root(actor: Account, version: ResearchVersion, account: ResearchBudget, limit: BudgetLimit,
+                   submission: FrozenSubmission, candidate: FrozenCandidate) -> RuntimeRun:
+    """建立 FINAL_ONLY 的唯一 VALIDATE root，並同交易固定輸入快照與 RunQueued outbox。
+
+    最小權威 root 只承載身分；最終評估不同：派送前就必須固定 TaskInput／ExecutionManifest／
+    BudgetAccount 與 Run 的來源鏈，因此改由 manifest 產生 RunRecord，再交 `enqueue` 一併落庫，
+    使 root、輸入快照與 outbox 共用同一交易，且輸入雜湊不符時整批拒絕。"""
+    record, task, execution, budget = documents(actor, version, account, limit, submission, candidate)
+    source = Provenance.objects.get(pk=version.provenance_id, tenant_id=actor.tenant_id)
+    provenance(actor, "Run", UUID(str(record["id"])), UUID(str(record["provenance_id"])), source)
+    return RuntimeRun.objects.get(pk=enqueue(actor.tenant_id, record, task, execution, budget, control_only=False))
 
 
 def acquire(actor: Account, submission: FrozenSubmission, candidate: FrozenCandidate) -> tuple[FinalEvaluationSlot, bool]:
@@ -68,8 +78,8 @@ def acquire(actor: Account, submission: FrozenSubmission, candidate: FrozenCandi
 
     既有槽位一律讀回原 `run_id`／結果，不另建評估 run；`run_id` 指向本槽位唯一的最終評估 root，
     只在新建時產生。只有需要新建槽位時才檢查提交是否仍在可派送狀態，且槽位與該 root 在同一
-    savepoint 內一起成立，輸掉競態的一方整批回滾後讀回既有槽位，不會留下孤兒 run。輸入 manifest
-    與 outbox 仍待後續切片。"""
+    savepoint 內一起成立，輸掉競態的一方整批回滾後讀回既有槽位，不會留下孤兒 run。隔離 Evaluator
+    的執行、曝光帳本與結果 outbox 仍待後續切片。"""
     version = _authorized(actor, submission)
     _member(submission, candidate)
     with transaction.atomic():
@@ -79,9 +89,11 @@ def acquire(actor: Account, submission: FrozenSubmission, candidate: FrozenCandi
             return existing, False
         if submission.status not in DISPATCHABLE:
             raise ApiError("DISPATCH_STAGE_VIOLATION", 409)
+        account = ResearchBudget.objects.get(research_version_id=version.id)
+        limit = limit_for(account)
         try:
             with transaction.atomic():
-                run = _validate_root(actor, version, candidate)
+                run = _validate_root(actor, version, account, limit, submission, candidate)
                 document = slot_document(uuid4(), actor.tenant_id, submission.id, candidate.id, run.id, submission.metric_version, now)
                 validate(document, SCHEMA, "FinalEvaluationSlot")
                 slot = FinalEvaluationSlot.objects.create(id=UUID(document["id"]), tenant_id=actor.tenant_id,

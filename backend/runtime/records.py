@@ -49,11 +49,14 @@ def save_attempt(attempt: RuntimeAttempt) -> None:
 
 
 def producer_for(run: RuntimeRun) -> str:
-    """按實際業務選事件 producer，不把 PROFILE 標成 INGEST 或控制探針。"""
+    """按實際業務選事件 producer，不把 PROFILE 或最終評估標成 INGEST 或控制探針。"""
     if run.control_only:
         return "t04-control-v1"
-    if run.document["type"]=="PROFILE":
+    kind = run.document["type"]
+    if kind == "PROFILE":
         return "t07-profile-v1"
+    if kind == "VALIDATE":
+        return "t07-validate-v1"
     return "t07-ingest-v1"
 
 
@@ -96,11 +99,23 @@ def research_bindings(record: JsonObject, task: JsonObject, execution: JsonObjec
             raise ValueError("PROFILE semantic/split binding mismatch")
 
 
+def final_bindings(record: JsonObject, task: JsonObject, execution: JsonObject) -> None:
+    """FINAL_ONLY 的 VALIDATE 只接受凍結後的 FINAL_TEST 身分；探索階段不得冒充最終評估。
+
+    最終評估的 `dispatch_stage` 由根紀錄權威裁決，`split_role`、切分與單次 attempt 也必須一致，
+    否則以結構不符拒絕，而不是靠呼叫端自律。"""
+    payload = task["payload"]
+    if (record["dispatch_stage"] != "FINAL_ONLY" or payload["split_role"] != "FINAL_TEST"
+            or task["observation_split_id"] != payload["observation_split_id"]
+            or execution["retry_policy"]["max_attempts"] != 1):
+        raise ValueError("FINAL TEST binding mismatch")
+
+
 def validate_bindings(record: JsonObject, task: JsonObject, execution: JsonObject, budget: JsonObject) -> None:
     """驗 root、task、manifest、budget 的交叉身分與雜湊，僅放行目前已實作的根任務。"""
     for document, filename, definition in [(record, RUNTIME_SCHEMA, "RunRecord"), (task, "task-input-v2.schema.json", None), (execution, RUNTIME_SCHEMA, "ExecutionManifest"), (budget, RUNTIME_SCHEMA, "BudgetAccount")]:
         validate(document, filename, definition)
-    if record["type"] not in {"INGEST", "PROFILE"} or not record["is_root"] or record["parent_run_id"] is not None:
+    if record["type"] not in {"INGEST", "PROFILE", "VALIDATE"} or not record["is_root"] or record["parent_run_id"] is not None:
         raise ControlError("FEATURE_DISABLED")
     expected: JsonObject = {
         "root_run_id": record["id"], "child_run_ids": [],
@@ -108,6 +123,8 @@ def validate_bindings(record: JsonObject, task: JsonObject, execution: JsonObjec
     if any(record[key] != value for key, value in expected.items()):
         raise ValueError("Invalid root bindings")
     research_bindings(record,task,execution,budget)
+    if record["type"] == "VALIDATE":
+        final_bindings(record,task,execution)
     input_digest = identity_hash(task) if all(plugin["plugin_id"] == "t04-control-only" for plugin in execution["plugins"]) else task_input_hash(task)
     pairs = [(task["run_id"], record["id"]), (task["type"], record["type"]), (execution["id"], record["execution_manifest_id"]), (task["execution_manifest_id"], execution["id"]), (execution["tenant_id"], record["tenant_id"]), (execution["environment_digest"], record["environment_digest"]), (execution["seed"], record["seed"]), (execution["input_hash"], input_digest), (budget["id"], record["budget_account_id"]), (budget["tenant_id"], record["tenant_id"]), (budget["root_run_id"], record["id"])]
     if any(left != right for left, right in pairs):

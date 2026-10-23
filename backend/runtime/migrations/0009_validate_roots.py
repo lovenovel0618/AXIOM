@@ -1,6 +1,7 @@
-"""在既有 Run 原生 guard 中允許最小權威的 VALIDATE root。
+"""在既有 Run 原生 guard 中允許 FINAL_ONLY 的 VALIDATE root。
 
-VALIDATE 只承載身分，不派送也不建快照，因此必須是 control_only=False；已有 VALIDATE 資料時
+VALIDATE root 由 `catalog.final_manifest` 產生固定輸入後，經 `runtime.control.enqueue` 與
+InputSnapshot、RunQueued outbox 同交易落庫，因此必須是 control_only=False；已有 VALIDATE 資料時
 不允許切回未含 VALIDATE 的舊 guard。"""
 from importlib import import_module
 from django.db import migrations
