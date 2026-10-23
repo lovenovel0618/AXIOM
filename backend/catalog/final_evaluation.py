@@ -5,10 +5,11 @@ Evaluator execution, sealed-test reservation and exposure ledger stay out of thi
 from datetime import datetime
 from uuid import UUID, uuid4
 from django.db import IntegrityError, transaction
-from catalog.models import Account, FrozenCandidate, FrozenSubmission
+from catalog.models import Account, FrozenCandidate, FrozenSubmission, ResearchBudget, ResearchVersion
+from catalog.search_run import create as create_root_run
 from catalog.validation import ApiError
 from runtime.contracts import JsonObject, validate
-from runtime.models import FinalEvaluationSlot
+from runtime.models import FinalEvaluationSlot, RuntimeRun
 from runtime.records import db_now
 
 SCHEMA = "runtime-v2.schema.json"
@@ -17,13 +18,14 @@ DISPATCHABLE = ("FROZEN", "EVALUATING")
 RESULTS = ("COMPLETED", "FAILED")
 
 
-def _authorized(actor: Account, submission: FrozenSubmission) -> None:
+def _authorized(actor: Account, submission: FrozenSubmission) -> ResearchVersion:
     """槽位只認提交所屬租戶與研究 owner；知道 UUID 不足以放行，也不回傳存在性資訊。"""
     if submission.tenant_id != actor.tenant_id:
         raise ApiError("NOT_FOUND", 404)
     from catalog.research import version_for
-    version_for(actor, submission.research_version_id)
+    version = version_for(actor, submission.research_version_id)
     validate(submission.document, SUBMISSION_SCHEMA, "FrozenSubmission")
+    return version
 
 
 def _member(submission: FrozenSubmission, candidate: FrozenCandidate) -> None:
@@ -55,14 +57,20 @@ def slot_document(identity: UUID, tenant_id: UUID, submission_id: UUID, candidat
         "metric_version": metric_version, "run_id": str(run_id), "validation_run_id": None, "status": "PENDING"}
 
 
-def acquire(actor: Account, submission: FrozenSubmission, candidate: FrozenCandidate,
-            run_id: UUID) -> tuple[FinalEvaluationSlot, bool]:
-    """在 root lock 內以業務鍵取得槽位，回傳是否由本次建立。
+def _validate_root(actor: Account, version: ResearchVersion, candidate: FrozenCandidate) -> RuntimeRun:
+    """建立 FINAL_ONLY 的唯一 VALIDATE root；只承載身分，不派送、不建快照也不建帳本列。"""
+    budget = ResearchBudget.objects.get(research_version_id=version.id)
+    return create_root_run(actor, version, budget, "VALIDATE", candidate.equation_version, dispatch_stage="FINAL_ONLY")
 
-    既有槽位一律讀回原 `run_id`／結果，不另建評估 run；`run_id` 只是本次候選身分，衝突時以既有槽位為準。
-    只有需要新建槽位時才檢查提交是否仍在可派送狀態；呼叫端僅在 created 為真時建立 VALIDATE
-    run／input manifest／outbox。"""
-    _authorized(actor, submission)
+
+def acquire(actor: Account, submission: FrozenSubmission, candidate: FrozenCandidate) -> tuple[FinalEvaluationSlot, bool]:
+    """在業務鍵上取得槽位，回傳是否由本次建立。
+
+    既有槽位一律讀回原 `run_id`／結果，不另建評估 run；`run_id` 指向本槽位唯一的最終評估 root，
+    只在新建時產生。只有需要新建槽位時才檢查提交是否仍在可派送狀態，且槽位與該 root 在同一
+    savepoint 內一起成立，輸掉競態的一方整批回滾後讀回既有槽位，不會留下孤兒 run。輸入 manifest
+    與 outbox 仍待後續切片。"""
+    version = _authorized(actor, submission)
     _member(submission, candidate)
     with transaction.atomic():
         now = db_now()
@@ -71,13 +79,14 @@ def acquire(actor: Account, submission: FrozenSubmission, candidate: FrozenCandi
             return existing, False
         if submission.status not in DISPATCHABLE:
             raise ApiError("DISPATCH_STAGE_VIOLATION", 409)
-        document = slot_document(uuid4(), actor.tenant_id, submission.id, candidate.id, run_id, submission.metric_version, now)
-        validate(document, SCHEMA, "FinalEvaluationSlot")
         try:
             with transaction.atomic():
+                run = _validate_root(actor, version, candidate)
+                document = slot_document(uuid4(), actor.tenant_id, submission.id, candidate.id, run.id, submission.metric_version, now)
+                validate(document, SCHEMA, "FinalEvaluationSlot")
                 slot = FinalEvaluationSlot.objects.create(id=UUID(document["id"]), tenant_id=actor.tenant_id,
                     submission_id=submission.id, frozen_candidate_id=candidate.id, metric_version=submission.metric_version,
-                    run_id=run_id, validation_run_id=None, status="PENDING", document=document, created_at=now)
+                    run_id=run.id, validation_run_id=None, status="PENDING", document=document, created_at=now)
         except IntegrityError:
             raced = _lookup(actor.tenant_id, submission.id, candidate.id, submission.metric_version)
             if raced is None:
