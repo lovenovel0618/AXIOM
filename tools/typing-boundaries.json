@@ -116,8 +116,8 @@
   },
   "backend/catalog/final_evaluation.py": {
     "Any": 0,
-    "JsonObject": 1,
-    "reason": "槽位文件仍以 schema 契約流動；額度只可收斂，不代表核心已具體型別化。"
+    "JsonObject": 7,
+    "reason": "槽位與最終結果文件仍以 schema 契約流動；新增結果逐欄核對與落庫後同步擴列，之後只可收斂。"
   },
   "backend/catalog/final_manifest.py": {
     "Any": 0,
@@ -128,6 +128,11 @@
     "Any": 0,
     "JsonObject": 10,
     "reason": "測試以 schema 文件組出凍結與凍結提交情境；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/catalog/tests/test_final_evaluation.py": {
+    "Any": 0,
+    "JsonObject": 3,
+    "reason": "測試以 schema 文件組出最終結果與逐欄不符的反例；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/research_validation.py": {
     "Any": 0,
@@ -151,13 +156,18 @@
   },
   "backend/runtime/models.py": {
     "Any": 0,
-    "JsonObject": 14,
-    "reason": "既有 JSON／schema／框架相容邊界；新增最終評估槽位的 document 欄位後同步擴列，之後只可收斂。"
+    "JsonObject": 16,
+    "reason": "既有 JSON／schema／框架相容邊界；新增最終評估槽位與評估結果的 document 欄位後同步擴列，之後只可收斂。"
   },
   "backend/runtime/tests/test_final_slots.py": {
     "Any": 0,
     "JsonObject": 2,
     "reason": "槽位測試以 schema 文件組出契約與反例；額度只可收斂，不代表核心已具體型別化。"
+  },
+  "backend/runtime/tests/test_validation_runs.py": {
+    "Any": 0,
+    "JsonObject": 5,
+    "reason": "結果列測試以 schema 文件組出契約、唯一鍵與分母反例；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/runtime/completion.py": {
     "Any": 0,

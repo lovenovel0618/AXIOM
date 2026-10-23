@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-23",
+  "scope": "T07_FINAL_EVALUATION_SAME_AUTHORITATIVE_COMMIT_SETTLEMENT",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "f28670beb28048c48dce98009b294dc83e9ae9de",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "PARTIAL",
+  "product_gate_status": "NOT_RUN",
+  "delivery_boundary": {
+    "validation_run_model": "IMPLEMENTED（runtime 0010 建 ValidationRun 表：id／tenant_id／run_id／observation_split_id／split_role／metric_version／submission_id／frozen_candidate_id／document／created_at）",
+    "validation_run_constraints": "IMPLEMENTED（開發唯一鍵 unique(tenant_id, run_id, observation_split_id, split_role, metric_version)、最終唯一鍵 partial unique(tenant_id, submission_id, frozen_candidate_id, metric_version)、split_role 域、metric_version=2.0、結果引用互斥）",
+    "validation_run_guards": "IMPLEMENTED（runtime 0011：同租戶複合外鍵 DEFERRABLE INITIALLY DEFERRED、document 與資料列逐欄同步、valid_count+failed_count=selected_count 分母一致、UPDATE／DELETE 一律拒絕）",
+    "evidence_bundle_for_validation": "IMPLEMENTED（catalog/evidence.py 新增 register_validation()：以既有 bundle_document 產生 validation_ids 非空、proof_artifact_ids 為空的證據包，不新增契約）",
+    "result_identity_verification": "IMPLEMENTED（catalog/final_evaluation.py 的 _verified()：先驗 ValidationRun 契約，再比對 evaluation_policy_hash 與凍結提交及 TaskInput.payload 三處一致，最後逐欄核對 tenant_id／run_id／split_role／metric_version／submission_id／frozen_candidate_id／fit_run_id／observation_split_id／verification_plan_artifact_id／verification_plan_hash；政策不符回 EVALUATION_POLICY_MISMATCH 409，其餘回 INVALID_SCHEMA 422）",
+    "result_record": "IMPLEMENTED（_record()：只以核對過的 document 欄位落庫不可變 ValidationRun 列，唯一鍵不信任呼叫端）",
+    "same_authoritative_commit": "IMPLEMENTED（settle() 依 lock_run → 結果列 → register_validation → emit(ValidationFinished) → save_run → 槽位引用更新 → 提交聚合狀態 _advance，全數同一交易）",
+    "result_outbox": "IMPLEMENTED（ValidationFinished payload 帶 validation_run_id／evidence_bundle_id／outcome_status，事件型別沿用 event-v2.schema.json RUN 流既有定義）",
+    "health_migrations": "IMPLEMENTED（foundation/health.py 必要 migration 集合加入 runtime 0010／0011）",
+    "isolated_evaluator_final_test": "NOT_IMPLEMENTED（隔離 Evaluator 的 final_test 執行、SealedTest 原子預留與曝光帳本 consume 未寫）",
+    "denominator_and_rejection_reasons": "NOT_IMPLEMENTED（分母僅在結果落庫端強制一致，產出端與拒答理由未寫）",
+    "slot_endpoint": "NOT_IMPLEMENTED（槽位無對外端點，工作台 #6 未接最終評估狀態）",
+    "measurement_markers": "usage_scope=LOCAL_FINAL_EVAL_SETTLEMENT_ONLY、product_status=NOT_RUN、precision_bits=53"
+  },
+  "tests": {
+    "postgresql_backend": 365,
+    "previous_backend": 352,
+    "new_slice_tests": 13,
+    "new_tests_breakdown": {
+      "backend/runtime/tests/test_validation_runs.py": 10,
+      "backend/catalog/tests/test_final_evaluation.py": 3
+    },
+    "focused_regression": "runtime.tests.test_validation_runs runtime.tests.test_final_slots catalog.tests.test_final_evaluation 44／44 OK",
+    "unittest_command": "docker compose -p axiom-dev run --rm -v \"$PWD/backend\":/app -v \"$PWD/docs/企劃案/contracts\":/app/contracts web python manage.py test foundation.tests runtime.tests catalog.tests mathematics.tests mathematics.test_linalg mathematics.test_search ingestion.tests",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "NO_SOURCE_CHANGE_THIS_SLICE",
+      "typecheck": "沿用已通過的 vue-tsc --noEmit 0 error",
+      "vitest": "沿用已通過的 9 檔 82／82"
+    }
+  },
+  "strict_pyright": {
+    "version": "1.1.414",
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0,
+    "informations": 0
+  },
+  "typing_policy": "PASS（backend/runtime/models.py JsonObject 14→16；backend/catalog/final_evaluation.py 1→7；新增 backend/runtime/tests/test_validation_runs.py 5 與 backend/catalog/tests/test_final_evaluation.py 3）",
+  "engineering_tools": {
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS",
+    "public_oracle": "PASS",
+    "docs_check": "exit 0（markdown 57、chapters 54、links 379、acceptance_cases 326、schemas 6、contract_examples 110、api_operations 28、contract_scenarios 272、review_findings 36、attachment_requirements 32、error_codes 54、capabilities 6、policies 1、public_fixture_oracles 4、manifest_files 86、product_test_status NOT_RUN）"
+  },
+  "integration": {
+    "result_contract_round_trip": "PASS（ValidationRun 文件通過 schema 並原樣往返；文件與資料列身分不同步被 guard 拒絕）",
+    "result_unique_keys": "PASS（同 run／split 的第二筆開發結果被拒；同 submission／candidate 的第二筆最終結果被拒）",
+    "result_denominator": "PASS（valid_count+failed_count≠selected_count 被拒）",
+    "result_domains": "PASS（split_role 超出三者被拒、metric_version≠2.0 被拒、FINAL_TEST 缺提交／候選被拒、非 final 帶 final 引用被拒）",
+    "result_foreign_key": "PASS（指涉不存在的 run 於交易結束時被延遲複合外鍵拒絕）",
+    "result_immutability": "PASS（UPDATE 與 DELETE 一律被拒，列數不變）",
+    "settlement_single_commit": "PASS（COMPLETED 結算後恰有一列 ValidationRun、一個只引用它的 EvidenceBundle（proof_artifact_ids 為空）與序列 RunQueued→ValidationFinished，producer_version=t07-validate-v1，payload 三欄與結果等值；FAILED 結算不留結果列、不留證據包、事件僅 RunQueued）",
+    "settlement_refusals": "PASS（逐欄竄改 split_role／frozen_candidate_id／submission_id／run_id／observation_split_id／fit_run_id／verification_plan_hash／metric_version 皆回 INVALID_SCHEMA 且不落庫、槽位仍 PENDING；政策雜湊不符回 EVALUATION_POLICY_MISMATCH）",
+    "result_reference_shape": "PASS（COMPLETED 缺結果、FAILED 帶結果、狀態超出兩者皆回 INVALID_SCHEMA）",
+    "makemigrations_check": "No changes detected",
+    "product_gate_status": "NOT_RUN",
+    "g2_status": "BLOCKED（D-03 未關）"
+  },
+  "live_services": {
+    "project": "axiom-dev",
+    "retained_running": true,
+    "services": [
+      { "name": "frontend", "state": "running", "health": "healthy", "ports": "127.0.0.1:15173->5173/tcp" },
+      { "name": "ingest", "state": "running", "health": "", "ports": "" },
+      { "name": "journal", "state": "running", "health": "healthy", "ports": "" },
+      { "name": "postgres", "state": "running", "health": "healthy", "ports": "5432/tcp" },
+      { "name": "profile", "state": "running", "health": "", "ports": "" },
+      { "name": "redis", "state": "running", "health": "healthy", "ports": "6379/tcp" },
+      { "name": "relay", "state": "running", "health": "", "ports": "" },
+      { "name": "web", "state": "running", "health": "healthy", "ports": "127.0.0.1:18000->8000/tcp" },
+      { "name": "worker", "state": "running", "health": "", "ports": "" }
+    ]
+  },
+  "changed_sources": {
+    "backend/runtime/models.py": "74fbf143ac548b9c0eaf6056008ce79de6c13a133f3f71e3eed0d92682a05be6",
+    "backend/runtime/migrations/0010_validation_run.py": "433564c1bd7255601d9feff83f9db6253768d6f7b1fdc29ef4c883c180532ef4",
+    "backend/runtime/migrations/0011_validation_run_guards.py": "d689e632b4c9fcb85a69c597cc6751b95c45bb59d928337b4a2cc40f6d9c1a5e",
+    "backend/runtime/tests/test_validation_runs.py": "d46d07bf17601572b4ec48b0e7e6aedb6619b6bd3e19a0388eb564dd18eab0dd",
+    "backend/catalog/evidence.py": "fc8d748ab2218853ad06d4af4098c6e57b7613afe6cd1aa2d8e65da361433e26",
+    "backend/catalog/final_evaluation.py": "bba74510db7814fb241d12cd516ec85c79b84636e3a6a1b8342b4ef75c82321b",
+    "backend/catalog/tests/test_final_evaluation.py": "99bf399ef22581124a0457268ef09c76f3c4496a07504e5c669ba46b98ef8d63",
+    "backend/foundation/health.py": "bd89e9b114928d5eaa6278182054dc62fe8c9d6bd9cda25c85f82efa39c65fd1",
+    "tools/typing-boundaries.json": "815dd3bf3f3b2d1e3bd751f66e5033cc8fe823f8674b0ed9aa17147b9d1927db",
+    "docs/技術文件/M0/T07-候選凍結與比較設計.md": "f30158d37c3ff7326490d064a02c21b616b58e3006b30800cc1ce88d4350bec5",
+    "docs/技術文件/M0/T07-候選凍結與比較驗證紀錄.md": "87a95d5804d2da410bddbb9c3d709fac581d43176ee4f2d88a903e5a6700e0cc",
+    "docs/技術文件/缺口清單.md": "1462b1e0023dd4e8fc795827a5631594df26b2da82d592a67ab94ee5da6d6d77",
+    "docs/技術文件/README.md": "652003ac524ec29444ec3c9964de698b211a92d232e45cfdb3fbf455f98fe2cf",
+    "docs/技術文件/M0/t07-final-settlement-backend-tests.txt": "04d6479102a4a4947f01a84e9244581c909c43ac01cb9f31fe3f4ce27a228e83"
+  },
+  "known_limits": [
+    "隔離 Evaluator 的 final_test 執行未寫：SealedTest 原子預留與曝光帳本 consume（token_kind／token 排序鎖）皆待後續",
+    "分母僅在結果落庫端強制一致；產出端與拒答理由（selected_count／valid_count／failed_count 語意）未寫",
+    "Slots 無對外端點，工作台（#6）未接最終評估狀態",
+    "final_test 尚未在任何環境實際執行，root 入庫後即無人撿取；本批不宣稱最終測試已評估",
+    "本機未重跑 SonarQube（無工作區憑證），不以舊的零項目結果頂替",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}

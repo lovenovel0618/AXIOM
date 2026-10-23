@@ -1,10 +1,15 @@
 """最終評估槽位服務層：以業務鍵 insert-on-conflict 固定唯一 VALIDATE run，並單向結算結果。
 
 Service-level FinalEvaluationSlot acquisition and single-forward settlement. The isolated
-Evaluator execution, sealed-test reservation and exposure ledger stay out of this slice."""
+Evaluator execution, sealed-test reservation and exposure ledger stay out of this slice.
+
+成功結算時，不可變的 `ValidationRun`、只引用該結果的證據包與 `ValidationFinished` outbox 與槽位、
+提交聚合狀態同交易提交；結果身分逐欄對齊槽位與凍結輸入，換 UUID 或換政策都無法繞過。"""
 from datetime import datetime
 from uuid import UUID, uuid4
 from django.db import IntegrityError, transaction
+from jsonschema.exceptions import ValidationError
+from catalog.evidence import register_validation
 from catalog.final_manifest import documents, limit_for
 from catalog.models import Account, FrozenCandidate, FrozenSubmission, Provenance, ResearchBudget, ResearchVersion
 from catalog.services import provenance
@@ -12,8 +17,8 @@ from catalog.validation import ApiError
 from runtime.budget_types import BudgetLimit
 from runtime.contracts import JsonObject, validate
 from runtime.control import enqueue
-from runtime.models import FinalEvaluationSlot, RuntimeRun
-from runtime.records import db_now
+from runtime.models import FinalEvaluationSlot, RuntimeRun, ValidationRun
+from runtime.records import db_now, emit, lock_run, save_run, snapshot_for
 
 SCHEMA = "runtime-v2.schema.json"
 SUBMISSION_SCHEMA = "research-v2.schema.json"
@@ -117,31 +122,77 @@ def _aggregate(tenant_id: UUID, submission_id: UUID, metric_version: str) -> str
     return "EVALUATING" if slots.exclude(status="COMPLETED").exists() else "EVALUATED"
 
 
-def settle(actor: Account, slot: FinalEvaluationSlot, status: str, validation_run_id: UUID | None) -> FinalEvaluationSlot:
+def _verified(actor: Account, slot: FinalEvaluationSlot, submission: FrozenSubmission,
+              payload: JsonObject, result: JsonObject) -> JsonObject:
+    """把呼叫端的最終結果逐欄對齊槽位與凍結輸入；身分、政策或驗證計畫不符即拒絕落庫。
+
+    結果列的唯一鍵與不可變欄位只取自本函式核對過的欄位，因此知道 UUID 或換一份政策雜湊都不能
+    讓同一份最終評估重複生效。"""
+    try:
+        validate(result, SCHEMA, "ValidationRun")
+    except ValidationError as error:
+        raise ApiError("INVALID_SCHEMA", 422) from error
+    policy = submission.document["evaluation_policy_hash"]
+    if result["evaluation_policy_hash"] != policy or payload["evaluation_policy_hash"] != policy:
+        raise ApiError("EVALUATION_POLICY_MISMATCH", 409)
+    expected = {"tenant_id": str(actor.tenant_id), "run_id": str(slot.run_id), "split_role": "FINAL_TEST",
+        "metric_version": slot.metric_version, "submission_id": str(slot.submission_id),
+        "frozen_candidate_id": str(slot.frozen_candidate_id), "fit_run_id": str(payload["fit_run_id"]),
+        "observation_split_id": str(payload["observation_split_id"]),
+        "verification_plan_artifact_id": str(payload["verification_plan_artifact_id"]),
+        "verification_plan_hash": payload["verification_plan_hash"]}
+    if any(result[key] != value for key, value in expected.items()):
+        raise ApiError("INVALID_SCHEMA", 422)
+    return result
+
+
+def _record(actor: Account, slot: FinalEvaluationSlot, submission: FrozenSubmission,
+            payload: JsonObject, result: JsonObject) -> ValidationRun:
+    """核對後落庫不可變結果列；欄位只承載固定身分，結果本身只存在 document。"""
+    document = _verified(actor, slot, submission, payload, result)
+    return ValidationRun.objects.create(id=UUID(str(document["id"])), tenant_id=actor.tenant_id,
+        run_id=slot.run_id, observation_split_id=UUID(str(document["observation_split_id"])),
+        split_role=str(document["split_role"]), metric_version=str(document["metric_version"]),
+        submission_id=UUID(str(document["submission_id"])), frozen_candidate_id=UUID(str(document["frozen_candidate_id"])),
+        document=document, created_at=datetime.fromisoformat(str(document["created_at"])))
+
+
+def settle(actor: Account, slot: FinalEvaluationSlot, status: str, result: JsonObject | None) -> FinalEvaluationSlot:
     """PENDING → COMPLETED／FAILED 單向結算；重複結算或結果引用形狀不符一律拒絕。
 
-    `COMPLETED` 必須帶最終 `validation_run_id`，`FAILED` 必為 null 且不以新 run 重啟已終止根；
-    slot、提交聚合狀態與結果引用在同一交易提交，衝突不能以新 UUID 繞過。"""
+    `COMPLETED` 必須帶完整的最終結果文件並與槽位、凍結輸入同交易落庫；`FAILED` 必為 null 且不以新
+    run 重啟已終止根。結果列、證據包、結果 outbox、槽位引用與提交聚合狀態在同一交易提交，衝突不能
+    以新 UUID 繞過。"""
     if slot.tenant_id != actor.tenant_id:
         raise ApiError("NOT_FOUND", 404)
-    if status not in RESULTS or (status == "COMPLETED") != (validation_run_id is not None):
+    if status not in RESULTS or (status == "COMPLETED") != (result is not None):
         raise ApiError("INVALID_SCHEMA", 422)
     with transaction.atomic():
+        run = lock_run(actor.tenant_id, slot.run_id)
         locked = FinalEvaluationSlot.objects.select_for_update().get(pk=slot.id)
         if locked.status != "PENDING":
             raise ApiError("INVALID_TRANSITION", 409)
         submission = FrozenSubmission.objects.filter(pk=locked.submission_id, tenant_id=actor.tenant_id).first()
         if submission is None:
             raise ApiError("NOT_FOUND", 404)
-        _authorized(actor, submission)
+        version = _authorized(actor, submission)
         now = db_now()
+        reference: UUID | None = None
+        if result is not None:
+            payload = snapshot_for(run).task_input["payload"]
+            validation = _record(actor, locked, submission, payload, result)
+            bundle = register_validation(actor, version, run, validation.id, now)
+            emit(run, "ValidationFinished", {"validation_run_id": str(validation.id),
+                "evidence_bundle_id": str(bundle.id), "outcome_status": str(validation.document["outcome_status"])}, now)
+            save_run(run)
+            reference = validation.id
         document = dict(locked.document)
         document["status"] = status
-        document["validation_run_id"] = None if validation_run_id is None else str(validation_run_id)
+        document["validation_run_id"] = None if reference is None else str(reference)
         validate(document, SCHEMA, "FinalEvaluationSlot")
-        FinalEvaluationSlot.objects.filter(pk=locked.id).update(status=status, validation_run_id=validation_run_id, document=document)
+        FinalEvaluationSlot.objects.filter(pk=locked.id).update(status=status, validation_run_id=reference, document=document)
         target = _aggregate(actor.tenant_id, locked.submission_id, locked.metric_version)
         if submission.status != target:
             _advance(submission, target, now)
-        locked.status, locked.validation_run_id, locked.document = status, validation_run_id, document
+        locked.status, locked.validation_run_id, locked.document = status, reference, document
         return locked

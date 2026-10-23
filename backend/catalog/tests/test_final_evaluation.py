@@ -19,17 +19,17 @@ from catalog.final_evaluation import acquire, settle
 from catalog.final_manifest import documents, limit_for
 from catalog.freezing import frozen_candidate, frozen_submission
 from catalog.ingest import complete_upload, ingest_tick
-from catalog.models import Account, Artifact, Candidate, Dataset, DatasetVersion, FitRun, FrozenCandidate, FrozenSubmission, Provenance, RepresentationSpec, ResearchBudget, ResearchVersion, SealRegistration, Tenant, Upload
+from catalog.models import Account, Artifact, Candidate, Dataset, DatasetVersion, EvidenceBundle, FitRun, FrozenCandidate, FrozenSubmission, Provenance, RepresentationSpec, ResearchBudget, ResearchVersion, SealRegistration, Tenant, Upload
 from catalog.research import create_research, create_version, research_for
 from catalog.services import actor_for, create_dataset, create_upload, put_upload
 from catalog.tasks import relay_ingest, relay_profile
 from catalog.tests.test_research import CONTENT, LIMITS, draft_data
 from catalog.validation import ApiError
 from mathematics.search import Domain, Request, Variable, search
-from runtime.contracts import identity_hash, validate
+from runtime.contracts import JsonObject, identity_hash, validate
 from runtime.control import enqueue
-from runtime.models import FinalEvaluationSlot, RunEvent, RuntimeAttempt, RuntimeRun
-from runtime.records import ControlError, snapshot_for
+from runtime.models import FinalEvaluationSlot, RunEvent, RuntimeAttempt, RuntimeRun, ValidationRun
+from runtime.records import ControlError, db_now, snapshot_for
 
 DIMENSIONLESS = (0,) * 7
 FINAL_BUDGET = {"cpu_seconds": 120, "gpu_seconds": 0, "wall_seconds": 600, "tokens": 0,
@@ -124,6 +124,23 @@ class FinalEvaluationTests(TransactionTestCase):
         self.register_seal()
         with transaction.atomic():
             return frozen_submission(self.actor, self.version, frozen, artifact)
+
+    def result(self, slot: FinalEvaluationSlot, **overrides: object) -> JsonObject:
+        """組出與槽位及凍結輸入一致的最終結果文件；反例測試再逐欄覆寫製造不符。"""
+        payload = snapshot_for(RuntimeRun.objects.get(pk=slot.run_id)).task_input["payload"]
+        document: JsonObject = {"kind": "ValidationRun", "id": str(uuid4()), "tenant_id": str(self.actor.tenant_id),
+            "schema_version": "2.0", "created_at": db_now().isoformat(), "run_id": str(slot.run_id),
+            "fit_run_id": str(payload["fit_run_id"]), "metric_version": slot.metric_version,
+            "metrics": {"mae": 0.5, "rmse": 0.7}, "valid_coverage": 1.0, "empirical_level": "E1", "proof_level": "P1",
+            "outcome_status": "SUPPORTED", "artifact_uri": "objects/final-result", "sha256": "a" * 64,
+            "metric_reasons": {}, "artifact_id": str(uuid4()), "observation_split_id": str(payload["observation_split_id"]),
+            "split_role": "FINAL_TEST", "frozen_candidate_id": str(slot.frozen_candidate_id),
+            "submission_id": str(slot.submission_id), "evaluation_policy_hash": payload["evaluation_policy_hash"],
+            "selected_count": 4, "valid_count": 4, "failed_count": 0,
+            "verification_plan_artifact_id": str(payload["verification_plan_artifact_id"]),
+            "verification_plan_hash": payload["verification_plan_hash"]}
+        document.update(overrides)
+        return document
 
     def test_first_dispatch_creates_a_pending_slot_and_advances_the_submission(self) -> None:
         slot, created = acquire(self.actor, self.submission, self.frozen)
@@ -269,31 +286,79 @@ class FinalEvaluationTests(TransactionTestCase):
             acquire(self.other, self.submission, self.frozen)
         self.assertEqual(acquired.exception.code, "NOT_FOUND")
         with self.assertRaises(ApiError) as settled:
-            settle(self.other, slot, "COMPLETED", uuid4())
+            settle(self.other, slot, "COMPLETED", {})
         self.assertEqual(settled.exception.code, "NOT_FOUND")
         self.assertEqual(FinalEvaluationSlot.objects.get(pk=slot.id).status, "PENDING")
 
     def test_settlement_is_single_and_forward_only(self) -> None:
         slot, _created = acquire(self.actor, self.submission, self.frozen)
-        result = uuid4()
-        settled = settle(self.actor, slot, "COMPLETED", result)
-        self.assertEqual((settled.status, settled.validation_run_id), ("COMPLETED", result))
+        document = self.result(slot)
+        settled = settle(self.actor, slot, "COMPLETED", document)
+        reference = UUID(str(document["id"]))
+        self.assertEqual((settled.status, settled.validation_run_id), ("COMPLETED", reference))
         stored = FinalEvaluationSlot.objects.get(pk=slot.id)
-        self.assertEqual((stored.status, stored.validation_run_id), ("COMPLETED", result))
-        self.assertEqual(stored.document["validation_run_id"], str(result))
+        self.assertEqual((stored.status, stored.validation_run_id), ("COMPLETED", reference))
+        self.assertEqual(stored.document["validation_run_id"], str(reference))
         self.assertEqual(FrozenSubmission.objects.get(pk=self.submission.id).status, "EVALUATED")
         with self.assertRaises(ApiError) as again:
             settle(self.actor, slot, "FAILED", None)
         self.assertEqual(again.exception.code, "INVALID_TRANSITION")
         self.assertEqual(FinalEvaluationSlot.objects.get(pk=slot.id).status, "COMPLETED")
 
+    def test_completed_settlement_records_result_evidence_and_outbox(self) -> None:
+        """成功結算以同一權威提交寫入結果列、只引用該結果的證據包與結果 outbox。"""
+        slot, _created = acquire(self.actor, self.submission, self.frozen)
+        document = self.result(slot)
+        settle(self.actor, slot, "COMPLETED", document)
+        result = ValidationRun.objects.get(pk=UUID(str(document["id"])))
+        validate(result.document, "runtime-v2.schema.json", "ValidationRun")
+        self.assertEqual((result.tenant_id, result.run_id, result.split_role), (self.actor.tenant_id, slot.run_id, "FINAL_TEST"))
+        self.assertEqual((result.submission_id, result.frozen_candidate_id), (slot.submission_id, slot.frozen_candidate_id))
+        bundle = EvidenceBundle.objects.get(run_id=slot.run_id)
+        self.assertEqual(bundle.document["validation_ids"], [str(result.id)])
+        self.assertEqual(bundle.document["proof_artifact_ids"], [])
+        self.assertEqual(bundle.research_version_id, self.version.id)
+        events = RunEvent.objects.filter(run_id=slot.run_id).order_by("sequence")
+        self.assertEqual([event.document["event_type"] for event in events], ["RunQueued", "ValidationFinished"])
+        finished = events[1]
+        self.assertEqual(finished.document["payload"], {"validation_run_id": str(result.id),
+            "evidence_bundle_id": str(bundle.id), "outcome_status": "SUPPORTED"})
+        self.assertEqual(finished.document["producer_version"], "t07-validate-v1")
+
+    def test_settlement_refuses_a_result_that_disagrees_with_the_slot(self) -> None:
+        """結果身分逐欄對齊槽位與凍結輸入，換 run／候選／切分或驗證計畫一律拒絕落庫。"""
+        slot, _created = acquire(self.actor, self.submission, self.frozen)
+        cases: dict[str, object] = {"split_role": "DEVELOPMENT", "frozen_candidate_id": str(uuid4()),
+            "submission_id": str(uuid4()), "run_id": str(uuid4()), "observation_split_id": str(uuid4()),
+            "fit_run_id": str(uuid4()), "verification_plan_hash": "f" * 64, "metric_version": "3.0"}
+        for key, value in cases.items():
+            with self.subTest(key=key):
+                document = self.result(slot)
+                document[key] = value
+                with self.assertRaises(ApiError) as invalid:
+                    settle(self.actor, slot, "COMPLETED", document)
+                self.assertEqual(invalid.exception.code, "INVALID_SCHEMA")
+                self.assertFalse(ValidationRun.objects.exists())
+                self.assertEqual(FinalEvaluationSlot.objects.get(pk=slot.id).status, "PENDING")
+
+    def test_settlement_refuses_a_stale_evaluation_policy(self) -> None:
+        """沿用舊政策雜湊卻想落新結果時回穩定代碼，不建立任何結果列。"""
+        slot, _created = acquire(self.actor, self.submission, self.frozen)
+        with self.assertRaises(ApiError) as stale:
+            settle(self.actor, slot, "COMPLETED", self.result(slot, evaluation_policy_hash="b" * 64))
+        self.assertEqual(stale.exception.code, "EVALUATION_POLICY_MISMATCH")
+        self.assertFalse(ValidationRun.objects.exists())
+        self.assertEqual(FinalEvaluationSlot.objects.get(pk=slot.id).status, "PENDING")
+
     def test_result_reference_shape_is_enforced(self) -> None:
         slot, _created = acquire(self.actor, self.submission, self.frozen)
-        for status, reference in [("COMPLETED", None), ("FAILED", uuid4()), ("DONE", None)]:
+        cases: list[tuple[str, JsonObject | None]] = [("COMPLETED", None), ("FAILED", {}), ("DONE", None)]
+        for status, result in cases:
             with self.subTest(status=status), self.assertRaises(ApiError) as invalid:
-                settle(self.actor, slot, status, reference)
+                settle(self.actor, slot, status, result)
             self.assertEqual(invalid.exception.code, "INVALID_SCHEMA")
         self.assertEqual(FinalEvaluationSlot.objects.get(pk=slot.id).status, "PENDING")
+        self.assertFalse(ValidationRun.objects.exists())
 
     def test_failed_settlement_keeps_the_reference_null(self) -> None:
         slot, _created = acquire(self.actor, self.submission, self.frozen)
@@ -301,10 +366,13 @@ class FinalEvaluationTests(TransactionTestCase):
         self.assertEqual((settled.status, settled.validation_run_id), ("FAILED", None))
         self.assertEqual(FinalEvaluationSlot.objects.get(pk=slot.id).validation_run_id, None)
         self.assertEqual(FrozenSubmission.objects.get(pk=self.submission.id).status, "FAILED")
+        self.assertFalse(ValidationRun.objects.exists())
+        self.assertFalse(EvidenceBundle.objects.filter(run_id=slot.run_id).exists())
+        self.assertEqual([event.document["event_type"] for event in RunEvent.objects.filter(run_id=slot.run_id)], ["RunQueued"])
 
     def test_settled_submission_reads_the_result_back_instead_of_dispatching_again(self) -> None:
         slot, _created = acquire(self.actor, self.submission, self.frozen)
-        settle(self.actor, slot, "COMPLETED", uuid4())
+        settle(self.actor, slot, "COMPLETED", self.result(slot))
         fresh = FrozenSubmission.objects.get(pk=self.submission.id)
         again, created = acquire(self.actor, fresh, self.frozen)
         self.assertFalse(created)

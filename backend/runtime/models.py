@@ -1,4 +1,4 @@
-"""持久任務模型：Run 狀態、不可變輸入、Attempt 租約、單調不可變事件與最終評估槽位。
+"""持久任務模型：Run 狀態、不可變輸入、Attempt 租約、單調不可變事件、最終評估槽位與評估結果。
 
 Schema-aligned documents; indexed identities and relations remain SQL-owned."""
 from __future__ import annotations
@@ -73,4 +73,36 @@ class FinalEvaluationSlot(models.Model):
             models.CheckConstraint(condition=(models.Q(status="COMPLETED") & models.Q(validation_run_id__isnull=False))
                                    | (models.Q(validation_run_id__isnull=True) & ~models.Q(status="COMPLETED")),
                                    name="final_slot_result_reference"),
+        ]
+
+
+class ValidationRun(models.Model):
+    """評估結果的不可變權威列；最終結果以提交／候選／metric 唯一，開發結果以 run／split 唯一。
+
+    結果本身只存在 document；欄位只承載唯一鍵與外鍵所需的固定身分，因此同一份結果不可能因換
+    run_id 或換 UUID 而重複生效。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    tenant_id: models.UUIDField[UUID, UUID] = models.UUIDField(db_index=True)
+    run_id: models.UUIDField[UUID, UUID] = models.UUIDField(db_index=True)
+    observation_split_id: models.UUIDField[UUID, UUID] = models.UUIDField()
+    split_role: models.CharField[str, str] = models.CharField(max_length=16)
+    metric_version: models.CharField[str, str] = models.CharField(max_length=8, default="2.0")
+    submission_id: models.UUIDField[UUID | None, UUID | None] = models.UUIDField(null=True)
+    frozen_candidate_id: models.UUIDField[UUID | None, UUID | None] = models.UUIDField(null=True)
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["tenant_id", "run_id", "observation_split_id", "split_role", "metric_version"],
+                                    name="validation_run_development_key"),
+            models.UniqueConstraint(fields=["tenant_id", "submission_id", "frozen_candidate_id", "metric_version"],
+                                    condition=models.Q(split_role="FINAL_TEST"), name="validation_run_final_key"),
+            models.CheckConstraint(condition=models.Q(split_role__in=["FIT", "DEVELOPMENT", "FINAL_TEST"]),
+                                   name="validation_run_split_role"),
+            models.CheckConstraint(condition=models.Q(metric_version="2.0"), name="validation_run_metric_version"),
+            models.CheckConstraint(condition=(models.Q(split_role="FINAL_TEST", submission_id__isnull=False, frozen_candidate_id__isnull=False)
+                                              | (~models.Q(split_role="FINAL_TEST") & models.Q(submission_id__isnull=True)
+                                                 & models.Q(frozen_candidate_id__isnull=True))),
+                                   name="validation_run_final_reference"),
         ]
