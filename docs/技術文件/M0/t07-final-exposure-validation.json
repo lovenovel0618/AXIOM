@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-23",
+  "scope": "T07_FINAL_EVALUATION_EXPOSURE_RESERVATION_AND_CONSUMPTION_WIRING",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "fb854c7a3b0ead01aa8fbb4ce398106b78f632a7",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "PARTIAL",
+  "product_gate_status": "NOT_RUN",
+  "delivery_boundary": {
+    "exposure_wrappers": "IMPLEMENTED（catalog/sealing.py 新增 reserve()／consume()／retire()：以凍結提交的 sealed_test_id 為封存身分、tenant_id 為租戶，並以提交與其 snapshot_hash 呼叫 Vault.transition；RETIRE 不帶提交身分以保守關閉曝光）",
+    "masked_error_mapping": "IMPLEMENTED（_transition() 將 SealRejected 轉 ApiError：NOT_FOUND 保留 404，其餘一律 409，不以 503 誤報可重試）",
+    "dispatch_reservation": "IMPLEMENTED（acquire() 於 _validate_root() 之後、FinalEvaluationSlot.objects.create() 之前呼叫 reserve()，使 root／輸入快照／曝光預留／槽位共用同一 savepoint，符合 AX-43 鎖序）",
+    "settlement_consumption": "IMPLEMENTED（settle() 於結果逐欄核對通過後，COMPLETED 先 consume() 再落結果列，FAILED 走 retire() 保守退役；核對先於消耗，被拒結算不改動帳本）",
+    "test_fixture_shared": "IMPLEMENTED（sealed_authority() 由 catalog/tests/test_profile.py 收斂到 catalog/tests/test_sealing.py，成為全 catalog 共用夾具）",
+    "real_vault_registration": "IMPLEMENTED（catalog/tests/test_final_evaluation.py 的 register_seal() 改以真實 Vault.register 登記，逐案核對 RESERVED／CONSUMED／RETIRED 可觀察後果）",
+    "isolated_evaluator_final_test": "NOT_IMPLEMENTED（隔離 Evaluator 的 final_test 執行與 Vault.read_final 的授權讀取未寫）",
+    "denominator_and_rejection_reasons": "NOT_IMPLEMENTED（分母產出端與拒答理由未寫）",
+    "slot_endpoint": "NOT_IMPLEMENTED（槽位無對外端點，工作台 #6 未接最終評估狀態）",
+    "measurement_markers": "usage_scope=LOCAL_FINAL_EVAL_EXPOSURE_WIRING_ONLY、product_status=NOT_RUN、precision_bits=53"
+  },
+  "tests": {
+    "postgresql_backend": 368,
+    "previous_backend": 365,
+    "new_slice_tests": 3,
+    "new_tests_breakdown": {
+      "backend/catalog/tests/test_final_evaluation.py": 3
+    },
+    "focused_regression": "catalog.tests.test_final_evaluation 3／3 OK（新增曝光狀態測試）",
+    "unittest_command": "docker compose -p axiom-dev run --rm -v \"$PWD/backend\":/app -v \"$PWD/docs/企劃案/contracts\":/app/contracts web python manage.py test foundation.tests runtime.tests catalog.tests mathematics.tests mathematics.test_linalg mathematics.test_search ingestion.tests --noinput",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "NO_SOURCE_CHANGE_THIS_SLICE",
+      "typecheck": "沿用已通過的 vue-tsc --noEmit 0 error",
+      "vitest": "沿用已通過的 9 檔 82／82"
+    }
+  },
+  "strict_pyright": {
+    "version": "1.1.414",
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0,
+    "informations": 0
+  },
+  "typing_policy": "PASS（backend/catalog/tests/test_final_evaluation.py 維持邊界額度 3；register_seal() 的 document 由 JsonObject 改用 dict[str, object]，未新增任何動態型別逃生門）",
+  "engineering_tools": {
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS",
+    "public_oracle": "PASS",
+    "docs_check": "exit 0（markdown 57、chapters 54、links 379、acceptance_cases 326、schemas 6、contract_examples 110、api_operations 28、contract_scenarios 272、review_findings 36、attachment_requirements 32、error_codes 54、capabilities 6、policies 1、public_fixture_oracles 4、manifest_files 86、product_test_status NOT_RUN）"
+  },
+  "integration": {
+    "dispatch_reservation": "PASS（派送後未消耗前 read_final 回 INVALID_TRANSITION 且 authorize 不被呼叫；同一提交／快照重播 RESERVE 讀回 RESERVED；別的提交或別的快照回 TEST_ALREADY_RESERVED）",
+    "settlement_consumption": "PASS（結算前 read_final 拋 INVALID_TRANSITION；COMPLETED 結算後可讀 final-rows、authorize 僅觸發一次、再 RESERVE 回 CONSUMED）",
+    "settlement_retirement": "PASS（FAILED 結算後 read_final 拋 INVALID_TRANSITION 且 authorize 不被呼叫、再 RESERVE 回 TEST_ALREADY_CONSUMED）",
+    "refusal_keeps_ledger": "PASS（逐欄拒絕回 INVALID_SCHEMA、政策雜湊不符回 EVALUATION_POLICY_MISMATCH，兩者皆不改動曝光，槽位仍 PENDING、其後成功結算才 CONSUMED）",
+    "makemigrations_check": "No changes detected",
+    "product_gate_status": "NOT_RUN",
+    "g2_status": "BLOCKED（D-03 未關）"
+  },
+  "live_services": {
+    "project": "axiom-dev",
+    "retained_running": true,
+    "services": [
+      { "name": "frontend", "state": "running", "health": "healthy", "ports": "127.0.0.1:15173->5173/tcp" },
+      { "name": "ingest", "state": "running", "health": "", "ports": "" },
+      { "name": "journal", "state": "running", "health": "healthy", "ports": "" },
+      { "name": "postgres", "state": "running", "health": "healthy", "ports": "5432/tcp" },
+      { "name": "profile", "state": "running", "health": "", "ports": "" },
+      { "name": "redis", "state": "running", "health": "healthy", "ports": "6379/tcp" },
+      { "name": "relay", "state": "running", "health": "", "ports": "" },
+      { "name": "web", "state": "running", "health": "healthy", "ports": "127.0.0.1:18000->8000/tcp" },
+      { "name": "worker", "state": "running", "health": "", "ports": "" }
+    ]
+  },
+  "changed_sources": {
+    "backend/catalog/final_evaluation.py": "b7a32f749b19b3dbe96a75b054d592374bf0829c1877cf229f693d1f5a7427de",
+    "backend/catalog/sealing.py": "6996e9a567ca4924bfa48753233f3208624a619d06e212c4d2d546d476d90bef",
+    "backend/catalog/tests/test_final_evaluation.py": "bd6e8297a4dfbef61830aa9c4d1f48b37e6c2229be4bded1f90a20766cb04293",
+    "backend/catalog/tests/test_profile.py": "aa7b15661cfb4d3c35c14c0637aea1cdb7b7aad2c8f167127e7b1751bf165e4a",
+    "backend/catalog/tests/test_sealing.py": "1dcf1272ea2b83d8eea2867355b805a47f6af5f93316af98b1b93fff68526dc3",
+    "docs/技術文件/M0/T07-候選凍結與比較設計.md": "22362eb2907b015c11648e561287340c24783427dc77bb1bec67c0fab43c1b36",
+    "docs/技術文件/M0/T07-候選凍結與比較驗證紀錄.md": "ead29abe73541a07f3062b44f25ad640b2e00ce6f61edc855aa8bc39dce4f96f",
+    "docs/技術文件/缺口清單.md": "bec9a7ba0de5198240431ee3d2f21c4f4833e6591f30efb8ad4eae94d38bfc2b",
+    "docs/技術文件/README.md": "6b0d0ae89962aa1d9e740dae788900daf131fe1bd4d0d78adc91cb80a8db5044",
+    "docs/技術文件/M0/t07-final-exposure-backend-tests.txt": "1989341de25af8072159f8545b05ce5513fd0dd3c12d0d0bb97a5d288c5122fc"
+  },
+  "known_limits": [
+    "隔離 Evaluator 的 final_test 執行未寫：預留與 consume 已接線，但 Vault.read_final 的授權讀取與實際執行仍待後續",
+    "分母產出端與拒答理由（selected_count／valid_count／failed_count 語意）未寫",
+    "Slots 無對外端點，工作台（#6）未接最終評估狀態",
+    "final_test 尚未在任何環境實際執行；本批只保證曝光帳本狀態正確，不宣稱 final labels 已被讀取",
+    "本機未重跑 SonarQube（無工作區憑證），不以舊的零項目結果頂替",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}

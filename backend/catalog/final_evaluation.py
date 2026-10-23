@@ -1,10 +1,12 @@
 """最終評估槽位服務層：以業務鍵 insert-on-conflict 固定唯一 VALIDATE run，並單向結算結果。
 
 Service-level FinalEvaluationSlot acquisition and single-forward settlement. The isolated
-Evaluator execution, sealed-test reservation and exposure ledger stay out of this slice.
+Evaluator execution and the final-label read stay out of this slice.
 
-成功結算時，不可變的 `ValidationRun`、只引用該結果的證據包與 `ValidationFinished` outbox 與槽位、
-提交聚合狀態同交易提交；結果身分逐欄對齊槽位與凍結輸入，換 UUID 或換政策都無法繞過。"""
+派送時在同一權威提交內預留封存包，結算時消耗或退役；隔離 Evaluator 的實際執行與
+`Vault.read_final` 仍待後續切片。成功結算時，不可變的 `ValidationRun`、只引用該結果的證據包與
+`ValidationFinished` outbox 與槽位、提交聚合狀態同交易提交；結果身分逐欄對齊槽位與凍結輸入，
+換 UUID 或換政策都無法繞過。"""
 from datetime import datetime
 from uuid import UUID, uuid4
 from django.db import IntegrityError, transaction
@@ -12,6 +14,7 @@ from jsonschema.exceptions import ValidationError
 from catalog.evidence import register_validation
 from catalog.final_manifest import documents, limit_for
 from catalog.models import Account, FrozenCandidate, FrozenSubmission, Provenance, ResearchBudget, ResearchVersion
+from catalog.sealing import consume, reserve, retire
 from catalog.services import provenance
 from catalog.validation import ApiError
 from runtime.budget_types import BudgetLimit
@@ -82,9 +85,9 @@ def acquire(actor: Account, submission: FrozenSubmission, candidate: FrozenCandi
     """在業務鍵上取得槽位，回傳是否由本次建立。
 
     既有槽位一律讀回原 `run_id`／結果，不另建評估 run；`run_id` 指向本槽位唯一的最終評估 root，
-    只在新建時產生。只有需要新建槽位時才檢查提交是否仍在可派送狀態，且槽位與該 root 在同一
-    savepoint 內一起成立，輸掉競態的一方整批回滾後讀回既有槽位，不會留下孤兒 run。隔離 Evaluator
-    的執行、曝光帳本與結果 outbox 仍待後續切片。"""
+    只在新建時產生。只有需要新建槽位時才檢查提交是否仍在可派送狀態，且槽位、該 root 與封存預留
+    在同一 savepoint 內一起成立，輸掉競態的一方整批回滾後讀回既有槽位，不會留下孤兒 run。預留依
+    AX-43 鎖序排在 root 之後、槽位之前；隔離 Evaluator 的執行與 `read_final` 仍待後續切片。"""
     version = _authorized(actor, submission)
     _member(submission, candidate)
     with transaction.atomic():
@@ -99,6 +102,7 @@ def acquire(actor: Account, submission: FrozenSubmission, candidate: FrozenCandi
         try:
             with transaction.atomic():
                 run = _validate_root(actor, version, account, limit, submission, candidate)
+                reserve(submission)
                 document = slot_document(uuid4(), actor.tenant_id, submission.id, candidate.id, run.id, submission.metric_version, now)
                 validate(document, SCHEMA, "FinalEvaluationSlot")
                 slot = FinalEvaluationSlot.objects.create(id=UUID(document["id"]), tenant_id=actor.tenant_id,
@@ -146,10 +150,8 @@ def _verified(actor: Account, slot: FinalEvaluationSlot, submission: FrozenSubmi
     return result
 
 
-def _record(actor: Account, slot: FinalEvaluationSlot, submission: FrozenSubmission,
-            payload: JsonObject, result: JsonObject) -> ValidationRun:
-    """核對後落庫不可變結果列；欄位只承載固定身分，結果本身只存在 document。"""
-    document = _verified(actor, slot, submission, payload, result)
+def _record(actor: Account, slot: FinalEvaluationSlot, document: JsonObject) -> ValidationRun:
+    """以已核對的欄位落庫不可變結果列；欄位只承載固定身分，結果本身只存在 document。"""
     return ValidationRun.objects.create(id=UUID(str(document["id"])), tenant_id=actor.tenant_id,
         run_id=slot.run_id, observation_split_id=UUID(str(document["observation_split_id"])),
         split_role=str(document["split_role"]), metric_version=str(document["metric_version"]),
@@ -162,7 +164,10 @@ def settle(actor: Account, slot: FinalEvaluationSlot, status: str, result: JsonO
 
     `COMPLETED` 必須帶完整的最終結果文件並與槽位、凍結輸入同交易落庫；`FAILED` 必為 null 且不以新
     run 重啟已終止根。結果列、證據包、結果 outbox、槽位引用與提交聚合狀態在同一交易提交，衝突不能
-    以新 UUID 繞過。"""
+    以新 UUID 繞過。曝光狀態隨結算前進：`COMPLETED` 先消耗、`FAILED` 保守退役，兩者都只在槽位已鎖定、
+    確認為 `PENDING`、且結果身分已逐欄核對通過之後才呼叫，所以任何被拒的結算都不會改動帳本。
+    隔離 Evaluator 上線後消耗由讀取端先行提交，此處即純 replay；本切片的消耗是唯一一次，故刻意排在
+    結果核對之後，避免以一份不合格的結果燒掉不可回復的封存資格。"""
     if slot.tenant_id != actor.tenant_id:
         raise ApiError("NOT_FOUND", 404)
     if status not in RESULTS or (status == "COMPLETED") != (result is not None):
@@ -180,12 +185,16 @@ def settle(actor: Account, slot: FinalEvaluationSlot, status: str, result: JsonO
         reference: UUID | None = None
         if result is not None:
             payload = snapshot_for(run).task_input["payload"]
-            validation = _record(actor, locked, submission, payload, result)
+            verified = _verified(actor, locked, submission, payload, result)
+            consume(submission)
+            validation = _record(actor, locked, verified)
             bundle = register_validation(actor, version, run, validation.id, now)
             emit(run, "ValidationFinished", {"validation_run_id": str(validation.id),
                 "evidence_bundle_id": str(bundle.id), "outcome_status": str(validation.document["outcome_status"])}, now)
             save_run(run)
             reference = validation.id
+        else:
+            retire(submission)
         document = dict(locked.document)
         document["status"] = status
         document["validation_run_id"] = None if reference is None else str(reference)

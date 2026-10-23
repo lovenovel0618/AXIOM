@@ -1,6 +1,9 @@
 """最終評估槽位服務層：業務鍵 insert-on-conflict、成員資格、單向結算與提交狀態流。
 
-Service-level FinalEvaluationSlot acquisition, eligibility and single-forward settlement."""
+Service-level FinalEvaluationSlot acquisition, eligibility and single-forward settlement.
+
+派送與結算都會前進曝光帳本的狀態，故本檔以 in-process journal 掛載真實 `Vault`，逐案核對
+`RESERVED`／`CONSUMED`／`RETIRED` 的可觀察後果，不以假登記冒充已封存。"""
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from fractions import Fraction
@@ -21,15 +24,19 @@ from catalog.freezing import frozen_candidate, frozen_submission
 from catalog.ingest import complete_upload, ingest_tick
 from catalog.models import Account, Artifact, Candidate, Dataset, DatasetVersion, EvidenceBundle, FitRun, FrozenCandidate, FrozenSubmission, Provenance, RepresentationSpec, ResearchBudget, ResearchVersion, SealRegistration, Tenant, Upload
 from catalog.research import create_research, create_version, research_for
+from catalog.sealing import authority
 from catalog.services import actor_for, create_dataset, create_upload, put_upload
 from catalog.tasks import relay_ingest, relay_profile
 from catalog.tests.test_research import CONTENT, LIMITS, draft_data
+from catalog.tests.test_sealing import sealed_authority
 from catalog.validation import ApiError
 from mathematics.search import Domain, Request, Variable, search
 from runtime.contracts import JsonObject, identity_hash, validate
 from runtime.control import enqueue
 from runtime.models import FinalEvaluationSlot, RunEvent, RuntimeAttempt, RuntimeRun, ValidationRun
 from runtime.records import ControlError, db_now, snapshot_for
+from sealing.types import SealRejected
+from sealing.vault import Vault
 
 DIMENSIONLESS = (0,) * 7
 FINAL_BUDGET = {"cpu_seconds": 120, "gpu_seconds": 0, "wall_seconds": 600, "tokens": 0,
@@ -57,6 +64,7 @@ class FinalEvaluationTests(TransactionTestCase):
         override = self.settings(OBJECT_ROOT=Path(directory.name))
         override.enable()
         self.addCleanup(override.disable)
+        self.enterContext(sealed_authority())
         self.actor = self.account(Tenant.objects.create(name="final-evaluation"))
         self.other = self.account(Tenant.objects.create(name="final-evaluation-other"))
         self.version = self.fixture()
@@ -110,14 +118,32 @@ class FinalEvaluationTests(TransactionTestCase):
         return register_artifact(self.actor, self.version.dataset_version, UUID(str(content["id"])), content, source, research_version=self.version)
 
     def register_seal(self) -> SealRegistration:
+        """以真實 `Vault` 登記最小合法封存包；登記身分即凍結提交所引用的 `sealed_test_id`。"""
         existing = SealRegistration.objects.filter(research_version=self.version).first()
         if existing is not None:
             return existing
         run = RuntimeRun.objects.filter(document__type="INGEST").order_by("id").first()
         self.assertIsNotNone(run)
+        tenant, source = str(self.version.tenant_id), hashlib.sha256(CONTENT).hexdigest()
+        vault = authority()
+        document: dict[str, object] = {"kind": "SealedTest", "id": str(uuid4()), "tenant_id": tenant, "schema_version": "2.0",
+            "created_at": db_now().isoformat(), "dataset_version_id": str(self.version.dataset_version_id),
+            "observation_split_id": str(uuid4()), "benchmark_partition_id": None, "benchmark_case_id": None,
+            "final_rows_hash": identity_hash(["final-test-rows"]), "protocol_hash": identity_hash(["final-test-protocol"]),
+            "state": "AVAILABLE", "submission_id": None, "source_content_sha256": source,
+            "final_observation_tokens": sorted(vault.token(tenant, "CONTENT", {"row": index}) for index in range(2)),
+            "final_lineage_tokens": sorted(vault.token(tenant, "LINEAGE", ["LOCAL_UNTRUSTED_SOURCE", source, index]) for index in range(2)),
+            "exposure_fingerprint_version": "1.0"}
+        attestation = vault.register(document, b"final-rows")
         return SealRegistration.objects.create(tenant_id=self.version.tenant_id, research_version=self.version, run=run,
-            sealed_test_id=uuid4(), source_sha256="1" * 64, protocol_hash="2" * 64, authority_epoch=uuid4(),
-            authority_sequence=1, attestation_hash="3" * 64, available=True)
+            sealed_test_id=UUID(attestation.sealed_test_id), source_sha256=attestation.source_sha256, protocol_hash=attestation.protocol_hash,
+            authority_epoch=UUID(attestation.authority_epoch), authority_sequence=attestation.authority_sequence,
+            attestation_hash=attestation.attestation_hash, available=True)
+
+    def exposure(self) -> tuple[Vault, str, str, str, str]:
+        """回權威、租戶、封存身分、提交與快照；五者即曝光狀態機的完整輸入。"""
+        return (authority(), str(self.submission.tenant_id), str(self.submission.sealed_test_id),
+            str(self.submission.id), self.submission.snapshot_hash)
 
     def submit(self, frozen: list[FrozenCandidate]) -> FrozenSubmission:
         artifact = self.register_plan()
@@ -152,6 +178,21 @@ class FinalEvaluationTests(TransactionTestCase):
         validate(FinalEvaluationSlot.objects.get(pk=slot.id).document, "runtime-v2.schema.json", "FinalEvaluationSlot")
         stored = FrozenSubmission.objects.get(pk=self.submission.id)
         self.assertEqual((stored.status, stored.document["status"]), ("EVALUATING", "EVALUATING"))
+
+    def test_dispatch_reserves_the_sealed_test_for_this_submission_only(self) -> None:
+        """派送在同一權威提交內預留封存包：因已綁定本提交而冪等，別的提交或快照一律重疊。"""
+        acquire(self.actor, self.submission, self.frozen)
+        vault, tenant, identity, submission, snapshot = self.exposure()
+        authorized: list[int] = []
+        with self.assertRaises(SealRejected) as unconsumed:
+            vault.read_final(tenant, identity, submission, snapshot, lambda: authorized.append(1))
+        self.assertEqual(unconsumed.exception.code, "INVALID_TRANSITION")
+        self.assertEqual(authorized, [])
+        self.assertEqual(vault.transition(tenant, identity, "RESERVE", submission, snapshot), "RESERVED")
+        for selected, other in ((str(uuid4()), snapshot), (submission, "b" * 64)):
+            with self.subTest(submission=selected, snapshot=other), self.assertRaises(SealRejected) as aliased:
+                vault.transition(tenant, identity, "RESERVE", selected, other)
+            self.assertEqual(aliased.exception.code, "TEST_ALREADY_RESERVED")
 
     def test_dispatch_creates_one_final_only_validate_root(self) -> None:
         slot, created = acquire(self.actor, self.submission, self.frozen)
@@ -340,6 +381,10 @@ class FinalEvaluationTests(TransactionTestCase):
                 self.assertEqual(invalid.exception.code, "INVALID_SCHEMA")
                 self.assertFalse(ValidationRun.objects.exists())
                 self.assertEqual(FinalEvaluationSlot.objects.get(pk=slot.id).status, "PENDING")
+        vault, tenant, identity, submission, snapshot = self.exposure()
+        self.assertEqual(vault.transition(tenant, identity, "RESERVE", submission, snapshot), "RESERVED")
+        settle(self.actor, slot, "COMPLETED", self.result(slot))
+        self.assertEqual(vault.transition(tenant, identity, "RESERVE", submission, snapshot), "CONSUMED")
 
     def test_settlement_refuses_a_stale_evaluation_policy(self) -> None:
         """沿用舊政策雜湊卻想落新結果時回穩定代碼，不建立任何結果列。"""
@@ -369,6 +414,34 @@ class FinalEvaluationTests(TransactionTestCase):
         self.assertFalse(ValidationRun.objects.exists())
         self.assertFalse(EvidenceBundle.objects.filter(run_id=slot.run_id).exists())
         self.assertEqual([event.document["event_type"] for event in RunEvent.objects.filter(run_id=slot.run_id)], ["RunQueued"])
+
+    def test_completed_settlement_consumes_the_exposure_before_any_final_read(self) -> None:
+        """成功結算先消耗曝光才落庫，之後有限資料才第一次可讀且授權僅在讀取前觸發。"""
+        slot, _created = acquire(self.actor, self.submission, self.frozen)
+        vault, tenant, identity, submission, snapshot = self.exposure()
+        authorized: list[int] = []
+        with self.assertRaises(SealRejected) as reserved:
+            vault.read_final(tenant, identity, submission, snapshot, lambda: authorized.append(1))
+        self.assertEqual(reserved.exception.code, "INVALID_TRANSITION")
+        settle(self.actor, slot, "COMPLETED", self.result(slot))
+        self.assertEqual(authorized, [])
+        self.assertEqual(vault.read_final(tenant, identity, submission, snapshot, lambda: authorized.append(1)), b"final-rows")
+        self.assertEqual(authorized, [1])
+        self.assertEqual(vault.transition(tenant, identity, "RESERVE", submission, snapshot), "CONSUMED")
+
+    def test_failed_settlement_retires_the_exposure_without_resurrection(self) -> None:
+        """永久失敗時保守退役：不回 AVAILABLE、不可再讀，也不讓新的預留重新取得資格。"""
+        slot, _created = acquire(self.actor, self.submission, self.frozen)
+        settle(self.actor, slot, "FAILED", None)
+        vault, tenant, identity, submission, snapshot = self.exposure()
+        authorized: list[int] = []
+        with self.assertRaises(SealRejected) as retired:
+            vault.read_final(tenant, identity, submission, snapshot, lambda: authorized.append(1))
+        self.assertEqual(retired.exception.code, "INVALID_TRANSITION")
+        self.assertEqual(authorized, [])
+        with self.assertRaises(SealRejected) as resurrected:
+            vault.transition(tenant, identity, "RESERVE", submission, snapshot)
+        self.assertEqual(resurrected.exception.code, "TEST_ALREADY_CONSUMED")
 
     def test_settled_submission_reads_the_result_back_instead_of_dispatching_again(self) -> None:
         slot, _created = acquire(self.actor, self.submission, self.frozen)

@@ -1,14 +1,11 @@
 """Real PROFILE, two-level receipts, cancellation and tenant-scope regressions."""
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import contextmanager
 from copy import deepcopy
 from datetime import timedelta
-from functools import partial
 from io import BytesIO
 import hashlib
 import json
 import sys
-from collections.abc import Generator
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import skipUnless
@@ -28,37 +25,16 @@ from catalog.research import create_research, create_version, research_for
 from catalog.research_state import document_for, state_for
 from catalog.services import actor_for, create_dataset, create_upload, put_upload
 from catalog.tests.test_research import draft_data
-from catalog.tests.test_sealing import LocalJournal
+from catalog.tests.test_sealing import sealed_authority
 from ingestion.supervisor import inspect_research
 from runtime.completion import finish
 from runtime.control import cancel, claim, Lease
 from runtime.models import RunEvent, RuntimeAttempt, RuntimeRun
 from runtime.records import ControlError, db_now, lock_run
-from sealing.journal import JournalStore
 from sealing.types import Attestation
 
 LIMITS = {"max_rows":100,"max_columns":8,"max_cell_utf8_bytes":4096,"max_decoded_bytes":65536,"max_parse_seconds":10}
 MEMORY = 2*1024**3
-
-
-def local_journal(journal: LocalJournal, endpoint: str, token: str) -> LocalJournal:
-    """取代私有 RPC 的固定工廠；endpoint 與憑證仍被忽略但簽名相容。"""
-    return journal
-
-
-@contextmanager
-def sealed_authority() -> Generator[None]:
-    """以同一 authority 檔的 in-process journal 取代私有 RPC；封存 child 仍是真實子程序。"""
-    root = TemporaryDirectory()
-    try:
-        base = Path(root.name)
-        journal = LocalJournal(JournalStore(base/"events",base/"checkpoint"))
-        with patch("catalog.sealing.JournalClient",partial(local_journal,journal)), override_settings(
-                SEALING_ENABLED=True,SEALING_DATA=base/"data",SEALING_KEYS=base/"keys",
-                JOURNAL_SOCKET="/var/lib/axiom/socket/journal.sock",JOURNAL_TOKEN="synthetic-journal-token-"+"0"*16):
-            yield
-    finally:
-        root.cleanup()
 
 
 @override_settings(INGEST_ENABLED=True,INGEST_LIMITS_JSON=json.dumps(LIMITS),PROFILE_ENABLED=True,PROFILE_LIMITS_JSON=json.dumps(LIMITS))

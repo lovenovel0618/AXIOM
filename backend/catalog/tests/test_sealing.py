@@ -1,13 +1,17 @@
 """正式封存與曝光帳本：canonical 身分、重疊、狀態機與復原的 runtime 證據。"""
+from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+from functools import partial
 import hashlib
 import stat
 import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import skipUnless
+from unittest.mock import patch
 from uuid import uuid4
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 from sealing.journal import JournalStore, durable_file
 from sealing.rpc import JournalClient
 from sealing.types import JournalEntry, SealRejected
@@ -42,6 +46,26 @@ class BlockedJournal:
 
     def append(self, payload: dict[str, object], expected: int) -> JournalEntry:
         raise SealRejected(BLOCKED)
+
+
+def local_journal(journal: LocalJournal, endpoint: str, token: str) -> LocalJournal:
+    """取代私有 RPC 的固定工廠；endpoint 與憑證仍被忽略但簽名相容。"""
+    return journal
+
+
+@contextmanager
+def sealed_authority() -> Generator[None]:
+    """以同一 authority 檔的 in-process journal 取代私有 RPC；封存 child 仍是真實子程序。"""
+    root = TemporaryDirectory()
+    try:
+        base = Path(root.name)
+        journal = LocalJournal(JournalStore(base/"events", base/"checkpoint"))
+        with patch("catalog.sealing.JournalClient", partial(local_journal, journal)), override_settings(
+                SEALING_ENABLED=True, SEALING_DATA=base/"data", SEALING_KEYS=base/"keys",
+                JOURNAL_SOCKET="/var/lib/axiom/socket/journal.sock", JOURNAL_TOKEN="synthetic-journal-token-"+"0"*16):
+            yield
+    finally:
+        root.cleanup()
 
 
 @skipUnless(sys.platform == "linux", "journal durability evidence requires Linux")
