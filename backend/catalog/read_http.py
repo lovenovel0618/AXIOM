@@ -6,6 +6,7 @@ from django.core import signing
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from catalog.artifacts import authorized
+from catalog.candidates import authorized_equation, authorized_fit_run, authorized_frozen_candidate, candidates_page
 from catalog.evidence import authorized as evidence_bundle
 from catalog.final_evaluation import authorized_result
 from catalog.freezing import authorized_submission
@@ -119,6 +120,40 @@ def validation_run_detail(_request: HttpRequest, actor: Account, identity: UUID)
     """重新驗租戶、研究 owner 與提交綁定後回最終評估結果；封存細部不因知道 UUID 而可讀。"""
     row = authorized_result(actor, identity)
     return JsonResponse(row.document)
+
+
+@allowed_methods(["GET"])
+@api
+def run_candidates(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """以 SEARCH root 為範圍分頁候選；參數或 cursor 不符契約即拒，不枚舉其他 run 或租戶。"""
+    if set(request.GET).difference({"cursor", "limit"}):
+        raise ApiError("INVALID_SCHEMA", 422)
+    try:
+        limit = int(request.GET.get("limit", "50"))
+    except ValueError as error:
+        raise ApiError("INVALID_SCHEMA", 422) from error
+    return JsonResponse(candidates_page(actor, identity, request.GET.get("cursor", ""), limit))
+
+
+@allowed_methods(["GET"])
+@api
+def equation_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """重新驗租戶與研究 owner 後回公式版本；DSL 與 hash 供候選顯示。"""
+    return JsonResponse(authorized_equation(actor, identity).document)
+
+
+@allowed_methods(["GET"])
+@api
+def fit_run_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """重新驗租戶與研究 owner 後回擬合結果；參數與精度供候選比較。"""
+    return JsonResponse(authorized_fit_run(actor, identity).document)
+
+
+@allowed_methods(["GET"])
+@api
+def frozen_candidate_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """重新驗租戶與研究 owner 後回凍結副本；不因知道 UUID 就放行。"""
+    return JsonResponse(authorized_frozen_candidate(actor, identity).document)
 
 
 @allowed_methods(["GET"])

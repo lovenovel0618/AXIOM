@@ -1,0 +1,96 @@
+{
+  "date": "2026-10-24",
+  "scope": "T07_CANDIDATE_COMPARISON_ENDPOINTS_AND_WORKBENCH_VIEW",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "4b5914b",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "PARTIAL",
+  "product_gate_status": "NOT_RUN",
+  "delivery_boundary": {
+    "candidates_page_endpoint": "IMPLEMENTED（backend/catalog/candidates.py::candidates_page 依 development_rank 穩定排序並以 signing 游標分頁同一 SEARCH 的候選；回傳 CandidatePage{items,next_cursor}，空游標回首頁；limit 不在 1～200 即 INVALID_SCHEMA 422）",
+    "equation_detail_endpoint": "IMPLEMENTED（authorized_equation 先驗租戶，再找引用該公式版本的 Candidate，經其 search_run 的研究版本驗 owner；無候選引用或跨 owner 一律 NOT_FOUND 404）",
+    "fit_run_detail_endpoint": "IMPLEMENTED（authorized_fit_run 以 row.representation_artifact.research_version_id 驗 owner——FitRun 無直接 research_version_id 外鍵）",
+    "frozen_candidate_detail_endpoint": "IMPLEMENTED（authorized_frozen_candidate 同樣經表徵 recipe 回到研究版本驗 owner；知道 UUID 不放行）",
+    "authorization_defaults": "ENFORCED（四端點皆先做 tenant_id 過濾，再走研究 owner 檢查，任一不符回 404 且不回傳存在性差異）",
+    "cursor_signing": "IMPLEMENTED（cursor 以 signing.dumps({actor,run,rank,id}, salt='axiom-candidates-v1') 簽章，loads 帶 max_age=900；scope 不符與格式錯誤一律 INVALID_CURSOR 400）",
+    "http_layer": "IMPLEMENTED（backend/catalog/read_http.py 新增 run_candidates／equation_detail／fit_run_detail／frozen_candidate_detail 四個 @api 視圖；run_candidates 拒絕 cursor／limit 以外的查詢參數並驗 limit 為整數）",
+    "routing": "IMPLEMENTED（backend/config/urls.py 接上 /api/v2/runs/{id}/candidates、/api/v2/equation-versions/{id}、/api/v2/fit-runs/{id}、/api/v2/frozen-candidates/{id}）",
+    "contract_reuse": "ENFORCED（四個端點與 CandidatePage／Candidate／EquationVersion／FitRun／FrozenCandidate schema 已存在 openapi-v2.json 與 21-API與任務契約.md，本次只實作不新增契約，api_operations 維持 28）",
+    "frontend_api_client": "IMPLEMENTED（frontend/src/api/candidates.ts 提供 listRunCandidates／getEquationVersion／getFitRun 與契約型別；cursor 為空時不附查詢參數）",
+    "frontend_formula_renderer": "IMPLEMENTED（frontend/src/lib/formula.ts 純函式渲染 DSL：rational／四則與冪／一元函式／piecewise，並算複雜度、定義域、有效位數）",
+    "frontend_comparison_component": "IMPLEMENTED（frontend/src/components/CandidateComparison.vue 最多釘選 4 個候選並排：來源、公式版本、渲染公式、參數、參數有效位數、定義域、複雜度、精度位元、驗證狀態）",
+    "frontend_view_wiring": "IMPLEMENTED（frontend/src/views/ResearchView.vue 於 SEARCH 執行後載入候選、預設釘選前四，切換研究／版本時重置候選）",
+    "final_test_placeholder": "ENFORCED（凍結前只顯示 fit／development 證據，final_test 一律顯示『尚未評估／封存』，不揭露未產生或未授權的最終指標）",
+    "workbench_remaining": "NOT_IMPLEMENTED（#6 其餘：槽位對外端點、工作台的最終評估狀態與拒答理由顯示、曝光預算視圖未接）",
+    "measurement_markers": "usage_scope=LOCAL_CANDIDATE_COMPARISON_READ_AND_VIEW_ONLY、product_status=NOT_RUN、precision_bits=53"
+  },
+  "tests": {
+    "postgresql_backend": 390,
+    "previous_backend": 387,
+    "new_slice_tests": 3,
+    "new_tests_breakdown": {
+      "backend/catalog/tests/test_candidates.py": 3
+    },
+    "focused_regression": "catalog.tests.test_candidates 16／16 OK（新增候選分頁與公式／擬合／凍結副本授權讀取）",
+    "unittest_command": "docker compose -p axiom-dev run --rm -v \"$PWD/backend\":/app -v \"$PWD/docs/企劃案/contracts\":/app/contracts web python manage.py test foundation.tests runtime.tests catalog.tests mathematics.tests mathematics.test_linalg mathematics.test_search mathematics.test_comparison ingestion.tests --noinput",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "CHANGED_THIS_SLICE",
+      "typecheck": "vue-tsc --noEmit 0 error",
+      "vitest": "11 檔 94／94 passed（新增 tests/candidates.test.ts 4、tests/formula.test.ts 8）",
+      "build": "vite build 成功（68 modules）"
+    }
+  },
+  "strict_pyright": {
+    "version": "1.1.414",
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0,
+    "informations": 0
+  },
+  "typing_policy": "PASS（backend/catalog/candidates.py 的 JsonObject 邊界由 11 同步擴列至 13，反映候選分頁投影與授權讀取在 schema 文件邊界的必要標註；tools/typing-boundaries.json reason 已更新，之後只可收斂。新檔依預設額度 0／0 通過，未新增型別逃生門）",
+  "engineering_tools": {
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS（validation_status PASS、product_status NOT_RUN、errors 空）",
+    "public_oracle": "PASS（scope PUBLIC_REFERENCE_ONLY、source_sha256 d87c73c3d13590aa9954ac33a52ffdb7442d5a592cfd4c442559d2f6ed18f7d9）",
+    "docs_check": "exit 0（markdown 57、chapters 54、links 379、acceptance_cases 326、schemas 6、contract_examples 110、api_operations 28、contract_scenarios 272、review_findings 36、attachment_requirements 32、error_codes 54、capabilities 6、policies 1、public_fixture_oracles 4、manifest_files 86、product_test_status NOT_RUN）"
+  },
+  "integration": {
+    "candidates_page_ranked_and_paged": "PASS（同一 SEARCH 的候選依 development_rank、id 穩定遞增；帶 limit 時回 next_cursor，續頁不重不漏）",
+    "candidates_page_owner_scoped": "PASS（非 SEARCH root、control probe、跨租戶或非 owner 的研究版本皆回 404）",
+    "candidates_page_param_guard": "PASS（cursor／limit 以外的查詢參數回 INVALID_SCHEMA 422；limit 非整數或超出 1～200 亦 422）",
+    "cursor_scope_guard": "PASS（游標綁 actor 與 run；改動 scope 或過期與格式錯誤一律 INVALID_CURSOR 400）",
+    "detail_reads_owner_scoped": "PASS（公式版本經其候選、擬合與凍結副本經表徵 recipe 回到研究 owner；跨 owner 與未知 UUID 一律 404）",
+    "frontend_comparison_pin_cap": "PASS（超過 MAX_COMPARISON=4 的候選停用勾選；切換研究或版本即重置候選與釘選）",
+    "frontend_final_test_hidden": "PASS（凍結前 user 介面不顯示任何 final_test 指標，僅顯示『尚未評估／封存』）",
+    "makemigrations_check": "No changes detected",
+    "product_gate_status": "NOT_RUN",
+    "g2_status": "BLOCKED（D-03 未關）"
+  },
+  "changed_sources": {
+    "backend/catalog/candidates.py": "01bfa3e11d602b006eb83a74a4eb132dd201b2e203c1ac8e1fa75808068f2bfc",
+    "backend/catalog/read_http.py": "48b9bea7718677142128bbcb3c7276595a1607c112e501a9e501b67673150283",
+    "backend/config/urls.py": "bf03906f30699efc27fc6e48f9ebae371b7a02d6cb08b922be155fcabd4c831b",
+    "backend/catalog/tests/test_candidates.py": "e61e09a1a3001aceb4558a47ce2226b15a9839a198cce31c3bb352f29035895d",
+    "tools/typing-boundaries.json": "78068bd7b6706b2c5587f8b4388fdf32b6bc1c1512026a95c04394e7eabd12c3",
+    "frontend/src/api/candidates.ts": "1d7609ccd5ee62ce1553490851c4047b513944d2b4d79867c2c6a7959a3bc3f4",
+    "frontend/src/lib/formula.ts": "18ce1b12e6c41842e7bc7d7d5c5a35185c126493a8fcd74165725c9dfa9d8122",
+    "frontend/src/components/CandidateComparison.vue": "b560a4fd053cc3dde76cbf90f3b9fca1de515b22063e07f7e1377740cd9972a7",
+    "frontend/src/views/ResearchView.vue": "42a33618e5c1cd5113a0911989114ac49d65b3d18b28827b138721acbeb9df5d",
+    "frontend/tests/candidates.test.ts": "bf585515d05a42c8ecd12b70920040d805dff6c8a40ab0ee5a60057c624dcb04",
+    "frontend/tests/formula.test.ts": "b00847a7a1065c5f554eeb73a049a83a73ce80020bb0305f17c73eb43d56fa51",
+    "docs/技術文件/M0/t07-workbench-backend-tests.txt": "63777f9152572ebd04db82dcd5bef93c2603b609ad87c833e12a8885378acc43",
+    "docs/技術文件/M0/t07-workbench-frontend-tests.txt": "fc90a6daa30d79e94914bc93848d9181264421e1a8c3977695cae43a081d71f8"
+  },
+  "known_limits": [
+    "本切片只交付候選比較的讀取端點與工作台檢視；#6 的槽位對外端點、最終評估狀態與拒答理由顯示、曝光預算視圖仍未接",
+    "final_test 於介面維持『尚未評估／封存』占位，未以實際 evaluator 容器即時產生最終指標",
+    "本機未重跑 SonarQube（無工作區憑證），不以舊的零項目結果頂替",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}

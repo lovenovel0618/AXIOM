@@ -1,0 +1,50 @@
+
+> axiom-frontend@0.0.0 typecheck
+> vue-tsc --noEmit
+
+
+> axiom-frontend@0.0.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/dino/DinoProject/AXIOM/frontend
+
+ ✓ tests/semantics.test.ts (11 tests) 610ms
+ ✓ tests/formula.test.ts (8 tests) 459ms
+ ✓ tests/events.test.ts (8 tests) 640ms
+     ✓ skips the retry hint and keepalive comment  318ms
+ ✓ tests/sha256.test.ts (3 tests) 738ms
+     ✓ matches the known digest of "abc"  707ms
+ ✓ tests/client.test.ts (9 tests) 2260ms
+     ✓ attaches the csrf header to unsafe methods  1496ms
+ ✓ tests/health.test.ts (8 tests) 2407ms
+     ✓ accepts a successful explicit status  2015ms
+ ✓ tests/evidence.test.ts (11 tests) 444ms
+ ✓ tests/candidates.test.ts (4 tests) 2486ms
+     ✓ reads the documented candidates path without query parameters by default  2120ms
+ ✓ tests/research.test.ts (8 tests) 1734ms
+     ✓ posts the name with an idempotency key and CSRF token  1039ms
+ ✓ tests/runs.test.ts (12 tests) 1365ms
+     ✓ reads the run projection from the documented path  701ms
+ ✓ tests/upload.test.ts (12 tests) 1241ms
+     ✓ walks hashing → session → transfer → complete and returns refreshed versions  1098ms
+
+ Test Files  11 passed (11)
+      Tests  94 passed (94)
+   Start at  19:31:23
+   Duration  21.26s (transform 27.12s, setup 0ms, import 39.63s, tests 14.38s, environment 149ms)
+
+
+> axiom-frontend@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 68 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.37 kB │ gzip:  0.29 kB
+dist/assets/index-BMP1Bzae.css   11.55 kB │ gzip:  2.23 kB
+dist/assets/index-Dc4ZBp0O.js   154.30 kB │ gzip: 55.27 kB
+
+✓ built in 6.25s

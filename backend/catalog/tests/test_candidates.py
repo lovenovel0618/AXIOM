@@ -357,6 +357,68 @@ class CandidateTests(TransactionTestCase):
             frozen_submission(self.actor, self.version, [frozen], foreign_plan)
         self.assertEqual(bad_plan.exception.code, "VERIFICATION_PLAN_MISMATCH")
 
+    def store_many(self) -> list[Candidate]:
+        """確定性產生兩個同結構去重後的候選，供分頁切片的 HTTP 測試使用。"""
+        report = search(request([(-1.0, 4.0), (0.0, 4.0), (1.0, 4.0)], [(2.0, 4.0)]))
+        with transaction.atomic():
+            return persist(self.actor, self.version, self.budget, report)
+
+    def search_run(self) -> RuntimeRun:
+        return RuntimeRun.objects.get(document__type="SEARCH")
+
+    def test_candidates_http_page_is_ranked_paged_and_owner_scoped(self) -> None:
+        rows = self.store_many()
+        self.assertEqual(len(rows), 2)
+        run = self.search_run()
+        self.client.force_login(self.actor.user)
+        response = self.client.get(f"/api/v2/runs/{run.id}/candidates")
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual([item["id"] for item in body["items"]], [str(row.id) for row in rows])
+        self.assertIsNone(body["next_cursor"])
+        first = self.client.get(f"/api/v2/runs/{run.id}/candidates?limit=1").json()
+        self.assertEqual([item["id"] for item in first["items"]], [str(rows[0].id)])
+        self.assertIsNotNone(first["next_cursor"])
+        second = self.client.get(f"/api/v2/runs/{run.id}/candidates?limit=1&cursor={first['next_cursor']}").json()
+        self.assertEqual([item["id"] for item in second["items"]], [str(rows[1].id)])
+        self.assertIsNone(second["next_cursor"])
+        self.client.force_login(self.other.user)
+        self.assertEqual(self.client.get(f"/api/v2/runs/{run.id}/candidates").status_code, 404)
+
+    def test_candidates_http_rejects_bad_params_and_unknown_runs(self) -> None:
+        self.store()
+        run = self.search_run()
+        fit_run = RuntimeRun.objects.filter(document__type="FIT").first()
+        assert fit_run is not None
+        self.client.force_login(self.actor.user)
+        for query in ("limit=0", "limit=201", "limit=x", "offset=1"):
+            with self.subTest(query=query):
+                self.assertEqual(self.client.get(f"/api/v2/runs/{run.id}/candidates?{query}").status_code, 422)
+        self.assertEqual(self.client.get(f"/api/v2/runs/{run.id}/candidates?cursor=bogus").status_code, 400)
+        self.assertEqual(self.client.get(f"/api/v2/runs/{uuid4()}/candidates").status_code, 404)
+        self.assertEqual(self.client.get(f"/api/v2/runs/{fit_run.id}/candidates").status_code, 404)
+
+    def test_formula_fit_and_frozen_reads_are_owner_scoped(self) -> None:
+        rows = self.store()
+        candidate = rows[0]
+        fit = FitRun.objects.get(pk=UUID(candidate.document["fit_run_ids"][0]))
+        representation = RepresentationSpec.objects.get(pk=fit.representation_artifact_id)
+        with transaction.atomic():
+            frozen = frozen_candidate(self.actor, candidate, fit, candidate.equation_version, representation, self.version)
+        routes = ((f"/api/v2/equation-versions/{candidate.equation_version_id}", candidate.equation_version_id),
+            (f"/api/v2/fit-runs/{fit.id}", fit.id), (f"/api/v2/frozen-candidates/{frozen.id}", frozen.id))
+        self.client.force_login(self.actor.user)
+        for path, identity in routes:
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json()["id"], str(identity))
+        self.client.force_login(self.other.user)
+        for path, _identity in routes:
+            with self.subTest(path=path):
+                self.assertEqual(self.client.get(path).status_code, 404)
+        self.assertEqual(self.client.get(f"/api/v2/equation-versions/{uuid4()}").status_code, 404)
+
     def test_frozen_submission_http_detail_requires_owner_scope(self) -> None:
         rows = self.store()
         candidate = rows[0]

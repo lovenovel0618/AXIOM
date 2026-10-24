@@ -17,7 +17,17 @@ import {
   type ResearchVersion,
   type ResearchVersionStatus,
 } from '../api/research'
+import {
+  getEquationVersion,
+  getFitRun,
+  listRunCandidates,
+  MAX_COMPARISON,
+  type Candidate,
+  type EquationVersion,
+  type FitRun,
+} from '../api/candidates'
 import { type Run, type RunStatus } from '../api/runs'
+import CandidateComparison from '../components/CandidateComparison.vue'
 import ResearchVersionForm from '../components/ResearchVersionForm.vue'
 import { getArtifactContent } from '../api/artifacts'
 import { getEvidenceBundle } from '../api/evidence'
@@ -46,6 +56,12 @@ const versions = ref<ResearchVersion[]>([])
 const selected = ref<Research | null>(null)
 const selectedVersion = ref<ResearchVersion | null>(null)
 const runs = ref<Run[]>([])
+const candidates = ref<Candidate[]>([])
+const pinned = ref<string[]>([])
+const equations = ref<Record<string, EquationVersion>>({})
+const fits = ref<Record<string, FitRun>>({})
+const candidatesLoading = ref(false)
+const detailsLoading = ref(false)
 const quality = ref<QualityReport | null>(null)
 const qualityLoading = ref(false)
 const bundle = ref<EvidenceBundle | null>(null)
@@ -81,6 +97,9 @@ const runStatusLabel: Record<RunStatus, string> = {
 const canTrigger = computed<boolean>(
   () => selectedVersion.value !== null && selectedVersion.value.status === 'DRAFT' && !triggering.value,
 )
+
+/** 候選掛在 SEARCH root 之下；FIT root 沒有候選，因此只認 SEARCH。 */
+const searchRun = computed<Run | null>(() => runs.value.find((row) => row.type === 'SEARCH') ?? null)
 
 const blindEvaluation = computed(() => {
   const version = selectedVersion.value
@@ -176,6 +195,7 @@ async function select(research: Research): Promise<void> {
   selected.value = research
   selectedVersion.value = null
   runs.value = []
+  resetCandidates()
   versions.value = []
   error.value = ''
   notice.value = ''
@@ -199,6 +219,7 @@ async function pickVersion(version: ResearchVersion): Promise<void> {
   stopFollowingResearch()
   selectedVersion.value = version
   runs.value = []
+  resetCandidates()
   quality.value = null
   bundle.value = null
   researchEvents.value = []
@@ -218,7 +239,74 @@ async function reloadRuns(): Promise<void> {
     runs.value = (await listResearchVersionRuns(client, version.id)).items
   } catch (cause) {
     error.value = describeError(cause)
+    return
   }
+  await loadCandidates()
+}
+
+function resetCandidates(): void {
+  candidates.value = []
+  pinned.value = []
+  equations.value = {}
+  fits.value = {}
+}
+
+/** 只抓釘選候選的公式與擬合；單一候選失敗不影響其他欄位。 */
+async function loadCandidateDetails(ids: string[]): Promise<void> {
+  const rows = candidates.value.filter((row) => ids.includes(row.id))
+  if (rows.length === 0) return
+  detailsLoading.value = true
+  try {
+    const results = await Promise.all(
+      rows.map(async (row) => {
+        const equation = await getEquationVersion(client, row.equation_version_id)
+        const fitId = row.fit_run_ids[0]
+        const fit = fitId === undefined ? null : await getFitRun(client, fitId)
+        return { equation, fit }
+      }),
+    )
+    const nextEquations: Record<string, EquationVersion> = {}
+    const nextFits: Record<string, FitRun> = {}
+    for (const result of results) {
+      nextEquations[result.equation.id] = result.equation
+      if (result.fit !== null) nextFits[result.fit.id] = result.fit
+    }
+    equations.value = { ...equations.value, ...nextEquations }
+    fits.value = { ...fits.value, ...nextFits }
+  } catch (cause) {
+    error.value = describeError(cause)
+  } finally {
+    detailsLoading.value = false
+  }
+}
+
+/** SEARCH run 的候選一律整頁讀取；前端只釘選前四條，不自行排序或補值。 */
+async function loadCandidates(): Promise<void> {
+  resetCandidates()
+  const run = searchRun.value
+  if (run === null) return
+  candidatesLoading.value = true
+  try {
+    const page = await listRunCandidates(client, run.id, { limit: 200 })
+    candidates.value = page.items
+    const initial = page.items.slice(0, MAX_COMPARISON).map((row) => row.id)
+    pinned.value = initial
+    await loadCandidateDetails(initial)
+  } catch (cause) {
+    error.value = describeError(cause)
+  } finally {
+    candidatesLoading.value = false
+  }
+}
+
+async function togglePin(id: string): Promise<void> {
+  if (pinned.value.includes(id)) {
+    pinned.value = pinned.value.filter((row) => row !== id)
+    return
+  }
+  if (pinned.value.length >= MAX_COMPARISON) return
+  pinned.value = [...pinned.value, id]
+  await loadCandidateDetails([id])
 }
 
 /** 品質報告是遮罩產物；未產生時不顯示任何推測內容。 */
@@ -518,6 +606,19 @@ onUnmounted(stopFollowingResearch)
               <span class="muted mono">{{ row.id }}</span>
             </li>
           </ul>
+
+          <h3>候選比較</h3>
+          <p v-if="searchRun === null" class="muted">此版本尚無 SEARCH 任務；執行搜尋後才會產生候選。</p>
+          <p v-else-if="candidatesLoading" class="muted">讀取候選中…</p>
+          <CandidateComparison
+            v-else
+            :candidates="candidates"
+            :pinned="pinned"
+            :equations="equations"
+            :fits="fits"
+            :details-loading="detailsLoading"
+            @toggle="togglePin"
+          />
 
           <h3>研究事件</h3>
           <p class="muted" aria-live="polite">

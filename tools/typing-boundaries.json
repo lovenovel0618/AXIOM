@@ -106,8 +106,8 @@
   },
   "backend/catalog/candidates.py": {
     "Any": 0,
-    "JsonObject": 11,
-    "reason": "候選、擬合與兩個 recipe 皆為 schema 文件邊界；額度只可收斂，不代表核心已具體型別化。"
+    "JsonObject": 13,
+    "reason": "候選、擬合與兩個 recipe 皆為 schema 文件邊界；新增候選分頁投影後同步擴列，之後只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/freezing.py": {
     "Any": 0,

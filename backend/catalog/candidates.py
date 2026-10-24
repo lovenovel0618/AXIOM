@@ -1,23 +1,29 @@
-"""候選、擬合與兩個 recipe 的權威落庫：觀測切分、識別表徵、候選身分與擬合結果。
+"""候選、擬合與兩個 recipe 的權威落庫與授權讀取：觀測切分、識別表徵、候選身分、擬合結果與凍結副本。
 
-Offline candidate, fit and recipe persistence; no dispatch, no scoring and no final_test.
+Offline candidate, fit and recipe persistence plus owner-scoped reads; no dispatch, no scoring and no final_test.
 
 本模組只把 #3 的離線搜尋報告落成不可變列，不派送 run、不建 InputSnapshot、不建帳本列，
 也不評估 final_test。`SEARCH`／`FIT` root 由 `catalog.search_run` 建立並停在 `QUEUED`，
 `catalog.tasks` 的兩個 relay 只掃 INGEST 與 ProfileBinding，因此不會被撿走。"""
 from collections.abc import Sequence
 from uuid import UUID, uuid4
+from django.core import signing
+from django.db.models import Q
 from catalog.equations import register as register_equation
-from catalog.models import Account, Candidate, EquationVersion, FitRun, ObservationSplit, RepresentationSpec, ResearchBudget, ResearchVersion
+from catalog.models import Account, Candidate, EquationVersion, FitRun, FrozenCandidate, ObservationSplit, RepresentationSpec, ResearchBudget, ResearchVersion
+from catalog.research import version_for
 from catalog.search_run import create as create_root_run
+from catalog.validation import ApiError, validate_api
 from mathematics.compiler import compile_dsl
 from runtime.contracts import JsonObject, canonical_bytes, identity_hash, validate
+from runtime.models import RuntimeRun
 from runtime.records import db_now
 
 PRECISION_BITS = 53
 IDENTITY_METHOD = "IDENTITY"
 IDENTITY_CONFIG: JsonObject = {"method": IDENTITY_METHOD, "input_dimension": 1, "output_dimension": 1,
     "inverse_kind": "EXACT", "information_loss": False}
+CANDIDATES_SALT = "axiom-candidates-v1"
 
 
 def rows_hash(rows: Sequence[int]) -> str:
@@ -129,3 +135,71 @@ def persist(actor: Account, version: ResearchVersion, budget: ResearchBudget, re
             _parameters(entry["dsl"]), fit_rows, fit_hash)
         rows.append(_candidate(actor, search_run.id, equation, rank, optimizer, fit))
     return rows
+
+
+def _search_run(actor: Account, identity: UUID) -> RuntimeRun:
+    """SEARCH root 授權：租戶分區、非 control probe，且研究版本必須屬於 actor。"""
+    row = RuntimeRun.objects.filter(pk=identity, tenant_id=actor.tenant_id, control_only=False).first()
+    if row is None or row.document["type"] != "SEARCH":
+        raise ApiError("NOT_FOUND", 404)
+    version_for(actor, UUID(row.document["research_version_id"]))
+    return row
+
+
+def candidates_page(actor: Account, identity: UUID, cursor: str, limit: int) -> JsonObject:
+    """依 development_rank 穩定分頁同一 SEARCH 的候選；游標綁 actor／run 且 15 分鐘到期。"""
+    _search_run(actor, identity)
+    if not 1 <= limit <= 200:
+        raise ApiError("INVALID_SCHEMA", 422)
+    rows = Candidate.objects.filter(search_run_id=identity, tenant_id=actor.tenant_id).order_by("development_rank", "id")
+    if cursor:
+        try:
+            value = signing.loads(cursor, salt=CANDIDATES_SALT, max_age=900)
+            if value["actor"] != str(actor.id) or value["run"] != str(identity):
+                raise ValueError("Cursor scope")
+            rank, last = int(value["rank"]), UUID(value["id"])
+            rows = rows.filter(Q(development_rank__gt=rank) | Q(development_rank=rank, id__gt=last))
+        except (signing.BadSignature, ValueError, TypeError, KeyError) as error:
+            raise ApiError("INVALID_CURSOR", 400) from error
+    selected = list(rows[:limit + 1])
+    next_cursor = None
+    if len(selected) > limit:
+        last_row = selected[limit - 1]
+        next_cursor = signing.dumps({"actor": str(actor.id), "run": str(identity),
+            "rank": last_row.development_rank, "id": str(last_row.id)}, salt=CANDIDATES_SALT)
+    result: JsonObject = {"items": [row.document for row in selected[:limit]], "next_cursor": next_cursor}
+    validate_api(result, "CandidatePage")
+    return result
+
+
+def authorized_equation(actor: Account, identity: UUID) -> EquationVersion:
+    """公式版本只經其所屬候選的研究 owner 讀取；無候選引用或跨 owner 一律 404。"""
+    row = EquationVersion.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
+    if row is None:
+        raise ApiError("NOT_FOUND", 404)
+    candidate = Candidate.objects.select_related("search_run").filter(tenant_id=actor.tenant_id, equation_version_id=row.id).first()
+    if candidate is None:
+        raise ApiError("NOT_FOUND", 404)
+    version_for(actor, UUID(candidate.search_run.document["research_version_id"]))
+    validate_api(row.document, "EquationVersion")
+    return row
+
+
+def authorized_fit_run(actor: Account, identity: UUID) -> FitRun:
+    """擬合結果經表徵 recipe 回到研究版本驗 owner；跨租戶或跨 owner 一律 404。"""
+    row = FitRun.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
+    if row is None:
+        raise ApiError("NOT_FOUND", 404)
+    version_for(actor, row.representation_artifact.research_version_id)
+    validate_api(row.document, "FitRun")
+    return row
+
+
+def authorized_frozen_candidate(actor: Account, identity: UUID) -> FrozenCandidate:
+    """凍結副本經表徵 recipe 回到研究版本驗 owner；不因知道 UUID 就放行。"""
+    row = FrozenCandidate.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
+    if row is None:
+        raise ApiError("NOT_FOUND", 404)
+    version_for(actor, row.representation_artifact.research_version_id)
+    validate_api(row.document, "FrozenCandidate")
+    return row
