@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-24",
+  "scope": "T07_WORKBENCH_RESILIENCE_AND_M2_T1_STRATEGY_INTERFACE",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "716e18a",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "PARTIAL",
+  "product_gate_status": "NOT_RUN",
+  "delivery_boundary": {
+    "sse_state_machine": "IMPLEMENTED（frontend/src/lib/stream.ts 提供可測的 EventFollower：以 event_id／stream_scope:sequence 去重（dedupeBySequence）、指數退避且有上限（retryDelay 以伺服器 retry 為基準、上限 30s）、狀態機 FOLLOWING／RECONNECTING／STOPPED 並誠實回報 lastSyncedAt、attempts、error、gapDetected；終態只認 sync() 取回的權威投影）",
+    "sse_run_view": "IMPLEMENTED（frontend/src/views/RunView.vue 由固定輪詢改為契約事件端點 GET /api/v2/runs/{id}/events，帶 Last-Event-ID 續接；畫面顯示最後同步時間與重連狀態）",
+    "sse_research_view": "IMPLEMENTED（frontend/src/views/ResearchView.vue 同樣改為 GET /api/v2/research-versions/{id}/events 串流；移除舊 POLL_MS 輪詢與 researchCursor 等殘留狀態）",
+    "cursor_expiry_recovery": "IMPLEMENTED（收到 400 INVALID_CURSOR 時標記 gapDetected 並呼叫 snapshotCursor() 重新讀取權威資源的 current_event_cursor 後續接；取不到時維持原游標並繼續重連，畫面明示缺口）",
+    "run_list_reopen": "IMPLEMENTED（frontend/src/views/ResearchView.vue 以 ?version= query 記憶選定版本；reloadVersions 後 restoreVersion 還原、pickVersion 重建 Run 清單、品質報告、證據包與事件串流，route watch 同步外部導覽）",
+    "dataset_runs_endpoint": "IMPLEMENTED（backend/catalog/read_http.py::dataset_runs 實作契約已宣告的 GET /api/v2/datasets/{id}/runs：只允許 cursor／limit 查詢（其餘 422）、limit 1～200、以 signing.dumps({actor,dataset,created,id}, salt='axiom-dataset-runs-v1', max_age=900) 簽章游標分頁、依 document.created_at／id 遞減穩定排序、validate_api(..., \"RunPage\")；routing 於 backend/config/urls.py）",
+    "imports_page_run_recovery": "IMPLEMENTED（frontend/src/api/datasets.ts::listDatasetRuns 與 frontend/src/views/DatasetsView.vue 的『匯入任務』表：重開匯入頁時尋回 INGEST 任務；清單失敗只提示不清空既有畫面）",
+    "upload_session_renewal": "IMPLEMENTED（frontend/src/lib/upload.ts 於工作階段過期（403 FORBIDDEN／409 INVALID_TRANSITION）時另建 upload session 重傳，並以 renewedSession 旗標讓 UI 明示『原工作階段已過期、已重新傳輸、不提供續傳』，不假稱可續傳）",
+    "strategy_interface": "IMPLEMENTED（backend/mathematics/search.py 收斂為 frozen dataclass Strategy{family, manifest, variants, propose} 與集中常數 STRATEGIES；LINEAR／POLYNOMIAL／HARMONIC 共用同一提出候選入口與成本帳 _cost／_cost_key，外部行為、診斷碼、候選順序與 JSON 形狀不變）",
+    "contract_reuse": "ENFORCED（/runs/{id}/events、/research-versions/{id}/events、/datasets/{id}/runs 皆已存在於 openapi-v2.json 與 21-API與任務契約.md；本切片只實作不新增契約，api_operations 維持 28）",
+    "not_delivered": "NOT_IMPLEMENTED（證據檢視 UI、槽位最終評估狀態與曝光預算視圖；M2-T2 起多項式／諧波策略接入）",
+    "measurement_markers": "usage_scope=LOCAL_WORKBENCH_RESILIENCE_AND_INTERFACE_CONVERGENCE、product_status=NOT_RUN、precision_bits=53"
+  },
+  "tests": {
+    "postgresql_backend": 395,
+    "previous_backend": 390,
+    "new_slice_tests": 5,
+    "new_tests_breakdown": {
+      "backend/catalog/tests/test_business_ingest.py": 1,
+      "backend/mathematics/test_search.py": 4
+    },
+    "focused_regression": "catalog.tests.test_business_ingest 20／20 OK（新增 dataset runs 分頁與 scope 測試）",
+    "unittest_command": "docker compose -p axiom-dev run --rm -v \"$PWD/backend\":/app -v \"$PWD/docs/企劃案/contracts\":/app/contracts web python manage.py test foundation.tests runtime.tests catalog.tests mathematics.tests mathematics.test_linalg mathematics.test_search mathematics.test_comparison ingestion.tests --noinput",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "CHANGED_THIS_SLICE",
+      "typecheck": "vue-tsc --noEmit 0 error",
+      "vitest": "13 檔 114／114 passed（新增 tests/stream.test.ts 12、tests/datasets.test.ts 2；tests/events.test.ts 擴充至 12、tests/upload.test.ts 擴充至 14）",
+      "build": "vite build 成功（69 modules；dist/assets/index-C8UWuPRj.js 159.78 kB）"
+    }
+  },
+  "strict_pyright": {
+    "version": "1.1.414",
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0,
+    "informations": 0
+  },
+  "typing_policy": "PASS（{\"status\": \"PASS\", \"errors\": []}；新增的 backend/catalog/read_http.py::dataset_runs 沿用既有檔案的 JsonObject 標註，未新增逃生門，tools/typing-boundaries.json 配額不變）",
+  "engineering_tools": {
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS（validation_status PASS、product_status NOT_RUN、errors 空、M0 closure 未達）",
+    "public_oracle": "PASS（scope PUBLIC_REFERENCE_ONLY、source_sha256 d87c73c3d13590aa9954ac33a52ffdb7442d5a592cfd4c442559d2f6ed18f7d9）",
+    "docs_check": "exit 0（markdown 57、chapters 54、links 379、acceptance_cases 326、schemas 6、contract_examples 110、api_operations 28、contract_scenarios 272、review_findings 36、attachment_requirements 32、error_codes 54、capabilities 6、policies 1、public_fixture_oracles 4、manifest_files 86、product_test_status NOT_RUN）"
+  },
+  "integration": {
+    "sse_dedupe_by_identity": "PASS（同批重送與跨批重播皆依 event_id／scope:sequence 去重，已顯示事件不重播亦不被舊版本覆蓋）",
+    "sse_backoff_bounded": "PASS（attempts 遞增時延遲以 retry 為基準指數成長並封頂 30s；成功一批即歸零 attempts 與 error）",
+    "sse_cursor_expiry_snapshot": "PASS（INVALID_CURSOR 時 gapDetected 為真並改以權威 current_event_cursor 續接；取不到時保留原游標並明示無法取得同步點）",
+    "sse_terminal_stop": "PASS（sync() 取回的權威投影為終態時停止追蹤，不再排程下一批）",
+    "run_list_restored_from_url": "PASS（?version= 指向的版本被還原並重建 Run 清單、品質報告與證據包；缺少該 query 時退回最新一筆）",
+    "dataset_runs_scoped_and_paged": "PASS（依 dataset 與 tenant 過濾、created_at／id 遞減、limit＋1 決定 next_cursor；未知 query 與 limit 越界回 422、壞簽章與跨資料集游標回 400、未知與跨租戶資料集回 404）",
+    "upload_session_expiry_handled": "PASS（FORBIDDEN／INVALID_TRANSITION 時另建 session 重傳並回報 renewedSession；CHECKSUM_MISMATCH 等無關失敗不重建 session）",
+    "strategy_interface_behavior_unchanged": "PASS（三族 manifest 唯一且維持宣告順序、共用成本帳與最小來源手算一致、各家族失敗分類碼不變）",
+    "makemigrations_check": "No changes detected",
+    "product_gate_status": "NOT_RUN",
+    "g2_status": "BLOCKED（D-03 未關）"
+  },
+  "changed_sources": {
+    "backend/catalog/read_http.py": "fbb806e04bc27699c7de8089cb256916c7b6901f19e3fbec1497da32b657f3ed",
+    "backend/catalog/tests/test_business_ingest.py": "c981517d213a746698f855275c91d5ff8fd9180ccfd483c673904cb713bdcf2f",
+    "backend/config/urls.py": "fe76882c22df7246388cc3684373e911e0a89348c2a2d85a3e02bf80724d818c",
+    "backend/mathematics/search.py": "0cdcdc48d91bdaf52b3c085b0b90ccd005910cfdadab9ea3cd3fba3fca204417",
+    "backend/mathematics/test_search.py": "c2e260360b28e54a44083a007229196eb71cdfd3b7596fce9098d454ceca6032",
+    "frontend/src/api/datasets.ts": "25ab0d5144314cd811f12d60c9626f7f9f6352632453786323370b2b477c12f5",
+    "frontend/src/api/research.ts": "e56873601b85f16e5a5559617e2885f5b64f3808a1065d0a5fe1027b89be417a",
+    "frontend/src/api/runs.ts": "132bbe4344cd9d5387e33859cf575021fce46ad0426e3d3d3fac7421bfec2f45",
+    "frontend/src/lib/events.ts": "f1cfe7a1753a60d6a42a199bf4dab9df94e12cc602d81d95093c8ba5c10f058f",
+    "frontend/src/lib/stream.ts": "c8ffd20c0059faa28f2d62e58f32f464dd3450e250e60b668c4433fc08e9162b",
+    "frontend/src/lib/upload.ts": "bdfc5c0eb97d33099068061b5370cf05f2cb8f154bcd03856b52d25cf2b31700",
+    "frontend/src/views/DatasetsView.vue": "9ad0a7501be66ae863a741187ec13cb392f5e8c2e0a319bc526299d44954ce4d",
+    "frontend/src/views/ResearchView.vue": "653039879037b758ccd4c789558dbca5bc66391ed0f8e5e262ce188fa31812b7",
+    "frontend/src/views/RunView.vue": "bb57bce9c2aefbfa2b3427548a374eb78effb0e35726aefc4e33f58f1e013ac2",
+    "frontend/tests/events.test.ts": "3ed169aa42c53895a4cdc756498fedd466e0e83f5ea285090a5c8a2397c3b6da",
+    "frontend/tests/upload.test.ts": "64fbce00de24925b61e1bb930fea96c521b812b9c510e7b35a7be1a6c8849161",
+    "frontend/tests/datasets.test.ts": "df5378cac210ee58981b75264630043d28def7bb1a4ddd258dd0b9ce7aacde7a",
+    "frontend/tests/stream.test.ts": "5fdd96751685014603b0fc0ad9218c7a739eafb1425e49076f014f6302cff0e8",
+    "docs/技術文件/M0/t07-resilience-backend-tests.txt": "e3a610f2d5a7fd4036e9a498b02d88f5f17f9c723ef9545de723691b2ba0f526",
+    "docs/技術文件/M0/t07-resilience-frontend-tests.txt": "ff5ed2a9763d31d16c840bf9968bee5f465700bda82b930a707a0e7f8ec655cc"
+  },
+  "known_limits": [
+    "前端以契約事件端點做有界批次續接（帶 Last-Event-ID、每批上限 limit），不是長連線 EventSource；不宣稱瀏覽器原生自動重連語意",
+    "游標過期只重取權威 snapshot 的目前序號後續接，已顯示事件不重播；曾發生的缺口以 gapDetected 明示而非靜默補齊",
+    "上傳工作階段過期一律重新傳輸整份位元組並明示，不提供續傳；證據檢視 UI 與槽位最終評估狀態／曝光預算視圖仍未接",
+    "M2-T1 只做介面與成本帳收斂，M2-T2 起的多項式／諧波策略接入未開工",
+    "本機未重跑 SonarQube（無工作區憑證），不以舊的零項目結果頂替",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}

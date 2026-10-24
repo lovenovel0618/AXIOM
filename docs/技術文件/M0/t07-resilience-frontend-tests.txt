@@ -1,0 +1,45 @@
+
+> axiom-frontend@0.0.0 typecheck
+> vue-tsc --noEmit
+
+
+> axiom-frontend@0.0.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/dino/DinoProject/AXIOM/frontend
+
+ ✓ tests/evidence.test.ts (11 tests) 65ms
+ ✓ tests/client.test.ts (9 tests) 216ms
+ ✓ tests/health.test.ts (8 tests) 156ms
+ ✓ tests/sha256.test.ts (3 tests) 135ms
+ ✓ tests/events.test.ts (12 tests) 59ms
+ ✓ tests/semantics.test.ts (11 tests) 49ms
+ ✓ tests/formula.test.ts (8 tests) 43ms
+ ✓ tests/datasets.test.ts (2 tests) 310ms
+ ✓ tests/candidates.test.ts (4 tests) 377ms
+     ✓ reads the documented candidates path without query parameters by default  323ms
+ ✓ tests/stream.test.ts (12 tests) 283ms
+ ✓ tests/runs.test.ts (12 tests) 286ms
+ ✓ tests/research.test.ts (8 tests) 299ms
+ ✓ tests/upload.test.ts (14 tests) 274ms
+
+ Test Files  13 passed (13)
+      Tests  114 passed (114)
+   Start at  21:49:51
+   Duration  2.23s (transform 7.73s, setup 0ms, import 10.92s, tests 2.55s, environment 44ms)
+
+
+> axiom-frontend@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 69 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.37 kB │ gzip:  0.29 kB
+dist/assets/index-BUYVEHoi.css   11.68 kB │ gzip:  2.24 kB
+dist/assets/index-C8UWuPRj.js   159.78 kB │ gzip: 56.85 kB
+
+✓ built in 2.10s

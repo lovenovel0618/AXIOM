@@ -9,7 +9,7 @@ from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from fractions import Fraction
 import json
 import math
-from typing import cast
+from typing import Callable, cast
 from mathematics.compiler import UNIT_ERROR, Plan, compile_dsl
 from mathematics.linalg import solve
 from mathematics.metrics import score
@@ -113,6 +113,15 @@ class Proposal:
     fit_rows: int
     unknowns: int
     pivots: int
+
+
+@dataclass(frozen=True)
+class Strategy:
+    """AX-38 共用策略介面：LINEAR／POLYNOMIAL／HARMONIC 共用同一個提出候選入口與 manifest。"""
+    family: str
+    manifest: Manifest
+    variants: tuple[tuple[int, str], ...]
+    propose: Callable[[Request, int], tuple[list[Proposal], list[Diagnostic]]]
 
 
 def _text(document: JsonObject, name: str) -> str:
@@ -370,10 +379,11 @@ def _harmonic(request: Request, index: int) -> tuple[list[Proposal], list[Diagno
     return [_proposal(request, f"harmonic-fit:k={index}", parameters, values, root, result.columns, result.pivots)], diagnostics
 
 
-def _runners() -> tuple[tuple[str, Manifest, Sequence[tuple[int, str]]], ...]:
-    return ((LINEAR, MANIFESTS[0], ((0, "linear-fit"),)),
-            (POLYNOMIAL, MANIFESTS[1], ((2, "degree-2"), (3, "degree-3"))),
-            (HARMONIC, MANIFESTS[2], ((1, "k=1"), (2, "k=2"), (3, "k=3"))))
+# 三家族共用同一介面；LINEAR 只有單一變體，propose 依約定忽略 variant index。
+STRATEGIES: tuple[Strategy, ...] = (
+    Strategy(LINEAR, MANIFESTS[0], ((0, "linear-fit"),), lambda request, _index: _linear(request)),
+    Strategy(POLYNOMIAL, MANIFESTS[1], ((2, "degree-2"), (3, "degree-3")), _polynomial),
+    Strategy(HARMONIC, MANIFESTS[2], ((1, "k=1"), (2, "k=2"), (3, "k=3")), _harmonic))
 
 
 def _cost(manifest_value: Manifest, proposal: Proposal, development_rows: int) -> JsonObject:
@@ -388,12 +398,6 @@ def _cost_key(cost: JsonObject) -> tuple[int, int, int, int, int, int, int, str]
             cost["timeout_seconds"], cost["memory_bytes"], cost["resource_class"])
 
 
-def _execute(request: Request, family: str, index: int) -> tuple[list[Proposal], list[Diagnostic]]:
-    if family == LINEAR:
-        return _linear(request)
-    return _polynomial(request, index) if family == POLYNOMIAL else _harmonic(request, index)
-
-
 def search(request: Request) -> JsonObject:
     """在 fit 上擬合、只在 development 上評分，回傳帶診斷與成本形狀的確定性候選順序。"""
     require(len(request.variable.unit) == 7 and len(request.target_unit) == 7, UNIT_ERROR)
@@ -404,14 +408,14 @@ def search(request: Request) -> JsonObject:
     plans: dict[str, Plan] = {}
     bindings: dict[str, dict[str, str]] = {}
     proposed = 0
-    for family, declared, variants in _runners():
+    for registered in STRATEGIES:
         diagnostics: list[Diagnostic] = []
         selected: list[Proposal] = []
-        for index, _label in variants:
+        for index, _label in registered.variants:
             try:
-                produced, notes = _execute(request, family, index)
+                produced, notes = registered.propose(request, index)
             except DslError as error:
-                diagnostics.extend([Diagnostic(error.code, f"{family} variant {index} rejected")])
+                diagnostics.extend([Diagnostic(error.code, f"{registered.family} variant {index} rejected")])
                 continue
             selected.extend(produced)
             diagnostics.extend(notes)
@@ -420,9 +424,12 @@ def search(request: Request) -> JsonObject:
             identity = proposal.plan.identity_hash
             plans.setdefault(identity, proposal.plan)
             bindings.setdefault(identity, proposal.parameters)
-            origins.setdefault(identity, []).append((proposal.source, _cost(declared, proposal, len(request.development))))
-        strategies.append(declared.document() | {"family": family, "status": EXECUTED if selected else NOT_APPLICABLE,
-            "proposed_count": len(selected), "diagnostics": [entry.document() for entry in diagnostics]})
+            # 成本帳共用同一個 _cost 出口，三個家族不各自複製欄位形狀。
+            origins.setdefault(identity, []).append((proposal.source,
+                _cost(registered.manifest, proposal, len(request.development))))
+        strategies.append(registered.manifest.document() | {"family": registered.family,
+            "status": EXECUTED if selected else NOT_APPLICABLE, "proposed_count": len(selected),
+            "diagnostics": [note.document() for note in diagnostics]})
     candidates: list[JsonObject] = []
     ranking: list[tuple[tuple[object, ...], JsonObject]] = []
     for identity, sources in origins.items():

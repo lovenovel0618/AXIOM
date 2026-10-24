@@ -53,6 +53,40 @@ def versions(request: HttpRequest, actor: Account, identity: UUID) -> JsonRespon
     return JsonResponse(result)
 
 
+@allowed_methods(["GET"])
+@api
+def dataset_runs(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """以租戶分區查資料集的真實 run 分頁，簽章 cursor 綁 actor／資料集且有期限。"""
+    dataset_for(actor, identity)
+    if set(request.GET).difference({"cursor", "limit"}):
+        raise ApiError("INVALID_SCHEMA", 422)
+    try:
+        limit = int(request.GET.get("limit", "50"))
+    except ValueError as error:
+        raise ApiError("INVALID_SCHEMA", 422) from error
+    if not 1 <= limit <= 200:
+        raise ApiError("INVALID_SCHEMA", 422)
+    rows = RuntimeRun.objects.filter(tenant_id=actor.tenant_id, control_only=False, document__dataset_id=str(identity)).order_by("-document__created_at", "-id")
+    cursor = request.GET.get("cursor", "")
+    if cursor:
+        try:
+            value = signing.loads(cursor, salt="axiom-dataset-runs-v1", max_age=900)
+            if value["actor"] != str(actor.id) or value["dataset"] != str(identity):
+                raise ValueError("Cursor scope")
+            created, last = value["created"], UUID(value["id"])
+            rows = rows.filter(Q(document__created_at__lt=created) | Q(document__created_at=created, id__lt=last))
+        except (signing.BadSignature, ValueError, TypeError, KeyError) as error:
+            raise ApiError("INVALID_CURSOR", 400) from error
+    page = list(rows[:limit + 1])
+    next_cursor = None
+    if len(page) > limit:
+        last_row = page[limit - 1]
+        next_cursor = signing.dumps({"actor": str(actor.id), "dataset": str(identity), "created": last_row.document["created_at"], "id": str(last_row.id)}, salt="axiom-dataset-runs-v1")
+    result = {"items": [project(row.document, "Run") for row in page[:limit]], "next_cursor": next_cursor}
+    validate_api(result, "RunPage")
+    return JsonResponse(result)
+
+
 def run_for(actor: Account, identity: UUID) -> RuntimeRun:
     """拒絕 control probe；PROFILE 額外驗研究 owner，INGEST 驗租戶分區。"""
     row = RuntimeRun.objects.filter(pk=identity,tenant_id=actor.tenant_id,control_only=False).first()

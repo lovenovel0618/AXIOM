@@ -5,6 +5,7 @@ import { MAX_UPLOAD_BYTES, deriveFormat, uploadDatasetFile, type UploadStage } f
 
 const DATASET_ID = '11111111-1111-1111-1111-111111111111'
 const UPLOAD_ID = '22222222-2222-2222-2222-222222222222'
+const RENEWED_UPLOAD_ID = '33333333-3333-3333-3333-333333333333'
 const CSRF = 'csrf-1'
 
 interface Call {
@@ -102,6 +103,81 @@ describe('uploadDatasetFile', () => {
 
     const created = calls.find((call) => call.url === `/api/v2/datasets/${DATASET_ID}/uploads`)
     expect(JSON.parse(String(created?.body))).toMatchObject({ filename: 'sample.csv', format: 'CSV', size_bytes: 8 })
+    expect(outcome.renewedSession).toBe(false)
+  })
+
+  it('creates a new session and re-transfers when the first session expired', async () => {
+    const calls: Call[] = []
+    let sessions = 0
+    let transfers = 0
+    const fetcher: Fetcher = async (url, init) => {
+      calls.push({ url, method: init?.method ?? 'GET', headers: new Headers(init?.headers), body: init?.body })
+      if (url === `/api/v2/datasets/${DATASET_ID}/uploads`) {
+        sessions += 1
+        const id = sessions === 1 ? UPLOAD_ID : RENEWED_UPLOAD_ID
+        return Response.json(
+          {
+            id,
+            dataset_id: DATASET_ID,
+            put_url: `http://127.0.0.1:18000/storage/uploads/${id}`,
+            expires_at: '2026-10-21T00:00:00Z',
+            required_headers: { 'X-Upload-Token': `token-${String(sessions)}` },
+          },
+          { status: 201 },
+        )
+      }
+      if (url.startsWith('/storage/uploads/')) {
+        transfers += 1
+        if (transfers === 1) return Response.json({ code: 'INVALID_TRANSITION' }, { status: 409 })
+        return new Response(null, { status: 204 })
+      }
+      if (url === `/api/v2/uploads/${RENEWED_UPLOAD_ID}/complete`) return okComplete()
+      if (url.startsWith(`/api/v2/datasets/${DATASET_ID}/versions`)) {
+        return Response.json({ items: [], next_cursor: null })
+      }
+      throw new Error(`unexpected request ${url}`)
+    }
+    const client = createApiClient(fetcher, () => CSRF)
+    const stages: UploadStage[] = []
+    const outcome = await uploadDatasetFile(client, DATASET_ID, csvFile(), (stage) => stages.push(stage))
+
+    expect(outcome.renewedSession).toBe(true)
+    expect(sessions).toBe(2)
+    expect(stages).toEqual(['hashing', 'session', 'transfer', 'session', 'transfer', 'complete'])
+    expect(calls.filter((call) => call.method === 'PUT').map((call) => call.url)).toEqual([
+      `/storage/uploads/${UPLOAD_ID}`,
+      `/storage/uploads/${RENEWED_UPLOAD_ID}`,
+    ])
+    const completed = calls.find((call) => call.url.includes('/complete'))
+    expect(completed?.url).toBe(`/api/v2/uploads/${RENEWED_UPLOAD_ID}/complete`)
+  })
+
+  it('does not renew the session for unrelated transfer failures', async () => {
+    let sessions = 0
+    const fetcher: Fetcher = async (url) => {
+      if (url === `/api/v2/datasets/${DATASET_ID}/uploads`) {
+        sessions += 1
+        return Response.json(
+          {
+            id: UPLOAD_ID,
+            dataset_id: DATASET_ID,
+            put_url: `http://127.0.0.1:18000/storage/uploads/${UPLOAD_ID}`,
+            expires_at: '2026-10-21T00:00:00Z',
+            required_headers: { 'X-Upload-Token': 'signed-token' },
+          },
+          { status: 201 },
+        )
+      }
+      if (url.startsWith('/storage/uploads/')) {
+        return Response.json({ code: 'CHECKSUM_MISMATCH' }, { status: 422 })
+      }
+      throw new Error(`unexpected request ${url}`)
+    }
+    const client = createApiClient(fetcher, () => CSRF)
+    await expect(uploadDatasetFile(client, DATASET_ID, csvFile())).rejects.toMatchObject({
+      code: 'CHECKSUM_MISMATCH',
+    })
+    expect(sessions).toBe(1)
   })
 
   it('refuses an unsupported extension before any network call', async () => {

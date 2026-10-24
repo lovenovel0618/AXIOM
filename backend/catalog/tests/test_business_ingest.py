@@ -268,6 +268,27 @@ class BusinessTests(TransactionTestCase):
         bad = self.client.get(f"/api/v2/datasets/{self.dataset}/versions", {"cursor": "tampered"})
         self.assertEqual(bad.status_code, 400)
 
+    def test_dataset_runs_page_and_scope(self) -> None:
+        first = self.enqueue()
+        second = self.enqueue(self.staged(b'x,y\n3,7\n'))
+        url = f"/api/v2/datasets/{self.dataset}/runs"
+        page = self.client.get(url, {"limit": 1}).json()
+        self.assertEqual([row["id"] for row in page["items"]], [str(second)])
+        resumed = self.client.get(url, {"limit": 1, "cursor": page["next_cursor"]}).json()
+        self.assertEqual([row["id"] for row in resumed["items"]], [str(first)])
+        self.assertIsNone(resumed["next_cursor"])
+        with transaction.atomic():
+            other = UUID(create_dataset(actor_for(self.actor.user_id), {"name": "other"})["id"])
+        self.assertEqual(self.client.get(f"/api/v2/datasets/{other}/runs", {"cursor": page["next_cursor"]}).status_code, 400)
+        self.assertEqual(self.client.get(url, {"limit": 201}).status_code, 422)
+        self.assertEqual(self.client.get(url, {"unknown": "x"}).status_code, 422)
+        self.assertEqual(self.client.get(url, {"cursor": "bad"}).status_code, 400)
+        self.assertEqual(self.client.get(f"/api/v2/datasets/{uuid4()}/runs").status_code, 404)
+        user = User.objects.create(username=uuid4().hex, password="!")
+        Account.objects.create(user=user, tenant=Tenant.objects.create(name="intruder"))
+        self.client.force_login(user)
+        self.assertEqual(self.client.get(url).status_code, 404)
+
     def test_parallel_complete_only_one_run(self) -> None:
         def invoke(_index: int) -> UUID:
             try:

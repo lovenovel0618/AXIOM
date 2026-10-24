@@ -3,12 +3,14 @@ from dataclasses import fields
 from fractions import Fraction
 import math
 from unittest import TestCase
-from mathematics.search import (HARMONIC, LINEAR, MANIFESTS, NOT_APPLICABLE, POLYNOMIAL, Domain, Request, Variable,
-    manifest, search)
+from mathematics.search import (HARMONIC, LINEAR, MANIFESTS, NOT_APPLICABLE, POLYNOMIAL, STRATEGIES, Domain, Request,
+    Variable, manifest, search)
 from mathematics.syntax import DslError
 from runtime.contracts import JsonObject
 
 DIMENSIONLESS = (0,) * 7
+COST_KEYS = ("fit_rows", "unknowns", "pivots", "nodes", "development_rows", "timeout_seconds", "memory_bytes",
+    "resource_class")
 
 
 def request(fit: list[tuple[float, float]], development: list[tuple[float, float]] | None = None) -> Request:
@@ -123,3 +125,48 @@ class SearchTests(TestCase):
         with self.assertRaises(DslError) as unsupported:
             manifest(declared | {"operators": ["add", "integrate"]})
         self.assertEqual(unsupported.exception.code, "UNSUPPORTED_OPERATOR")
+
+    def test_registry_keeps_three_unique_valid_manifests_in_declared_order(self) -> None:
+        self.assertEqual([registered.family for registered in STRATEGIES], [LINEAR, POLYNOMIAL, HARMONIC])
+        self.assertEqual([registered.manifest for registered in STRATEGIES], list(MANIFESTS))
+        self.assertEqual(len({registered.manifest.plugin_id for registered in STRATEGIES}), len(STRATEGIES))
+        for registered in STRATEGIES:
+            self.assertEqual(manifest(registered.manifest.document()), registered.manifest)
+
+    def test_shared_interface_serves_every_family_and_linear_ignores_the_variant_index(self) -> None:
+        fixture = request([(-1.0, 5.0), (0.0, 3.0), (1.0, 1.0)], [(2.0, -1.0)])
+        report = search(fixture)
+        for registered in STRATEGIES:
+            produced = [proposal for index, _label in registered.variants
+                for proposal in registered.propose(fixture, index)[0]]
+            self.assertEqual(strategy(report, registered.family)["proposed_count"], len(produced))
+        linear = STRATEGIES[0]
+        proposals, diagnostics = linear.propose(fixture, 0)
+        self.assertEqual(diagnostics, [])
+        self.assertEqual([proposal.source for proposal in proposals],
+            ["linear-fit:zero", "linear-fit:mean", "linear-fit:least-squares"])
+        self.assertEqual(linear.propose(fixture, 7), (proposals, diagnostics))
+
+    def test_cost_account_is_shared_and_the_minimum_origin_is_hand_checked(self) -> None:
+        report = search(request([(-1.0, 4.0), (0.0, 4.0), (1.0, 4.0)], [(2.0, 4.0)]))
+        for candidate in report["candidates"]:
+            self.assertEqual(tuple(candidate["cost_shape"]), COST_KEYS)
+            for origin in candidate["origins"]:
+                self.assertEqual(tuple(origin["cost_shape"]), COST_KEYS)
+            smallest = min((origin["cost_shape"] for origin in candidate["origins"]),
+                key=lambda shape: tuple(shape[name] for name in COST_KEYS))
+            self.assertEqual(candidate["cost_shape"], smallest)
+        merged = [candidate for candidate in report["candidates"] if len(candidate["origins"]) > 1]
+        self.assertEqual(len(merged), 1)
+        self.assertEqual(merged[0]["cost_shape"], {"fit_rows": 3, "unknowns": 1, "pivots": 0, "nodes": 1,
+            "development_rows": 1, "timeout_seconds": 30, "memory_bytes": 268435456, "resource_class": "CPU_LOCAL"})
+
+    def test_failure_classification_codes_are_unchanged_for_every_family(self) -> None:
+        insufficient = search(request([(1.0, 1.0), (1.0, 2.0)]))
+        self.assertEqual(codes(strategy(insufficient, LINEAR)), ["INSUFFICIENT_DISTINCT_X"])
+        self.assertEqual(codes(strategy(insufficient, POLYNOMIAL)),
+            ["INSUFFICIENT_DISTINCT_X", "INSUFFICIENT_DISTINCT_X"])
+        self.assertEqual(codes(strategy(insufficient, HARMONIC)), ["INSUFFICIENT_DISTINCT_X"] * 3)
+        degenerate = search(request([(float(x), 1.0) for x in range(4)]))
+        self.assertEqual(codes(strategy(degenerate, HARMONIC)), ["FIXED_PRECISION_FREQUENCY",
+            "FIXED_PRECISION_FREQUENCY", "ALIASING_RISK", "FIXED_PRECISION_FREQUENCY", "ALIASING_RISK", "RANK_DEFICIENT"])

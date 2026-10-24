@@ -1,31 +1,31 @@
 <script setup lang="ts">
 /**
- * 任務詳情：顯示後端 Run 投影，並以有界批次續接事件直到終態。
- * 事件與狀態一律重新向後端查詢，畫面不自行推測任務結果。
+ * 任務詳情：顯示後端 Run 投影，並訂閱契約的事件串流直到終態。
+ * 事件與狀態一律重新向後端查詢；連線中斷時顯示實際重連狀態而非凍結畫面。
  */
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { cancelRun, fetchRunEvents, getRun, isTerminal, type Run, type RunStatus } from '../api/runs'
-import { resumeCursor, type RunEventEnvelope } from '../lib/events'
+import { cancelRun, fetchRunEventBatch, getRun, isTerminal, type Run, type RunStatus } from '../api/runs'
+import {
+  EventFollower,
+  FOLLOW_STATUS_LABELS,
+  INITIAL_FOLLOW_STATE,
+  type FollowState,
+} from '../lib/stream'
 import { describeError } from '../lib/messages'
 import { client } from '../lib/session'
-
-const POLL_MS = 2000
 
 const route = useRoute()
 const runId = String(route.params.id ?? '')
 
 const run = ref<Run | null>(null)
-const events = ref<RunEventEnvelope[]>([])
-const cursor = ref<string | null>(null)
+const follow = ref<FollowState>(INITIAL_FOLLOW_STATE)
 const error = ref('')
 const notice = ref('')
 const loading = ref(false)
 const cancelling = ref(false)
-const following = ref(false)
 
-let timer: ReturnType<typeof setTimeout> | null = null
-let stopped = true
+let follower: EventFollower | null = null
 
 const statusLabel: Record<RunStatus, string> = {
   QUEUED: '排隊中',
@@ -50,53 +50,63 @@ const canCancel = computed<boolean>(() => {
   return current !== null && current.type === 'PROFILE' && !isTerminal(current.status)
 })
 
+const events = computed(() => follow.value.events)
+
+const followLabel = computed<string>(() => {
+  const current = follow.value
+  if (current.status === 'RECONNECTING') {
+    return `${FOLLOW_STATUS_LABELS.RECONNECTING}（第 ${String(current.attempts)} 次，最後同步內容保留顯示）`
+  }
+  return FOLLOW_STATUS_LABELS[current.status]
+})
+
 function summarize(payload: Record<string, unknown>): string {
   const text = JSON.stringify(payload)
   return text.length > 200 ? `${text.slice(0, 200)}…` : text
 }
 
-function stopFollowing(): void {
-  stopped = true
-  following.value = false
-  if (timer !== null) {
-    clearTimeout(timer)
-    timer = null
-  }
+async function syncRun(): Promise<void> {
+  run.value = await getRun(client, runId)
 }
 
-async function tick(): Promise<void> {
-  if (stopped) return
-  try {
-    const batch = await fetchRunEvents(client, runId, cursor.value)
-    if (batch.length > 0) {
-      events.value = [...events.value, ...batch]
-      cursor.value = resumeCursor(runId, batch)
-    }
-    run.value = await getRun(client, runId)
-  } catch (cause) {
-    error.value = describeError(cause)
-    stopFollowing()
-    return
-  }
-  if (run.value !== null && isTerminal(run.value.status)) {
-    stopFollowing()
-    return
-  }
-  timer = setTimeout(() => {
-    void tick()
-  }, POLL_MS)
+/** AX-21：游標過期時重新讀取權威 run 投影，取得目前序號後再續接。 */
+async function snapshotCursor(): Promise<string | null> {
+  const fresh = await getRun(client, runId)
+  run.value = fresh
+  return fresh.current_event_cursor
+}
+
+function stopFollowing(): void {
+  follower?.stop()
+  follower = null
 }
 
 async function start(): Promise<void> {
+  stopFollowing()
   loading.value = true
   error.value = ''
   notice.value = ''
-  cursor.value = null
-  events.value = []
-  stopped = false
-  following.value = true
-  await tick()
+  follow.value = INITIAL_FOLLOW_STATE
+  try {
+    await syncRun()
+  } catch (cause) {
+    error.value = describeError(cause)
+    loading.value = false
+    return
+  }
   loading.value = false
+  follower = new EventFollower({
+    scope: 'RUN',
+    streamId: runId,
+    fetchBatch: (cursor) => fetchRunEventBatch(client, runId, cursor),
+    sync: syncRun,
+    isTerminal: () => run.value !== null && isTerminal(run.value.status),
+    snapshotCursor,
+    onUpdate: (next) => {
+      follow.value = next
+    },
+  })
+  follower.start()
 }
 
 async function requestCancel(): Promise<void> {
@@ -189,8 +199,13 @@ onUnmounted(stopFollowing)
 
       <h3>事件</h3>
       <p class="muted" aria-live="polite">
-        {{ following ? '正在追蹤事件（後端每批最多 100 筆）…' : '事件追蹤已停止。' }}
+        {{ followLabel }}
+        <template v-if="follow.lastSyncedAt !== null">最後同步 {{ follow.lastSyncedAt }}。</template>
         <template v-if="events.length > 0">已收到 {{ events.length }} 筆。</template>
+      </p>
+      <p v-if="follow.error !== ''" class="alert-inline" role="status">{{ follow.error }}</p>
+      <p v-if="follow.gapDetected" class="alert-inline" role="status">
+        游標已過期，已依伺服器 snapshot 重新同步；期間的事件可能不完整，畫面不補猜。
       </p>
       <p v-if="events.length === 0" class="muted">尚無事件。</p>
       <ol v-else class="timeline">
@@ -249,6 +264,10 @@ h3 {
 }
 .muted {
   color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.alert-inline {
+  color: var(--danger);
   font-size: 0.9rem;
 }
 .list {

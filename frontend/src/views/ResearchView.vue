@@ -7,7 +7,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
   createResearch,
-  fetchResearchVersionEvents,
+  fetchResearchEventBatch,
   getResearchVersion,
   listResearchVersionRuns,
   listResearches,
@@ -42,11 +42,14 @@ import {
   type EvidenceBundle,
   type QualityReport,
 } from '../lib/evidence'
-import { resumeScopedCursor, type RunEventEnvelope } from '../lib/events'
+import {
+  EventFollower,
+  FOLLOW_STATUS_LABELS,
+  INITIAL_FOLLOW_STATE,
+  type FollowState,
+} from '../lib/stream'
 import { describeError } from '../lib/messages'
 import { client } from '../lib/session'
-
-const POLL_MS = 2000
 
 const route = useRoute()
 const router = useRouter()
@@ -66,9 +69,7 @@ const quality = ref<QualityReport | null>(null)
 const qualityLoading = ref(false)
 const bundle = ref<EvidenceBundle | null>(null)
 const bundleLoading = ref(false)
-const researchEvents = ref<RunEventEnvelope[]>([])
-const researchCursor = ref<string | null>(null)
-const followingResearch = ref(false)
+const follow = ref<FollowState>(INITIAL_FOLLOW_STATE)
 const name = ref('')
 const loading = ref(false)
 const triggering = ref(false)
@@ -110,7 +111,17 @@ const blindEvaluation = computed(() => {
   })
 })
 
-let researchTimer: ReturnType<typeof setTimeout> | null = null
+const researchEvents = computed(() => follow.value.events)
+
+const followLabel = computed<string>(() => {
+  const current = follow.value
+  if (current.status === 'RECONNECTING') {
+    return `${FOLLOW_STATUS_LABELS.RECONNECTING}（第 ${String(current.attempts)} 次，最後同步內容保留顯示）`
+  }
+  return FOLLOW_STATUS_LABELS[current.status]
+})
+
+let researchFollower: EventFollower | null = null
 
 function summarizeEvent(payload: Record<string, unknown>): string {
   const text = JSON.stringify(payload)
@@ -118,47 +129,32 @@ function summarizeEvent(payload: Record<string, unknown>): string {
 }
 
 function stopFollowingResearch(): void {
-  followingResearch.value = false
-  if (researchTimer !== null) {
-    clearTimeout(researchTimer)
-    researchTimer = null
-  }
+  researchFollower?.stop()
+  researchFollower = null
 }
 
-async function tickResearch(): Promise<void> {
-  const version = selectedVersion.value
-  if (version === null) {
-    stopFollowingResearch()
-    return
-  }
-  try {
-    const batch = await fetchResearchVersionEvents(client, version.id, researchCursor.value)
-    if (batch.length > 0) {
-      researchEvents.value = [...researchEvents.value, ...batch]
-      researchCursor.value = resumeScopedCursor('RESEARCH', version.id, batch)
-    }
-    selectedVersion.value = await getResearchVersion(client, version.id)
-  } catch (cause) {
-    error.value = describeError(cause)
-    stopFollowingResearch()
-    return
-  }
-  if (selectedVersion.value?.status !== 'VALIDATING') {
-    stopFollowingResearch()
-    return
-  }
-  researchTimer = setTimeout(() => {
-    void tickResearch()
-  }, POLL_MS)
-}
-
-async function startResearchFollow(version: ResearchVersion): Promise<void> {
+function startResearchFollow(version: ResearchVersion): void {
   stopFollowingResearch()
-  researchEvents.value = []
-  researchCursor.value = null
-  followingResearch.value = true
   selectedVersion.value = version
-  await tickResearch()
+  follow.value = INITIAL_FOLLOW_STATE
+  researchFollower = new EventFollower({
+    scope: 'RESEARCH',
+    streamId: version.id,
+    fetchBatch: (cursor) => fetchResearchEventBatch(client, version.id, cursor),
+    sync: async () => {
+      selectedVersion.value = await getResearchVersion(client, version.id)
+    },
+    isTerminal: () => selectedVersion.value?.status !== 'VALIDATING',
+    snapshotCursor: async () => {
+      const fresh = await getResearchVersion(client, version.id)
+      selectedVersion.value = fresh
+      return fresh.current_event_cursor
+    },
+    onUpdate: (next) => {
+      follow.value = next
+    },
+  })
+  researchFollower.start()
 }
 
 async function loadResearches(): Promise<void> {
@@ -212,7 +208,19 @@ async function reloadVersions(): Promise<void> {
     versions.value = (await listResearchVersions(client, research.id)).items
   } catch (cause) {
     error.value = describeError(cause)
+    return
   }
+  await restoreVersion()
+}
+
+/** 重開工作台時依 URL 的 version 還原選定版本；沒有就取最新一筆，讓 Run 清單與事件串流得以重建。 */
+async function restoreVersion(): Promise<void> {
+  const research = selected.value
+  if (research === null) return
+  const requested = typeof route.query.version === 'string' ? route.query.version : ''
+  const found = versions.value.find((row) => row.id === requested) ?? versions.value[0]
+  if (found === undefined) return
+  await pickVersion(found)
 }
 
 async function pickVersion(version: ResearchVersion): Promise<void> {
@@ -222,14 +230,20 @@ async function pickVersion(version: ResearchVersion): Promise<void> {
   resetCandidates()
   quality.value = null
   bundle.value = null
-  researchEvents.value = []
-  researchCursor.value = null
+  follow.value = INITIAL_FOLLOW_STATE
   error.value = ''
   notice.value = ''
+  if (route.query.version !== version.id) {
+    await router.replace({
+      name: 'researches',
+      params: { id: version.research_id },
+      query: { version: version.id },
+    })
+  }
   await reloadRuns()
   await loadQuality()
   await loadBundle()
-  if (version.status === 'VALIDATING') await startResearchFollow(version)
+  if (version.status === 'VALIDATING') startResearchFollow(version)
 }
 
 async function reloadRuns(): Promise<void> {
@@ -398,6 +412,16 @@ watch(
     if (selected.value?.id === id) return
     const found = researches.value.find((row) => row.id === id)
     if (found !== undefined) void select(found)
+  },
+)
+
+watch(
+  () => route.query.version,
+  (value) => {
+    const id = typeof value === 'string' ? value : ''
+    if (id === '' || selectedVersion.value?.id === id) return
+    const found = versions.value.find((row) => row.id === id)
+    if (found !== undefined) void pickVersion(found)
   },
 )
 
@@ -596,7 +620,10 @@ onUnmounted(stopFollowingResearch)
             {{ triggering ? '送出中…' : '觸發 PROFILE 驗證' }}
           </button>
 
-          <h3>版本任務</h3>
+          <div class="panel-head">
+            <h3>版本任務</h3>
+            <button type="button" @click="reloadRuns">重新載入</button>
+          </div>
           <p v-if="runs.length === 0" class="muted">此版本尚無任務。</p>
           <ul v-else class="list">
             <li v-for="row in runs" :key="row.id">
@@ -604,6 +631,7 @@ onUnmounted(stopFollowingResearch)
                 {{ row.type }}／{{ runStatusLabel[row.status] }}
               </RouterLink>
               <span class="muted mono">{{ row.id }}</span>
+              <span class="muted mono">{{ row.created_at }}</span>
             </li>
           </ul>
 
@@ -622,8 +650,13 @@ onUnmounted(stopFollowingResearch)
 
           <h3>研究事件</h3>
           <p class="muted" aria-live="polite">
-            {{ followingResearch ? '正在追蹤研究事件…' : '研究事件追蹤已停止。' }}
+            {{ followLabel }}
+            <template v-if="follow.lastSyncedAt !== null">最後同步 {{ follow.lastSyncedAt }}。</template>
             <template v-if="researchEvents.length > 0">已收到 {{ researchEvents.length }} 筆。</template>
+          </p>
+          <p v-if="follow.error !== ''" class="alert-inline" role="status">{{ follow.error }}</p>
+          <p v-if="follow.gapDetected" class="alert-inline" role="status">
+            游標已過期，已依伺服器 snapshot 重新同步；期間的事件可能不完整，畫面不補猜。
           </p>
           <p v-if="researchEvents.length === 0" class="muted">尚無研究事件。</p>
           <ol v-else class="timeline">
@@ -735,6 +768,10 @@ h3 {
 }
 .alertInline {
   color: var(--danger);
+}
+.alert-inline {
+  color: var(--danger);
+  font-size: 0.9rem;
 }
 .timeline {
   list-style: none;

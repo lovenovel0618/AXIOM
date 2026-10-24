@@ -8,6 +8,7 @@ import {
   type DatasetVersion,
   type RunRecord,
   type UploadFormat,
+  type UploadIntent,
 } from '../api/datasets'
 import { sha256Hex } from './sha256'
 
@@ -25,6 +26,15 @@ export interface UploadOutcome {
   checksum: string
   run: RunRecord
   versions: DatasetVersion[]
+  /** 原上傳工作階段已過期而另建新工作階段重傳（AX-44：不假稱可續傳）。 */
+  renewedSession: boolean
+}
+
+/** 工作階段過期的訊號：簽章逾期為 403，逾期未用或狀態非 OPEN 為 409。 */
+const SESSION_EXPIRED_CODES = new Set(['FORBIDDEN', 'INVALID_TRANSITION'])
+
+function sessionExpired(cause: unknown): boolean {
+  return cause instanceof ApiError && SESSION_EXPIRED_CODES.has(cause.code)
 }
 
 export function deriveFormat(filename: string): UploadFormat | null {
@@ -47,16 +57,27 @@ export async function uploadDatasetFile(
   onStage('hashing')
   const bytes = await file.arrayBuffer()
   const checksum = await sha256Hex(bytes)
+  const intent: UploadIntent = { filename, format, size_bytes: file.size, sha256: checksum }
 
   onStage('session')
-  const session = await createUpload(client, datasetId, { filename, format, size_bytes: file.size, sha256: checksum })
+  let session = await createUpload(client, datasetId, intent)
 
   onStage('transfer')
-  await putUploadBytes(client, session, bytes)
+  let renewedSession = false
+  try {
+    await putUploadBytes(client, session, bytes)
+  } catch (cause) {
+    if (!sessionExpired(cause)) throw cause
+    renewedSession = true
+    onStage('session')
+    session = await createUpload(client, datasetId, intent)
+    onStage('transfer')
+    await putUploadBytes(client, session, bytes)
+  }
 
   onStage('complete')
   const run = await completeUpload(client, session.id, checksum)
 
   const page = await listVersions(client, datasetId)
-  return { checksum, run, versions: page.items }
+  return { checksum, run, versions: page.items, renewedSession }
 }

@@ -1,6 +1,7 @@
 /** 研究容器、固定草稿與 PROFILE 觸發；冪等鍵與控制 revision 在此集中處理。 */
 import { newKey, type ApiClient } from './client'
-import { parseEventBatch, type RunEventEnvelope } from '../lib/events'
+import { parseEventBatch, parseRetryDirective, type RunEventEnvelope } from '../lib/events'
+import type { EventBatch } from '../lib/stream'
 import type { BudgetUsage, Run } from './runs'
 
 export interface Research {
@@ -247,14 +248,23 @@ export async function listResearchVersionRuns(
   )
 }
 
-/** 取單批研究版本事件；游標為 null 時由序號 0 開始。 */
+/** 取單批研究版本事件與伺服器的重連提示；游標為 null 時由序號 0 開始。 */
+export async function fetchResearchEventBatch(
+  client: ApiClient,
+  versionId: string,
+  cursor: string | null,
+): Promise<EventBatch> {
+  const headers: Record<string, string> = {}
+  if (cursor !== null) headers['Last-Event-ID'] = cursor
+  const body = await client.text('GET', `/api/v2/research-versions/${versionId}/events`, { headers })
+  return { events: parseEventBatch(body), retryMs: parseRetryDirective(body) }
+}
+
+/** 只取事件的舊介面，保留給既有呼叫端。 */
 export async function fetchResearchVersionEvents(
   client: ApiClient,
   versionId: string,
   cursor: string | null,
 ): Promise<RunEventEnvelope[]> {
-  const headers: Record<string, string> = {}
-  if (cursor !== null) headers['Last-Event-ID'] = cursor
-  const body = await client.text('GET', `/api/v2/research-versions/${versionId}/events`, { headers })
-  return parseEventBatch(body)
+  return (await fetchResearchEventBatch(client, versionId, cursor)).events
 }

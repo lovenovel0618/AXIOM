@@ -1,6 +1,7 @@
 /** 任務（Run）讀取、取消與事件續接；控制 revision 與冪等鍵在此集中處理。 */
 import { newKey, type ApiClient } from './client'
-import { parseEventBatch, type RunEventEnvelope } from '../lib/events'
+import { parseEventBatch, parseRetryDirective, type RunEventEnvelope } from '../lib/events'
+import type { EventBatch } from '../lib/stream'
 
 export type RunType = 'INGEST' | 'PROFILE' | 'SEARCH' | 'FIT' | 'VALIDATE'
 export type RunStatus = 'QUEUED' | 'RUNNING' | 'CANCEL_REQUESTED' | 'SUCCEEDED' | 'FAILED' | 'CANCELLED'
@@ -73,14 +74,23 @@ export async function cancelRun(client: ApiClient, run: Run): Promise<Run> {
   })
 }
 
-/** 取單批已授權事件；游標為 null 時由序號 0 開始。 */
+/** 取單批已授權事件與伺服器的重連提示；游標為 null 時由序號 0 開始。 */
+export async function fetchRunEventBatch(
+  client: ApiClient,
+  runId: string,
+  cursor: string | null,
+): Promise<EventBatch> {
+  const headers: Record<string, string> = {}
+  if (cursor !== null) headers['Last-Event-ID'] = cursor
+  const body = await client.text('GET', `/api/v2/runs/${runId}/events`, { headers })
+  return { events: parseEventBatch(body), retryMs: parseRetryDirective(body) }
+}
+
+/** 只取事件的舊介面，保留給既有呼叫端。 */
 export async function fetchRunEvents(
   client: ApiClient,
   runId: string,
   cursor: string | null,
 ): Promise<RunEventEnvelope[]> {
-  const headers: Record<string, string> = {}
-  if (cursor !== null) headers['Last-Event-ID'] = cursor
-  const body = await client.text('GET', `/api/v2/runs/${runId}/events`, { headers })
-  return parseEventBatch(body)
+  return (await fetchRunEventBatch(client, runId, cursor)).events
 }

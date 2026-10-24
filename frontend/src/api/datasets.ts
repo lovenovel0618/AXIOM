@@ -54,6 +54,11 @@ export interface VersionPage {
   next_cursor: string | null
 }
 
+export interface DatasetRunPage {
+  items: RunRecord[]
+  next_cursor: string | null
+}
+
 export async function listDatasets(client: ApiClient, cursor = '', limit = 50): Promise<DatasetPage> {
   const params = new URLSearchParams({ limit: String(limit) })
   if (cursor !== '') params.set('cursor', cursor)
@@ -97,4 +102,16 @@ export async function completeUpload(client: ApiClient, uploadId: string, checks
 
 export async function listVersions(client: ApiClient, datasetId: string, limit = 50): Promise<VersionPage> {
   return client.request<VersionPage>('GET', `/api/v2/datasets/${datasetId}/versions?limit=${String(limit)}`)
+}
+
+/** AX-44：匯入頁重開時用這份清單尋回 INGEST 任務，不假造續傳能力。 */
+export async function listDatasetRuns(
+  client: ApiClient,
+  datasetId: string,
+  cursor = '',
+  limit = 50,
+): Promise<DatasetRunPage> {
+  const params = new URLSearchParams({ limit: String(limit) })
+  if (cursor !== '') params.set('cursor', cursor)
+  return client.request<DatasetRunPage>('GET', `/api/v2/datasets/${datasetId}/runs?${params.toString()}`)
 }

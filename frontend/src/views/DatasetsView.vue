@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
   createDataset,
+  listDatasetRuns,
   listDatasets,
   listVersions,
   type Dataset,
@@ -16,6 +17,7 @@ import { uploadDatasetFile, type UploadStage } from '../lib/upload'
 
 const datasets = ref<Dataset[]>([])
 const versions = ref<DatasetVersion[]>([])
+const runs = ref<RunRecord[]>([])
 const selected = ref<Dataset | null>(null)
 const name = ref('')
 const busy = ref(false)
@@ -47,7 +49,10 @@ async function loadDatasets(): Promise<void> {
     if (selected.value !== null) {
       const still = datasets.value.find((row) => row.id === selected.value?.id)
       selected.value = still ?? null
-      if (still === null) versions.value = []
+      if (still === null) {
+        versions.value = []
+        runs.value = []
+      }
     }
   } catch (cause) {
     error.value = describeError(cause)
@@ -77,18 +82,32 @@ async function select(dataset: Dataset): Promise<void> {
   selected.value = dataset
   error.value = ''
   notice.value = ''
+  versions.value = []
+  runs.value = []
   try {
     versions.value = (await listVersions(client, dataset.id)).items
   } catch (cause) {
     versions.value = []
     error.value = describeError(cause)
   }
+  await reloadRuns()
 }
 
 async function reloadVersions(): Promise<void> {
   if (selected.value === null) return
   try {
     versions.value = (await listVersions(client, selected.value.id)).items
+  } catch (cause) {
+    error.value = describeError(cause)
+  }
+}
+
+/** AX-44：重開匯入頁時以這份清單尋回 INGEST 任務；失敗只提示，不清空既有畫面。 */
+async function reloadRuns(): Promise<void> {
+  const dataset = selected.value
+  if (dataset === null) return
+  try {
+    runs.value = (await listDatasetRuns(client, dataset.id)).items
   } catch (cause) {
     error.value = describeError(cause)
   }
@@ -110,7 +129,11 @@ async function onFile(event: Event): Promise<void> {
     })
     versions.value = outcome.versions
     lastRun.value = outcome.run
-    notice.value = `已上傳 ${file.name}（SHA-256 ${outcome.checksum.slice(0, 12)}…），匯入任務狀態：${outcome.run.status}。版本會在任務完成後出現，可重新載入。`
+    const renewed = outcome.renewedSession
+      ? '原上傳工作階段已過期，已另建新工作階段並重新傳輸檔案（不提供續傳）。'
+      : ''
+    notice.value = `已上傳 ${file.name}（SHA-256 ${outcome.checksum.slice(0, 12)}…），匯入任務狀態：${outcome.run.status}。${renewed}版本會在任務完成後出現，可重新載入。`
+    await reloadRuns()
   } catch (cause) {
     error.value = describeError(cause)
   } finally {
@@ -192,6 +215,27 @@ onMounted(loadDatasets)
         <p v-if="versions.length > 0" class="muted">
           原始位元組以非 PROJECT 存取等級保存，後端不對 API 開放讀取；表格只連到純結構預覽產物。
         </p>
+
+        <div class="panel-head">
+          <h3>匯入任務</h3>
+          <button type="button" :disabled="uploading" @click="reloadRuns">重新載入</button>
+        </div>
+        <p v-if="runs.length === 0" class="muted">此資料集尚無匯入任務。</p>
+        <table v-else>
+          <thead>
+            <tr><th>建立時間</th><th>類型</th><th>狀態</th><th>任務</th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in runs" :key="row.id">
+              <td class="mono">{{ row.created_at }}</td>
+              <td>{{ row.type }}</td>
+              <td>{{ row.status }}</td>
+              <td>
+                <RouterLink :to="{ name: 'run', params: { id: row.id } }">查看任務</RouterLink>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </template>
     </section>
   </div>

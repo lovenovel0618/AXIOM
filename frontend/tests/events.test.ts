@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseEventBatch, resumeCursor, resumeScopedCursor } from '../src/lib/events'
+import { parseEventBatch, parseRetryDirective, resumeCursor, resumeScopedCursor } from '../src/lib/events'
 
 const RUN_ID = '11111111-1111-1111-1111-111111111111'
 
@@ -62,6 +62,30 @@ describe('parseEventBatch', () => {
   it('returns an empty list for a batch with no frames', () => {
     expect(parseEventBatch('')).toEqual([])
     expect(parseEventBatch('retry: 2000\n\n')).toEqual([])
+  })
+})
+
+describe('parseRetryDirective', () => {
+  it('reads the retry hint the server sends before the first frame', () => {
+    expect(parseRetryDirective('retry: 2000\n\n')).toBe(2000)
+  })
+
+  it('ignores retry lines that are not plain integers in range', () => {
+    expect(parseRetryDirective('retry: soon\n\n')).toBeNull()
+    expect(parseRetryDirective('retry: -5\n\n')).toBeNull()
+    expect(parseRetryDirective('retry: 60001\n\n')).toBeNull()
+    expect(parseRetryDirective('retry: 2.5\n\n')).toBeNull()
+  })
+
+  it('accepts the boundary values and returns null when absent', () => {
+    expect(parseRetryDirective('retry: 0\n\n')).toBe(0)
+    expect(parseRetryDirective('retry: 60000\n\n')).toBe(60000)
+    expect(parseRetryDirective('event: RunQueued\n\n')).toBeNull()
+    expect(parseRetryDirective('')).toBeNull()
+  })
+
+  it('skips keepalive comments while searching for the hint', () => {
+    expect(parseRetryDirective(': keepalive\nretry: 3000\n\n')).toBe(3000)
   })
 })
 
