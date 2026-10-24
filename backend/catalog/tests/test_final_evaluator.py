@@ -313,3 +313,26 @@ class FinalEvaluatorTests(TransactionTestCase):
         send.assert_called_once_with("catalog.validate_tick",
             args=[str(slot.tenant_id), str(slot.run_id), 0], queue="validate", retry=False)
         self.assertIsNotNone(RuntimeRun.objects.get(pk=slot.run_id).last_polled_at)
+
+    def test_validation_run_detail_reads_the_submission_bound_result(self) -> None:
+        """已結算的最終結果可經提交綁定路徑讀回；跨租戶一律 404，不以 UUID 洩漏存在性。"""
+        self.quality_report(self.register_seal(final_payload()))
+        slot, _submission = self.dispatch()
+        self.assertTrue(self.tick(slot))
+        result = self.settled(slot)
+        self.client.force_login(self.actor.user)
+        response = self.client.get(f"/api/v2/validation-runs/{result.id}")
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual((body["id"], body["outcome_status"], body["split_role"]),
+            (str(result.id), "SUPPORTED", "FINAL_TEST"))
+        self.client.force_login(self.other.user)
+        self.assertEqual(self.client.get(f"/api/v2/validation-runs/{result.id}").status_code, 404)
+
+    def test_validation_run_detail_hides_unknown_and_unsettled_results(self) -> None:
+        """未知 UUID 與未結算槽位同回 404：不以狀態差異洩漏槽位是否存在。"""
+        slot, _submission = self.dispatch()
+        self.client.force_login(self.actor.user)
+        self.assertEqual(self.client.get(f"/api/v2/validation-runs/{uuid4()}").status_code, 404)
+        self.assertIsNone(FinalEvaluationSlot.objects.get(pk=slot.id).validation_run_id)
+        self.assertFalse(ValidationRun.objects.exists())

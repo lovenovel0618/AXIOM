@@ -205,3 +205,19 @@ def settle(actor: Account, slot: FinalEvaluationSlot, status: str, result: JsonO
             _advance(submission, target, now)
         locked.status, locked.validation_run_id, locked.document = status, reference, document
         return locked
+
+
+def authorized_result(actor: Account, identity: UUID) -> ValidationRun:
+    """重新驗租戶與研究 owner 後回最終評估結果；知道 UUID 不足以讀取封存結果。
+
+    結果列須由本租戶的凍結提交產生，並沿提交回溯到研究 owner；任一不符一律 `NOT_FOUND`，不回傳
+    存在性資訊。此即 AX-26 所指「只經提交綁定的評估路徑」可達之封存細部，一般讀取走不到。"""
+    row = ValidationRun.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
+    if row is None:
+        raise ApiError("NOT_FOUND", 404)
+    submission = FrozenSubmission.objects.filter(pk=row.submission_id, tenant_id=actor.tenant_id).first()
+    if submission is None:
+        raise ApiError("NOT_FOUND", 404)
+    _authorized(actor, submission)
+    validate(row.document, SCHEMA, "ValidationRun")
+    return row

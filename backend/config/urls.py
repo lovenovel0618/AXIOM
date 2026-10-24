@@ -18,6 +18,7 @@ urlpatterns += [
     path("api/v2/runs/<uuid:identity>", read_http.run_detail),
     path("api/v2/evidence-bundles/<uuid:identity>", read_http.evidence_bundle_detail),
     path("api/v2/frozen-submissions/<uuid:identity>", read_http.frozen_submission_detail),
+    path("api/v2/validation-runs/<uuid:identity>", read_http.validation_run_detail),
     path("api/v2/artifacts/<uuid:identity>", read_http.artifact_detail),
     path("api/v2/artifacts/<uuid:identity>/content", read_http.artifact_content),
     path("auth/login", http.login_view), path("auth/logout", http.logout_view),

@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-24",
+  "scope": "T07_SUBMISSION_BOUND_FINAL_RESULT_READ",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "e7fd9ac",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "PARTIAL",
+  "product_gate_status": "NOT_RUN",
+  "delivery_boundary": {
+    "read_endpoint": "IMPLEMENTED（GET /api/v2/validation-runs/{id}：契約已宣告為 artifact-class-and-lineage-v1 的封存讀取端點；backend/config/urls.py 接上 catalog/read_http.py::validation_run_detail）",
+    "authorization": "IMPLEMENTED（catalog/final_evaluation.py::authorized_result 先驗結果列租戶，再沿 submission_id 取同租戶提交並經 _authorized 驗研究 owner 與 FrozenSubmission 文件，任一不符一律 NOT_FOUND；不回傳存在性資訊）",
+    "projection": "IMPLEMENTED（僅投影 ValidationRun.document，不另暴露槽位或未授權身分欄位）",
+    "slot_not_exposed": "ENFORCED（FinalEvaluationSlot 依 check_docs 的治理檢查不得進入 HTTP components.schemas，故對外可讀的是提交綁定的最終結果而非槽位本身）",
+    "unsettled_hiding": "IMPLEMENTED（槽位仍 PENDING／validation_run_id 為 null 時沒有結果列可讀，與未知 UUID 同回 404，不以狀態差異洩漏存在性）",
+    "dispatch_freeze_api": "NOT_IMPLEMENTED（派送觸發的凍結 API 未寫）",
+    "measurement_markers": "usage_scope=SEALED_READ_ONLY、product_status=NOT_RUN、precision_bits=53"
+  },
+  "tests": {
+    "postgresql_backend": 387,
+    "previous_backend": 374,
+    "amendment_new_tests": 2,
+    "amendment_test_names": [
+      "catalog.tests.test_final_evaluator.FinalEvaluatorTests.test_validation_run_detail_reads_the_submission_bound_result",
+      "catalog.tests.test_final_evaluator.FinalEvaluatorTests.test_validation_run_detail_hides_unknown_and_unsettled_results"
+    ],
+    "focused_regression": "catalog.tests.test_final_evaluator catalog.tests.test_candidates 24／24 OK",
+    "unittest_command": "docker compose -p axiom-dev run --rm -v \"$PWD/backend\":/app -v \"$PWD/docs/企劃案/contracts\":/app/contracts web python manage.py test foundation.tests runtime.tests catalog.tests mathematics.tests mathematics.test_linalg mathematics.test_search mathematics.test_comparison ingestion.tests --noinput",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "NO_SOURCE_CHANGE_THIS_SLICE",
+      "typecheck": "沿用已通過的 vue-tsc --noEmit 0 error",
+      "vitest": "沿用已通過的 9 檔 82／82"
+    }
+  },
+  "strict_pyright": {
+    "version": "1.1.414",
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0,
+    "informations": 0
+  },
+  "typing_policy": "PASS（本修正未新增動態型別逃生門，不列額度）",
+  "engineering_tools": {
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS（validation_status PASS、product_status NOT_RUN）",
+    "public_oracle": "PASS（scope PUBLIC_REFERENCE_ONLY、source_sha256 d87c73c3d13590aa9954ac33a52ffdb7442d5a592cfd4c442559d2f6ed18f7d9）",
+    "docs_check": "exit 0"
+  },
+  "integration": {
+    "settled_result_read": "PASS（已結算結果 GET 回 200，id／outcome_status／split_role 與 ValidationRun 文件一致：SUPPORTED／FINAL_TEST）",
+    "cross_tenant_denied": "PASS（另一租戶讀同一結果 UUID 一律 404）",
+    "unknown_uuid_denied": "PASS（未知 UUID 亦回 404）",
+    "unsettled_hidden": "PASS（槽位 PENDING、ValidationRun 不存在時同回 404）",
+    "policy_alignment": "PASS（openapi-v2.json 的 /validation-runs/{id} 已宣告 x-axiom-access-policy=artifact-class-and-lineage-v1 與 404 回應；check_docs 斷言 FinalEvaluationSlot 不得進入 HTTP schema）",
+    "makemigrations_check": "No changes detected",
+    "product_gate_status": "NOT_RUN",
+    "g2_status": "BLOCKED（D-03 未關）"
+  },
+  "changed_sources": {
+    "backend/catalog/final_evaluation.py": "d525ac3b0782984982670cce75e32e462fb0057148088d526e8e67f32dffccc6",
+    "backend/catalog/read_http.py": "6b1ceb6e675d57b5c14d647c59b6941a6887761b948a6d5ef8a4c5b43d87e901",
+    "backend/config/urls.py": "05f2b24c1136982fc8586bd9d9f12e2c503c757757a4e4062a4cf6ab5b04910e",
+    "backend/catalog/tests/test_final_evaluator.py": "f7e57b526dfc4d597ccc85a1c1cd6899d34a824fd31f18e1e91d9d7b87c17c4e",
+    "docs/技術文件/M0/T07-候選凍結與比較設計.md": "3b3ce78716aa7333182d6e70cd63e7148837ef65b37b4debf197304fa3f682d5",
+    "docs/技術文件/M0/T07-候選凍結與比較驗證紀錄.md": "8f00e6b356b6b9f83c537a9541e43b8163bad965a65a201e7cdd37a329032ece",
+    "docs/技術文件/缺口清單.md": "32d7ee5e0da914fa0af3a18f18954600af1008a326a54e57206ffeff5e6703aa",
+    "docs/技術文件/README.md": "a033e63286d41d12129bc649bf4c3de21c9d885c4cad1808cf9426a555cd5c9b",
+    "docs/技術文件/M0/t07-validation-read-backend-tests.txt": "9ed32e0679b139e2ac67a717cf61998bc7d4bc104d2c62cebe65b685ea5920d4"
+  },
+  "known_limits": [
+    "本修正只補讀取端點；未以實際 evaluator 容器重跑 final_test，執行段仍由測試容器端到端驗證",
+    "派送觸發的凍結 API 與工作台（#6）未接",
+    "本機未重跑 SonarQube（無工作區憑證），不以舊的零項目結果頂替",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}
