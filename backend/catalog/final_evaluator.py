@@ -1,12 +1,14 @@
 """隔離 Evaluator 的 FINAL_TEST 執行段：消耗封存曝光、以凍結候選評分並單向結算唯一槽位。
 
 Isolated FINAL_TEST execution: consume the sealed exposure, score the frozen candidate on the
-final labels and settle the single forward slot by MAE against the frozen baseline.
+final labels and settle the single forward slot by a paired bootstrap of per-row losses against
+the frozen baseline.
 
-本切片只做 A1 最小可執行段：讀 final labels、以固定分母算 MAE／RMSE 與 coverage，再以 MAE 對
-`ZERO`／`FIT_MEAN` 判 `SUPPORTED`／`INSUFFICIENT_EVIDENCE`，最後交 `settle()` 落庫。配對 bootstrap、
-practical margin 與完整 `AMBIGUOUS` 語意不在本切片。曝光先由讀取端提交消耗，`settle()` 內的重複
+本切片以凍結政策做最終比較：讀 final labels、以固定分母算 MAE／RMSE 與 coverage，再對逐列損失差
+做決定性配對 bootstrap，並以 fit 尺度的實務邊界判 `SUPPORTED`／`FALSIFIED`／`AMBIGUOUS`／
+`INSUFFICIENT_EVIDENCE`，最後交 `settle()` 落庫。曝光先由讀取端提交消耗，`settle()` 內的重複
 消耗因此是純 replay；結帳只走 `runtime.completion.finish`，因為 VALIDATE root 沒有研究帳本列。"""
+from collections.abc import Callable
 from fractions import Fraction
 import hashlib
 import json
@@ -18,8 +20,9 @@ from catalog.ingest import Meter
 from catalog.models import Account, Artifact, FrozenCandidate, FrozenSubmission, ResearchState
 from catalog.sealing import authority, consume
 from catalog.validation import ApiError
+from mathematics.comparison import baseline_losses, bound, classify, interval, scale
 from mathematics.compiler import Plan, compile_dsl
-from mathematics.metrics import score
+from mathematics.metrics import residuals, score
 from mathematics.syntax import DslError
 from runtime.budget_types import integer, object_fields
 from runtime.completion import confirm_business_stopped, finish
@@ -65,16 +68,20 @@ def _parameters(value: object) -> dict[str, str]:
     return {name: text(item) for name, item in object_fields(value).items()}
 
 
-def _target_mean(version_id: UUID, tenant_id: UUID) -> Fraction | None:
-    """`FIT_MEAN` 的 fit 目標均值取自版本狀態指向的 QualityReport；缺失即無可比較基準。"""
+def _fit_summary(version_id: UUID, tenant_id: UUID) -> dict[str, object] | None:
+    """fit 統計取自版本狀態指向的 `QualityReport`；缺失即無可用的基準值與實務尺度。"""
     state = ResearchState.objects.filter(research_version_id=version_id).first()
     artifact = None if state is None or state.quality_id is None else Artifact.objects.filter(pk=state.quality_id, tenant_id=tenant_id).first()
     if artifact is None or artifact.content is None:
         return None
     try:
-        value = object_fields(object_fields(artifact.content)["fit_summary"])["target_mean"]
+        return object_fields(object_fields(artifact.content)["fit_summary"])
     except (ValueError, KeyError):
         return None
+
+
+def _decimal(value: object) -> Fraction | None:
+    """fit 統計以正規十進位字串登記；非字串或不可解析即視為缺項，不以近似值代替。"""
     if not isinstance(value, str):
         return None
     try:
@@ -88,13 +95,33 @@ def _baseline(policy: dict[str, object], target_mean: Fraction | None) -> Fracti
     return Fraction(0) if policy["baseline"] == "ZERO" else target_mean
 
 
-def _outcome(policy: dict[str, object], selected: int, valid: int, mae: float | None, baseline: Fraction | None) -> str:
-    """政策未定、無可估列、覆蓋不完整或候選未勝過 baseline 時，一律判定證據不足。"""
-    if policy["error_model"] == "UNSPECIFIED" or policy["comparison_method"] == "NONE":
+def _margin(policy: dict[str, object], profile: dict[str, object], fit: dict[str, object] | None) -> Fraction | None:
+    """實務邊界＝尺度 × 政策比例；尺度取 fit 目標 IQR 與量測解析度較大者。
+
+    量測解析度不自動當成誤差上界，只在此處補上更細的位數；兩者皆無法確立時只認預先註冊的
+    正覆寫值，否則沒有可比較的帶寬，結論一律退回證據不足。"""
+    iqr = Fraction(0) if fit is None else _decimal(fit["target_iqr"])
+    resolution = _decimal(profile["measurement_resolution"])
+    override = policy["practical_scale_override"]
+    value = scale(iqr if iqr is not None else Fraction(0), resolution if resolution is not None else Fraction(0),
+        None if override is None else text(override))
+    return None if value is None else bound(value, Fraction(text(policy["practical_margin_ratio"])))
+
+
+def _outcome(policy: dict[str, object], selected: int, valid: int, mae: float | None, baseline: Fraction | None,
+             margin: Fraction | None, matched: Callable[[], list[tuple[float, float]]]) -> str:
+    """以凍結政策的配對 bootstrap 區間對實務邊界判四態；任一前提缺失都退回證據不足。
+
+    只有 IID 配對 bootstrap、誤差模型已定、覆蓋完整、baseline 與尺度都確立時才下結論；候選與
+    baseline 沿用同一批 final 列，統計量因此是逐列損失差，重抽樣索引只由政策 seed 導出而可重算。"""
+    if policy["error_model"] == "UNSPECIFIED" or policy["comparison_method"] != "IID_PAIRED_BOOTSTRAP":
         return "INSUFFICIENT_EVIDENCE"
-    if mae is None or valid == 0 or valid < selected or baseline is None:
+    if mae is None or valid == 0 or valid < selected or baseline is None or margin is None:
         return "INSUFFICIENT_EVIDENCE"
-    return "SUPPORTED" if mae < float(baseline) else "INSUFFICIENT_EVIDENCE"
+    rows = matched()
+    lower, upper = interval([loss for _target, loss in rows], baseline_losses(baseline, [target for target, _loss in rows]),
+        integer(policy["bootstrap_seed"]), integer(policy["bootstrap_replicates"]))
+    return classify(lower, upper, margin)
 
 
 def _digest(metrics: dict[str, float | None], counts: dict[str, object], outcome: str) -> str:
@@ -112,7 +139,7 @@ def _scalar(value: float | None) -> str | None:
 
 
 def _evaluate(actor: Account, slot: FinalEvaluationSlot, submission: FrozenSubmission, lease: Lease) -> dict[str, object]:
-    """消耗曝光後才讀 final labels；以凍結 DSL 在 final_test 上評分並判 MAE 對 baseline。
+    """消耗曝光後才讀 final labels；以凍結 DSL 評 final_test 並依凍結政策判最終結論。
 
     曝光順序固定為「先消耗、後授權讀取」：`read_final` 只認已 `CONSUMED` 的封存包，授權回呼同時
     重驗 lease，因此崩潰或逾時都不會讓未消耗的 labels 外流。`settle()` 內的重複消耗是純 replay。"""
@@ -124,14 +151,19 @@ def _evaluate(actor: Account, slot: FinalEvaluationSlot, submission: FrozenSubmi
     plan = compile_dsl(canonical_bytes(frozen.equation_version.document["dsl"]))
     if plan.identity_hash != frozen.document["dsl_identity_hash"]:
         raise ApiError("EQUATION_MISMATCH", 409)
-    scored = score(plan, _parameters(frozen.document["parameters"]), _alias(plan), pairs)
+    parameters, alias = _parameters(frozen.document["parameters"]), _alias(plan)
+    scored = score(plan, parameters, alias, pairs)
     selected, valid, failed = integer(scored["selected_count"]), integer(scored["valid_count"]), integer(scored["failed_count"])
     coverage = scored["coverage"]
     mae = None if scored["mae"] is None else float(scored["mae"])
     rmse = None if scored["rmse"] is None else float(scored["rmse"])
     policy = object_fields(submission.research_version.document["evaluation_policy"])
-    baseline = _baseline(policy, _target_mean(submission.research_version_id, actor.tenant_id))
-    outcome = _outcome(policy, selected, valid, mae, baseline)
+    fit = _fit_summary(submission.research_version_id, actor.tenant_id)
+    target_mean = None if fit is None else _decimal(fit["target_mean"])
+    baseline = _baseline(policy, target_mean)
+    profile = object_fields(submission.research_version.document["semantic_profile"])
+    margin = _margin(policy, profile, fit)
+    outcome = _outcome(policy, selected, valid, mae, baseline, margin, lambda: residuals(plan, parameters, alias, pairs))
     metrics: dict[str, float | None] = {"mae": mae, "rmse": rmse}
     reasons: dict[str, object] = {}
     if mae is None:

@@ -1,0 +1,106 @@
+{
+  "date": "2026-10-24",
+  "scope": "T07_PAIRED_BOOTSTRAP_COMPARISON_SEMANTICS",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "b4f8775",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "PARTIAL",
+  "product_gate_status": "NOT_RUN",
+  "delivery_boundary": {
+    "comparison_core": "IMPLEMENTED（mathematics/comparison.py 提供 scale／bound／baseline_losses／interval／classify：純計算核心，無外部狀態）",
+    "deterministic_resampling": "IMPLEMENTED（interval() 對逐列配對損失差 candidate - baseline 做 IID 有放回重抽樣 bootstrap_replicates 次，軌跡平均值取 [1/40, 39/40] 百分位為 95% 區間；索引由 identity_hash([\"axiom-paired-bootstrap-sha256-v1\", seed, replicate, draw]) % count 導出，不依賴直譯器 PRNG，跨環境與跨 Python 版本可重現）",
+    "practical_margin": "IMPLEMENTED（尺度取 max(IQR(y_fit), measurement_resolution)；兩者皆 0 時只認預先註冊的正 practical_scale_override，否則 margin 為 null ⇒ 拒答；margin = scale × practical_margin_ratio，ratio∈(0,1] 預設 0.01）",
+    "outcome_four_states": "IMPLEMENTED（classify()：upper < -margin → SUPPORTED、lower > +margin → FALSIFIED、[−margin,+margin] ⊇ [lower,upper] → AMBIGUOUS、其餘跨越邊界 → INSUFFICIENT_EVIDENCE；先判兩側極端再判帶內等效，四態互斥且窮盡）",
+    "paired_residuals": "IMPLEMENTED（mathematics/metrics.py 新增 residuals() 回傳 matched 的 (target, loss)，score() 與配對來源共用同一函式）",
+    "refusal_gate": "IMPLEMENTED（catalog/final_evaluator.py::_outcome 先驗 error_model==UNSPECIFIED 或 comparison_method != IID_PAIRED_BOOTSTRAP 即拒答；再驗 mae 為 null／valid==0／valid<selected／baseline 為 null／margin 為 null 亦拒答；通過才以 lambda 延遲呼叫 residuals 取配對差並分類，故所有拒答分支都不觸發重抽樣）",
+    "wiring": "IMPLEMENTED（final_evaluator._evaluate 以 _fit_summary(_ResearchState.quality_id → QualityReport.fit_summary)／_decimal／_baseline／_margin／_outcome 串起；政策唯一來源為 ResearchVersion.evaluation_policy）",
+    "comparison_none_semantics": "IMPLEMENTED（comparison_method=NONE 只輸出描述性指標並判 INSUFFICIENT_EVIDENCE，對齊 AX-28）",
+    "outcome_atomicity": "NOT_IMPLEMENTED（槽位無對外端點，工作台 #6 未接最終評估狀態）",
+    "measurement_markers": "usage_scope=LOCAL_COMPARISON_SEMANTICS_ONLY、product_status=NOT_RUN、precision_bits=53"
+  },
+  "tests": {
+    "postgresql_backend": 385,
+    "previous_backend": 374,
+    "new_slice_tests": 11,
+    "new_tests_breakdown": {
+      "backend/mathematics/test_comparison.py": 8,
+      "backend/catalog/tests/test_final_evaluator.py": 3
+    },
+    "focused_regression": "catalog.tests.test_final_evaluator mathematics.test_comparison 17／17 OK",
+    "unittest_command": "docker compose -p axiom-dev run --rm -v \"$PWD/backend\":/app -v \"$PWD/docs/企劃案/contracts\":/app/contracts web python manage.py test foundation.tests runtime.tests catalog.tests mathematics.tests mathematics.test_linalg mathematics.test_search mathematics.test_comparison ingestion.tests --noinput",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "NO_SOURCE_CHANGE_THIS_SLICE",
+      "typecheck": "沿用已通過的 vue-tsc --noEmit 0 error",
+      "vitest": "沿用已通過的 9 檔 82／82"
+    }
+  },
+  "strict_pyright": {
+    "version": "1.1.414",
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0,
+    "informations": 0
+  },
+  "typing_policy": "PASS（backend/mathematics/comparison.py 與 backend/mathematics/test_comparison.py 未使用 Any／JsonObject，依預設額度 0／0 通過，不列額度）",
+  "engineering_tools": {
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS（validation_status PASS、product_status NOT_RUN、errors 空）",
+    "public_oracle": "PASS（scope PUBLIC_REFERENCE_ONLY、source_sha256 d87c73c3d13590aa9954ac33a52ffdb7442d5a592cfd4c442559d2f6ed18f7d9）",
+    "docs_check": "exit 0（markdown 57、chapters 54、links 379、acceptance_cases 326、schemas 6、contract_examples 110、api_operations 28、contract_scenarios 272、review_findings 36、attachment_requirements 32、error_codes 54、capabilities 6、policies 1、public_fixture_oracles 4、manifest_files 86、product_test_status NOT_RUN）"
+  },
+  "integration": {
+    "interval_determinism": "PASS（同一政策與同一批列重算出同一區間；換 seed 換一組索引）",
+    "interval_degenerate": "PASS（逐列差全相同時任何重抽樣得到同一均值，區間退化為該點）",
+    "interval_pairing": "PASS（配對共用同一組索引，混合差的正負兩端不被互相平均掉）",
+    "scale_selection": "PASS（尺度取 fit IQR 與量測解析度較大者；兩者皆零時只有預先註冊的正覆寫值能確立尺度，否則無可比較帶寬）",
+    "classify_four_states": "PASS（全低於 -margin → SUPPORTED；全高於 +margin → FALSIFIED；全在帶內 → AMBIGUOUS；跨越邊界 → INSUFFICIENT_EVIDENCE）",
+    "end_to_end_falsified": "PASS（候選損失高於 fit 均值 baseline ⇒ 配對差全正且遠超邊界，判 FALSIFIED 並照實落分數 mae 12.0／rmse 12.041594578792296、valid_coverage 1.0）",
+    "end_to_end_ambiguous": "PASS（候選與 baseline 逐列差為零、落帶內 ⇒ 判 AMBIGUOUS，metrics mae 6.0／rmse 6.0207972893961479）",
+    "end_to_end_none": "PASS（凍結政策 comparison_method=NONE ⇒ 只輸出描述性指標 mae 0.0／rmse 0.0 並判 INSUFFICIENT_EVIDENCE）",
+    "ci_manifest": "PASS（.github/workflows/product-check.yml 測試清單加入 mathematics.test_comparison）",
+    "makemigrations_check": "No changes detected",
+    "product_gate_status": "NOT_RUN",
+    "g2_status": "BLOCKED（D-03 未關）"
+  },
+  "live_services": {
+    "project": "axiom-dev",
+    "retained_running": true,
+    "services": [
+      { "name": "frontend", "state": "running", "health": "healthy", "ports": "127.0.0.1:15173->5173/tcp" },
+      { "name": "ingest", "state": "running", "health": "", "ports": "" },
+      { "name": "journal", "state": "running", "health": "healthy", "ports": "" },
+      { "name": "postgres", "state": "running", "health": "healthy", "ports": "5432/tcp" },
+      { "name": "profile", "state": "running", "health": "", "ports": "" },
+      { "name": "redis", "state": "running", "health": "healthy", "ports": "6379/tcp" },
+      { "name": "relay", "state": "running", "health": "", "ports": "" },
+      { "name": "web", "state": "running", "health": "healthy", "ports": "127.0.0.1:18000->8000/tcp" },
+      { "name": "worker", "state": "running", "health": "", "ports": "" }
+    ],
+    "evaluator": "NOT_STARTED（profiles [evaluator] 閘門後；本批未以實際容器執行 final_test，執行段由測試容器端到端驗證）"
+  },
+  "changed_sources": {
+    ".github/workflows/product-check.yml": "d4a41ecb3f9d237c1fda45080396d2022fe9b92ca1be0a1674764b30eb2c2ec9",
+    "backend/catalog/final_evaluator.py": "fb34ffce91cb90f4cc7de6d03994a9b583aa9eefcdfa0179606c005ac6367cbe",
+    "backend/catalog/tests/test_final_evaluator.py": "d9f1870a804747f8b5c36f49f1f21be0152f5f9873b589745e961486f280e16c",
+    "backend/mathematics/metrics.py": "bf4ce147f394b1e6d3ce17237c62d1c078c5ed4a1c3f84d48d100f4aa7e429a7",
+    "backend/mathematics/comparison.py": "4590e3889d9d01fb647457887f2a278f733337dfa6c3c34748d82e4cd03b5152",
+    "backend/mathematics/test_comparison.py": "958dfcd893e8c51236cc1f59989313ea11c6ae25b09c60c8acadd42338e925fa",
+    "docs/技術文件/M0/T07-候選凍結與比較設計.md": "391b09fe547b53c0f6254467ca0e960fc9da96f07a4b52ce4176995f0f03c409",
+    "docs/技術文件/M0/T07-候選凍結與比較驗證紀錄.md": "31318f8a91772460af6a3940f5e7205e9adf66edb404ca3655e7f64ee547780d",
+    "docs/技術文件/缺口清單.md": "319f2175b96f9313173a585b50589c24d1d991c92176a0904a11beb10b46323e",
+    "docs/技術文件/README.md": "e92499057e16adc0f49acf4af4518d51d4ffd07211eb6d8e7b5d675faff9d384",
+    "docs/技術文件/M0/t07-comparison-backend-tests.txt": "8a5df9511212b747f813d76c708d8a1d468a0e129dbd29a3c4d80efcf65955f4"
+  },
+  "known_limits": [
+    "本批未以實際 evaluator 容器執行 final_test；執行段與比較語意由測試容器端到端驗證",
+    "槽位無對外端點，工作台（#6）未接最終評估狀態",
+    "本機未重跑 SonarQube（無工作區憑證），不以舊的零項目結果頂替",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}

@@ -46,9 +46,13 @@ FINAL_BUDGET = {"cpu_seconds": 120, "gpu_seconds": 0, "wall_seconds": 600, "toke
 UNREADABLE_PAYLOAD = b"final-rows"
 
 
-def final_payload(indices: tuple[int, ...] = FINAL_INDICES) -> bytes:
-    """以 `sealing/prepare.py` 的 canonical rows 形狀組出 final labels：每列一個輸入與一個目標。"""
-    rows: list[JsonObject] = [{"row_id": index, "observation": {"inputs": [f"{index}/1"], "target": f"{2 * index + 1}/1",
+def final_payload(indices: tuple[int, ...] = FINAL_INDICES, targets: dict[int, str] | None = None) -> bytes:
+    """以 `sealing/prepare.py` 的 canonical rows 形狀組出 final labels：每列一個輸入與一個目標。
+
+    `targets` 只覆寫指定列的目標值，讓比較語意測試能造出候選相對 baseline 較優／較劣／等效的標籤；
+    未指定的列維持 y = 2x + 1。"""
+    overrides = {} if targets is None else targets
+    rows: list[JsonObject] = [{"row_id": index, "observation": {"inputs": [f"{index}/1"], "target": overrides.get(index, f"{2 * index + 1}/1"),
         "input_unit": list(DIMENSIONLESS), "target_unit": list(DIMENSIONLESS), "time": None, "group": None}} for index in indices]
     return canonical_bytes({"rows": rows})
 
@@ -80,8 +84,10 @@ class FinalEvaluatorTests(TransactionTestCase):
         user = User.objects.create(username=uuid4().hex, password="!")
         return Account.objects.create(user=user, tenant=tenant)
 
-    def fixture(self) -> ResearchVersion:
-        """以真實匯入建立資料與研究版本，不以偽造 fixture 代替來源鏈。"""
+    def fixture(self, policy: dict[str, object] | None = None) -> ResearchVersion:
+        """以真實匯入建立資料與研究版本，不以偽造 fixture 代替來源鏈。
+
+        `policy` 只覆寫凍結評估政策的關鍵欄位，供比較語意的拒答分支使用；未指定即沿用草稿預設。"""
         with transaction.atomic():
             actor = actor_for(self.actor.user_id)
             dataset = Dataset.objects.get(pk=UUID(create_dataset(actor, {"name": "final-evaluator"})["id"]))
@@ -97,8 +103,18 @@ class FinalEvaluatorTests(TransactionTestCase):
             research = research_for(actor, UUID(create_research(actor, {"name": "final-evaluator"})["id"]))
             data = draft_data(version_row.id)
             data["budget"] = dict(FINAL_BUDGET)
+            if policy is not None:
+                data["evaluation_policy"].update(policy)
             document = create_version(actor, research, data)
         return ResearchVersion.objects.get(pk=UUID(document["id"]))
+
+    def rebuild(self, policy: dict[str, object]) -> None:
+        """換用另一份凍結政策並重建版本→預算→候選→凍結鏈；其他測試路徑共用同一組屬性。"""
+        self.version = self.fixture(policy)
+        self.budget = ResearchBudget.objects.get(research_version=self.version)
+        self.candidates = self.store()
+        self.frozen = self.freeze_one(self.candidates[0])
+        self.outsider = self.freeze_one(self.candidates[1])
 
     def store(self) -> list[Candidate]:
         """精確線性資料（y = 2x + 1）的離線報告，只含 fit／development。"""
@@ -220,6 +236,36 @@ class FinalEvaluatorTests(TransactionTestCase):
         authorized: list[int] = []
         self.assertEqual(vault.read_final(tenant, identity, selected, snapshot, lambda: authorized.append(1)), final_payload())
         self.assertEqual((authorized, vault.transition(tenant, identity, "RESERVE", selected, snapshot)), ([1], "CONSUMED"))
+
+    def test_validate_tick_falsifies_a_candidate_worse_than_the_frozen_baseline(self) -> None:
+        """候選損失高於 fit 均值 baseline：配對差全為正且遠超實務邊界，判 FALSIFIED 並照實落分數。"""
+        payload = final_payload(targets={8: "6/1", 9: "6/1"})
+        self.quality_report(self.register_seal(payload))
+        slot, _submission = self.dispatch(payload)
+        self.assertTrue(self.tick(slot))
+        result = self.settled(slot)
+        self.assertEqual(result.document["metrics"], {"mae": 12.0, "rmse": 12.041594578792296})
+        self.assertEqual((result.document["valid_coverage"], result.document["outcome_status"]), (1.0, "FALSIFIED"))
+
+    def test_validate_tick_calls_a_within_margin_difference_ambiguous(self) -> None:
+        """候選與 baseline 逐列損失差為零、落在實務帶內：只能稱在容差內等效，判 AMBIGUOUS。"""
+        payload = final_payload(targets={8: "23/2", 9: "25/2"})
+        self.quality_report(self.register_seal(payload))
+        slot, _submission = self.dispatch(payload)
+        self.assertTrue(self.tick(slot))
+        result = self.settled(slot)
+        self.assertEqual(result.document["metrics"], {"mae": 6.0, "rmse": 6.0207972893961479})
+        self.assertEqual(result.document["outcome_status"], "AMBIGUOUS")
+
+    def test_validate_tick_refuses_to_conclude_under_a_non_bootstrap_method(self) -> None:
+        """凍結政策選 `NONE` 時沒有配對區間語意：只輸出描述性指標並判 INSUFFICIENT_EVIDENCE。"""
+        self.rebuild({"comparison_method": "NONE"})
+        self.quality_report(self.register_seal(final_payload()))
+        slot, _submission = self.dispatch()
+        self.assertTrue(self.tick(slot))
+        result = self.settled(slot)
+        self.assertEqual(result.document["metrics"], {"mae": 0.0, "rmse": 0.0})
+        self.assertEqual(result.document["outcome_status"], "INSUFFICIENT_EVIDENCE")
 
     def test_validate_tick_reports_insufficient_evidence_without_a_frozen_baseline_mean(self) -> None:
         """缺 `FIT_MEAN` 來源時不臆測基準：照實回報分母仍判 INSUFFICIENT_EVIDENCE，不假報 SUPPORTED。"""

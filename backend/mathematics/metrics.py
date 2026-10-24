@@ -17,13 +17,22 @@ def quantile(values: list[Fraction], probability: Fraction) -> Fraction:
     return values[left] + (values[right] - values[left]) * (position - left)
 
 
-def score(plan: Plan, parameters: dict[str, str], alias: str, pairs: Sequence[tuple[float, float]]) -> dict[str, Any]:
-    """以 (x, y) 對評分；`mae`／`rmse` 只在全部列有效時給值，空集合不宣稱覆蓋率。"""
+def residuals(plan: Plan, parameters: dict[str, str], alias: str, pairs: Sequence[tuple[float, float]]) -> list[tuple[float, float]]:
+    """逐列回（目標值, 絕對誤差）；無法評分的列不進分母，也不出現在序列中。
+
+    與 `score` 共用同一份求值走訪與同一條有效性規則；輸出順序與輸入列一致，因此覆蓋完整時
+    能與 baseline 逐列配對，而不必重算或另存。"""
     points = evaluate(plan, [{alias: pair[0]} for pair in pairs], parameters).points
-    differences: list[float] = []
+    matched: list[tuple[float, float]] = []
     for point, pair in zip(points, pairs, strict=True):
         if point.valid_mask and point.value is not None and math.isfinite(point.value - pair[1]):
-            differences.append(abs(point.value - pair[1]))
+            matched.append((pair[1], abs(point.value - pair[1])))
+    return matched
+
+
+def score(plan: Plan, parameters: dict[str, str], alias: str, pairs: Sequence[tuple[float, float]]) -> dict[str, Any]:
+    """以 (x, y) 對評分；`mae`／`rmse` 只在全部列有效時給值，空集合不宣稱覆蓋率。"""
+    differences = [loss for _target, loss in residuals(plan, parameters, alias, pairs)]
     selected, valid = len(pairs), len(differences)
     result: dict[str, Any] = {"selected_count": selected, "valid_count": valid, "failed_count": selected - valid,
         "coverage": None if selected == 0 else str(Fraction(valid, selected)), "mae": None, "rmse": None}
