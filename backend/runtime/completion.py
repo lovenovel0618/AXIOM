@@ -31,6 +31,8 @@ def finish(lease: Lease, usage: object, commit: Callable[[], None], failure: Cal
             failure(run, code)
             status = "FAILED"
             reason = "BUDGET_EXHAUSTED" if exceeded else "DEPENDENCY_FAILURE"
+        # 回呼可能已就同一 root 寫入事件（如最終評估結果）；只補回最新游標，保留回呼在記憶體的其他變動。
+        run.document["current_event_cursor"] = lock_run(lease.tenant_id, lease.run_id).document["current_event_cursor"]
         attempt.document.update(status=status, finished_at=now.isoformat(), actual_usage=usage, usage_sequence=1)
         run.document.update(status=status, stop_reason=reason, dispatch_stage="CLOSED", budget_usage=usage)
         run.document["revision"] += 1

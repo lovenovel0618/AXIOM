@@ -19,6 +19,7 @@ x-backend: &backend
     AXIOM_IMPORT_LIMITS: ${AXIOM_IMPORT_LIMITS:-}
     AXIOM_PROFILE_ENABLED: ${AXIOM_PROFILE_ENABLED:-0}
     AXIOM_PROFILE_LIMITS: ${AXIOM_PROFILE_LIMITS:-}
+    AXIOM_VALIDATE_ENABLED: ${AXIOM_VALIDATE_ENABLED:-0}
     AXIOM_DELETION_PROPAGATION_ENABLED: ${AXIOM_DELETION_PROPAGATION_ENABLED:-0}
   networks: [private]
 services:
@@ -157,6 +158,39 @@ services:
       - --queues=profile
     environment:
       <<: *environment
+      AXIOM_SEALING_ENABLED: ${AXIOM_SEALING_ENABLED:-1}
+      AXIOM_SEALING_DATA: /var/lib/axiom/sealed
+      AXIOM_SEALING_KEYS: /var/lib/axiom/sealed-keys
+      AXIOM_JOURNAL_SOCKET: /var/lib/axiom/socket/journal.sock
+      AXIOM_JOURNAL_TOKEN: ${AXIOM_JOURNAL_TOKEN:?Set journal token in .env}
+    volumes:
+      - "object-data:/var/lib/axiom/objects:ro"
+      - "sealed-data:/var/lib/axiom/sealed"
+      - "sealed-keys:/var/lib/axiom/sealed-keys"
+      - "journal-socket:/var/lib/axiom/socket"
+    mem_limit: 2g
+    cpus: 1.0
+    pids_limit: 64
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+      journal: {condition: service_healthy}
+  evaluator:
+    <<: *backend
+    profiles: [evaluator]
+    user: "10002:10003"
+    command:
+      - celery
+      - -A
+      - config.celery:app
+      - worker
+      - --loglevel=INFO
+      - --concurrency=1
+      - --max-tasks-per-child=1
+      - --queues=validate
+    environment:
+      <<: *environment
+      AXIOM_VALIDATE_ENABLED: ${AXIOM_VALIDATE_ENABLED:-1}
       AXIOM_SEALING_ENABLED: ${AXIOM_SEALING_ENABLED:-1}
       AXIOM_SEALING_DATA: /var/lib/axiom/sealed
       AXIOM_SEALING_KEYS: /var/lib/axiom/sealed-keys

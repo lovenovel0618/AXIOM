@@ -1,0 +1,112 @@
+{
+  "date": "2026-10-24",
+  "scope": "T07_ISOLATED_FINAL_TEST_EVALUATOR_EXECUTION",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "0304f1cf",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "PARTIAL",
+  "product_gate_status": "NOT_RUN",
+  "delivery_boundary": {
+    "authorized_final_read": "IMPLEMENTED（catalog/final_evaluator.py::validate_tick 先 consume(submission) 再 authority().read_final(tenant, identity, submission, snapshot, authorize)，授權回呼內以 check_submission 重驗租約與截止時間，授權副作用只在讀 blob 前觸發）",
+    "exposure_ordering_replay": "IMPLEMENTED（曝光由讀取端先行提交，settle() 內的同名 consume 成為純 replay，與「消耗由讀取端先行提交」的既定裁定一致）",
+    "conservative_retirement": "IMPLEMENTED（讀取、解析或評分失敗一律失敗結算並以 retire() 退役曝光，不回 AVAILABLE；退役後 RESERVE 回 TEST_ALREADY_CONSUMED）",
+    "scoring": "IMPLEMENTED（final labels 以 canonical rows 傳遞且每列恰一輸入一目標，非此形狀收斂成 INVALID_SCHEMA 422；參數取自 FrozenCandidate 正規副本、DSL 取自 EquationVersion，經 compile_dsl 後交 mathematics.metrics.score，計數與 coverage／mae／rmse 全部來自公開評分函式）",
+    "outcome_decision": "IMPLEMENTED（outcome_status 只以候選 MAE vs baseline 裁決；baseline=FIT_MEAN 的 fit 均值取自 ResearchState.quality_id 指向的 QualityReport.fit_summary.target_mean，來源缺失或無可評分列一律 INSUFFICIENT_EVIDENCE，僅 mae 嚴格小於 baseline 時 SUPPORTED）",
+    "settlement_via_finish_only": "IMPLEMENTED（結帳只走 runtime.completion.finish；evaluator 不呼叫 budget.report_usage／release_unstarted／remaining，因為 VALIDATE root 依設計沒有帳本列）",
+    "settlement_in_callback": "IMPLEMENTED（final_evaluation.settle 於 finish 的 commit()／failure() 回呼內執行，使槽位與 root 終態同一次裁決；資源超支時 finish 走 failure 回呼，兩者永遠一致）",
+    "event_cursor_reload": "IMPLEMENTED（runtime/completion.py 於回呼返回後以同一鎖入口補回最新 current_event_cursor，避免回呼內寫入的 ValidationFinished 與終態事件撞號；只補游標以保留回呼在記憶體的其他變動，如 INGEST 失敗附加的 diagnostic_artifact_ids）",
+    "task_and_relay_wiring": "IMPLEMENTED（catalog/tasks.py 新增 catalog.validate_tick 任務與 relay_validate()，dispatch_probes 迴圈一併掃描；relay 先 recover 未收斂根，只派仍 QUEUED 且 VALIDATE_ENABLED 為真者）",
+    "evaluator_service": "IMPLEMENTED（compose.yaml 新增 evaluator 服務：profiles [evaluator]、--queues=validate、--concurrency=1、--max-tasks-per-child=1、sealed-data／sealed-keys／journal socket 與唯讀 object 資料卷、mem_limit 2g／cpus 1.0／pids_limit 64）",
+    "validation_multizone": "IMPLEMENTED（catalog/tests/test_final_evaluator.py 6 項端到端回歸：未啟用閘門、成功評分與結帳一致、缺基準均值、不可解析 payload、單向結算、relay 派送）",
+    "practical_margin_and_bootstrap": "NOT_IMPLEMENTED（paired bootstrap、practical margin 與完整的 AMBIGUOUS 語意未寫）",
+    "slot_endpoint": "NOT_IMPLEMENTED（槽位無對外端點，工作台 #6 未接最終評估狀態）",
+    "measurement_markers": "usage_scope=LOCAL_FINAL_EVALUATOR_EXECUTION_ONLY、product_status=NOT_RUN、precision_bits=53"
+  },
+  "tests": {
+    "postgresql_backend": 374,
+    "previous_backend": 368,
+    "new_slice_tests": 6,
+    "new_tests_breakdown": {
+      "backend/catalog/tests/test_final_evaluator.py": 6
+    },
+    "focused_regression": "catalog.tests.test_final_evaluator 6／6 OK",
+    "cross_slice_regression": "runtime.tests catalog.tests.test_business_ingest catalog.tests.test_final_evaluator 91／91 OK（finish 游標修正後 INGEST 失敗路徑回歸）",
+    "unittest_command": "docker compose -p axiom-dev run --rm -v \"$PWD/backend\":/app -v \"$PWD/docs/企劃案/contracts\":/app/contracts web python manage.py test foundation.tests runtime.tests catalog.tests mathematics.tests mathematics.test_linalg mathematics.test_search ingestion.tests --noinput",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "NO_SOURCE_CHANGE_THIS_SLICE",
+      "typecheck": "沿用已通過的 vue-tsc --noEmit 0 error",
+      "vitest": "沿用已通過的 9 檔 82／82"
+    }
+  },
+  "strict_pyright": {
+    "version": "1.1.414",
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0,
+    "informations": 0
+  },
+  "typing_policy": "PASS（新增 backend/catalog/tests/test_final_evaluator.py 邊界額度 JsonObject 2；backend/catalog/final_evaluator.py 未使用 Any／JsonObject，故不列額度）",
+  "engineering_tools": {
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "PASS",
+    "public_oracle": "PASS",
+    "docs_check": "exit 0（markdown 57、chapters 54、links 379、acceptance_cases 326、schemas 6、contract_examples 110、api_operations 28、contract_scenarios 272、review_findings 36、attachment_requirements 32、error_codes 54、capabilities 6、policies 1、public_fixture_oracles 4、manifest_files 86、product_test_status NOT_RUN）"
+  },
+  "integration": {
+    "disabled_gate": "PASS（VALIDATE_ENABLED=False 時 validate_tick 回 False，槽位仍 PENDING、root 仍 QUEUED、無結果列，曝光仍 RESERVED）",
+    "successful_scoring": "PASS（final labels y=2x+1 且凍結候選完全擬合 ⇒ mae／rmse 為 0、valid_coverage 為 1、計數 2／2／0、metric_reasons 為空、E2／P0／SUPPORTED；結果文件通過 ValidationRun 契約，artifact_uri 為 private://evaluator/final-report/{id}，sha256 與自身可重算摘要相符）",
+    "settlement_consistency": "PASS（root SUCCEEDED／COMPLETED／dispatch_stage CLOSED、槽位 COMPLETED、提交 EVALUATED、事件序列 RunQueued → RunStarted → ValidationFinished → RunFinished、producer_version t07-validate-v1；結算後 read_final 放行且授權回呼恰觸發一次、再 RESERVE 回 CONSUMED）",
+    "missing_baseline_mean": "PASS（版本狀態未指向 QualityReport ⇒ 分母照實回報但判 INSUFFICIENT_EVIDENCE，不臆測 baseline）",
+    "unreadable_payload": "PASS（封存包非 canonical rows ⇒ 失敗結算、不留結果列、槽位 FAILED、root FAILED／CLOSED、提交 FAILED；read_final 回 INVALID_TRANSITION 且授權回呼不被呼叫，再 RESERVE 回 TEST_ALREADY_CONSUMED）",
+    "single_forward_settlement": "PASS（已結算槽位重送回 False 且只讀回原結果，ValidationRun 恰 1 列）",
+    "relay_dispatch": "PASS（relay_ingest／relay_profile／relay_validate 為 0／0／1；send_task 以 queue=validate、retry=False 送出，last_polled_at 已更新）",
+    "makemigrations_check": "No changes detected",
+    "product_gate_status": "NOT_RUN",
+    "g2_status": "BLOCKED（D-03 未關）"
+  },
+  "live_services": {
+    "project": "axiom-dev",
+    "retained_running": true,
+    "services": [
+      { "name": "frontend", "state": "running", "health": "healthy", "ports": "127.0.0.1:15173->5173/tcp" },
+      { "name": "ingest", "state": "running", "health": "", "ports": "" },
+      { "name": "journal", "state": "running", "health": "healthy", "ports": "" },
+      { "name": "postgres", "state": "running", "health": "healthy", "ports": "5432/tcp" },
+      { "name": "profile", "state": "running", "health": "", "ports": "" },
+      { "name": "redis", "state": "running", "health": "healthy", "ports": "6379/tcp" },
+      { "name": "relay", "state": "running", "health": "", "ports": "" },
+      { "name": "web", "state": "running", "health": "healthy", "ports": "127.0.0.1:18000->8000/tcp" },
+      { "name": "worker", "state": "running", "health": "", "ports": "" }
+    ],
+    "evaluator": "NOT_STARTED（profiles [evaluator] 閘門後；本批未以實際容器執行 final_test，只以測試容器執行執行段）"
+  },
+  "changed_sources": {
+    "backend/catalog/final_evaluator.py": "59b9ba90ef9be1bd8aef81a0ddf07a07c3dae6f9e07eacd62431d019e02c2649",
+    "backend/catalog/tasks.py": "480a44029f3467d929c4cd25cff022c44ae3d725170ed007dc9cc570a53ec745",
+    "backend/catalog/tests/test_final_evaluator.py": "21a135d0632c217a081b35551f13531d8b2b4d77c24958d0dbdd0a8c3368c1b5",
+    "backend/config/settings.py": "c6e5c9e4b8d8801313251b2b87270e9be83c363afad5ae380caa207fb2826843",
+    "backend/foundation/management/commands/dispatch_probes.py": "666da713750799eab27d2e1a6b36bef87cc20889645dc4d31088e3eb9d2cddaf",
+    "backend/runtime/completion.py": "5426c120996436227c405f850e4a52959d885ddbf9859ca8862c6149d0ebc7c8",
+    "compose.yaml": "23a3a6e8af636f7aa2ba3e94a9513a9bcaa02a9e16217261e3c93ad11522a48f",
+    "tools/typing-boundaries.json": "ad20ff898c0fabe50c8acd9edbf2905da32ddc923c95355cd445e28035ddb075",
+    "docs/技術文件/M0/T07-候選凍結與比較設計.md": "722bae9a4240e33d213be23115a44d086bba4c7b0c2a73943389cefe35baf4e8",
+    "docs/技術文件/M0/T07-候選凍結與比較驗證紀錄.md": "a19b898934a4c0f76beed279e6e171fd396ab97f99e4350bcd671a789286f854",
+    "docs/技術文件/缺口清單.md": "a5df9953cd0ea8400c6caf40b467f70ca1ba3b63e795e69842f4b6c52f4983f1",
+    "docs/技術文件/README.md": "7f573a9b1881dcc243892991e72734ee97ca8608b1c4cad62bffdff385e4ecc3",
+    "docs/技術文件/M0/t07-final-evaluator-backend-tests.txt": "52027b15ca48e2c67007f3af6bede16db254ea6536f006a46e96eb8e72589add"
+  },
+  "known_limits": [
+    "paired bootstrap、practical margin 與完整的 AMBIGUOUS 語意未寫：判定目前只以候選 MAE 與 FIT_MEAN 基準直接比較",
+    "evaluator 服務在 profiles [evaluator] 之後，本批未以實際容器執行 final_test；執行段由測試容器端到端驗證",
+    "分母只由 mathematics.metrics.score 回報（selected／valid／failed 與 coverage），拒答理由只覆蓋 mae／rmse 不可得的情形",
+    "Slots 無對外端點，工作台（#6）未接最終評估狀態",
+    "本機未重跑 SonarQube（無工作區憑證），不以舊的零項目結果頂替",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}

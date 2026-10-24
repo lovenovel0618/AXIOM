@@ -134,6 +134,11 @@
     "JsonObject": 3,
     "reason": "測試以 schema 文件組出最終結果與逐欄不符的反例；額度只可收斂，不代表核心已具體型別化。"
   },
+  "backend/catalog/tests/test_final_evaluator.py": {
+    "Any": 0,
+    "JsonObject": 2,
+    "reason": "測試以 canonical rows 與品質報告的 schema 文件組出最終標籤與 fit 均值情境；額度只可收斂，不代表核心已具體型別化。"
+  },
   "backend/catalog/research_validation.py": {
     "Any": 0,
     "JsonObject": 13,

@@ -61,6 +61,9 @@ INGEST_LIMITS_JSON = os.environ.get("AXIOM_IMPORT_LIMITS", "")
 PROFILE_ENABLED = os.environ.get("AXIOM_PROFILE_ENABLED", "0") == "1"
 PROFILE_LIMITS_JSON = os.environ.get("AXIOM_PROFILE_LIMITS", "")
 
+# 隔離 Evaluator 只在專用 validate 佇列與 private 封存通道下啟用；未啟用即不派送。
+VALIDATE_ENABLED = os.environ.get("AXIOM_VALIDATE_ENABLED", "0") == "1"
+
 # 刪除傳播要等 D-05 的保留政策關閉；未啟用時只寫 tombstone 並把刪除工作停在 BLOCKED。
 DELETION_PROPAGATION_ENABLED = os.environ.get("AXIOM_DELETION_PROPAGATION_ENABLED", "0") == "1"
 
