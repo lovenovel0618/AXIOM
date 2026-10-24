@@ -1,0 +1,124 @@
+{
+  "date": "2026-10-24",
+  "scope": "T07_M2_WORKBENCH_EVIDENCE_STRATEGY_TESTS_FREEZE_API_AND_CHECKPOINT",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "6d737f8",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "PARTIAL",
+  "product_gate_status": "NOT_RUN",
+  "slices": {
+    "A_workbench_evidence_and_final_evaluation": {
+      "evaluation_api": "IMPLEMENTED（frontend/src/api/evaluations.ts 以 getValidationRun 讀取 GET /api/v2/validation-runs/{id}，只負責傳輸，不推測內容）",
+      "evaluation_parser": "IMPLEMENTED（frontend/src/lib/evaluation.ts 的 parseValidationRun 逐欄驗證契約白名單：kind=ValidationRun、outcome_status∈{SUPPORTED,AMBIGUOUS,INSUFFICIENT_EVIDENCE,FALSIFIED}、metric/split/empirical/proof 列舉、mae/rmse 可為 null 但必須存在、valid_coverage∈[0,1]、selected/valid/failed 為安全整數、sha256 為 64 hex；任一不符回 null，不以推測補值）",
+      "refusal_display": "IMPLEMENTED（refusalReasons 只整理後端文件明載的 metric_reasons，後端只回 INSUFFICIENT_EVIDENCE 且未揭露前提時明示不推測；OUTCOME_LABELS／OUTCOME_DETAILS 對照四態）",
+      "evidence_inspection": "IMPLEMENTED（ResearchView.vue 的 toggleInspect 展開時才讀 getArtifact + getArtifactContent，再按一次收合，不在背景批次抓取；顯示 media_type／size_bytes／status／access_class／sha256 與內容）",
+      "evaluation_panel": "IMPLEMENTED（ResearchView.vue 於證據包載入後以 bundle.validationIds 逐一讀取，單一引用失敗只記錄訊息不影響其他項；無引用或全數失敗時明示『未顯示推測內容』）",
+      "frontend_tests": "IMPLEMENTED（frontend/tests/evaluation.test.ts 8 項：契約正例、四態標籤、缺欄位／列舉外／超界覆蓋率／非安全整數／壞 sha256 的拒絕、拒答理由與未知代碼保留）"
+    },
+    "B_m2_t2_t3_polynomial_and_harmonic": {
+      "degree_guard": "IMPLEMENTED（backend/mathematics/search.py 新增 MIN_DEGREE=2／MAX_DEGREE=3；_polynomial 對註冊外度數回 UNSUPPORTED_DEGREE，不硬給更高次擬合）",
+      "polynomial_tests": "IMPLEMENTED（test_search.py PolynomialStrategyTests 4 項：度數上限對 0／1／4／7 一律回 UNSUPPORTED_DEGREE、二次式被還原且同預算下勝過直線、degree 3 需 4 個不同 x 而 degree 2 仍可擬合、等價常數 AST 合併直線與兩個多項式度數）",
+      "harmonic_tests": "IMPLEMENTED（test_search.py HarmonicStrategyTests 3 項：字典外頻率保留候選但不排名第一並帶 FIXED_PRECISION_FREQUENCY、混疊歧義保留兩個獨立候選不合併且 k=3 留 RANK_DEFICIENT、列預算共用且超額請求以 AST_LIMIT_EXCEEDED 停止，候選一律不帶已驗證標記）"
+    },
+    "C_m2_t5_dispatch_triggered_freeze": {
+      "service": "IMPLEMENTED（backend/catalog/freezing.py 新增 freeze_candidates 與 _fit_for：先驗控制 revision（REVISION_CONFLICT 412）與 READY 且無活躍 run（INVALID_TRANSITION 409），零候選回 INVALID_SCHEMA 422 且不建空提交包，候選／擬合／表徵不符回 FIT_REFERENCE_MISMATCH／REPRESENTATION_MISMATCH，最後經 frozen_submission 建立固定副本與提交包）",
+      "event": "IMPLEMENTED（backend/catalog/research_state.py 的 submission_frozen 在同一交易遞增 revision 並保存 SubmissionFrozen 事件；同一提交重送不重複發事件）",
+      "endpoint": "IMPLEMENTED（POST /api/v2/research-versions/{id}/frozen-submissions 於 backend/catalog/research_http.py::freeze_submission，經 replay 冪等鍵與 authorized_submission 讀回原列回 201）",
+      "routing": "IMPLEMENTED（backend/config/urls.py 新增 frozen-submissions 路徑）",
+      "contract_sync": "IMPLEMENTED（openapi-v2.json 新增 POST /research-versions/{id}/frozen-submissions operation 與 FrozenSubmission 元件；21-API與任務契約.md 新增該列並在 409 補列 EQUATION_MISMATCH／FIT_REFERENCE_MISMATCH／PARAMETER_NOT_CANONICAL／RANK_MISMATCH／REPRESENTATION_MISMATCH／SEALED_TEST_NOT_REGISTERED／VERIFICATION_PLAN_MISMATCH 七碼；error-codes-v1.json 同步新增；api_operations 28→29、error_codes 54→61，check_docs exit 0）",
+      "event_guard_migration": "IMPLEMENTED（backend/catalog/migrations/0025_research_event_submission_frozen.py 將 catalog_research_event_guard 改為逐事件型別判定：SubmissionFrozen 要求同交易存在對應 FrozenSubmission）",
+      "http_tests": "IMPLEMENTED（test_candidates.py 5 項真 HTTP：建立快照／事件／投影、冪等鍵重送、前置 revision 與 READY 狀態、空／缺／錯引用（含 VERIFICATION_PLAN_MISMATCH／SEALED_TEST_NOT_REGISTERED）、owner scope）"
+    },
+    "D_m2_t4_checkpoint_and_lease": {
+      "model": "IMPLEMENTED（backend/runtime/models.py 新增 RuntimeCheckpoint：run 外鍵、tenant_id、attempt_id、受控 JSON document、created_at；(id,tenant_id) 唯一）",
+      "store": "IMPLEMENTED（runtime.control.save_checkpoint 持有效租約時保存不可變 checkpoint，固定 input_hash／dataset_version_id／environment_digest／plugin_hashes／cumulative_usage／root_epoch，並以 identity_hash 加 checksum；只記錄進度不結算帳本，因此重試不重置用量）",
+      "load": "IMPLEMENTED（runtime.control.load_checkpoint 先過當期租約 fencing 才可讀回，資料／環境／插件或 checksum 不符回 CHECKPOINT_INCOMPATIBLE，未找到回 CHECKPOINT_NOT_FOUND；只解碼受控 JSON，永不載入 pickle）",
+      "constants": "IMPLEMENTED（LEASE_SECONDS=60、HEARTBEAT_SECONDS=15 對齊 AX-38 L24；CHECKPOINT_PROGRESS 列出 dsl_hash／precision_bits／rng_state／strategy_progress，缺項回 CHECKPOINT_INCOMPLETE）",
+      "guards": "IMPLEMENTED（runtime 0012 建表、0013 守衛：複合外鍵 (run_id,tenant_id)、attempt 歸屬、document 身分逐欄同步（kind／schema_version／id／tenant_id／run_id／attempt_id／created_at），不可改刪）",
+      "tests": "IMPLEMENTED（test_control.py 7 項：租約／心跳視窗對齊契約、checkpoint 往返綁定 attempt 與 root epoch、進度不全拒絕、崩潰重試保留 cumulative_usage 且舊租約不得讀、換環境／資料／插件／checksum 一律 CHECKPOINT_INCOMPATIBLE、取消的 root 不得從 checkpoint 恢復、DB 守衛擋更新／刪除／外來 attempt）"
+    }
+  },
+  "tests": {
+    "postgresql_backend": 414,
+    "previous_backend": 395,
+    "new_slice_tests": 19,
+    "new_tests_breakdown": {
+      "catalog/tests/test_candidates.py": 5,
+      "mathematics/test_search.py": 7,
+      "runtime/tests/test_control.py": 7
+    },
+    "focused_regression": "runtime.tests.test_control 45／45 OK（18.5s）",
+    "unittest_command": "docker compose -p axiom-dev run --rm -v \"$PWD/backend\":/app -v \"$PWD/docs/企劃案/contracts\":/app/contracts web python manage.py test --noinput",
+    "status": "PASS",
+    "skip": 0,
+    "frontend": {
+      "status": "PASS",
+      "typecheck": "vue-tsc --noEmit 0 error",
+      "vitest": "14 檔 122／122（含新增 tests/evaluation.test.ts 8 項）",
+      "build": "vite build 成功（71 modules transformed）"
+    }
+  },
+  "strict_pyright": {
+    "version": "1.1.414",
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "command": ".venv-backend/bin/pyright -p backend",
+    "errors": 0,
+    "warnings": 0
+  },
+  "typing_policy": "PASS（backend/runtime/control.py JsonObject 9→12；backend/runtime/models.py JsonObject 16→18；backend/catalog/research_state.py JsonObject 2→3；backend/catalog/tests/test_candidates.py JsonObject 10→14）",
+  "engineering_tools": {
+    "typing_policy": "{\"status\": \"PASS\", \"errors\": []}",
+    "development_baseline": "errors []（blockers 保留 D-01～D-09 OPEN 與 M0 closure 未決）",
+    "public_oracle": "status PASS（scope PUBLIC_REFERENCE_ONLY、visibility PUBLIC_SMOKE_ONLY、product_status NOT_RUN、atol/rtol 1e-10）",
+    "docs_check": "exit 0（markdown 57、chapters 54、links 379、acceptance_cases 326、schemas 6、contract_examples 110、api_operations 29、contract_scenarios 272、review_findings 36、attachment_requirements 32、error_codes 61、capabilities 6、policies 1、public_fixture_oracles 4、manifest_files 86、product_test_status NOT_RUN）"
+  },
+  "integration": {
+    "freeze_idempotency": "PASS（同 Idempotency-Key 重送回同一 FrozenSubmission 與 snapshot_hash，不建第二列、不重複發 SubmissionFrozen）",
+    "freeze_precondition": "PASS（revision 不符回 412 REVISION_CONFLICT；非 READY 或已有活躍 run 回 409 INVALID_TRANSITION；零候選回 422 且不留空提交包）",
+    "freeze_reference_refusals": "PASS（候選／擬合／表徵／計畫引用不符分別回 FIT_REFERENCE_MISMATCH／REPRESENTATION_MISMATCH／VERIFICATION_PLAN_MISMATCH／SEALED_TEST_NOT_REGISTERED，且 owner 以外的請求回 404）",
+    "checkpoint_usage_trace": "PASS（崩潰重試後 load_checkpoint 的 cumulative_usage 與 root budget_usage 同值，未重置；舊 attempt 與取消的 root 皆被租約 fencing 擋下）",
+    "checkpoint_compatibility": "PASS（換環境摘要／資料集／插件雜湊或改寫 checksum 一律 CHECKPOINT_INCOMPATIBLE；DB 守衛擋下更新、刪除與外來 attempt 的 checkpoint）",
+    "lease_windows": "PASS（attempt 起始與心跳的租約視窗皆為 60s；HEARTBEAT_SECONDS 15 < LEASE_SECONDS 60）",
+    "makemigrations_check": "No changes detected",
+    "product_gate_status": "NOT_RUN",
+    "g2_status": "BLOCKED（D-03 未關）"
+  },
+  "changed_sources": {
+    "backend/catalog/freezing.py": "d2e0925937b6f70a3b64cc3da78667bf68e23c2b085c146c5285133026fe4817",
+    "backend/catalog/research_http.py": "41ff157ac9332b5a4cb6b05309241940d72110e1500a704b44e5b1ba69673f2d",
+    "backend/catalog/research_state.py": "27779e1a49a591e8901892a2aa28b50d835fb9a8ffa3b0ffcb8ac1bc73ad6b20",
+    "backend/catalog/tests/test_candidates.py": "27604a51081c980f5af6d76b91c86bc0f50039005f19cfdd87af884cf52cbf0f",
+    "backend/catalog/migrations/0025_research_event_submission_frozen.py": "afd54992d9b468f80d16657dbe2b1abcf6aaacc88a59480f897afcf49d252d65",
+    "backend/config/urls.py": "eca5a3f63394ccbbadc9df8c1d2a99e7bf81fd87f773d9ca17dd99d3421fcc31",
+    "backend/mathematics/search.py": "e75ae816f777ee3ad312f40a186fb6b23b6895ab4caab42bea73613ab864acae",
+    "backend/mathematics/test_search.py": "0724229faca322bf58c03238f7cea485bcfe6f125bb687e66f27de205c3fc0ea",
+    "backend/runtime/control.py": "75075963f78cd2aafe571430dbf432ebe44d9df6b9fca6abc1267cb3de73a015",
+    "backend/runtime/models.py": "d4f6ad51b0d37142aeed618f5db2a86ac4313b6e481b302059ef2508275d7c78",
+    "backend/runtime/tests/test_control.py": "461159c917137dd6db0951650057af413e898669accf24d3fc7befb44e71ab74",
+    "backend/runtime/migrations/0012_checkpoint_table.py": "953b0613d6aa4eb6dd3b578188454eeae75dfdc0de1c1e00437f85ce2a1e1f87",
+    "backend/runtime/migrations/0013_checkpoint_guards.py": "43c6e368f494c7e3364a013c22829bea4f7748a8978bf84c4b7b70948caa6f65",
+    "frontend/src/views/ResearchView.vue": "17ef6027b7847783f329e9cd29e4056be1697ef83e583073606796eb530f0d22",
+    "frontend/src/api/evaluations.ts": "932be91bc2c88669bdedb9e00cb309414ea53375e827ac66bd95920b555a2d77",
+    "frontend/src/lib/evaluation.ts": "689596d8db17b0bbbb8ddb4293044aebfa09e9f40838c8bc8fdea1249690f483",
+    "frontend/tests/evaluation.test.ts": "057d251d5eb49b921070ea4a2bf732819993ecca9a6b3cc1d55a3af308e101c3",
+    "tools/typing-boundaries.json": "0edeb8e45329a241f6af40082a497b76d18693e503ab5f26536118cd3c46f46c",
+    "docs/企劃案/07-資料與API/21-API與任務契約.md": "bcefd11ea36b35e1d76565df2859e82905fc7e84ab6773e8d67390c0c59d3bf3",
+    "docs/企劃案/contracts/error-codes-v1.json": "b52e445c907fabff465ec54328344198152fe08f10fe14b5289b021906e610ac",
+    "docs/企劃案/contracts/openapi-v2.json": "2ad765197f2600a429f3e01e7d68fe4f8b7950f1f1043644a19c7dc330724b53",
+    "docs/企劃案/MANIFEST.json": "7ad11c3dfca9c635f421e33431bd1d41ec00c70c62ed1b2de54ed478597cf4fc",
+    "docs/技術文件/M0/t07-m2-delivery-backend-tests.txt": "7f592be116c5090f7c674475a4de6198c61957191efa02bb7cd0eb87b40fef06",
+    "docs/技術文件/M0/t07-m2-delivery-frontend-tests.txt": "6a63f53867f78a461b5398d8b205beb3416d356293a5f3aa7dc11c3d277cfc6c"
+  },
+  "known_limits": [
+    "child run 排程仍未啟用：非 root 或帶 parent_run_id 的輸入一律回 FEATURE_DISABLED，root／child 排程只交付 root 與租約世代",
+    "checkpoint 尚未接上實際 SEARCH worker 的週期保存；本批交付控制層 save_checkpoint／load_checkpoint 與 DB 守衛，未在 worker 迴圈定時呼叫",
+    "研究累計預算（ResearchBudget 跨 run 累計）仍只到 run 層 budget_usage 與 checkpoint 的 cumulative_usage，未做跨 root 帳本彙總",
+    "曝光預算視圖與槽位最終評估狀態尚未納入工作台（本批只交付證據檢視與最終評估結果顯示）",
+    "本機未重跑 SonarQube（無工作區憑證），不以舊的零項目結果頂替",
+    "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
+    "企劃驗收維持 NOT_RUN，T07 與 M1 仍 IN_PROGRESS，D-03 未關使 G2 保持 BLOCKED"
+  ]
+}

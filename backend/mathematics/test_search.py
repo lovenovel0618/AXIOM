@@ -3,8 +3,8 @@ from dataclasses import fields
 from fractions import Fraction
 import math
 from unittest import TestCase
-from mathematics.search import (HARMONIC, LINEAR, MANIFESTS, NOT_APPLICABLE, POLYNOMIAL, STRATEGIES, Domain, Request,
-    Variable, manifest, search)
+from mathematics.search import (HARMONIC, LINEAR, MANIFESTS, MAX_DEGREE, MAX_ROWS, MIN_DEGREE, NOT_APPLICABLE, POLYNOMIAL,
+    STRATEGIES, Domain, Request, Variable, manifest, search)
 from mathematics.syntax import DslError
 from runtime.contracts import JsonObject
 
@@ -170,3 +170,103 @@ class SearchTests(TestCase):
         degenerate = search(request([(float(x), 1.0) for x in range(4)]))
         self.assertEqual(codes(strategy(degenerate, HARMONIC)), ["FIXED_PRECISION_FREQUENCY",
             "FIXED_PRECISION_FREQUENCY", "ALIASING_RISK", "FIXED_PRECISION_FREQUENCY", "ALIASING_RISK", "RANK_DEFICIENT"])
+
+
+class PolynomialStrategyTests(TestCase):
+    """M2-T2 專屬：度數上限、擬合與排名、退化輸入、等價結構去重。"""
+
+    def test_degree_bound_rejects_every_degree_outside_the_registered_variants(self) -> None:
+        polynomial = STRATEGIES[1]
+        self.assertEqual([index for index, _label in polynomial.variants], [MIN_DEGREE, MAX_DEGREE])
+        fixture = request([(float(x), float(x * x)) for x in range(6)])
+        for degree in (0, 1, MAX_DEGREE + 1, 7):
+            with self.subTest(degree=degree):
+                produced, notes = polynomial.propose(fixture, degree)
+                self.assertEqual(produced, [])
+                self.assertEqual([note.code for note in notes], ["UNSUPPORTED_DEGREE"])
+        for degree in (MIN_DEGREE, MAX_DEGREE):
+            with self.subTest(degree=degree):
+                self.assertEqual(len(polynomial.propose(fixture, degree)[0]), 1)
+
+    def test_quadratic_is_recovered_and_outranks_the_line_at_the_same_budget(self) -> None:
+        fit = [(float(x), float(x * x - 2 * x + 3)) for x in range(6)]
+        development = [(6.0, 27.0), (7.0, 38.0)]
+        report = search(request(fit, development))
+        polynomial = {sources(candidate)[0]: float(candidate["development"]["mae"])
+            for candidate in report["candidates"] if sources(candidate)[0].startswith("polynomial-fit")}
+        self.assertEqual(sorted(polynomial, key=polynomial.__getitem__),
+            ["polynomial-fit:degree-3", "polynomial-fit:degree-2"])
+        self.assertLess(polynomial["polynomial-fit:degree-3"], 1e-12)
+        self.assertLess(polynomial["polynomial-fit:degree-2"], 1e-12)
+        line = next(candidate for candidate in report["candidates"] if "linear-fit:least-squares" in sources(candidate))
+        self.assertGreater(float(line["development"]["mae"]), 1.0)
+        self.assertLess(polynomial["polynomial-fit:degree-2"], float(line["development"]["mae"]))
+
+    def test_degree_three_needs_four_distinct_x_while_degree_two_still_fits(self) -> None:
+        polynomial = STRATEGIES[1]
+        fixture = request([(0.0, 3.0), (1.0, 2.0), (2.0, 3.0)])
+        self.assertEqual(len(polynomial.propose(fixture, MIN_DEGREE)[0]), 1)
+        produced, notes = polynomial.propose(fixture, MAX_DEGREE)
+        self.assertEqual(produced, [])
+        self.assertEqual([note.code for note in notes], ["INSUFFICIENT_DISTINCT_X"])
+
+    def test_equivalent_constant_ast_merges_the_line_and_both_polynomial_degrees(self) -> None:
+        report = search(request([(float(x), 4.0) for x in range(4)], [(4.0, 4.0)]))
+        merged = [candidate for candidate in report["candidates"] if len(candidate["origins"]) > 1]
+        self.assertEqual(len(merged), 1)
+        self.assertEqual(sorted(sources(merged[0])), ["linear-fit:least-squares", "linear-fit:mean",
+            "polynomial-fit:degree-2", "polynomial-fit:degree-3"])
+        self.assertEqual(merged[0]["development"], {"selected_count": 1, "valid_count": 1, "failed_count": 0,
+            "coverage": "1", "mae": "0", "rmse": "0"})
+
+
+class HarmonicStrategyTests(TestCase):
+    """M2-T3 專屬：字典外頻率不誤判為識別、混疊歧義保留候選與拒答。"""
+
+    def test_off_grid_frequency_keeps_candidates_but_none_ranks_first(self) -> None:
+        # 真實頻率取字典格的一半位置（k=1.5），三格字典都解釋不了，排名必須讓不涉及頻率的基線勝出。
+        span = 5.0
+        omega = 2 * math.pi * 1.5 / span
+        fit = [(float(x), math.sin(omega * x)) for x in range(6)]
+        development = [(float(x), math.sin(omega * x)) for x in (6, 7)]
+        report = search(request(fit, development))
+        harmonic = [candidate for candidate in report["candidates"] if sources(candidate)[0].startswith("harmonic-fit")]
+        self.assertEqual(sorted(sources(candidate)[0] for candidate in harmonic),
+            ["harmonic-fit:k=1", "harmonic-fit:k=2", "harmonic-fit:k=3"])
+        best = report["candidates"][0]
+        self.assertFalse(sources(best)[0].startswith("harmonic-fit"))
+        for candidate in harmonic:
+            self.assertGreater(float(candidate["development"]["mae"]), float(best["development"]["mae"]))
+        self.assertIn("FIXED_PRECISION_FREQUENCY", codes(strategy(report, HARMONIC)))
+
+    def test_alias_equivalent_entries_stay_separate_candidates_without_identification(self) -> None:
+        # 整數格且 T=3 時 k=2 的基底與 k=1 只差一個負號，兩者對 fit 的解釋在浮點噪音內相同；
+        # k=3 在這格上退化，策略保留 RANK_DEFICIENT 而不給候選，歧義因此不被合併成單一答案。
+        fit = [(float(x), math.sin(2 * math.pi * x / 3)) for x in range(4)]
+        development = [(float(x), math.sin(2 * math.pi * x / 3)) for x in (4, 5)]
+        report = search(request(fit, development))
+        self.assertEqual(codes(strategy(report, HARMONIC)), ["FIXED_PRECISION_FREQUENCY", "FIXED_PRECISION_FREQUENCY",
+            "ALIASING_RISK", "FIXED_PRECISION_FREQUENCY", "ALIASING_RISK", "RANK_DEFICIENT"])
+        ambiguous = [candidate for candidate in report["candidates"]
+            if sources(candidate)[0] in ("harmonic-fit:k=1", "harmonic-fit:k=2")]
+        self.assertEqual(len(ambiguous), 2)
+        for candidate in ambiguous:
+            self.assertLess(float(candidate["development"]["mae"]), 1e-11)
+        self.assertEqual((report["product_status"], report["usage_scope"]), ("NOT_RUN", "LOCAL_SEARCH_EXECUTION_ONLY"))
+
+    def test_row_budget_is_shared_and_over_budget_requests_stop_generation(self) -> None:
+        report = search(request([(float(x), float(x)) for x in range(MAX_ROWS - 1)], [(500.0, 500.0)]))
+        shapes = [origin["cost_shape"] for candidate in report["candidates"] for origin in candidate["origins"]]
+        for name, expected in (("fit_rows", MAX_ROWS - 1), ("development_rows", 1), ("timeout_seconds", 30),
+                ("memory_bytes", 268435456), ("resource_class", "CPU_LOCAL")):
+            with self.subTest(field=name):
+                self.assertEqual({shape[name] for shape in shapes}, {expected})
+        with self.assertRaises(DslError) as error:
+            search(request([(float(index), float(index)) for index in range(MAX_ROWS + 1)]))
+        self.assertEqual(error.exception.code, "AST_LIMIT_EXCEEDED")
+        # 預算內的候選一律不帶已驗證標記，只有報告層級的 NOT_RUN 與離線使用範圍宣告。
+        self.assertEqual(report["product_status"], "NOT_RUN")
+        for candidate in report["candidates"]:
+            with self.subTest(candidate=candidate["identity_hash"]):
+                self.assertNotIn("verified", candidate)
+                self.assertNotIn("product_status", candidate)

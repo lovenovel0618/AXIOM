@@ -2289,6 +2289,214 @@
         }
       }
     },
+    "/research-versions/{id}/frozen-submissions": {
+      "post": {
+        "operationId": "post_research_versions_by_id_frozen_submissions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[ -~]+$"
+            }
+          },
+          {
+            "name": "X-CSRFToken",
+            "in": "header",
+            "required": false,
+            "description": "Required for session-cookie authentication; not for service bearer.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "If-Control-Revision",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "See AX-21 for transactional semantics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrozenSubmission"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "AX-21 stable error envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error semantics in AX-21",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFrozenSubmission"
+              }
+            }
+          }
+        }
+      }
+    },
     "/research-versions/{id}/runs": {
       "post": {
         "operationId": "post_research_versions_by_id_runs",
@@ -5172,9 +5380,12 @@
               "CSRF_FAILED",
               "DEPENDENCY_UNAVAILABLE",
               "DOMAIN_VIOLATION",
+              "EQUATION_MISMATCH",
               "EVALUATION_POLICY_INVALID",
+              "EVALUATION_POLICY_MISMATCH",
               "EVENT_CURSOR_EXPIRED",
               "FEATURE_DISABLED",
+              "FIT_REFERENCE_MISMATCH",
               "IDEMPOTENCY_CONFLICT",
               "INSUFFICIENT_DATA",
               "INTERNAL_ERROR",
@@ -5185,14 +5396,18 @@
               "INVALID_TRANSITION",
               "METHOD_NOT_ALLOWED",
               "NOT_FOUND",
+              "PARAMETER_NOT_CANONICAL",
               "PRECONDITION_REQUIRED",
               "QUOTA_EXCEEDED",
+              "RANK_MISMATCH",
               "RATE_LIMITED",
+              "REPRESENTATION_MISMATCH",
               "REQUEST_IN_PROGRESS",
               "RESEARCH_BUDGET_EXHAUSTED",
               "REVISION_CONFLICT",
               "RUN_ALREADY_TERMINAL",
               "RUN_BUDGET_EXHAUSTED",
+              "SEALED_TEST_NOT_REGISTERED",
               "SEMANTIC_PROFILE_INCOMPLETE",
               "SOURCE_COLUMN_CONFLICT",
               "SOURCE_COLUMN_NOT_FOUND",
@@ -5204,7 +5419,8 @@
               "UNSUPPORTED_MEDIA_TYPE",
               "UNSUPPORTED_OPERATOR",
               "UPLOAD_OBJECT_CHANGED",
-              "UPLOAD_TOO_LARGE"
+              "UPLOAD_TOO_LARGE",
+              "VERIFICATION_PLAN_MISMATCH"
             ]
           },
           "message": {
@@ -9240,6 +9456,27 @@
             "$ref": "#/components/schemas/BudgetLimit"
           }
         },
+        "additionalProperties": false
+      },
+      "CreateFrozenSubmission": {
+        "type": "object",
+        "properties": {
+          "frozen_candidate_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "verification_plan_artifact_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "frozen_candidate_ids",
+          "verification_plan_artifact_id"
+        ],
         "additionalProperties": false
       },
       "UnitConversion": {

@@ -34,6 +34,7 @@ MVP API 前綴 /api/v2，JSON 使用 UTF-8，傳輸使用 HTTPS（本機開發�
 | GET /evidence-bundles/{id} | — | 200 EvidenceBundle+X-Control-Revision，取得目前證據快照與版本 |
 | POST /research-versions/{id}/validate | 可選run_budget | 202 PROFILE run，合法時版本 READY，否則 DRAFT+品質報告 |
 | POST /research-versions/{id}/runs | type=SEARCH、seed、可選run_budget | 202 QUEUED run，須 READY；原子預留預算 |
+| POST /research-versions/{id}/frozen-submissions | frozen_candidate_ids、verification_plan_artifact_id | 201 FrozenSubmission，固定候選排序、seal 與 plan hash；須 READY，零候選 422，重送同 snapshot_hash 讀回原列 |
 | GET /runs/{id} | — | 200 Run+X-Control-Revision，包括 status、phase、attempt、stop_reason、成本與有效產物引用 |
 | POST /runs/{id}/cancel | {} | 202 CANCEL_REQUESTED 或已確認 CANCELLED；終態／子run 409 |
 | GET /runs/{id}/events | Last-Event-ID | 200 text/event-stream；只輸出該 run 的事件 |
@@ -61,7 +62,7 @@ validate、提交 SEARCH、cancel 額外要求 If-Control-Revision: <revision>�
 | 500 | INTERNAL_ERROR | false，不洩漏例外，依 request_id 查詢稽核／服務紀錄 |
 | 401 / 403 | AUTH_REQUIRED / CSRF_FAILED | false，先完成認證 |
 | 404 | NOT_FOUND | false，跨租戶或不存在資源同樣回 404 |
-| 409 | INVALID_TRANSITION / RUN_ALREADY_TERMINAL / IDEMPOTENCY_CONFLICT / REQUEST_IN_PROGRESS / ARTIFACT_UNAVAILABLE / CHILD_RUN_NOT_CANCELLABLE / UPLOAD_OBJECT_CHANGED | 僅 REQUEST_IN_PROGRESS 可相同 key 重試 |
+| 409 | INVALID_TRANSITION / RUN_ALREADY_TERMINAL / IDEMPOTENCY_CONFLICT / REQUEST_IN_PROGRESS / ARTIFACT_UNAVAILABLE / CHILD_RUN_NOT_CANCELLABLE / UPLOAD_OBJECT_CHANGED / EQUATION_MISMATCH / FIT_REFERENCE_MISMATCH / PARAMETER_NOT_CANONICAL / RANK_MISMATCH / REPRESENTATION_MISMATCH / SEALED_TEST_NOT_REGISTERED / VERIFICATION_PLAN_MISMATCH | 僅 REQUEST_IN_PROGRESS 可相同 key 重試 |
 | 410 | EVENT_CURSOR_EXPIRED | false，GET snapshot 後從新游標接續 |
 | 413 / 415 | UPLOAD_TOO_LARGE / UNSUPPORTED_MEDIA_TYPE | false |
 | 422 | INVALID_SCHEMA / CHECKSUM_MISMATCH / DOMAIN_VIOLATION / AST_LIMIT_EXCEEDED / UNSUPPORTED_OPERATOR / UNIT_MISMATCH / UNKNOWN_SYMBOL / INSUFFICIENT_DATA / SEMANTIC_PROFILE_INCOMPLETE / EVALUATION_POLICY_INVALID / INVALID_RESEARCH_DOMAIN / SOURCE_COLUMN_CONFLICT / SOURCE_COLUMN_NOT_FOUND / SPLIT_DEPENDENCE_CONFLICT / UNIT_CONVERSION_INVALID | false，修正內容 |

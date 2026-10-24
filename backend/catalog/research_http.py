@@ -13,6 +13,7 @@ from catalog.research import available_version, create_research, create_version,
 from catalog.services import replay
 from catalog.validation import ApiError, validate_api
 from catalog.research_state import document_for
+from catalog.freezing import authorized_submission, freeze_candidates
 from catalog.profile import enqueue_profile
 from runtime.contracts import project
 
@@ -97,6 +98,24 @@ def validate_draft(request: HttpRequest, actor: Account, identity: UUID) -> Json
         available_version(actor,version.dataset_version_id)
     result = replay(actor,request.path,request.headers.get("Idempotency-Key",""),data,lambda:enqueue_profile(actor,version,data,expected),authorize)
     return JsonResponse(result,status=202)
+
+
+@allowed_methods(["POST"])
+@api
+def freeze_submission(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """派送觸發的凍結：先驗 owner 與控制 revision，再固定候選副本與提交包；重送讀回原列。"""
+    version = version_for(actor, identity)
+    expected = control_revision(request)
+    data = body(request, "CreateFrozenSubmission")
+    def action() -> dict[str, object]:
+        submission = freeze_candidates(actor, version, [UUID(str(value)) for value in data["frozen_candidate_ids"]],
+            UUID(str(data["verification_plan_artifact_id"])), expected)
+        return submission.document
+    def authorize(previous: dict[str, object]) -> None:
+        version_for(actor, identity)
+        authorized_submission(actor, UUID(str(previous["id"])))
+    result = replay(actor, request.path, request.headers.get("Idempotency-Key", ""), data, action, authorize)
+    return JsonResponse(result, status=201)
 
 
 def control_revision(request: HttpRequest) -> int:

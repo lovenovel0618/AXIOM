@@ -18,9 +18,9 @@ from catalog.candidates import persist, rows_hash
 from catalog.equations import register as register_equation
 from catalog.freezing import binding_hash, canonical_decimal, empty_search_decision, freeze_decision, frozen_candidate, frozen_submission, snapshot_payload
 from catalog.ingest import complete_upload, ingest_tick
-from catalog.models import Account, Artifact, Candidate, Dataset, DatasetVersion, FrozenSubmission, EquationVersion, FitRun, FrozenCandidate, ObservationSplit, ProfileBinding, Provenance, RepresentationSpec, Reservation, ResearchBudget, ResearchVersion, RootBudget, SealRegistration, Tenant, Upload
+from catalog.models import Account, Artifact, Candidate, Dataset, DatasetVersion, FrozenSubmission, EquationVersion, FitRun, FrozenCandidate, ObservationSplit, ProfileBinding, Provenance, RepresentationSpec, Reservation, ResearchBudget, ResearchEvent, ResearchVersion, RootBudget, SealRegistration, Tenant, Upload
 from catalog.research import create_research, create_version, research_for
-from catalog.research_state import document_for
+from catalog.research_state import document_for, state_for, transition
 from catalog.services import actor_for, create_dataset, create_upload, put_upload
 from catalog.tests.test_research import CONTENT, LIMITS, draft_data
 from catalog.validation import ApiError
@@ -125,12 +125,20 @@ class CandidateTests(TransactionTestCase):
             "verification_plan": plan, "representation": representation.document, "fit": fit.document,
             "equation": equation.document, "candidate": candidate.document, "frozen_candidate": frozen}
 
-    def register_plan(self, version: ResearchVersion, *, research_version_id: str | None = None) -> tuple[JsonObject, Artifact]:
+    def register_plan(self, version: ResearchVersion) -> tuple[JsonObject, Artifact]:
         content: JsonObject = {"id": str(uuid4()), "tenant_id": str(version.tenant_id),
-            "research_version_id": research_version_id or str(version.id), "purpose": version.document["purpose"]}
+            "research_version_id": str(version.id), "purpose": version.document["purpose"]}
         source = Provenance.objects.get(pk=version.provenance_id, tenant_id=version.tenant_id)
         artifact = register_artifact(self.actor, version.dataset_version, UUID(content["id"]), content, source, research_version=version)
         return content, artifact
+
+    def register_sibling_plan(self, version: ResearchVersion) -> tuple[JsonObject, Artifact]:
+        """在同一研究容器下另建版本並為它登記驗證計畫，用於計畫不符研究版本的拒絕路徑。"""
+        with transaction.atomic():
+            actor = actor_for(self.actor.user_id)
+            research = research_for(actor, version.research_id)
+            document = create_version(actor, research, draft_data(version.dataset_version_id))
+        return self.register_plan(ResearchVersion.objects.get(pk=UUID(document["id"])))
 
     def register_seal(self, version: ResearchVersion) -> SealRegistration:
         run = RuntimeRun.objects.filter(document__type="INGEST").order_by("id").first()
@@ -366,6 +374,36 @@ class CandidateTests(TransactionTestCase):
     def search_run(self) -> RuntimeRun:
         return RuntimeRun.objects.get(document__type="SEARCH")
 
+    def freeze_path(self) -> str:
+        return f"/api/v2/research-versions/{self.version.id}/frozen-submissions"
+
+    def freeze_payload(self, candidate_ids: list[str], plan_id: str) -> JsonObject:
+        return {"frozen_candidate_ids": candidate_ids, "verification_plan_artifact_id": plan_id}
+
+    def make_ready(self) -> int:
+        """登記封存並在同一次遞增中綁定狀態、切到 READY；回傳可帶入 If-Control-Revision 的控制 revision。"""
+        seal = self.register_seal(self.version)
+        with transaction.atomic():
+            state = state_for(self.version)
+            state.seal = seal
+            transition(state, "READY")
+            return state_for(self.version).revision
+
+    def current_revision(self) -> int:
+        """讀取目前控制 revision，供不帶同冪等鍵的重送帶入正確前置條件。"""
+        with transaction.atomic():
+            return state_for(self.version).revision
+
+    def post_freeze(self, payload: JsonObject, *, revision: int | str | None, key: str | None = None) -> tuple[int, JsonObject]:
+        """以真 HTTP 送出派送觸發的凍結，回傳狀態碼與解碼後的 JSON；key／revision 給定才附相應標頭。"""
+        headers: dict[str, str] = {}
+        if key is not None:
+            headers["Idempotency-Key"] = key
+        if revision is not None:
+            headers["If-Control-Revision"] = str(revision)
+        response = self.client.post(self.freeze_path(), data=json.dumps(payload), content_type="application/json", headers=headers)
+        return response.status_code, json.loads(response.content)
+
     def test_candidates_http_page_is_ranked_paged_and_owner_scoped(self) -> None:
         rows = self.store_many()
         self.assertEqual(len(rows), 2)
@@ -436,3 +474,87 @@ class CandidateTests(TransactionTestCase):
         self.assertEqual(response.json()["id"], str(submission.id))
         self.client.force_login(self.other.user)
         self.assertEqual(self.client.get(f"/api/v2/frozen-submissions/{submission.id}").status_code, 404)
+
+    def test_freeze_submission_http_builds_snapshot_event_and_projection(self) -> None:
+        rows = self.store()
+        _plan, artifact = self.register_plan(self.version)
+        revision = self.make_ready()
+        self.client.force_login(self.actor.user)
+        status, document = self.post_freeze(self.freeze_payload([str(rows[0].id)], str(artifact.id)), revision=revision, key=uuid4().hex)
+        self.assertEqual(status, 201)
+        self.assertEqual((document["kind"], document["status"]), ("FrozenSubmission", "FROZEN"))
+        submission = FrozenSubmission.objects.get(pk=UUID(str(document["id"])))
+        self.assertEqual(submission.document, document)
+        self.assertEqual(submission.document["frozen_candidate_ids"], [str(FrozenCandidate.objects.get().id)])
+        self.assertEqual((FrozenCandidate.objects.count(), FrozenSubmission.objects.count()), (1, 1))
+        event = ResearchEvent.objects.get(research_version_id=self.version.id, document__event_type="SubmissionFrozen")
+        self.assertEqual(event.document["payload"], {"submission_id": str(submission.id), "snapshot_hash": submission.snapshot_hash})
+        projected = document_for(self.version)
+        self.assertEqual(projected["frozen_submission_ids"], [str(submission.id)])
+        self.assertEqual(projected["revision"], revision + 1)
+
+    def test_freeze_submission_http_replays_key_and_resend_stays_idempotent(self) -> None:
+        rows = self.store()
+        _plan, artifact = self.register_plan(self.version)
+        revision = self.make_ready()
+        self.client.force_login(self.actor.user)
+        payload = self.freeze_payload([str(rows[0].id)], str(artifact.id))
+        key = uuid4().hex
+        first_status, first = self.post_freeze(payload, revision=revision, key=key)
+        self.assertEqual(first_status, 201)
+        self.assertEqual(self.post_freeze(payload, revision=revision, key=key), (201, first))
+        conflict = self.post_freeze(self.freeze_payload([str(rows[1].id)], str(artifact.id)), revision=revision, key=key)
+        self.assertEqual((conflict[0], conflict[1]["code"]), (409, "IDEMPOTENCY_CONFLICT"))
+        resent = self.post_freeze(payload, revision=self.current_revision(), key=uuid4().hex)
+        self.assertEqual(resent, (201, first))
+        self.assertEqual((FrozenSubmission.objects.count(), ResearchEvent.objects.filter(document__event_type="SubmissionFrozen").count()), (1, 1))
+
+    def test_freeze_submission_http_enforces_precondition_revision_and_ready_state(self) -> None:
+        rows = self.store()
+        _plan, artifact = self.register_plan(self.version)
+        payload = self.freeze_payload([str(rows[0].id)], str(artifact.id))
+        self.client.force_login(self.actor.user)
+        missing = self.post_freeze(payload, revision=None, key=uuid4().hex)
+        self.assertEqual((missing[0], missing[1]["code"]), (428, "PRECONDITION_REQUIRED"))
+        malformed = self.post_freeze(payload, revision="x1", key=uuid4().hex)
+        self.assertEqual((malformed[0], malformed[1]["code"]), (422, "INVALID_SCHEMA"))
+        draft = self.post_freeze(payload, revision=0, key=uuid4().hex)
+        self.assertEqual((draft[0], draft[1]["code"]), (409, "INVALID_TRANSITION"))
+        revision = self.make_ready()
+        conflict = self.post_freeze(payload, revision=revision + 5, key=uuid4().hex)
+        self.assertEqual((conflict[0], conflict[1]["code"]), (412, "REVISION_CONFLICT"))
+        self.assertEqual(self.post_freeze(payload, revision=revision, key=uuid4().hex)[0], 201)
+
+    def test_freeze_submission_http_rejects_empty_missing_and_mismatched_references(self) -> None:
+        rows = self.store()
+        _plan, artifact = self.register_plan(self.version)
+        revision = self.make_ready()
+        self.client.force_login(self.actor.user)
+        cases = (
+            (self.freeze_payload([], str(artifact.id)), 422, "INVALID_SCHEMA"),
+            (self.freeze_payload([str(uuid4())], str(artifact.id)), 404, "NOT_FOUND"),
+            (self.freeze_payload([str(rows[0].id)], str(uuid4())), 404, "NOT_FOUND"),
+            (self.freeze_payload([str(rows[0].id), str(rows[0].id)], str(artifact.id)), 409, "RANK_MISMATCH"),
+        )
+        for payload, expected_status, expected_code in cases:
+            with self.subTest(code=expected_code):
+                status, body = self.post_freeze(payload, revision=revision, key=uuid4().hex)
+                self.assertEqual((status, body["code"]), (expected_status, expected_code))
+        _content, sibling = self.register_sibling_plan(self.version)
+        mismatch = self.post_freeze(self.freeze_payload([str(rows[0].id)], str(sibling.id)), revision=revision, key=uuid4().hex)
+        self.assertEqual((mismatch[0], mismatch[1]["code"]), (409, "VERIFICATION_PLAN_MISMATCH"))
+        seal = SealRegistration.objects.get(research_version=self.version)
+        SealRegistration.objects.filter(pk=seal.id).update(available=False)
+        unsealed = self.post_freeze(self.freeze_payload([str(rows[0].id)], str(artifact.id)), revision=revision, key=uuid4().hex)
+        self.assertEqual((unsealed[0], unsealed[1]["code"]), (409, "SEALED_TEST_NOT_REGISTERED"))
+        self.assertEqual((FrozenCandidate.objects.count(), FrozenSubmission.objects.count()), (0, 0))
+
+    def test_freeze_submission_http_requires_owner_scope(self) -> None:
+        rows = self.store()
+        _plan, artifact = self.register_plan(self.version)
+        revision = self.make_ready()
+        payload = self.freeze_payload([str(rows[0].id)], str(artifact.id))
+        self.client.force_login(self.other.user)
+        status, body = self.post_freeze(payload, revision=revision, key=uuid4().hex)
+        self.assertEqual((status, body["code"]), (404, "NOT_FOUND"))
+        self.assertEqual(FrozenSubmission.objects.count(), 0)

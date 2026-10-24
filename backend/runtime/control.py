@@ -6,13 +6,15 @@ from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 from django.db import transaction
 from runtime.contracts import JsonObject, identity_hash
-from runtime.models import InputSnapshot, RuntimeAttempt, RuntimeRun
+from runtime.models import InputSnapshot, RuntimeAttempt, RuntimeCheckpoint, RuntimeRun
 from runtime.records import (
     CANCEL_REQUESTED, QUEUED, RUNNING, TERMINAL, ControlError, db_now, detached, emit,
     lock_run, save_attempt, save_run, snapshot_for, state_event, validate_bindings,
 )
 
 LEASE_SECONDS = 60
+HEARTBEAT_SECONDS = 15
+CHECKPOINT_PROGRESS = ("dsl_hash", "precision_bits", "rng_state", "strategy_progress")
 IMMUTABLE_KEYS = ("id", "tenant_id", "type", "research_version_id", "dataset_id", "seed", "environment_digest", "input_artifact_id", "execution_manifest_id", "budget_account_id", "research_budget_account_id", "provenance_id", "root_run_id", "parent_run_id", "is_root")
 
 
@@ -260,3 +262,57 @@ def _requeue(run: RuntimeRun, policy: JsonObject, now: datetime) -> None:
     run.document["revision"] += 1
     emit(run, "RunQueued", {"status": QUEUED, "attempt_id": None, "generation": run.document["lease_generation"]}, now)
     save_run(run)
+
+
+def _plugin_hashes(snapshot: InputSnapshot) -> JsonObject:
+    """以插件身分與程式碼雜湊固定執行環境，重試時據此判斷 checkpoint 相容性。"""
+    return {plugin["plugin_id"]: plugin["code_sha256"] for plugin in snapshot.execution["plugins"]}
+
+
+def save_checkpoint(lease: Lease, progress: JsonObject) -> UUID:
+    """持有有效租約時保存不可變 checkpoint；只記錄進度，不結算帳本，因此重試不重置用量。"""
+    with transaction.atomic():
+        run = lock_run(lease.tenant_id, lease.run_id)
+        now = db_now()
+        attempt = validate_lease(run, lease, now)
+        snapshot = snapshot_for(run)
+        missing = [key for key in CHECKPOINT_PROGRESS if key not in progress]
+        if missing:
+            raise ControlError("CHECKPOINT_INCOMPLETE")
+        identity = uuid4()
+        body = {"kind": "CheckpointRecord", "schema_version": "2.0", "id": str(identity),
+            "tenant_id": str(run.tenant_id), "run_id": str(run.id), "attempt_id": str(attempt.id),
+            "generation": lease.generation, "created_at": now.isoformat(), "root_epoch": run.document["cancellation_epoch"],
+            "input_hash": snapshot.content_hash, "dataset_version_id": run.document["dataset_id"],
+            "environment_digest": run.document["environment_digest"], "plugin_hashes": _plugin_hashes(snapshot),
+            "cumulative_usage": detached(run.document["budget_usage"]),
+            "dsl_hash": progress["dsl_hash"], "precision_bits": progress["precision_bits"],
+            "rng_state": progress["rng_state"], "strategy_progress": progress["strategy_progress"]}
+        document = body | {"checksum": identity_hash(body)}
+        RuntimeCheckpoint.objects.create(id=identity, run=run, tenant_id=run.tenant_id,
+            attempt_id=attempt.id, document=document, created_at=now)
+        attempt.document["checkpoint_id"] = str(identity)
+        save_attempt(attempt)
+        return identity
+
+
+def load_checkpoint(lease: Lease, checkpoint_id: UUID) -> JsonObject:
+    """取得新租約後才可讀回已驗證 checkpoint；資料／環境／插件不符一律回 CHECKPOINT_INCOMPATIBLE。
+
+    讀取前先通過當期租約 fencing，因此不會恢復被取消的 root，也不會由過時 attempt 讀取；
+    checksum 不一致代表文件被改寫，同樣拒絕，且只解碼受控 JSON、永不載入 pickle。"""
+    with transaction.atomic():
+        run = lock_run(lease.tenant_id, lease.run_id)
+        now = db_now()
+        validate_lease(run, lease, now)
+        snapshot = snapshot_for(run)
+        row = RuntimeCheckpoint.objects.filter(pk=checkpoint_id, run=run, tenant_id=lease.tenant_id).first()
+        if row is None:
+            raise ControlError("CHECKPOINT_NOT_FOUND")
+        document = row.document
+        body = {key: value for key, value in document.items() if key != "checksum"}
+        compatible = {"input_hash": snapshot.content_hash, "dataset_version_id": run.document["dataset_id"],
+            "environment_digest": run.document["environment_digest"], "plugin_hashes": _plugin_hashes(snapshot)}
+        if document.get("checksum") != identity_hash(body) or any(document.get(key) != value for key, value in compatible.items()):
+            raise ControlError("CHECKPOINT_INCOMPATIBLE")
+        return body

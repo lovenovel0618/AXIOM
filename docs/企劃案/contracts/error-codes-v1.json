@@ -105,6 +105,13 @@
       "retryable": false
     },
     {
+      "code": "EQUATION_MISMATCH",
+      "scope": "HTTP",
+      "http_exposed": true,
+      "http_status": 409,
+      "retryable": false
+    },
+    {
       "code": "EVALUATION_POLICY_INVALID",
       "scope": "HTTP",
       "http_exposed": true,
@@ -114,8 +121,15 @@
     {
       "code": "EVALUATION_POLICY_MISMATCH",
       "scope": "WORKER",
-      "http_exposed": false,
+      "http_exposed": true,
       "http_status": null,
+      "retryable": false
+    },
+    {
+      "code": "FIT_REFERENCE_MISMATCH",
+      "scope": "HTTP",
+      "http_exposed": true,
+      "http_status": 409,
       "retryable": false
     },
     {
@@ -210,6 +224,13 @@
       "retryable": false
     },
     {
+      "code": "PARAMETER_NOT_CANONICAL",
+      "scope": "HTTP",
+      "http_exposed": true,
+      "http_status": 409,
+      "retryable": false
+    },
+    {
       "code": "PRECONDITION_REQUIRED",
       "scope": "HTTP",
       "http_exposed": true,
@@ -224,6 +245,13 @@
       "retryable": false
     },
     {
+      "code": "RANK_MISMATCH",
+      "scope": "HTTP",
+      "http_exposed": true,
+      "http_status": 409,
+      "retryable": false
+    },
+    {
       "code": "RATE_LIMITED",
       "scope": "HTTP",
       "http_exposed": true,
@@ -235,6 +263,13 @@
       "scope": "WORKER",
       "http_exposed": false,
       "http_status": null,
+      "retryable": false
+    },
+    {
+      "code": "REPRESENTATION_MISMATCH",
+      "scope": "HTTP",
+      "http_exposed": true,
+      "http_status": 409,
       "retryable": false
     },
     {
@@ -277,6 +312,13 @@
       "scope": "HTTP",
       "http_exposed": true,
       "http_status": 429,
+      "retryable": false
+    },
+    {
+      "code": "SEALED_TEST_NOT_REGISTERED",
+      "scope": "HTTP",
+      "http_exposed": true,
+      "http_status": 409,
       "retryable": false
     },
     {
@@ -389,6 +431,13 @@
       "scope": "HTTP",
       "http_exposed": true,
       "http_status": 413,
+      "retryable": false
+    },
+    {
+      "code": "VERIFICATION_PLAN_MISMATCH",
+      "scope": "HTTP",
+      "http_exposed": true,
+      "http_status": 409,
       "retryable": false
     }
   ]

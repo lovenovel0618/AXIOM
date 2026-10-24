@@ -128,8 +128,8 @@
     },
     {
       "path": "07-資料與API/21-API與任務契約.md",
-      "bytes": 19826,
-      "sha256": "ff3059b35164c0c6b2a8c064d7546030c5d0955911d8bcb6696edae049be9b05"
+      "bytes": 20236,
+      "sha256": "bcefd11ea36b35e1d76565df2859e82905fc7e84ab6773e8d67390c0c59d3bf3"
     },
     {
       "path": "08-前端UX/22-設計系統與視覺規範.md",
@@ -348,8 +348,8 @@
     },
     {
       "path": "contracts/error-codes-v1.json",
-      "bytes": 8826,
-      "sha256": "5541709844b9d6c943ea08431a23457a05b8b09c3867c7d19c608f003e38fde2"
+      "bytes": 9906,
+      "sha256": "b52e445c907fabff465ec54328344198152fe08f10fe14b5289b021906e610ac"
     },
     {
       "path": "contracts/event-v2.examples.json",
@@ -363,8 +363,8 @@
     },
     {
       "path": "contracts/openapi-v2.json",
-      "bytes": 246894,
-      "sha256": "160256369591ec62a23a53d8db41495b1040232b0a40d79ccb1c25f5d3d8817f"
+      "bytes": 253503,
+      "sha256": "2ad765197f2600a429f3e01e7d68fe4f8b7950f1f1043644a19c7dc330724b53"
     },
     {
       "path": "contracts/policy-registry-v1.json",

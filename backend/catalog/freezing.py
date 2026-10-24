@@ -173,6 +173,47 @@ def frozen_submission(actor: Account, version: ResearchVersion, frozen: list[Fro
         snapshot_hash=snapshot, status="FROZEN", document=document, created_at=created)
 
 
+def _fit_for(candidate: Candidate) -> FitRun:
+    """取候選的主要擬合列；M1 只有 FIT 角色，缺少即回穩定引用錯誤，不接受呼叫端另行宣稱。"""
+    identities: list[str] = candidate.document["fit_run_ids"]
+    row = FitRun.objects.filter(pk=UUID(identities[0]), tenant_id=candidate.tenant_id).first()
+    if row is None:
+        raise ApiError("FIT_REFERENCE_MISMATCH", 409)
+    return row
+
+
+def freeze_candidates(actor: Account, version: ResearchVersion, candidate_ids: list[UUID], plan_id: UUID,
+                      revision: int) -> FrozenSubmission:
+    """派送觸發的凍結：核對控制 revision 與 READY 後建立凍結副本與提交包，並保存 SubmissionFrozen 事件。
+
+    零候選回 422 且不建立空提交包；`frozen_submission` 的冪等讀回確保重送不產生第二個提交包。"""
+    from catalog.research_state import state_for, submission_frozen
+    state = state_for(version)
+    if state.revision != revision:
+        raise ApiError("REVISION_CONFLICT", 412)
+    if state.status != "READY" or state.active_run_id is not None:
+        raise ApiError("INVALID_TRANSITION", 409)
+    if not candidate_ids:
+        raise ApiError("INVALID_SCHEMA", 422)
+    rows = {row.id: row for row in Candidate.objects.filter(pk__in=candidate_ids, tenant_id=actor.tenant_id)}
+    if len(rows) != len(set(candidate_ids)):
+        raise ApiError("NOT_FOUND", 404)
+    frozen: list[FrozenCandidate] = []
+    for identity in candidate_ids:
+        candidate = rows[identity]
+        fit = _fit_for(candidate)
+        representation = RepresentationSpec.objects.filter(pk=fit.representation_artifact_id, tenant_id=actor.tenant_id).first()
+        if representation is None:
+            raise ApiError("REPRESENTATION_MISMATCH", 409)
+        frozen.append(frozen_candidate(actor, candidate, fit, candidate.equation_version, representation, version))
+    plan = Artifact.objects.filter(pk=plan_id, tenant_id=actor.tenant_id).first()
+    if plan is None:
+        raise ApiError("NOT_FOUND", 404)
+    submission = frozen_submission(actor, version, frozen, plan)
+    submission_frozen(state, submission)
+    return submission
+
+
 def authorized_submission(actor: Account, identity: UUID) -> FrozenSubmission:
     """重新驗租戶與研究 owner 後回 FrozenSubmission；不因知道 UUID 就放行。"""
     row = FrozenSubmission.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()

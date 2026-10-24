@@ -30,6 +30,8 @@ OUTPUT_SCHEMA_VERSION = "dsl-v1/1.0"
 COEFFICIENT_DIGITS = 17
 FREQUENCY_DIGITS = 12
 UNIT_BOUND = 32
+MIN_DEGREE = 2
+MAX_DEGREE = 3
 LINEAR = "LINEAR"
 POLYNOMIAL = "POLYNOMIAL"
 HARMONIC = "HARMONIC"
@@ -303,7 +305,9 @@ def _linear(request: Request) -> tuple[list[Proposal], list[Diagnostic]]:
 
 
 def _polynomial(request: Request, degree: int) -> tuple[list[Proposal], list[Diagnostic]]:
-    """degree 2／3 多項式；少於 degree+1 個不同 x 就不給候選而留拒用紀錄。"""
+    """degree 2／3 多項式；超出註冊度數上限或不同 x 不足都留拒用紀錄，不硬給更高次擬合。"""
+    if not MIN_DEGREE <= degree <= MAX_DEGREE:
+        return [], [Diagnostic("UNSUPPORTED_DEGREE", f"degree {degree} outside {MIN_DEGREE}..{MAX_DEGREE}")]
     if len({row[0] for row in request.fit}) < degree + 1:
         return [], [Diagnostic("INSUFFICIENT_DISTINCT_X", f"degree {degree} needs {degree + 1} distinct x")]
     xbar, xscale, ybar, yscale = _summary(request)

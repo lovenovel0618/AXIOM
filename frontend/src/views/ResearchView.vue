@@ -29,8 +29,16 @@ import {
 import { type Run, type RunStatus } from '../api/runs'
 import CandidateComparison from '../components/CandidateComparison.vue'
 import ResearchVersionForm from '../components/ResearchVersionForm.vue'
-import { getArtifactContent } from '../api/artifacts'
+import { getArtifact, getArtifactContent, type Artifact } from '../api/artifacts'
 import { getEvidenceBundle } from '../api/evidence'
+import { getValidationRun } from '../api/evaluations'
+import {
+  OUTCOME_DETAILS,
+  OUTCOME_LABELS,
+  parseValidationRun,
+  refusalReasons,
+  type ValidationRun,
+} from '../lib/evaluation'
 import {
   describeRemaining,
   describeBlindEvaluation,
@@ -69,6 +77,10 @@ const quality = ref<QualityReport | null>(null)
 const qualityLoading = ref(false)
 const bundle = ref<EvidenceBundle | null>(null)
 const bundleLoading = ref(false)
+const evaluations = ref<Record<string, ValidationRun>>({})
+const evaluationsLoading = ref(false)
+const inspected = ref<Record<string, { meta: Artifact; text: string }>>({})
+const inspecting = ref<string[]>([])
 const follow = ref<FollowState>(INITIAL_FOLLOW_STATE)
 const name = ref('')
 const loading = ref(false)
@@ -350,7 +362,10 @@ async function loadBundle(): Promise<void> {
   const version = selectedVersion.value
   bundle.value = null
   const first = version?.evidence_bundle_ids[0] ?? null
-  if (first === null) return
+  if (first === null) {
+    await loadEvaluations([])
+    return
+  }
   bundleLoading.value = true
   try {
     const parsed = parseEvidenceBundle(await getEvidenceBundle(client, first))
@@ -359,10 +374,69 @@ async function loadBundle(): Promise<void> {
       return
     }
     bundle.value = parsed
+    await loadEvaluations(parsed.validationIds)
   } catch (cause) {
     error.value = describeError(cause)
   } finally {
     bundleLoading.value = false
+  }
+}
+
+/**
+ * 證據包引用的最終評估結果逐一讀取；單一引用失敗只記錄訊息，不影響其他引用。
+ *
+ * 後端結果不揭露失敗前提，因此這裡只顯示文件明載的結論與理由，缺的欄位不補值。
+ */
+async function loadEvaluations(ids: string[]): Promise<void> {
+  evaluations.value = {}
+  inspected.value = {}
+  if (ids.length === 0) return
+  evaluationsLoading.value = true
+  const next: Record<string, ValidationRun> = {}
+  const problems: string[] = []
+  try {
+    const results = await Promise.all(
+      ids.map(async (id) => {
+        try {
+          const parsed = parseValidationRun(await getValidationRun(client, id))
+          return { id, parsed, message: parsed === null ? `驗證結果 ${id} 格式不符契約，未顯示。` : '' }
+        } catch (cause) {
+          return { id, parsed: null, message: `驗證結果 ${id}：${describeError(cause)}` }
+        }
+      }),
+    )
+    for (const result of results) {
+      if (result.parsed === null) {
+        problems.push(result.message)
+        continue
+      }
+      next[result.id] = result.parsed
+    }
+    evaluations.value = next
+    if (problems.length > 0) error.value = problems.join(' ')
+  } finally {
+    evaluationsLoading.value = false
+  }
+}
+
+/** 證據檢視：展開時才讀內容，再按一次收合，不在背景批次抓取全部產物。 */
+async function toggleInspect(id: string): Promise<void> {
+  if (inspected.value[id] !== undefined) {
+    const next = { ...inspected.value }
+    delete next[id]
+    inspected.value = next
+    return
+  }
+  if (inspecting.value.includes(id)) return
+  inspecting.value = [...inspecting.value, id]
+  try {
+    const meta = await getArtifact(client, id)
+    const content = await getArtifactContent<unknown>(client, id)
+    inspected.value = { ...inspected.value, [id]: { meta, text: JSON.stringify(content, null, 2) } }
+  } catch (cause) {
+    error.value = describeError(cause)
+  } finally {
+    inspecting.value = inspecting.value.filter((row) => row !== id)
   }
 }
 
@@ -593,23 +667,86 @@ onUnmounted(stopFollowingResearch)
           <template v-if="selectedVersion.evidence_bundle_ids.length > 0">
             <p v-if="bundleLoading" class="muted">讀取證據包中…</p>
             <p v-else-if="bundle === null" class="muted">證據包內容無法解析或無法取得。</p>
-            <dl v-else class="facts">
-              <dt>證據包狀態</dt>
-              <dd>{{ EVIDENCE_STATUS_LABELS[bundle.status] }}（{{ bundle.status }}）</dd>
-              <dt>控制版本</dt>
-              <dd class="mono">{{ bundle.revision }}</dd>
-              <dt>驗證引用</dt>
-              <dd v-if="bundle.validationIds.length === 0" class="muted">無（本階段尚無驗證執行）</dd>
-              <dd v-else class="mono">
-                <span v-for="id in bundle.validationIds" :key="id">{{ id }} </span>
-              </dd>
-              <dt>證據產物</dt>
-              <dd class="mono">
-                <ul class="remaining">
-                  <li v-for="id in bundle.proofArtifactIds" :key="id">{{ id }}</li>
-                </ul>
-              </dd>
-            </dl>
+            <template v-else>
+              <dl class="facts">
+                <dt>證據包狀態</dt>
+                <dd>{{ EVIDENCE_STATUS_LABELS[bundle.status] }}（{{ bundle.status }}）</dd>
+                <dt>控制版本</dt>
+                <dd class="mono">{{ bundle.revision }}</dd>
+                <dt>驗證引用</dt>
+                <dd v-if="bundle.validationIds.length === 0" class="muted">無（本階段尚無驗證執行）</dd>
+                <dd v-else class="mono">
+                  <span v-for="id in bundle.validationIds" :key="id">{{ id }} </span>
+                </dd>
+              </dl>
+
+              <h4>最終評估結果</h4>
+              <p v-if="bundle.validationIds.length === 0" class="muted">沒有驗證引用，因此沒有可顯示的最終評估結果。</p>
+              <p v-else-if="evaluationsLoading" class="muted">讀取最終評估結果中…</p>
+              <p v-else-if="Object.keys(evaluations).length === 0" class="muted">驗證引用都無法取得，未顯示任何推測內容。</p>
+              <dl v-for="id in bundle.validationIds" v-else :key="id" class="evaluation">
+                <template v-if="evaluations[id] !== undefined">
+                  <dt class="mono">{{ id }}</dt>
+                  <dd>
+                    <strong>{{ OUTCOME_LABELS[evaluations[id].outcome] }}</strong>
+                    （{{ evaluations[id].outcome }}）
+                    <span class="muted">{{ OUTCOME_DETAILS[evaluations[id].outcome] }}</span>
+                  </dd>
+                  <dt>誤差量</dt>
+                  <dd>
+                    MAE {{ evaluations[id].mae ?? '不可得' }}／RMSE {{ evaluations[id].rmse ?? '不可得' }}／覆蓋
+                    {{ evaluations[id].validCoverage }}
+                  </dd>
+                  <dt>計數</dt>
+                  <dd>
+                    選用 {{ evaluations[id].selectedCount }}／可評分 {{ evaluations[id].validCount }}／失敗
+                    {{ evaluations[id].failedCount }}
+                  </dd>
+                  <dt>證據等級</dt>
+                  <dd>{{ evaluations[id].empiricalLevel }}／{{ evaluations[id].proofLevel }}／切分 {{ evaluations[id].splitRole }}</dd>
+                  <dt>結果摘要雜湊</dt>
+                  <dd class="mono">{{ evaluations[id].sha256 }}</dd>
+                  <dt>拒答理由</dt>
+                  <dd v-if="refusalReasons(evaluations[id]).length === 0" class="muted">後端未標記任何理由。</dd>
+                  <dd v-else>
+                    <ul class="remaining">
+                      <li v-for="reason in refusalReasons(evaluations[id])" :key="reason">{{ reason }}</li>
+                    </ul>
+                  </dd>
+                </template>
+                <template v-else>
+                  <dt class="mono">{{ id }}</dt>
+                  <dd class="muted">此驗證結果無法取得或格式不符，未顯示推測內容。</dd>
+                </template>
+              </dl>
+
+              <h4>證據檢視</h4>
+              <p v-if="bundle.proofArtifactIds.length === 0" class="muted">證據包沒有引用任何證據產物。</p>
+              <ul v-else class="artifacts">
+                <li v-for="id in bundle.proofArtifactIds" :key="id">
+                  <div class="artifact-head">
+                    <span class="mono">{{ id }}</span>
+                    <button type="button" :disabled="inspecting.includes(id)" @click="toggleInspect(id)">
+                      {{ inspected[id] !== undefined ? '收合' : '檢視內容' }}
+                    </button>
+                  </div>
+                  <p v-if="inspecting.includes(id)" class="muted">讀取產物內容中…</p>
+                  <template v-else-if="inspected[id] !== undefined">
+                    <dl class="facts">
+                      <dt>媒體類型</dt>
+                      <dd class="mono">{{ inspected[id].meta.media_type }}</dd>
+                      <dt>大小</dt>
+                      <dd class="mono">{{ inspected[id].meta.size_bytes }}</dd>
+                      <dt>狀態</dt>
+                      <dd>{{ inspected[id].meta.status }}／存取級別 {{ inspected[id].meta.access_class }}</dd>
+                      <dt>SHA-256</dt>
+                      <dd class="mono">{{ inspected[id].meta.sha256 }}</dd>
+                    </dl>
+                    <pre class="content">{{ inspected[id].text }}</pre>
+                  </template>
+                </li>
+              </ul>
+            </template>
           </template>
 
           <h3>觸發 PROFILE 驗證</h3>
@@ -703,6 +840,10 @@ h3 {
   margin: 1.25rem 0 0.5rem;
   font-size: 1rem;
 }
+h4 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 0.95rem;
+}
 .create {
   display: flex;
   flex-direction: column;
@@ -744,18 +885,45 @@ h3 {
 .id {
   color: var(--text-muted);
 }
-.facts {
+.facts,
+.evaluation {
   display: grid;
   grid-template-columns: minmax(8rem, auto) 1fr;
   gap: 0.35rem 1rem;
   margin: 0.75rem 0 0;
 }
-.facts dt {
+.facts dt,
+.evaluation dt {
   color: var(--text-muted);
   font-size: 0.9rem;
 }
-.facts dd {
+.facts dd,
+.evaluation dd {
   margin: 0;
+  word-break: break-all;
+}
+.artifacts {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.artifact-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.content {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.4rem;
+  background: var(--surface-muted);
+  font-size: 0.85rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
   word-break: break-all;
 }
 .remaining {

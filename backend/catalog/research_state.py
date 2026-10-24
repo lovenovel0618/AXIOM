@@ -24,6 +24,22 @@ def transition(state: ResearchState, status: str) -> None:
     ResearchEvent.objects.create(id=identity,research_version_id=state.research_version_id,sequence=state.revision,document=event)
 
 
+def submission_frozen(state: ResearchState, submission: FrozenSubmission) -> None:
+    """提交包建立後在同一交易遞增 revision 並保存 SubmissionFrozen；同一提交重送不重複發事件。"""
+    for row in ResearchEvent.objects.filter(research_version_id=state.research_version_id).order_by("sequence"):
+        if row.document["event_type"] == "SubmissionFrozen" and row.document["payload"]["submission_id"] == str(submission.id):
+            return
+    state.revision += 1
+    state.save()
+    identity = uuid4()
+    event: JsonObject = {"event_id":str(identity),"schema_version":"2.0","event_type":"SubmissionFrozen","tenant_id":str(state.tenant_id),
+        "research_version_id":str(state.research_version_id),"run_id":None,"stream_scope":"RESEARCH","stream_id":str(state.research_version_id),"sequence":state.revision,
+        "occurred_at":db_now().isoformat(),"trace_id":str(state.research_version_id),"producer_version":"t07-profile-v1",
+        "payload":{"submission_id":str(submission.id),"snapshot_hash":submission.snapshot_hash}}
+    validate(event,"event-v2.schema.json")
+    ResearchEvent.objects.create(id=identity,research_version_id=state.research_version_id,sequence=state.revision,document=event)
+
+
 def document_for(version: ResearchVersion) -> JsonObject:
     """合成不可變配置、最新用量與狀態；不改寫原草稿，封存只投影至 split 的引用欄。"""
     document = detached(version.document)

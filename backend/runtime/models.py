@@ -51,6 +51,19 @@ class RunEvent(models.Model):
         constraints = [models.UniqueConstraint(fields=["run", "sequence"], name="run_event_sequence_unique")]
 
 
+class RuntimeCheckpoint(models.Model):
+    """崩潰重試用的不可變 checkpoint：只保存受控 JSON，永不保存或載入 pickle。"""
+    id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    run: models.ForeignKey[RuntimeRun, RuntimeRun] = models.ForeignKey(RuntimeRun, on_delete=models.PROTECT)
+    tenant_id: models.UUIDField[UUID, UUID] = models.UUIDField(db_index=True)
+    attempt_id: models.UUIDField[UUID, UUID] = models.UUIDField()
+    document: models.JSONField[JsonObject, JsonObject] = models.JSONField()
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["id", "tenant_id"], name="runtime_checkpoint_tenant_identity")]
+
+
 class FinalEvaluationSlot(models.Model):
     """最終評估結果槽位：以業務鍵固定唯一 VALIDATE run，不對外曝光也不保存最終結果本身。"""
     id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)

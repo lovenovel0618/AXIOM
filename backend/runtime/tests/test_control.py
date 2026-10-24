@@ -1,17 +1,17 @@
 """PostgreSQL control races, schema boundaries and immutable snapshot tests."""
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
-from datetime import timedelta
+from datetime import datetime, timedelta
 from unittest.mock import patch
 from uuid import UUID, uuid4
 from django.db import IntegrityError, connections, transaction
 from django.test import TransactionTestCase
 from jsonschema.exceptions import ValidationError
-from runtime.control import Lease, cancel, check_submission, claim, confirm_control_stopped, enqueue, heartbeat, recover
+from runtime.control import HEARTBEAT_SECONDS, LEASE_SECONDS, Lease, cancel, check_submission, claim, confirm_control_stopped, enqueue, heartbeat, load_checkpoint, recover, save_checkpoint
 from runtime.contracts import canonical_bytes, identity_hash, validate
 from runtime.control_fixture import bundle
-from runtime.models import InputSnapshot, RunEvent, RuntimeAttempt, RuntimeRun
-from runtime.records import ControlError, db_now, public_attempt, public_run
+from runtime.models import InputSnapshot, RunEvent, RuntimeAttempt, RuntimeCheckpoint, RuntimeRun
+from runtime.records import ControlError, db_now, public_attempt, public_run, save_run
 from runtime.tasks import relay_control
 
 WORKER = "worker-A"
@@ -38,6 +38,25 @@ class ControlTests(TransactionTestCase):
 
     def available(self) -> None:
         RuntimeRun.objects.filter(pk=self.identity).update(available_at=db_now() - timedelta(seconds=1))
+
+    def progress(self) -> dict[str, object]:
+        """可保存的 checkpoint 進度：DSL／精度／RNG 與策略進度皆為受控 JSON。"""
+        return {"dsl_hash": identity_hash({"strategy": "linear"}), "precision_bits": 64,
+            "rng_state": {"seed": 7, "counter": 3}, "strategy_progress": {"phase": "SEARCH_OPEN", "candidates": 2}}
+
+    def forge_checkpoint(self, lease: Lease, **changes: object) -> UUID:
+        """直接落庫偽造 checkpoint，模擬換環境後帶入或遭改寫的副本；僅供拒絕路徑測試。"""
+        source = RuntimeCheckpoint.objects.filter(run_id=self.identity).order_by("created_at").first()
+        assert source is not None
+        document = dict(source.document) | changes
+        identity = uuid4()
+        document["id"] = str(identity)
+        if "checksum" not in changes:
+            document["checksum"] = identity_hash({key: value for key, value in document.items() if key != "checksum"})
+        with transaction.atomic():
+            RuntimeCheckpoint.objects.create(id=identity, run=self.row(), tenant_id=self.tenant,
+                attempt_id=lease.attempt_id, document=document, created_at=source.created_at)
+        return identity
 
     def test_full_records_and_public_projection_match_contracts(self) -> None:
         lease = self.lease()
@@ -329,6 +348,85 @@ class ControlTests(TransactionTestCase):
         self.documents[2]["retry_policy"]["backoff_max_seconds"] = 0
         with self.assertRaises(ValidationError):
             enqueue(self.tenant, *self.documents)
+
+    def test_lease_and_heartbeat_windows_match_contract(self) -> None:
+        lease = self.lease()
+        attempt = RuntimeAttempt.objects.get(pk=lease.attempt_id).document
+        self.assertEqual(datetime.fromisoformat(attempt["lease_expires_at"]) - datetime.fromisoformat(attempt["started_at"]), timedelta(seconds=LEASE_SECONDS))
+        heartbeat(lease)
+        renewed = RuntimeAttempt.objects.get(pk=lease.attempt_id).document
+        self.assertEqual(datetime.fromisoformat(renewed["lease_expires_at"]) - datetime.fromisoformat(renewed["heartbeat_at"]), timedelta(seconds=LEASE_SECONDS))
+        self.assertLess(HEARTBEAT_SECONDS, LEASE_SECONDS)
+
+    def test_checkpoint_roundtrip_binds_attempt_and_root_epoch(self) -> None:
+        lease = self.lease()
+        identity = save_checkpoint(lease, self.progress())
+        self.assertEqual(RuntimeAttempt.objects.get(pk=lease.attempt_id).document["checkpoint_id"], str(identity))
+        body = load_checkpoint(lease, identity)
+        self.assertEqual(body["root_epoch"], 0)
+        self.assertEqual(body["generation"], 1)
+        self.assertEqual(body["strategy_progress"], self.progress()["strategy_progress"])
+
+    def test_checkpoint_requires_complete_progress(self) -> None:
+        lease = self.lease()
+        with self.assertRaisesRegex(ControlError, "CHECKPOINT_INCOMPLETE"):
+            save_checkpoint(lease, {"dsl_hash": "only-one"})
+        self.assertEqual(RuntimeCheckpoint.objects.count(), 0)
+
+    def test_checkpoint_survives_crash_retry_without_resetting_usage(self) -> None:
+        lease = self.lease()
+        run = self.row()
+        run.document["budget_usage"]["tokens"] = 25
+        save_run(run)
+        identity = save_checkpoint(lease, self.progress())
+        self.expire(lease)
+        recover(self.tenant, self.identity)
+        self.available()
+        new = claim(self.tenant, self.identity, 1, "worker-B")
+        assert new is not None
+        with self.assertRaisesRegex(ControlError, "STALE_ATTEMPT"):
+            load_checkpoint(lease, identity)
+        body = load_checkpoint(new, identity)
+        self.assertEqual(body["cumulative_usage"]["tokens"], 25)
+        self.assertEqual(self.row().document["budget_usage"]["tokens"], 25)
+        self.assertEqual(RuntimeAttempt.objects.count(), 2)
+
+    def test_checkpoint_rejects_environment_data_plugin_or_checksum_change(self) -> None:
+        lease = self.lease()
+        identity = save_checkpoint(lease, self.progress())
+        variants: list[dict[str, object]] = [
+            {"environment_digest": identity_hash({"env": "changed"})},
+            {"dataset_version_id": str(uuid4())},
+            {"plugin_hashes": {}},
+            {"checksum": "f" * 64},
+        ]
+        for changes in variants:
+            forged = self.forge_checkpoint(lease, **changes)
+            with self.subTest(changes=sorted(changes)):
+                with self.assertRaisesRegex(ControlError, "CHECKPOINT_INCOMPATIBLE"):
+                    load_checkpoint(lease, forged)
+        self.assertEqual(load_checkpoint(lease, identity)["root_epoch"], 0)
+
+    def test_cancelled_root_cannot_resume_from_checkpoint(self) -> None:
+        lease = self.lease()
+        identity = save_checkpoint(lease, self.progress())
+        cancel(self.tenant, self.identity, self.row().document["revision"])
+        with self.assertRaisesRegex(ControlError, "ROOT_CANCELLED"):
+            load_checkpoint(lease, identity)
+        self.assertTrue(RuntimeCheckpoint.objects.filter(pk=identity).exists())
+
+    def test_database_blocks_checkpoint_update_delete_and_foreign_attempt(self) -> None:
+        lease = self.lease()
+        identity = save_checkpoint(lease, self.progress())
+        with self.assertRaises(IntegrityError):
+            RuntimeCheckpoint.objects.filter(pk=identity).update(document={})
+        with self.assertRaises(IntegrityError):
+            RuntimeCheckpoint.objects.filter(pk=identity).delete()
+        document = dict(RuntimeCheckpoint.objects.get(pk=identity).document)
+        document["attempt_id"] = str(uuid4())
+        with self.assertRaises(IntegrityError):
+            RuntimeCheckpoint.objects.create(id=uuid4(), run=self.row(), tenant_id=self.tenant,
+                attempt_id=lease.attempt_id, document=document, created_at=db_now())
 
 
 class CanonicalTests(TransactionTestCase):
