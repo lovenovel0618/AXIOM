@@ -27,6 +27,7 @@ SCHEMA = "runtime-v2.schema.json"
 SUBMISSION_SCHEMA = "research-v2.schema.json"
 DISPATCHABLE = ("FROZEN", "EVALUATING")
 RESULTS = ("COMPLETED", "FAILED")
+VIEW_STATES = {"PENDING": "reserved", "COMPLETED": "consumed", "FAILED": "retired"}
 
 
 def _authorized(actor: Account, submission: FrozenSubmission) -> ResearchVersion:
@@ -221,3 +222,30 @@ def authorized_result(actor: Account, identity: UUID) -> ValidationRun:
     _authorized(actor, submission)
     validate(row.document, SCHEMA, "ValidationRun")
     return row
+
+
+def _slot_view(slot: FinalEvaluationSlot) -> JsonObject:
+    """公開槽位投影：只回固定的身分與狀態，不含任何私有控制欄位。"""
+    return {"frozen_candidate_id": str(slot.frozen_candidate_id), "slot_id": str(slot.id), "run_id": str(slot.run_id),
+        "validation_run_id": None if slot.validation_run_id is None else str(slot.validation_run_id),
+        "status": slot.status}
+
+
+def evaluation_view(actor: Account, identity: UUID) -> JsonObject:
+    """提交範圍的最終評估投影：槽位狀態與曝光預算計數，皆由公開 DB 推導。
+
+    曝光帳本的權威狀態只在隔離 Evaluator 的私有域，web 不載入其憑證；故此處只回本租戶槽位可推導的
+    公開投影：預留即 `PENDING`、消耗即 `COMPLETED`、退役即 `FAILED`，總額為凍結候選數。任一授權
+    不符一律 `NOT_FOUND`，不以槽位是否存在差異洩漏提交。"""
+    submission = FrozenSubmission.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
+    if submission is None:
+        raise ApiError("NOT_FOUND", 404)
+    _authorized(actor, submission)
+    slots = list(FinalEvaluationSlot.objects.filter(tenant_id=actor.tenant_id, submission_id=submission.id,
+        metric_version=submission.metric_version).order_by("created_at", "id"))
+    counts: dict[str, int] = {"budget": len(submission.document["frozen_candidate_ids"]),
+        "reserved": 0, "consumed": 0, "retired": 0}
+    for slot in slots:
+        counts[VIEW_STATES[slot.status]] += 1
+    return {"submission_id": str(submission.id), "metric_version": submission.metric_version, "status": submission.status,
+        "slots": [_slot_view(slot) for slot in slots], "exposure": counts}

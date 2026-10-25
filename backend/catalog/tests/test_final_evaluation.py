@@ -18,7 +18,7 @@ from django.db import IntegrityError, connection, connections, transaction
 from django.test import TransactionTestCase, override_settings
 from catalog.artifacts import register as register_artifact
 from catalog.candidates import persist
-from catalog.final_evaluation import acquire, settle
+from catalog.final_evaluation import acquire, evaluation_view, settle
 from catalog.final_manifest import documents, limit_for
 from catalog.freezing import frozen_candidate, frozen_submission
 from catalog.ingest import complete_upload, ingest_tick
@@ -464,6 +464,57 @@ class FinalEvaluationTests(TransactionTestCase):
             acquire(self.actor, fresh, self.frozen)
         self.assertEqual(blocked.exception.code, "DISPATCH_STAGE_VIOLATION")
         self.assertFalse(FinalEvaluationSlot.objects.exists())
+
+    def test_evaluation_view_projects_slot_states_and_the_exposure_budget(self) -> None:
+        """公開投影只回固定身分與狀態：預留／消耗／退役計數由槽位推導，總額為凍結候選數。"""
+        pair = self.submit([self.frozen, self.outsider])
+        first, _first_created = acquire(self.actor, pair, self.frozen)
+        second, _second_created = acquire(self.actor, pair, self.outsider)
+        settle(self.actor, first, "COMPLETED", self.result(first))
+        settle(self.actor, second, "FAILED", None)
+        view = evaluation_view(self.actor, pair.id)
+        self.assertEqual((view["submission_id"], view["metric_version"]), (str(pair.id), pair.metric_version))
+        self.assertEqual(view["status"], "FAILED")
+        self.assertEqual(view["exposure"], {"budget": 2, "reserved": 0, "consumed": 1, "retired": 1})
+        self.assertEqual({slot["status"] for slot in view["slots"]}, {"COMPLETED", "FAILED"})
+        completed = next(slot for slot in view["slots"] if slot["status"] == "COMPLETED")
+        failed = next(slot for slot in view["slots"] if slot["status"] == "FAILED")
+        self.assertEqual((completed["frozen_candidate_id"], completed["slot_id"], completed["run_id"]),
+            (str(self.frozen.id), str(first.id), str(first.run_id)))
+        self.assertEqual(completed["validation_run_id"], str(FinalEvaluationSlot.objects.get(pk=first.id).validation_run_id))
+        self.assertEqual(failed["frozen_candidate_id"], str(self.outsider.id))
+        self.assertIsNone(failed["validation_run_id"])
+
+    def test_evaluation_view_counts_a_pending_dispatch_as_reserved(self) -> None:
+        """只派送未結算時只計為預留，提交與槽位狀態都不被投影成已完成。"""
+        slot, _created = acquire(self.actor, self.submission, self.frozen)
+        view = evaluation_view(self.actor, self.submission.id)
+        self.assertEqual((view["status"], view["exposure"]),
+            ("EVALUATING", {"budget": 1, "reserved": 1, "consumed": 0, "retired": 0}))
+        self.assertEqual(view["slots"], [{"frozen_candidate_id": str(self.frozen.id), "slot_id": str(slot.id),
+            "run_id": str(slot.run_id), "validation_run_id": None, "status": "PENDING"}])
+
+    def test_evaluation_view_refuses_foreign_and_unknown_submissions(self) -> None:
+        """跨租戶提交與未知 UUID 同回 404：不因槽位存在與否洩漏提交。"""
+        with self.assertRaises(ApiError) as foreign:
+            evaluation_view(self.other, self.submission.id)
+        self.assertEqual(foreign.exception.code, "NOT_FOUND")
+        with self.assertRaises(ApiError) as unknown:
+            evaluation_view(self.actor, uuid4())
+        self.assertEqual(unknown.exception.code, "NOT_FOUND")
+
+    def test_submission_evaluation_endpoint_reads_the_authorized_projection(self) -> None:
+        """端點重新驗租戶與研究 owner 後回契約內的投影；跨租戶與未知 UUID 皆 404。"""
+        acquire(self.actor, self.submission, self.frozen)
+        self.client.force_login(self.actor.user)
+        response = self.client.get(f"/api/v2/frozen-submissions/{self.submission.id}/evaluation")
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual((body["status"], body["exposure"]["budget"]), ("EVALUATING", 1))
+        self.assertEqual(len(body["slots"]), 1)
+        self.client.force_login(self.other.user)
+        self.assertEqual(self.client.get(f"/api/v2/frozen-submissions/{self.submission.id}/evaluation").status_code, 404)
+        self.assertEqual(self.client.get(f"/api/v2/frozen-submissions/{uuid4()}/evaluation").status_code, 404)
 
     def test_submission_status_flow_and_immutability_are_guarded(self) -> None:
         identity = self.submission.id

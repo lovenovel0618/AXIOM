@@ -31,7 +31,7 @@ import CandidateComparison from '../components/CandidateComparison.vue'
 import ResearchVersionForm from '../components/ResearchVersionForm.vue'
 import { getArtifact, getArtifactContent, type Artifact } from '../api/artifacts'
 import { getEvidenceBundle } from '../api/evidence'
-import { getValidationRun } from '../api/evaluations'
+import { getFinalEvaluation, getValidationRun } from '../api/evaluations'
 import {
   OUTCOME_DETAILS,
   OUTCOME_LABELS,
@@ -39,6 +39,12 @@ import {
   refusalReasons,
   type ValidationRun,
 } from '../lib/evaluation'
+import {
+  parseFinalEvaluation,
+  SLOT_STATUS_LABELS,
+  SUBMISSION_STATUS_LABELS,
+  type FinalEvaluation,
+} from '../lib/finalEvaluation'
 import {
   describeRemaining,
   describeBlindEvaluation,
@@ -79,6 +85,8 @@ const bundle = ref<EvidenceBundle | null>(null)
 const bundleLoading = ref(false)
 const evaluations = ref<Record<string, ValidationRun>>({})
 const evaluationsLoading = ref(false)
+const finalEvaluations = ref<Record<string, FinalEvaluation>>({})
+const finalEvaluationsLoading = ref(false)
 const inspected = ref<Record<string, { meta: Artifact; text: string }>>({})
 const inspecting = ref<string[]>([])
 const follow = ref<FollowState>(INITIAL_FOLLOW_STATE)
@@ -255,6 +263,7 @@ async function pickVersion(version: ResearchVersion): Promise<void> {
   await reloadRuns()
   await loadQuality()
   await loadBundle()
+  await loadFinalEvaluations(version.frozen_submission_ids)
   if (version.status === 'VALIDATING') startResearchFollow(version)
 }
 
@@ -419,6 +428,41 @@ async function loadEvaluations(ids: string[]): Promise<void> {
   }
 }
 
+/**
+ * 槽位最終評估投影逐一讀取；曝光帳本權威狀態留在隔離 Evaluator 的私有域，這裡只呈現公開槽位可推導的計數。
+ * 單一提交失敗只記錄訊息，不影響其他提交，也不補任何推測內容。
+ */
+async function loadFinalEvaluations(ids: string[]): Promise<void> {
+  finalEvaluations.value = {}
+  if (ids.length === 0) return
+  finalEvaluationsLoading.value = true
+  const next: Record<string, FinalEvaluation> = {}
+  const problems: string[] = []
+  try {
+    const results = await Promise.all(
+      ids.map(async (id) => {
+        try {
+          const parsed = parseFinalEvaluation(await getFinalEvaluation(client, id))
+          return { id, parsed, message: parsed === null ? `最終評估投影 ${id} 格式不符契約，未顯示。` : '' }
+        } catch (cause) {
+          return { id, parsed: null, message: `最終評估投影 ${id}：${describeError(cause)}` }
+        }
+      }),
+    )
+    for (const result of results) {
+      if (result.parsed === null) {
+        problems.push(result.message)
+        continue
+      }
+      next[result.id] = result.parsed
+    }
+    finalEvaluations.value = next
+    if (problems.length > 0) error.value = problems.join(' ')
+  } finally {
+    finalEvaluationsLoading.value = false
+  }
+}
+
 /** 證據檢視：展開時才讀內容，再按一次收合，不在背景批次抓取全部產物。 */
 async function toggleInspect(id: string): Promise<void> {
   if (inspected.value[id] !== undefined) {
@@ -444,10 +488,12 @@ async function refreshVersion(): Promise<void> {
   const version = selectedVersion.value
   if (version === null) return
   try {
-    selectedVersion.value = await getResearchVersion(client, version.id)
+    const fresh = await getResearchVersion(client, version.id)
+    selectedVersion.value = fresh
     await reloadRuns()
     await loadQuality()
     await loadBundle()
+    await loadFinalEvaluations(fresh.frozen_submission_ids)
   } catch (cause) {
     error.value = describeError(cause)
   }
@@ -611,6 +657,50 @@ onUnmounted(stopFollowingResearch)
               </ul>
             </dd>
           </dl>
+
+          <h3>槽位最終評估與曝光預算</h3>
+          <p v-if="selectedVersion.frozen_submission_ids.length === 0" class="muted">
+            尚未產生凍結提交，沒有可顯示的槽位最終評估。
+          </p>
+          <p v-else-if="finalEvaluationsLoading" class="muted">讀取槽位最終評估中…</p>
+          <p v-else-if="Object.keys(finalEvaluations).length === 0" class="muted">
+            凍結提交都無法取得，未顯示任何推測內容。
+          </p>
+          <template v-else>
+            <p class="muted">
+              計數只由公開槽位狀態推導（預留＝待評估、消耗＝已完成、退役＝失敗）；曝光帳本的權威狀態留在隔離
+              Evaluator 的私有域，本畫面不宣稱其即時狀態。
+            </p>
+            <dl v-for="id in selectedVersion.frozen_submission_ids" :key="id" class="evaluation">
+              <template v-if="finalEvaluations[id] !== undefined">
+                <dt class="mono">{{ id }}</dt>
+                <dd>
+                  提交狀態 {{ SUBMISSION_STATUS_LABELS[finalEvaluations[id].status] }}（{{ finalEvaluations[id].status }}）／指標版本
+                  {{ finalEvaluations[id].metricVersion }}
+                </dd>
+                <dt>曝光預算</dt>
+                <dd>
+                  總額 {{ finalEvaluations[id].exposure.budget }}／待評估 {{ finalEvaluations[id].exposure.reserved }}／已完成
+                  {{ finalEvaluations[id].exposure.consumed }}／失敗 {{ finalEvaluations[id].exposure.retired }}
+                </dd>
+                <dt>槽位</dt>
+                <dd v-if="finalEvaluations[id].slots.length === 0" class="muted">沒有槽位。</dd>
+                <dd v-else>
+                  <ul class="remaining">
+                    <li v-for="slot in finalEvaluations[id].slots" :key="slot.slotId">
+                      {{ SLOT_STATUS_LABELS[slot.status] }}（{{ slot.status }}）／候選
+                      <span class="mono">{{ slot.frozenCandidateId }}</span>／驗證結果
+                      <span class="mono">{{ slot.validationRunId ?? '尚未產生' }}</span>
+                    </li>
+                  </ul>
+                </dd>
+              </template>
+              <template v-else>
+                <dt class="mono">{{ id }}</dt>
+                <dd class="muted">此提交的槽位最終評估無法取得或格式不符，未顯示推測內容。</dd>
+              </template>
+            </dl>
+          </template>
 
           <div class="panel-head">
             <h3>證據</h3>

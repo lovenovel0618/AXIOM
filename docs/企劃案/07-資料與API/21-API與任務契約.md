@@ -27,6 +27,7 @@ MVP API 前綴 /api/v2，JSON 使用 UTF-8，傳輸使用 HTTPS（本機開發�
 | GET /research-versions/{id}/runs | cursor/limit | 200 RunPage，含已終態及子run，is_root標示根 |
 | GET /research-versions/{id}/events | Last-Event-ID | 200 研究生命週期SSE，不因某run終態關閉 |
 | GET /frozen-submissions/{id} | — | 200 FrozenSubmission |
+| GET /frozen-submissions/{id}/evaluation | — | 200 FinalEvaluationView，槽位最終評估狀態與曝光預算投影；槽位本體不進HTTP schema |
 | GET /frozen-candidates/{id} | — | 200 FrozenCandidate，固定FitRun與參數 |
 | POST /researches | name | 201 Research 容器，與執行分離 |
 | POST /researches/{id}/versions | dataset_version_id、semantic_profile、observation_split、domain、evaluation_policy、budget、purpose、可選refit_policy | 201 DRAFT ResearchVersion，內容固定，新修改另建版本 |
@@ -183,6 +184,10 @@ Run必填research_trace_artifact_ids，透過既有GET run、研究runs列表及
 DatasetVersion.structure_preview_artifact_id及ResearchVersion.structure_assessment_artifact_id為可null的Artifact引用，分別由既有dataset版本列表／研究snapshot恢復；依AX-49，AVAILABLE／READY等完成狀態必有對應引用，依既有access_class分類政策回傳。沒有新增preflight或高階job端點。公開Run及Artifact仍是現行導航邊界，trace鏈按獨立可見stream驗證，不返回隱藏stream ID或hash。
 
 本機 INGEST 的 GET /runs/{id} 另回 X-Usage-Status=NOT_STARTED／MEASURED_UPPER_BOUND／UNKNOWN。UNKNOWN 表示已開始的 attempt 失聯而無法確認用量，不得把零欄位解讀為免費執行；MEASURED_UPPER_BOUND 的 CPU／wall 為向上整秒、memory 為 process high-water 的保守和，非精確同時 RSS 或正式 SLO。此 header 不改 Run JSON，亦不代表完整 quota／budget gate 已驗收。
+
+## v2.9 槽位最終評估狀態與曝光預算投影
+
+GET /frozen-submissions/{id}/evaluation 回單一提交範圍的公開投影：槽位狀態 PENDING／COMPLETED／FAILED 與曝光預算計數 budget／reserved／consumed／retired。計數只由公開資料庫的槽位推導（預留＝PENDING、消耗＝COMPLETED、退役＝FAILED），總額為凍結候選數；曝光帳本的權威狀態留在隔離 Evaluator 的私有域，web 不載入其憑證，故此端點不宣稱私有帳本的即時狀態。FinalEvaluationSlot 本體不進 HTTP schema，端點只回固定身分與狀態；租戶或研究 owner 任一不符一律 404，不以槽位是否存在差異洩漏提交。槽位結果的拒答理由仍沿 GET /validation-runs/{id} 讀取，不在此端點重複。
 
 ## 共用規則
 

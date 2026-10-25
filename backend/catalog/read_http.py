@@ -8,7 +8,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from catalog.artifacts import authorized
 from catalog.candidates import authorized_equation, authorized_fit_run, authorized_frozen_candidate, candidates_page
 from catalog.evidence import authorized as evidence_bundle
-from catalog.final_evaluation import authorized_result
+from catalog.final_evaluation import authorized_result, evaluation_view
 from catalog.freezing import authorized_submission
 from catalog.http import api, allowed_methods
 from catalog.models import Account, DatasetVersion, IngestBinding, ProfileBinding, Reservation
@@ -154,6 +154,15 @@ def validation_run_detail(_request: HttpRequest, actor: Account, identity: UUID)
     """重新驗租戶、研究 owner 與提交綁定後回最終評估結果；封存細部不因知道 UUID 而可讀。"""
     row = authorized_result(actor, identity)
     return JsonResponse(row.document)
+
+
+@allowed_methods(["GET"])
+@api
+def submission_evaluation(_request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
+    """重新驗租戶與研究 owner 後回槽位最終評估狀態與曝光預算投影；槽位本體不進 HTTP 契約。"""
+    result = evaluation_view(actor, identity)
+    validate_api(result, "FinalEvaluationView")
+    return JsonResponse(result)
 
 
 @allowed_methods(["GET"])
