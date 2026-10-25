@@ -88,13 +88,15 @@ def dataset_runs(request: HttpRequest, actor: Account, identity: UUID) -> JsonRe
 
 
 def run_for(actor: Account, identity: UUID) -> RuntimeRun:
-    """拒絕 control probe；PROFILE 額外驗研究 owner，INGEST 驗租戶分區。"""
+    """拒絕 control probe；研究型別（含子任務）驗研究 owner，INGEST 驗租戶資料集分區。"""
     row = RuntimeRun.objects.filter(pk=identity,tenant_id=actor.tenant_id,control_only=False).first()
     if row is None:
         raise ApiError("NOT_FOUND",404)
     if row.document["type"]=="PROFILE":
         binding = ProfileBinding.objects.get(run=row)
         version_for(actor,binding.research_version_id)
+    elif row.document["research_version_id"] is not None:
+        version_for(actor,UUID(row.document["research_version_id"]))
     else:
         dataset_for(actor,UUID(row.document["dataset_id"]))
     return row

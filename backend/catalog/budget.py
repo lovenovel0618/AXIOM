@@ -7,9 +7,9 @@ from catalog.models import ResearchBudget, ResearchVersion, Reservation, RootBud
 from catalog.validation import ApiError
 from runtime.contracts import JsonObject, identity_hash, validate
 from runtime.budget_types import COUNTERS as CUMULATIVE, BudgetLimit, UsageReport, accumulated, exceeds, read_limit, read_report, read_usage, zero_usage
-from runtime.control import Lease
+from runtime.control import Lease, lock_pair
 from runtime.models import RuntimeAttempt, RuntimeRun
-from runtime.records import ControlError, db_now, detached, lock_run, save_attempt, save_run
+from runtime.records import ControlError, db_now, detached, save_attempt, save_run
 
 RUNTIME_SCHEMA = "runtime-v2.schema.json"
 
@@ -117,7 +117,9 @@ def exhausted(document: JsonObject) -> bool:
 
 
 def settle_locked(run: RuntimeRun, research: ResearchBudget, root: RootBudget, stopped: bool) -> None:
-    """消耗從 held 移至實耗；只有停止證明才釋放剩餘預留，超支會關閉後續派送。"""
+    """消耗從 held 移至實耗；只有停止證明才釋放剩餘預留，超支會關閉後續派送。
+
+    `dispatch_stage` 與公開用量口徑只由根權威裁決，子任務僅繼承根的彙總而不覆寫。"""
     loan = Reservation.objects.select_for_update().get(root=root)
     held,requested = read_limit(loan.held),read_limit(loan.requested)
     usage = read_usage(root.document["usage"])
@@ -133,18 +135,22 @@ def settle_locked(run: RuntimeRun, research: ResearchBudget, root: RootBudget, s
         research.document["status"] = "CLOSING"
     if exhausted(root.document) and loan.state!="RELEASED":
         root.document["status"] = "CLOSING"
-        run.document["dispatch_stage"] = "CLOSED"
+        if run.document["is_root"]:
+            run.document["dispatch_stage"] = "CLOSED"
     persist(research,root)
-    run.document["budget_usage"] = root.document["usage"]
-    run.document["budget_reservations"] = root.document["reservations"]
-    save_run(run)
+    if run.document["is_root"]:
+        run.document["budget_usage"] = root.document["usage"]
+        run.document["budget_reservations"] = root.document["reservations"]
+        save_run(run)
 
 
 def report_usage(lease: Lease, report: object, *, stopped: bool = False) -> bool:
     """原子記錄不可變 receipt，並由同一增量更新研究與 root 帳本。
 
-    鎖順序為 root→attempt→研究帳本→root 帳本；較舊序號保存但不覆蓋最新用量。
-    stopped 只供原 owning handler 在 child 已退出／回收後使用，終態遲到結算不補 Run 事件。"""
+    鎖順序為 root→run→attempt→研究帳本→root 帳本；較舊序號保存但不覆蓋最新用量。
+    子任務與根共用同一 BudgetAccount 與研究帳本，因此同一增量只入帳一次；子 Run 的公開
+    用量只反映自身 Attempts，不把根的彙總再加回。stopped 只供原 owning handler 在 child
+    已退出／回收後使用，終態遲到結算不補 Run 事件。"""
     report = read_report(report)
     if report["tenant_id"]!=str(lease.tenant_id) or report["run_id"]!=str(lease.run_id) or report["attempt_id"]!=str(lease.attempt_id):
         raise ControlError("USAGE_REPORT_CONFLICT")
@@ -152,11 +158,12 @@ def report_usage(lease: Lease, report: object, *, stopped: bool = False) -> bool
     if usage["candidates_accepted"]>usage["candidates_generated"]:
         raise ControlError("USAGE_REPORT_CONFLICT")
     with transaction.atomic():
-        run = lock_run(lease.tenant_id,lease.run_id)
+        run, _root = lock_pair(lease.tenant_id,lease.run_id)
         attempt = owned_attempt(lease,run)
-        identity = RootBudget.objects.get(run=run).research_budget_id
+        account = UUID(run.document["budget_account_id"])
+        identity = RootBudget.objects.values_list("research_budget_id",flat=True).get(pk=account)
         research = ResearchBudget.objects.select_for_update().get(pk=identity)
-        root = RootBudget.objects.select_for_update().get(run=run)
+        root = RootBudget.objects.select_for_update().get(pk=account)
         existing,latest = checked_receipt(root,attempt,report)
         current_sequence = 0 if latest is None else latest.sequence
         if report["sequence"]<current_sequence:
@@ -166,6 +173,7 @@ def report_usage(lease: Lease, report: object, *, stopped: bool = False) -> bool
         if existing is not None:
             if stopped:
                 settle_locked(run,research,root,True)
+                _project_child_usage(run,usage)
             return False
         previous = zero_usage() if latest is None else latest.document["cumulative_usage"]
         apply_delta(research.document,previous,usage)
@@ -174,11 +182,24 @@ def report_usage(lease: Lease, report: object, *, stopped: bool = False) -> bool
         attempt.document.update(usage_sequence=report["sequence"],actual_usage=usage)
         save_attempt(attempt)
         settle_locked(run,research,root,stopped)
+        _project_child_usage(run,usage)
         return True
 
 
+def _project_child_usage(run: RuntimeRun, usage: object) -> None:
+    """子 Run 只報自身 Attempts 的累計用量；根仍保有整份 BudgetAccount 彙總。"""
+    if run.document["is_root"]:
+        return
+    run.document["budget_usage"] = dict(read_usage(usage))
+    save_run(run)
+
+
 def release_unstarted(run: RuntimeRun) -> None:
-    """從未啟動可證明零成本；已啟動卻無停止證明則保留 UNCERTAIN，不能直接歸還預留。"""
+    """從未啟動可證明零成本；已啟動卻無停止證明則保留 UNCERTAIN，不能直接歸還預留。
+
+    子任務不持有自身預留，因此不在此釋放根的額度。"""
+    if not run.document["is_root"]:
+        return
     root = RootBudget.objects.get(run=run)
     research = ResearchBudget.objects.select_for_update().get(pk=root.research_budget_id)
     root = RootBudget.objects.select_for_update().get(pk=root.id)

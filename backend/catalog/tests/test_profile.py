@@ -28,6 +28,7 @@ from catalog.tests.test_research import draft_data
 from catalog.tests.test_sealing import sealed_authority
 from ingestion.supervisor import inspect_research
 from runtime.completion import finish
+from runtime.contracts import JsonObject
 from runtime.control import cancel, claim, Lease
 from runtime.models import RunEvent, RuntimeAttempt, RuntimeRun
 from runtime.records import ControlError, db_now, lock_run
@@ -299,6 +300,23 @@ class ProfileTests(TransactionTestCase):
         self.assertNotIn(b'private-final-marker',response.content)
         self.assertNotIn("final_test",report)
         self.assertEqual(document_for(version)["status"],"DRAFT")
+
+    def test_child_run_cannot_be_cancelled_and_reports_authorized_root(self) -> None:
+        root = self.enqueue()
+        before = RuntimeRun.objects.get(pk=root).document["status"]
+        identity = uuid4()
+        document: JsonObject = RuntimeRun.objects.get(pk=root).document | {"id":str(identity),"type":"SEARCH","is_root":False,
+            "parent_run_id":str(root),"root_run_id":str(root),"child_run_ids":[],"status":"QUEUED"}
+        now = db_now()
+        RuntimeRun.objects.create(id=identity,tenant_id=self.actor.tenant_id,control_only=False,document=document,
+            queue_deadline=now+timedelta(seconds=60),available_at=now)
+        response = self.client.post(f'/api/v2/runs/{identity}/cancel','{}',content_type="application/json",
+            headers={"Idempotency-Key":"child-cancel","If-Control-Revision":"0"})
+        self.assertEqual(response.status_code,409,response.content)
+        body = json.loads(response.content)
+        self.assertEqual(body["code"],"CHILD_RUN_NOT_CANCELLABLE")
+        self.assertEqual(body["details"],[{"field":"root_run_id","reason":str(root)}])
+        self.assertEqual(RuntimeRun.objects.get(pk=root).document["status"],before)
 
     def test_other_account_hides_profile_and_artifacts(self) -> None:
         identity = self.enqueue()

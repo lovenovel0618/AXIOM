@@ -7,9 +7,9 @@ from uuid import UUID, uuid4
 from django.db import IntegrityError, connections, transaction
 from django.test import TransactionTestCase
 from jsonschema.exceptions import ValidationError
-from runtime.control import HEARTBEAT_SECONDS, LEASE_SECONDS, Lease, cancel, check_submission, claim, confirm_control_stopped, enqueue, heartbeat, load_checkpoint, recover, save_checkpoint
+from runtime.control import HEARTBEAT_SECONDS, LEASE_SECONDS, Lease, cancel, check_submission, claim, confirm_control_stopped, enqueue, enqueue_child, heartbeat, load_checkpoint, recover, save_checkpoint
 from runtime.contracts import canonical_bytes, identity_hash, validate
-from runtime.control_fixture import bundle
+from runtime.control_fixture import bundle, child_bundle, research_bundle
 from runtime.models import InputSnapshot, RunEvent, RuntimeAttempt, RuntimeCheckpoint, RuntimeRun
 from runtime.records import ControlError, db_now, public_attempt, public_run, save_run
 from runtime.tasks import relay_control
@@ -427,6 +427,97 @@ class ControlTests(TransactionTestCase):
         with self.assertRaises(IntegrityError):
             RuntimeCheckpoint.objects.create(id=uuid4(), run=self.row(), tenant_id=self.tenant,
                 attempt_id=lease.attempt_id, document=document, created_at=db_now())
+
+
+class ChildRunTests(TransactionTestCase):
+    """研究子任務的建立、鎖序、取消語意與祖先 fencing；不涉及業務插件執行。"""
+
+    def setUp(self) -> None:
+        self.root = research_bundle()
+        self.tenant = UUID(self.root[0]["tenant_id"])
+        self.identity = enqueue(self.tenant, *self.root, control_only=False)
+        lease = claim(self.tenant, self.identity, 0, WORKER)
+        assert lease is not None
+
+    def row(self, identity: UUID) -> RuntimeRun:
+        return RuntimeRun.objects.get(pk=identity)
+
+    def spawn(self, parent: UUID | None = None) -> tuple[UUID, tuple[dict[str, object], dict[str, object], dict[str, object], dict[str, object]]]:
+        documents = child_bundle(self.root, str(parent or self.identity))
+        return enqueue_child(self.tenant, *documents), documents
+
+    def test_child_creation_links_root_and_shares_account(self) -> None:
+        child_id, _documents = self.spawn()
+        self.assertIn(str(child_id), self.row(self.identity).document["child_run_ids"])
+        child = self.row(child_id).document
+        self.assertFalse(child["is_root"])
+        self.assertEqual(child["root_run_id"], str(self.identity))
+        self.assertEqual(child["budget_account_id"], self.root[0]["budget_account_id"])
+        self.assertEqual(child["research_budget_account_id"], self.root[0]["research_budget_account_id"])
+        self.assertTrue(InputSnapshot.objects.filter(run_id=child_id).exists())
+        validate(child, "runtime-v2.schema.json", "RunRecord")
+
+    def test_child_creation_replay_is_idempotent(self) -> None:
+        identity, documents = self.spawn()
+        self.assertEqual(enqueue_child(self.tenant, *documents), identity)
+        self.assertEqual(RuntimeRun.objects.filter(document__is_root=False).count(), 1)
+
+    def test_child_requires_running_root(self) -> None:
+        cancel(self.tenant, self.identity, self.row(self.identity).document["revision"])
+        with self.assertRaisesRegex(ControlError, "DISPATCH_STAGE_VIOLATION"):
+            self.spawn()
+
+    def test_child_rejects_cross_root_parent(self) -> None:
+        other = research_bundle(tenant_id=str(self.tenant))
+        other_id = enqueue(self.tenant, *other, control_only=False)
+        documents = child_bundle(self.root, str(other_id))
+        with self.assertRaisesRegex(ControlError, "DISPATCH_STAGE_VIOLATION"):
+            enqueue_child(self.tenant, *documents)
+
+    def test_child_claim_requires_running_root(self) -> None:
+        child_id, _documents = self.spawn()
+        cancel(self.tenant, self.identity, self.row(self.identity).document["revision"])
+        self.assertIsNone(claim(self.tenant, child_id, 0, WORKER))
+
+    def test_root_cancel_fences_child_submission(self) -> None:
+        child_id, _documents = self.spawn()
+        lease = claim(self.tenant, child_id, 0, WORKER)
+        assert lease is not None
+        self.assertEqual(RuntimeAttempt.objects.get(pk=lease.attempt_id).document["root_epoch_at_dispatch"], 0)
+        check_submission(lease)
+        cancel(self.tenant, self.identity, self.row(self.identity).document["revision"])
+        with self.assertRaisesRegex(ControlError, "ROOT_CANCELLED"):
+            check_submission(lease)
+
+    def test_child_cannot_be_cancelled_directly(self) -> None:
+        child_id, _documents = self.spawn()
+        with self.assertRaisesRegex(ControlError, "CHILD_RUN_NOT_CANCELLABLE"):
+            cancel(self.tenant, child_id, self.row(child_id).document["revision"])
+
+    def test_child_failure_does_not_close_root_dispatch(self) -> None:
+        child_id, _documents = self.spawn()
+        RuntimeRun.objects.filter(pk=child_id).update(queue_deadline=db_now() - timedelta(seconds=1))
+        recover(self.tenant, child_id)
+        self.assertEqual(self.row(child_id).document["status"], "FAILED")
+        self.assertEqual(self.row(child_id).document["dispatch_stage"], "SEARCH_OPEN")
+        self.assertEqual(self.row(self.identity).document["dispatch_stage"], "SEARCH_OPEN")
+
+    def test_child_is_cancelled_when_root_is_cancelled(self) -> None:
+        child_id, _documents = self.spawn()
+        cancel(self.tenant, self.identity, self.row(self.identity).document["revision"])
+        recover(self.tenant, child_id)
+        child = self.row(child_id).document
+        self.assertEqual((child["status"], child["stop_reason"]), ("CANCELLED", "USER_CANCELLED"))
+        self.assertEqual(child["dispatch_stage"], "SEARCH_OPEN")
+
+    def test_child_is_failed_when_root_failed(self) -> None:
+        child_id, _documents = self.spawn()
+        root_document = self.row(self.identity).document
+        root_document.update(status="FAILED", stop_reason="BUDGET_EXHAUSTED", dispatch_stage="CLOSED")
+        RuntimeRun.objects.filter(pk=self.identity).update(document=root_document)
+        recover(self.tenant, child_id)
+        child = self.row(child_id).document
+        self.assertEqual((child["status"], child["stop_reason"]), ("FAILED", "DEPENDENCY_FAILURE"))
 
 
 class CanonicalTests(TransactionTestCase):

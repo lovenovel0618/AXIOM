@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 def error_response(error: ApiError) -> JsonResponse:
     request_id = str(uuid4())
-    response = JsonResponse({"code": error.code, "message": "Request could not be completed", "details": [], "request_id": request_id, "retryable": error.status == 503}, status=error.status)
+    response = JsonResponse({"code": error.code, "message": "Request could not be completed", "details": error.details, "request_id": request_id, "retryable": error.status == 503}, status=error.status)
     response["X-Request-ID"] = request_id
     response["Cache-Control"] = "no-store"
     return response

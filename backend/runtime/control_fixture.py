@@ -2,12 +2,15 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 from runtime.contracts import JsonObject, identity_hash
+from runtime.records import detached, task_input_hash
+
+USAGE_KEYS = ["cpu_seconds", "gpu_seconds", "tokens", "peak_memory_bytes", "elapsed_wall_seconds", "candidates_generated", "candidates_accepted"]
 
 
 def bundle() -> tuple[JsonObject, JsonObject, JsonObject, JsonObject]:
     run_id, tenant_id, execution_id, budget_id = (str(uuid4()) for _ in range(4))
     created_at = datetime.now(timezone.utc).isoformat()
-    usage: JsonObject = dict.fromkeys(["cpu_seconds", "gpu_seconds", "tokens", "peak_memory_bytes", "elapsed_wall_seconds", "candidates_generated", "candidates_accepted"], 0)
+    usage: JsonObject = dict.fromkeys(USAGE_KEYS, 0)
     task: JsonObject = {
         "kind": "TaskInput", "schema_version": "2.0", "run_id": run_id, "type": "INGEST", "research_version_id": None,
         "observation_split_id": None, "execution_manifest_id": execution_id,
@@ -34,5 +37,73 @@ def bundle() -> tuple[JsonObject, JsonObject, JsonObject, JsonObject]:
         "cancellation_epoch": 0, "root_epoch_at_dispatch": 0, "input_artifact_id": str(uuid4()), "outcome_status": None, "skipped_phases": [],
         "dispatch_stage": "SEARCH_OPEN", "diagnostic_artifact_ids": [], "research_budget_account_id": None, "provenance_id": str(uuid4()),
         "execution_manifest_id": execution_id, "research_trace_artifact_ids": [],
+    }
+    return record, task, execution, budget
+
+
+def research_bundle(tenant_id: str | None = None) -> tuple[JsonObject, JsonObject, JsonObject, JsonObject]:
+    """A synthetic SEARCH research root with real two-layer ledger identities and no external artifacts.
+
+    ``tenant_id`` may be pinned so same-tenant negative cases can build a second, unrelated root."""
+    run_id, execution_id, budget_id, research_id, account_id, split_id, projection_id = (str(uuid4()) for _ in range(7))
+    tenant_id = tenant_id or str(uuid4())
+    created_at = datetime.now(timezone.utc).isoformat()
+    usage: JsonObject = dict.fromkeys(USAGE_KEYS, 0)
+    task: JsonObject = {
+        "kind": "TaskInput", "schema_version": "2.0", "run_id": run_id, "type": "SEARCH", "research_version_id": research_id,
+        "observation_split_id": split_id, "execution_manifest_id": execution_id,
+        "payload": {"observation_split_id": split_id, "projection_artifact_id": projection_id, "strategies": ["linear", "polynomial"]},
+    }
+    execution: JsonObject = {
+        "kind": "ExecutionManifest", "id": execution_id, "tenant_id": tenant_id, "schema_version": "2.0", "created_at": created_at,
+        "environment_digest": "0" * 64, "input_hash": task_input_hash(task), "semantic_profile_hash": "0" * 64, "seed": 3,
+        "plugins": [{"plugin_id": "local-search", "version": "1", "code_sha256": "0" * 64, "config": {}, "config_sha256": identity_hash({})}],
+        "retry_policy": {"max_attempts": 3, "queue_timeout_seconds": 300, "backoff_initial_seconds": 1, "backoff_max_seconds": 30},
+    }
+    budget: JsonObject = {
+        "kind": "BudgetAccount", "id": budget_id, "tenant_id": tenant_id, "schema_version": "2.0", "created_at": created_at, "root_run_id": run_id,
+        "limit": {"cpu_seconds": 10, "gpu_seconds": 0, "tokens": 0, "memory_bytes": 67108864, "wall_seconds": 300, "candidate_limit": 8},
+        "usage": usage.copy(), "reservations": [], "status": "OPEN", "research_budget_account_id": account_id,
+    }
+    record: JsonObject = {
+        "kind": "RunRecord", "id": run_id, "tenant_id": tenant_id, "schema_version": "2.0", "created_at": created_at,
+        "research_version_id": research_id, "dataset_id": None, "type": "SEARCH", "status": "QUEUED", "revision": 0, "seed": execution["seed"],
+        "environment_digest": execution["environment_digest"], "active_attempt_id": None, "lease_generation": 0, "current_event_cursor": f"RUN:{run_id}:0",
+        "budget_usage": usage.copy(), "phase": None, "stop_reason": None, "evidence_bundle_ids": [], "child_run_ids": [], "is_root": True,
+        "budget_reservations": [], "parent_run_id": None, "root_run_id": run_id, "budget_account_id": budget_id, "cancel_requested_at": None,
+        "cancellation_epoch": 0, "root_epoch_at_dispatch": 0, "input_artifact_id": str(uuid4()), "outcome_status": None, "skipped_phases": [],
+        "dispatch_stage": "SEARCH_OPEN", "diagnostic_artifact_ids": [], "research_budget_account_id": account_id, "provenance_id": str(uuid4()),
+        "execution_manifest_id": execution_id, "research_trace_artifact_ids": [],
+    }
+    return record, task, execution, budget
+
+
+def child_bundle(root: tuple[JsonObject, JsonObject, JsonObject, JsonObject], parent_run_id: str) -> tuple[JsonObject, JsonObject, JsonObject, JsonObject]:
+    """A synthetic SEARCH child that shares its root BudgetAccount identity; never a real dispatch."""
+    root_record, _root_task, _root_execution, root_budget = root
+    run_id, execution_id, split_id, projection_id = (str(uuid4()) for _ in range(4))
+    created_at = datetime.now(timezone.utc).isoformat()
+    usage: JsonObject = dict.fromkeys(USAGE_KEYS, 0)
+    task: JsonObject = {
+        "kind": "TaskInput", "schema_version": "2.0", "run_id": run_id, "type": "SEARCH", "research_version_id": root_record["research_version_id"],
+        "observation_split_id": split_id, "execution_manifest_id": execution_id,
+        "payload": {"observation_split_id": split_id, "projection_artifact_id": projection_id, "strategies": ["linear"]},
+    }
+    execution: JsonObject = {
+        "kind": "ExecutionManifest", "id": execution_id, "tenant_id": root_record["tenant_id"], "schema_version": "2.0", "created_at": created_at,
+        "environment_digest": "0" * 64, "input_hash": task_input_hash(task), "semantic_profile_hash": "0" * 64, "seed": 5,
+        "plugins": [{"plugin_id": "local-search", "version": "1", "code_sha256": "0" * 64, "config": {}, "config_sha256": identity_hash({})}],
+        "retry_policy": {"max_attempts": 3, "queue_timeout_seconds": 300, "backoff_initial_seconds": 1, "backoff_max_seconds": 30},
+    }
+    budget: JsonObject = detached(root_budget)
+    record: JsonObject = {
+        "kind": "RunRecord", "id": run_id, "tenant_id": root_record["tenant_id"], "schema_version": "2.0", "created_at": created_at,
+        "research_version_id": root_record["research_version_id"], "dataset_id": None, "type": "SEARCH", "status": "QUEUED", "revision": 0, "seed": execution["seed"],
+        "environment_digest": execution["environment_digest"], "active_attempt_id": None, "lease_generation": 0, "current_event_cursor": f"RUN:{run_id}:0",
+        "budget_usage": usage.copy(), "phase": None, "stop_reason": None, "evidence_bundle_ids": [], "child_run_ids": [], "is_root": False,
+        "budget_reservations": [], "parent_run_id": parent_run_id, "root_run_id": root_record["id"], "budget_account_id": root_record["budget_account_id"],
+        "cancel_requested_at": None, "cancellation_epoch": 0, "root_epoch_at_dispatch": 0, "input_artifact_id": str(uuid4()), "outcome_status": None,
+        "skipped_phases": [], "dispatch_stage": "SEARCH_OPEN", "diagnostic_artifact_ids": [], "research_budget_account_id": root_record["research_budget_account_id"],
+        "provenance_id": str(uuid4()), "execution_manifest_id": execution_id, "research_trace_artifact_ids": [],
     }
     return record, task, execution, budget

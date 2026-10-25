@@ -20,8 +20,14 @@ from runtime.records import TERMINAL, lock_run, public_run
 @allowed_methods(["POST"])
 @api
 def cancel_run(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
-    """重新驗 owner 與租戶分區；冪等操作在 root 鎖內檢查 revision，再交取消／恢復裁決。"""
+    """公開取消只接受根任務；對子任務回 409 並揭露授權範圍內的 root_run_id。
+
+    根路徑重新驗 owner 與租戶分區；冪等操作在 root 鎖內檢查 revision，再交取消／恢復裁決。"""
     run = run_for(actor,identity)
+    if not run.document["is_root"]:
+        root_id = UUID(run.document["root_run_id"])
+        run_for(actor,root_id)
+        raise ApiError("CHILD_RUN_NOT_CANCELLABLE",409,[{"field":"root_run_id","reason":str(root_id)}])
     if run.document["type"]!="PROFILE":
         raise ApiError("DEPENDENCY_UNAVAILABLE",503)
     binding = ProfileBinding.objects.get(run=run)

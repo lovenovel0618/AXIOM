@@ -11,6 +11,8 @@ QUEUED = "QUEUED"
 RUNNING = "RUNNING"
 CANCEL_REQUESTED = "CANCEL_REQUESTED"
 TERMINAL = {"SUCCEEDED", "FAILED", "CANCELLED"}
+ROOT_TYPES = {"INGEST", "PROFILE", "SEARCH", "FIT", "VALIDATE"}
+CHILD_TYPES = {"SEARCH", "FIT"}
 
 
 class ControlError(ValueError):
@@ -112,21 +114,22 @@ def final_bindings(record: JsonObject, task: JsonObject, execution: JsonObject) 
 
 
 def validate_bindings(record: JsonObject, task: JsonObject, execution: JsonObject, budget: JsonObject) -> None:
-    """驗 root、task、manifest、budget 的交叉身分與雜湊，僅放行目前已實作的根任務。"""
+    """驗身分、task、manifest、budget 的交叉身分與雜湊，並區分根任務與研究子任務。
+
+    根任務須自我引用且無親代；子任務只允許研究型別（SEARCH／FIT），必須有親代且引用他人為
+    root。預算帳本一律屬於根，故 `budget.root_run_id` 對子任務指向祖先而非自身。"""
     for document, filename, definition in [(record, RUNTIME_SCHEMA, "RunRecord"), (task, "task-input-v2.schema.json", None), (execution, RUNTIME_SCHEMA, "ExecutionManifest"), (budget, RUNTIME_SCHEMA, "BudgetAccount")]:
         validate(document, filename, definition)
-    if record["type"] not in {"INGEST", "PROFILE", "VALIDATE"} or not record["is_root"] or record["parent_run_id"] is not None:
+    if record["is_root"]:
+        if record["type"] not in ROOT_TYPES or record["parent_run_id"] is not None or record["root_run_id"] != record["id"]:
+            raise ValueError("Invalid root bindings")
+    elif record["type"] not in CHILD_TYPES or record["parent_run_id"] is None or record["root_run_id"] == record["id"]:
         raise ControlError("FEATURE_DISABLED")
-    expected: JsonObject = {
-        "root_run_id": record["id"], "child_run_ids": [],
-    }
-    if any(record[key] != value for key, value in expected.items()):
-        raise ValueError("Invalid root bindings")
     research_bindings(record,task,execution,budget)
     if record["type"] == "VALIDATE":
         final_bindings(record,task,execution)
     input_digest = identity_hash(task) if all(plugin["plugin_id"] == "t04-control-only" for plugin in execution["plugins"]) else task_input_hash(task)
-    pairs = [(task["run_id"], record["id"]), (task["type"], record["type"]), (execution["id"], record["execution_manifest_id"]), (task["execution_manifest_id"], execution["id"]), (execution["tenant_id"], record["tenant_id"]), (execution["environment_digest"], record["environment_digest"]), (execution["seed"], record["seed"]), (execution["input_hash"], input_digest), (budget["id"], record["budget_account_id"]), (budget["tenant_id"], record["tenant_id"]), (budget["root_run_id"], record["id"])]
+    pairs = [(task["run_id"], record["id"]), (task["type"], record["type"]), (execution["id"], record["execution_manifest_id"]), (task["execution_manifest_id"], execution["id"]), (execution["tenant_id"], record["tenant_id"]), (execution["environment_digest"], record["environment_digest"]), (execution["seed"], record["seed"]), (execution["input_hash"], input_digest), (budget["id"], record["budget_account_id"]), (budget["tenant_id"], record["tenant_id"]), (budget["root_run_id"], record["root_run_id"])]
     if any(left != right for left, right in pairs):
         raise ValueError("Input, execution or budget identity mismatch")
     policy = execution["retry_policy"]

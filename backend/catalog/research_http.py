@@ -8,7 +8,7 @@ from django.core import signing
 from django.db.models import Q
 from django.http import HttpRequest, JsonResponse
 from catalog.http import allowed_methods, api, body
-from catalog.models import Account, ProfileBinding, Research
+from catalog.models import Account, Research
 from catalog.research import available_version, create_research, create_version, page, research_dto, research_for, version_for, visible_versions
 from catalog.services import replay
 from catalog.validation import ApiError, validate_api
@@ -16,6 +16,7 @@ from catalog.research_state import document_for
 from catalog.freezing import authorized_submission, freeze_candidates
 from catalog.profile import enqueue_profile
 from runtime.contracts import project
+from runtime.models import RuntimeRun
 
 
 def paging(request: HttpRequest) -> tuple[str, int]:
@@ -131,25 +132,27 @@ def control_revision(request: HttpRequest) -> int:
 @allowed_methods(["GET"])
 @api
 def runs(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
-    """提供研究內穩定 root 分頁供重開頁找回任務；簽章 cursor 與每次租戶分區檢查缺一不可。"""
+    """研究內全部 root 與子 run 的穩定分頁，供重開頁找回任務；is_root 標示根。
+
+    以研究版本（同研究 owner）為唯一授權範圍，簽章 cursor 與每次租戶分區檢查缺一不可。"""
     version_for(actor,identity)
     cursor, limit = paging(request)
     binding = {"actor":str(actor.id),"tenant":str(actor.tenant_id),"version":str(identity)}
-    rows = ProfileBinding.objects.filter(research_version_id=identity,tenant_id=actor.tenant_id).select_related("run").order_by("-run__document__created_at","-run_id")
+    rows = RuntimeRun.objects.filter(tenant_id=actor.tenant_id,control_only=False,document__research_version_id=str(identity)).order_by("-document__created_at","-id")
     if cursor:
         try:
-            value = signing.loads(cursor,salt="axiom-profile-runs-v1",max_age=900)
+            value = signing.loads(cursor,salt="axiom-research-runs-v1",max_age=900)
             if value["binding"]!=binding:
                 raise ValueError("Cursor scope")
             created, last = value["created"], UUID(value["id"])
-            rows = rows.filter(Q(run__document__created_at__lt=created)|Q(run__document__created_at=created,run_id__lt=last))
+            rows = rows.filter(Q(document__created_at__lt=created)|Q(document__created_at=created,id__lt=last))
         except (signing.BadSignature,ValueError,TypeError,KeyError) as error:
             raise ApiError("INVALID_CURSOR",400) from error
     selected = list(rows[:limit+1])
     cursor_out = None
     if len(selected)>limit:
         last_row = selected[limit-1]
-        cursor_out = signing.dumps({"binding":binding,"created":last_row.run.document["created_at"],"id":str(last_row.run_id)},salt="axiom-profile-runs-v1")
-    result = {"items":[project(row.run.document,"Run") for row in selected[:limit]],"next_cursor":cursor_out}
+        cursor_out = signing.dumps({"binding":binding,"created":last_row.document["created_at"],"id":str(last_row.id)},salt="axiom-research-runs-v1")
+    result = {"items":[project(row.document,"Run") for row in selected[:limit]],"next_cursor":cursor_out}
     validate_api(result,"RunPage")
     return JsonResponse(result)
