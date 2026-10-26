@@ -39,7 +39,17 @@ const currentSection = computed<string>(() => {
   ) {
     return '發現'
   }
-  if (route.name === 'verification' || route.name === 'run' || route.name === 'artifact') return '驗證'
+  if (
+    route.name === 'verification' ||
+    route.name === 'verification-falsify' ||
+    route.name === 'verification-inverse' ||
+    route.name === 'verification-proof' ||
+    route.name === 'verification-graph' ||
+    route.name === 'run' ||
+    route.name === 'artifact'
+  ) {
+    return '驗證'
+  }
   if (route.name === 'memory') return '記憶'
   if (route.name === 'model') return '模型'
   if (route.name === 'training') return '訓練'
@@ -58,6 +68,10 @@ const crumb = computed<string>(() => {
   if (route.name === 'discovery-latent') return 'AXIOM / 發現 / 隱藏變數探索'
   if (route.name === 'discovery-derivation') return 'AXIOM / 發現 / 研究推演'
   if (route.name === 'verification') return 'AXIOM / 驗證 / 驗證中心'
+  if (route.name === 'verification-falsify') return 'AXIOM / 驗證 / 反例搜尋'
+  if (route.name === 'verification-inverse') return 'AXIOM / 驗證 / 逆向推導'
+  if (route.name === 'verification-proof') return 'AXIOM / 驗證 / 形式化證明'
+  if (route.name === 'verification-graph') return 'AXIOM / 驗證 / 證據關聯圖'
   if (route.name === 'memory') return 'AXIOM / 記憶 / 知識與記錄'
   if (route.name === 'model') return 'AXIOM / 模型 / 模型管理'
   if (route.name === 'training') return 'AXIOM / 訓練 / 訓練中心'

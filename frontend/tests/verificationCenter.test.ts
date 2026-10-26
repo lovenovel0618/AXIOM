@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import type { Artifact } from '../src/api/artifacts'
 import type { ResearchPage, ResearchVersion, ResearchVersionPage, RunPage } from '../src/api/research'
 import type { Run } from '../src/api/runs'
 import type { FinalEvaluation } from '../src/lib/finalEvaluation'
 import type { ValidationRun } from '../src/lib/evaluation'
+import { buildEvidenceMatrix } from '../src/lib/verificationCenter'
 import { loadVerificationCenter } from '../src/lib/verificationCenter'
 
 function version(): ResearchVersion {
@@ -135,6 +137,20 @@ const validation: ValidationRun = {
   createdAt: '2026-10-26T03:00:00Z',
 }
 
+const artifact: Artifact = {
+  kind: 'Artifact',
+  id: 'artifact-1',
+  tenant_id: 'tenant-1',
+  created_at: '2026-10-26T04:00:00Z',
+  artifact_uri: 's3://axiom/artifact-1',
+  sha256: 'd'.repeat(64),
+  status: 'AVAILABLE',
+  owner_id: 'owner-1',
+  size_bytes: 1024,
+  media_type: 'application/json',
+  access_class: 'PROJECT',
+}
+
 describe('loadVerificationCenter', () => {
   it('builds evidence and submission rows from recent versions', async () => {
     const center = await loadVerificationCenter({
@@ -147,10 +163,73 @@ describe('loadVerificationCenter', () => {
       listResearchVersionRuns: async () => ({ items: [run()], next_cursor: null } satisfies RunPage),
       getFinalEvaluation: async () => finalEvaluation,
       getValidationRun: async () => validation,
+      getEvidenceBundle: async () => ({
+        kind: 'EvidenceBundle',
+        id: 'bundle-1',
+        research_version_id: 'version-1',
+        status: 'ACTIVE',
+        revision: 1,
+        validation_ids: ['validation-1'],
+        proof_artifact_ids: ['artifact-1'],
+      }),
+      getQualityReport: async () => ({
+        kind: 'QualityReport',
+        quality: 'PASS',
+        readiness: 'READY',
+        remaining: [],
+        fit_summary: null,
+      }),
+      getArtifact: async () => artifact,
     })
 
     expect(center.metrics.find((row) => row.label === '已評估提交')?.value).toBe('1')
     expect(center.evidenceRows).toHaveLength(1)
     expect(center.submissionRows[0]?.validations[0]?.outcome).toBe('SUPPORTED')
+    expect(center.evidenceItems[0]?.bundles[0]?.validationIds).toEqual(['validation-1'])
+    expect(center.evidenceItems[0]?.qualityReport?.quality).toBe('PASS')
+    expect(center.proofArtifacts['artifact-1']?.status).toBe('AVAILABLE')
+  })
+
+  it('keeps unreadable evidence empty instead of guessing', async () => {
+    const center = await loadVerificationCenter({
+      listResearches: async () =>
+        ({
+          items: [{ kind: 'Research', id: 'research-1', tenant_id: 'tenant-1', schema_version: '2.0', created_at: '2026-10-26T00:00:00Z', name: 'sin', owner_id: 'owner-1' }],
+          next_cursor: null,
+        }) satisfies ResearchPage,
+      listResearchVersions: async () => ({ items: [version()], next_cursor: null } satisfies ResearchVersionPage),
+      listResearchVersionRuns: async () => ({ items: [], next_cursor: null } satisfies RunPage),
+      getFinalEvaluation: async () => null,
+      getValidationRun: async () => null,
+      getEvidenceBundle: async () => {
+        throw new Error('boom')
+      },
+      getQualityReport: async () => {
+        throw new Error('boom')
+      },
+      getArtifact: async () => {
+        throw new Error('boom')
+      },
+    })
+
+    expect(center.evidenceItems[0]?.bundles).toHaveLength(0)
+    expect(center.evidenceItems[0]?.qualityReport).toBeNull()
+    expect(center.evidenceItems[0]?.unreadable).toBe(true)
+    expect(Object.keys(center.proofArtifacts)).toHaveLength(0)
+  })
+
+  it('marks missing split roles on the evidence matrix', () => {
+    const matrix = buildEvidenceMatrix([
+      {
+        research: null,
+        version: version(),
+        submissionId: 'submission-1',
+        finalEvaluation: finalEvaluation,
+        validations: [validation],
+      },
+    ])
+
+    expect(matrix[0]?.cells[0]?.splitRole).toBe('FINAL_TEST')
+    expect(matrix[0]?.missingRoles).toEqual(['FIT', 'DEVELOPMENT'])
   })
 })

@@ -22,6 +22,10 @@ import ResearchListView from './views/ResearchListView.vue'
 import ResearchView from './views/ResearchView.vue'
 import SettingsView from './views/SettingsView.vue'
 import TrainingView from './views/TrainingView.vue'
+import VerificationFalsifyView from './views/VerificationFalsifyView.vue'
+import VerificationGraphView from './views/VerificationGraphView.vue'
+import VerificationInverseView from './views/VerificationInverseView.vue'
+import VerificationProofView from './views/VerificationProofView.vue'
 import VerificationView from './views/VerificationView.vue'
 
 const routes: RouteRecordRaw[] = [
@@ -42,6 +46,10 @@ const routes: RouteRecordRaw[] = [
   { path: '/discoveries/derivation', name: 'discovery-derivation', component: DiscoveryDerivationView },
   { path: '/candidates/:id', name: 'candidate', component: CandidateDetailView },
   { path: '/verification', name: 'verification', component: VerificationView },
+  { path: '/verification/falsify', name: 'verification-falsify', component: VerificationFalsifyView },
+  { path: '/verification/inverse', name: 'verification-inverse', component: VerificationInverseView },
+  { path: '/verification/proof', name: 'verification-proof', component: VerificationProofView },
+  { path: '/verification/graph', name: 'verification-graph', component: VerificationGraphView },
   { path: '/memory', name: 'memory', component: MemoryView },
   { path: '/models', name: 'model', component: ModelView },
   { path: '/training', name: 'training', component: TrainingView },

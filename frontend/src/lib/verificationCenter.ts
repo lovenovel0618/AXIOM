@@ -1,7 +1,21 @@
+import type { Artifact } from '../api/artifacts'
 import type { Research, ResearchPage, ResearchVersion, ResearchVersionPage, RunPage } from '../api/research'
 import type { Run } from '../api/runs'
 import type { FinalEvaluation } from './finalEvaluation'
-import type { ValidationRun } from './evaluation'
+import { parseEvidenceBundle, parseQualityReport, type EvidenceBundle, type QualityReport } from './evidence'
+import type { EmpiricalLevel, OutcomeStatus, ProofLevel, SplitRole, ValidationRun } from './evaluation'
+
+/** 後端未回報的欄位一律顯示這個字串，不以 0 或推測值代替。 */
+export const VERIFICATION_UNKNOWN = '未取得'
+
+/** 誤差與證據矩陣的固定欄序；缺欄以「未取得」呈現，不省略。 */
+export const SPLIT_ROLES: readonly SplitRole[] = ['FIT', 'DEVELOPMENT', 'FINAL_TEST']
+
+export const SPLIT_ROLE_LABELS: Record<SplitRole, string> = {
+  FIT: 'fit',
+  DEVELOPMENT: 'development',
+  FINAL_TEST: 'final_test',
+}
 
 export interface VerificationMetric {
   label: string
@@ -23,11 +37,24 @@ export interface VerificationSubmissionRow {
   validations: ValidationRun[]
 }
 
+/** 一個研究版本的證據面：證據包與品質報告都只保留契約可解析的內容。 */
+export interface VerificationEvidenceItem {
+  research: Research | null
+  version: ResearchVersion
+  bundles: EvidenceBundle[]
+  qualityReport: QualityReport | null
+  /** 版本宣告了證據包或品質報告，但沒有任何一份可解析。 */
+  unreadable: boolean
+}
+
 export interface VerificationCenter {
   metrics: VerificationMetric[]
   runs: Run[]
   evidenceRows: VerificationEvidenceRow[]
   submissionRows: VerificationSubmissionRow[]
+  evidenceItems: VerificationEvidenceItem[]
+  /** 證明產物的 metadata；抓不到的識別碼不會出現在這裡，由畫面顯示「未取得」。 */
+  proofArtifacts: Record<string, Artifact>
 }
 
 export interface VerificationDeps {
@@ -36,6 +63,9 @@ export interface VerificationDeps {
   listResearchVersionRuns: (versionId: string, limit: number) => Promise<RunPage>
   getFinalEvaluation: (submissionId: string) => Promise<FinalEvaluation | null>
   getValidationRun: (validationId: string) => Promise<ValidationRun | null>
+  getEvidenceBundle: (bundleId: string) => Promise<unknown>
+  getQualityReport: (artifactId: string) => Promise<unknown>
+  getArtifact: (artifactId: string) => Promise<Artifact>
 }
 
 function desc(left: string, right: string): number {
@@ -112,6 +142,40 @@ export async function loadVerificationCenter(deps: VerificationDeps): Promise<Ve
   const failedRuns = runs.filter((row) => row.status === 'FAILED').length
   const successfulEvaluations = submissionRows.filter((row) => row.finalEvaluation?.status === 'EVALUATED').length
 
+  const evidenceItems: VerificationEvidenceItem[] = []
+  const proofArtifactIds = new Set<string>()
+
+  for (const version of recentVersions) {
+    if (version.evidence_bundle_ids.length === 0 && version.quality_report_id === null) continue
+    const research = researches.find((row) => row.id === version.research_id) ?? null
+    const bundles: EvidenceBundle[] = []
+    for (const bundleId of version.evidence_bundle_ids) {
+      const parsed = await safe(deps.getEvidenceBundle(bundleId).then(parseEvidenceBundle), null)
+      if (parsed === null) continue
+      bundles.push(parsed)
+      for (const artifactId of parsed.proofArtifactIds) proofArtifactIds.add(artifactId)
+    }
+    const qualityReport =
+      version.quality_report_id === null
+        ? null
+        : await safe(deps.getQualityReport(version.quality_report_id).then(parseQualityReport), null)
+    evidenceItems.push({
+      research,
+      version,
+      bundles,
+      qualityReport,
+      unreadable: bundles.length === 0 && qualityReport === null,
+    })
+  }
+
+  const proofArtifacts: Record<string, Artifact> = {}
+  await Promise.all(
+    [...proofArtifactIds].map(async (artifactId) => {
+      const artifact = await safe(deps.getArtifact(artifactId), null)
+      if (artifact !== null) proofArtifacts[artifactId] = artifact
+    }),
+  )
+
   return {
     metrics: [
       {
@@ -142,5 +206,54 @@ export async function loadVerificationCenter(deps: VerificationDeps): Promise<Ve
     runs,
     evidenceRows,
     submissionRows,
+    evidenceItems,
+    proofArtifacts,
   }
+}
+
+export interface VerificationMatrixCell {
+  validationId: string
+  splitRole: SplitRole
+  outcome: OutcomeStatus
+  empiricalLevel: EmpiricalLevel
+  proofLevel: ProofLevel
+  mae: number | null
+  rmse: number | null
+  validCoverage: number
+}
+
+export interface VerificationMatrixRow {
+  submissionId: string
+  researchName: string
+  versionId: string
+  cells: VerificationMatrixCell[]
+  /** 沒有任何 validation run 的切分角色；必須在矩陣上明示缺欄。 */
+  missingRoles: SplitRole[]
+}
+
+/**
+ * 多面向證據矩陣：只依已讀到的 validation run 建立，每個 submission 一列、切分角色為欄。
+ * 沒有 validation run 的角色列為缺欄，不以 0 或合成值補上。
+ */
+export function buildEvidenceMatrix(rows: VerificationSubmissionRow[]): VerificationMatrixRow[] {
+  return rows.map((row) => {
+    const cells: VerificationMatrixCell[] = row.validations.map((validation) => ({
+      validationId: validation.id,
+      splitRole: validation.splitRole,
+      outcome: validation.outcome,
+      empiricalLevel: validation.empiricalLevel,
+      proofLevel: validation.proofLevel,
+      mae: validation.mae,
+      rmse: validation.rmse,
+      validCoverage: validation.validCoverage,
+    }))
+    const present = new Set(cells.map((cell) => cell.splitRole))
+    return {
+      submissionId: row.submissionId,
+      researchName: row.research?.name ?? '未命名研究',
+      versionId: row.version.id,
+      cells,
+      missingRoles: SPLIT_ROLES.filter((role) => !present.has(role)),
+    }
+  })
 }
