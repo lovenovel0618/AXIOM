@@ -1,67 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
-import { listRunCandidates } from '../api/candidates'
-import { listDatasets, listVersions } from '../api/datasets'
-import { listResearchVersionRuns, listResearchVersions, listResearches } from '../api/research'
-import { checkReadiness } from '../health'
-import { loadModuleDashboard, type ModuleDashboard, type ModuleName } from '../lib/moduleDashboard'
-import { describeError } from '../lib/messages'
-import { client } from '../lib/session'
+import { onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
+import { useModulePage } from '../lib/useModulePage'
 
-const route = useRoute()
-const dashboard = ref<ModuleDashboard | null>(null)
-const loading = ref(false)
-const error = ref('')
-
-const moduleName = computed<ModuleName>(() => {
-  const name = typeof route.name === 'string' ? route.name : 'overview'
-  switch (name) {
-    case 'overview':
-    case 'discoveries':
-    case 'verification':
-    case 'memory':
-    case 'model':
-    case 'training':
-    case 'settings':
-      return name
-    default:
-      return 'overview'
-  }
-})
-
-async function load(): Promise<void> {
-  loading.value = true
-  error.value = ''
-  try {
-    dashboard.value = await loadModuleDashboard(moduleName.value, {
-      checkReadiness: () => checkReadiness(),
-      listResearches: (limit) => listResearches(client, limit),
-      listResearchVersions: (researchId, limit) => listResearchVersions(client, researchId, limit),
-      listResearchVersionRuns: (versionId, limit) => listResearchVersionRuns(client, versionId, limit),
-      listDatasets: (limit) => listDatasets(client, '', limit),
-      listVersions: (datasetId, limit) => listVersions(client, datasetId, limit),
-      listRunCandidates: (runId, limit) => listRunCandidates(client, runId, { limit }),
-    })
-  } catch (cause) {
-    dashboard.value = null
-    error.value = describeError(cause)
-  } finally {
-    loading.value = false
-  }
-}
+const { dashboard, loading, error, load } = useModulePage('overview')
 
 onMounted(load)
-watch(moduleName, async () => {
-  await load()
-})
 </script>
 
 <template>
   <section>
     <div v-if="dashboard !== null" class="head">
       <div>
-        <div class="eyebrow">{{ dashboard.section }} / MODULE</div>
+        <div class="eyebrow">{{ dashboard.section }} / CONTROL</div>
         <h1>{{ dashboard.title }}</h1>
         <p class="muted">{{ dashboard.summary }}</p>
       </div>
@@ -92,7 +43,7 @@ watch(moduleName, async () => {
             <RouterLink
               v-for="item in list.items"
               :key="`${list.title}:${item.title}:${item.subtitle}`"
-              :to="item.to ?? { name: moduleName }"
+              :to="item.to ?? { name: 'overview' }"
               class="module-link"
             >
               <div>
@@ -105,8 +56,8 @@ watch(moduleName, async () => {
         </section>
       </div>
 
-      <section class="card module-note">
-        <h3>目前邊界</h3>
+      <section class="card note-card">
+        <h3>控制台邊界</h3>
         <p>{{ dashboard.note }}</p>
       </section>
     </template>
@@ -151,7 +102,7 @@ watch(moduleName, async () => {
   background: #132842;
 }
 
-.module-note {
+.note-card {
   margin-top: 16px;
 }
 
