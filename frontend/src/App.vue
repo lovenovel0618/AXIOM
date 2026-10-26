@@ -38,7 +38,14 @@ const currentSection = computed<string>(() => {
   ) {
     return '數據'
   }
-  if (route.name === 'research-list' || route.name === 'research-create' || route.name === 'research-workbench') {
+  if (
+    route.name === 'research-list' ||
+    route.name === 'research-create' ||
+    route.name === 'research-workbench' ||
+    route.name === 'research-detail' ||
+    route.name === 'research-graph' ||
+    route.name === 'research-timeline'
+  ) {
     return '研究'
   }
   if (
@@ -123,6 +130,9 @@ const crumb = computed<string>(() => {
   if (route.name === 'research-list') return 'AXIOM / 研究 / 研究清單'
   if (route.name === 'research-create') return 'AXIOM / 研究 / 新建研究'
   if (route.name === 'research-workbench') return 'AXIOM / 研究 / 研究工作台'
+  if (route.name === 'research-detail') return 'AXIOM / 研究 / 研究詳情'
+  if (route.name === 'research-graph') return 'AXIOM / 研究 / 研究分支圖'
+  if (route.name === 'research-timeline') return 'AXIOM / 研究 / 研究任務紀錄'
   if (route.name === 'artifact') return 'AXIOM / 驗證 / 產物詳情'
   return 'AXIOM'
 })

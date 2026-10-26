@@ -30,7 +30,10 @@ import DataPreviewView from './views/DataPreviewView.vue'
 import DataQualityView from './views/DataQualityView.vue'
 import DataUploadView from './views/DataUploadView.vue'
 import ResearchCreateView from './views/ResearchCreateView.vue'
+import ResearchGraphView from './views/ResearchGraphView.vue'
 import ResearchListView from './views/ResearchListView.vue'
+import ResearchProfileView from './views/ResearchProfileView.vue'
+import ResearchTimelineView from './views/ResearchTimelineView.vue'
 import ResearchView from './views/ResearchView.vue'
 import SettingsResearchView from './views/SettingsResearchView.vue'
 import SettingsSecurityView from './views/SettingsSecurityView.vue'
@@ -60,6 +63,9 @@ const routes: RouteRecordRaw[] = [
   { path: '/researches', name: 'research-list', component: ResearchListView },
   { path: '/researches/new', name: 'research-create', component: ResearchCreateView },
   { path: '/researches/:id', name: 'research-workbench', component: ResearchView },
+  { path: '/researches/:id/detail', name: 'research-detail', component: ResearchProfileView },
+  { path: '/researches/:id/graph', name: 'research-graph', component: ResearchGraphView },
+  { path: '/researches/:id/timeline', name: 'research-timeline', component: ResearchTimelineView },
   { path: '/discoveries', name: 'discoveries', component: DiscoveryCatalogView },
   { path: '/discoveries/compare', name: 'discovery-compare', component: DiscoveryCompareView },
   { path: '/discoveries/latent', name: 'discovery-latent', component: DiscoveryLatentView },
