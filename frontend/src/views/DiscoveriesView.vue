@@ -24,6 +24,17 @@ const details = ref<CandidateDetailBundle>({ equations: {}, fits: {} })
 const selectedRun = computed(() => center.value?.searchRuns.find((row) => row.run.id === selectedRunId.value) ?? null)
 const selectedCandidates = computed(() => selectedRun.value?.candidates ?? [])
 const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
+const workbenchCandidateQuery = computed<Record<string, string> | null>(() => {
+  const current = selectedRun.value
+  if (current === null || current.research === null || current.version === null) return null
+  const focusIds = pinned.value.length === 0 ? current.candidates.map((candidate) => candidate.id) : pinned.value
+  return withBackRef(route.fullPath, {
+    version: current.version.id,
+    flowkind: 'CANDIDATE',
+    focuscandidates: focusIds.join(','),
+    node: focusIds[0] === undefined ? undefined : `candidate:${focusIds[0]}`,
+  })
+})
 
 async function load(): Promise<void> {
   loading.value = true
@@ -174,7 +185,11 @@ watch(
               <span>研究入口</span>
               <RouterLink
                 v-if="selectedRun.research !== null"
-                :to="{ name: 'researches', params: { id: selectedRun.research.id }, query: withBackRef(route.fullPath, { version: selectedRun.version?.id ?? '' }) }"
+                :to="{
+                  name: 'researches',
+                  params: { id: selectedRun.research.id },
+                  query: workbenchCandidateQuery ?? withBackRef(route.fullPath, { version: selectedRun.version?.id ?? '' }),
+                }"
               >
                 <span class="tag">打開工作台</span>
               </RouterLink>

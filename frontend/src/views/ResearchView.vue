@@ -66,6 +66,7 @@ const selectedResearch = ref<Research | null>(null)
 const selectedVersionId = ref('')
 const selectedNodeId = ref<string | null>(readQueryString(route.query, 'node') || null)
 const backRef = computed(() => readBackRef(route.query))
+const focusCandidateIds = ref<string[]>(readQueryList(route.query, 'focuscandidates'))
 const focusSubmissionIds = ref<string[]>(readQueryList(route.query, 'focussubmissions'))
 const flowKindFilter = ref<'ALL' | FlowNodeKind>(
   (['ALL', 'DATASET', 'VERSION', 'RUN', 'EVIDENCE', 'CANDIDATE', 'SUBMISSION', 'VALIDATION'] as const).includes(
@@ -149,13 +150,22 @@ const visibleCandidateCollections = computed(() =>
 const visibleSubmissionCollection = computed(() =>
   displayGraph.value === null ? null : collectSubmissionCollectionLink(displayGraph.value.nodes),
 )
+const focusedCandidateNodeIds = computed(() =>
+  displayGraph.value === null ? [] : findNodeIdsByRecordValues(displayGraph.value.nodes, '候選識別碼', focusCandidateIds.value),
+)
 const focusedSubmissionNodeIds = computed(() =>
   displayGraph.value === null ? [] : findNodeIdsByRecordValues(displayGraph.value.nodes, '提交識別碼', focusSubmissionIds.value),
 )
 const flowHighlightIds = computed(() =>
   displayGraph.value === null
     ? []
-    : [...new Set([...highlightFlowNodes(displayGraph.value, selectedNodeId.value), ...focusedSubmissionNodeIds.value])],
+    : [
+        ...new Set([
+          ...highlightFlowNodes(displayGraph.value, selectedNodeId.value),
+          ...focusedCandidateNodeIds.value,
+          ...focusedSubmissionNodeIds.value,
+        ]),
+      ],
 )
 
 const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
@@ -400,6 +410,8 @@ function resolveSelectedNodeId(next: FlowGraph | null): string | null {
   if (next === null || next.nodes.length === 0) return null
   const requested = readQueryString(route.query, 'node')
   if (requested !== '' && next.nodes.some((node) => node.id === requested)) return requested
+  const focusedCandidate = findNodeIdsByRecordValues(next.nodes, '候選識別碼', focusCandidateIds.value)[0]
+  if (focusedCandidate !== undefined) return focusedCandidate
   const focused = findNodeIdsByRecordValues(next.nodes, '提交識別碼', focusSubmissionIds.value)[0]
   if (focused !== undefined) return focused
   if (selectedNodeId.value !== null && next.nodes.some((node) => node.id === selectedNodeId.value)) {
@@ -452,6 +464,7 @@ watch(
 watch(
   () => route.query,
   () => {
+    focusCandidateIds.value = readQueryList(route.query, 'focuscandidates')
     focusSubmissionIds.value = readQueryList(route.query, 'focussubmissions')
     flowKindFilter.value =
       (['ALL', 'DATASET', 'VERSION', 'RUN', 'EVIDENCE', 'CANDIDATE', 'SUBMISSION', 'VALIDATION'] as const).includes(
@@ -719,6 +732,9 @@ watch(displayGraph, (next) => {
                 清空流程篩選
               </button>
               <span class="tag">{{ displayGraph?.nodes.length ?? 0 }} / {{ graph?.nodes.length ?? 0 }} 節點</span>
+            </div>
+            <div v-if="focusCandidateIds.length !== 0" class="note" style="margin-bottom: 12px;">
+              目前高亮從發現頁帶回的 {{ focusedCandidateNodeIds.length }} / {{ focusCandidateIds.length }} 個候選節點。
             </div>
             <div v-if="focusSubmissionIds.length !== 0" class="note" style="margin-bottom: 12px;">
               目前高亮從驗證頁帶回的 {{ focusedSubmissionNodeIds.length }} / {{ focusSubmissionIds.length }} 個提交節點。

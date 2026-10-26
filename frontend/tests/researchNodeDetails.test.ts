@@ -128,6 +128,11 @@ describe('researchNodeDetails', () => {
     const ids = findNodeIdsByRecordValues(
       [
         node({
+          id: 'candidate:cand-1',
+          kind: 'CANDIDATE',
+          records: [{ label: '候選識別碼', value: 'cand-1' }],
+        }),
+        node({
           id: 'submission:sub-1',
           kind: 'SUBMISSION',
           records: [{ label: '提交識別碼', value: 'sub-1' }],
@@ -138,10 +143,10 @@ describe('researchNodeDetails', () => {
           records: [{ label: '提交識別碼', value: 'sub-2' }],
         }),
       ],
-      '提交識別碼',
-      ['sub-2'],
+      '候選識別碼',
+      ['cand-1'],
     )
-    expect(ids).toEqual(['submission:sub-2'])
+    expect(ids).toEqual(['candidate:cand-1'])
   })
 
   it('summarizes large payloads', () => {
