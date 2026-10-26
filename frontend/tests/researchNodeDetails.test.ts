@@ -5,6 +5,7 @@ import {
   buildNodeActionLinks,
   collectCandidateCollectionLinks,
   collectSubmissionCollectionLink,
+  findNodeIdsByRecordValues,
   groupNodeArtifacts,
   groupNodeEvents,
   recentNodeEvents,
@@ -121,6 +122,26 @@ describe('researchNodeDetails', () => {
       }),
     ])
     expect(link?.submissionIds).toEqual(['sub-1', 'sub-2'])
+  })
+
+  it('finds node ids by record values', () => {
+    const ids = findNodeIdsByRecordValues(
+      [
+        node({
+          id: 'submission:sub-1',
+          kind: 'SUBMISSION',
+          records: [{ label: '提交識別碼', value: 'sub-1' }],
+        }),
+        node({
+          id: 'submission:sub-2',
+          kind: 'SUBMISSION',
+          records: [{ label: '提交識別碼', value: 'sub-2' }],
+        }),
+      ],
+      '提交識別碼',
+      ['sub-2'],
+    )
+    expect(ids).toEqual(['submission:sub-2'])
   })
 
   it('summarizes large payloads', () => {

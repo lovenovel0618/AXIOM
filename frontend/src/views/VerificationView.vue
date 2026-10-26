@@ -30,6 +30,16 @@ const selectedSubmission = computed(
   () => visibleSubmissionRows.value.find((row) => row.submissionId === selectedSubmissionId.value) ?? null,
 )
 const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
+const workbenchSubmissionQuery = computed<Record<string, string> | null>(() => {
+  const row = selectedSubmission.value
+  if (row === null) return null
+  return withBackRef(route.fullPath, {
+    version: row.version.id,
+    flowkind: 'SUBMISSION',
+    focussubmissions: visibleSubmissionRows.value.map((entry) => entry.submissionId).join(','),
+    node: `submission:${row.submissionId}`,
+  })
+})
 
 async function load(): Promise<void> {
   loading.value = true
@@ -222,7 +232,13 @@ watch(visibleSubmissionRows, (rows) => {
                 <span class="tag">{{ selectedSubmission.finalEvaluation?.slots.length ?? 0 }}</span>
               </div>
               <div class="actions" style="margin: 12px 0 16px;">
-                <RouterLink :to="{ name: 'researches', params: { id: selectedSubmission.version.research_id }, query: withBackRef(route.fullPath, { version: selectedSubmission.version.id }) }">
+                <RouterLink
+                  :to="{
+                    name: 'researches',
+                    params: { id: selectedSubmission.version.research_id },
+                    query: workbenchSubmissionQuery ?? withBackRef(route.fullPath, { version: selectedSubmission.version.id }),
+                  }"
+                >
                   <button type="button">打開工作台</button>
                 </RouterLink>
               </div>

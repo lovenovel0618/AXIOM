@@ -159,3 +159,14 @@ export function collectSubmissionCollectionLink(nodes: FlowNode[]): SubmissionCo
     label: submissionIds.length === 1 ? '1 個提交節點' : `${submissionIds.length} 個提交節點`,
   }
 }
+
+export function findNodeIdsByRecordValues(nodes: FlowNode[], label: string, values: string[]): string[] {
+  if (values.length === 0) return []
+  const expected = new Set(values)
+  return nodes
+    .filter((node) => {
+      const value = recordValue(node.records, label)
+      return value !== null && expected.has(value)
+    })
+    .map((node) => node.id)
+}
