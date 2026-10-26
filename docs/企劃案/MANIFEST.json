@@ -138,13 +138,13 @@
     },
     {
       "path": "08-前端UX/23-頁面清單與資訊架構.md",
-      "bytes": 2089,
-      "sha256": "317613514bc7ee2ba451651a991fffcfb1f7bc0ab818a769d9e7f1b31650a866"
+      "bytes": 2774,
+      "sha256": "7e469140acbb60446e91f11f4614cfd1ea0e585ae6839e3dea1bc67186b77b5e"
     },
     {
       "path": "08-前端UX/24-畫面線框與互動流程.md",
-      "bytes": 4020,
-      "sha256": "380715ed8de2ee6c80689bd50e9c7a12d46addc3ac1b42319d843c0e83517cb0"
+      "bytes": 9880,
+      "sha256": "ac949db3aca3018bbdc10be6b633b5ec050dd6368e9b26449b3d6bf2c72861b6"
     },
     {
       "path": "09-非功能/25-效能與成本治理.md",
@@ -233,8 +233,8 @@
     },
     {
       "path": "13-專題深化/44-研究工作台畫面詳細規格.md",
-      "bytes": 9918,
-      "sha256": "dbea9b66c60d9fcb6da535cf87a3636169ac68dcd0d4d64328bd1083389bcb2c"
+      "bytes": 12030,
+      "sha256": "42dfe9044a187de95f0c5777c985fb010cb41489722e7b5a53a1a638328a8369"
     },
     {
       "path": "13-專題深化/45-非功能SLO與壓測方案.md",
@@ -244,7 +244,7 @@
     {
       "path": "13-專題深化/46-驗收矩陣與交付證據.md",
       "bytes": 15276,
-      "sha256": "32212d9f1ba3dee88def8f04845c326f80fa4243f4353e5012e344d75ac414b3"
+      "sha256": "5a9217a317821f73d8898c0c26bd6b7b0abfa3407663ba5b50ded4c9dbc9a791"
     },
     {
       "path": "13-專題深化/47-完整研究物件契約.md",

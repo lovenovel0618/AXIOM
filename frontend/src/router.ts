@@ -8,6 +8,7 @@ import MemoryView from './views/MemoryView.vue'
 import ModelView from './views/ModelView.vue'
 import OverviewView from './views/OverviewView.vue'
 import RunView from './views/RunView.vue'
+import DatasetDetailView from './views/DatasetDetailView.vue'
 import DatasetsView from './views/DatasetsView.vue'
 import ResearchView from './views/ResearchView.vue'
 import SettingsView from './views/SettingsView.vue'
@@ -19,6 +20,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/login', name: 'login', component: LoginView },
   { path: '/overview', name: 'overview', component: OverviewView },
   { path: '/datasets', name: 'datasets', component: DatasetsView },
+  { path: '/datasets/:id', name: 'dataset', component: DatasetDetailView },
   { path: '/researches/:id?', name: 'researches', component: ResearchView },
   { path: '/discoveries', name: 'discoveries', component: DiscoveriesView },
   { path: '/verification', name: 'verification', component: VerificationView },
