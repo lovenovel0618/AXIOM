@@ -1,0 +1,85 @@
+import { describe, expect, it } from 'vitest'
+import type { RunEventEnvelope } from '../src/lib/events'
+import type { FlowNode } from '../src/lib/flow'
+import {
+  buildNodeActionLinks,
+  groupNodeArtifacts,
+  groupNodeEvents,
+  recentNodeEvents,
+  summarizeEventPayload,
+} from '../src/lib/researchNodeDetails'
+
+const event = (sequence: number, event_type: string, occurred_at: string): RunEventEnvelope => ({
+  event_id: `${event_type}-${sequence}`,
+  event_type,
+  sequence,
+  occurred_at,
+  run_id: 'run-1',
+  stream_scope: 'RUN',
+  payload: { value: sequence },
+})
+
+const node = (overrides: Partial<FlowNode> = {}): FlowNode => ({
+  id: 'candidate:cand-1',
+  kind: 'CANDIDATE',
+  column: 4,
+  row: 0,
+  title: '候選 #1',
+  subtitle: 'POLYNOMIAL',
+  badge: 'PENDING',
+  tone: 'RUNNING',
+  records: [
+    { label: '候選識別碼', value: 'cand-1' },
+    { label: '所屬搜尋任務', value: 'run-search-1' },
+  ],
+  artifacts: [],
+  events: [],
+  runId: null,
+  ...overrides,
+})
+
+describe('researchNodeDetails', () => {
+  it('groups artifacts by label', () => {
+    const groups = groupNodeArtifacts([
+      { id: 'a1', label: '證據包' },
+      { id: 'a2', label: '證據包' },
+      { id: 'a3', label: '品質報告產物' },
+    ])
+    expect(groups).toHaveLength(2)
+    expect(groups[0]?.items).toHaveLength(2)
+  })
+
+  it('groups events by type and sorts by latest time', () => {
+    const groups = groupNodeEvents([
+      event(1, 'RUN_STARTED', '2026-10-26T00:00:00Z'),
+      event(2, 'RUN_PROGRESS', '2026-10-26T00:01:00Z'),
+      event(3, 'RUN_PROGRESS', '2026-10-26T00:02:00Z'),
+    ])
+    expect(groups[0]?.type).toBe('RUN_PROGRESS')
+    expect(groups[0]?.count).toBe(2)
+  })
+
+  it('returns recent events in descending sequence order', () => {
+    const rows = recentNodeEvents([event(1, 'A', 'a'), event(3, 'C', 'c'), event(2, 'B', 'b')], 2)
+    expect(rows.map((row) => row.sequence)).toEqual([3, 2])
+  })
+
+  it('builds candidate and submission shortcuts', () => {
+    const candidateActions = buildNodeActionLinks(node(), (extra) => ({ ref: '/researches/r1', ...(extra ?? {}) }))
+    expect(candidateActions.map((row) => row.label)).toContain('回到發現頁')
+
+    const submissionActions = buildNodeActionLinks(
+      node({
+        id: 'submission:sub-1',
+        kind: 'SUBMISSION',
+        records: [{ label: '提交識別碼', value: 'sub-1' }],
+      }),
+      (extra) => ({ ref: '/researches/r1', ...(extra ?? {}) }),
+    )
+    expect(submissionActions.map((row) => row.label)).toContain('前往驗證頁')
+  })
+
+  it('summarizes large payloads', () => {
+    expect(summarizeEventPayload({ text: 'x'.repeat(400) })).toContain('...')
+  })
+})

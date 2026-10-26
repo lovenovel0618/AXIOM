@@ -25,6 +25,13 @@ import { parseFinalEvaluation, type FinalEvaluation } from '../lib/finalEvaluati
 import { buildFlow, type FlowGraph, type FlowNode } from '../lib/flow'
 import { describeError } from '../lib/messages'
 import { readBackRef, withBackRef } from '../lib/navigationState'
+import {
+  buildNodeActionLinks,
+  groupNodeArtifacts,
+  groupNodeEvents,
+  recentNodeEvents,
+  summarizeEventPayload,
+} from '../lib/researchNodeDetails'
 import { client } from '../lib/session'
 
 const route = useRoute()
@@ -91,6 +98,20 @@ const selectedNode = computed<FlowNode | null>(() => {
   if (current === null) return null
   return current.nodes.find((node) => node.id === selectedNodeId.value) ?? current.nodes[0] ?? null
 })
+const selectedNodeArtifactGroups = computed(() =>
+  selectedNode.value === null ? [] : groupNodeArtifacts(selectedNode.value.artifacts),
+)
+const selectedNodeEventGroups = computed(() =>
+  selectedNode.value === null ? [] : groupNodeEvents(selectedNode.value.events),
+)
+const selectedNodeRecentEvents = computed(() =>
+  selectedNode.value === null ? [] : recentNodeEvents(selectedNode.value.events, 8),
+)
+const selectedNodeActions = computed(() =>
+  selectedNode.value === null
+    ? []
+    : buildNodeActionLinks(selectedNode.value, (extra) => withBackRef(route.fullPath, extra)),
+)
 
 const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
 
@@ -313,6 +334,10 @@ function openResearch(row: Research): void {
 
 function selectNode(id: string): void {
   selectedNodeId.value = id
+}
+
+function summarizeNodePayload(payload: Record<string, unknown>): string {
+  return summarizeEventPayload(payload)
 }
 
 onMounted(async () => {
@@ -601,9 +626,13 @@ watch(graph, (next) => {
               <span>摘要</span>
               <span>{{ selectedNode.subtitle }}</span>
             </div>
-            <div v-if="selectedNode.runId !== null" class="actions" style="margin: 14px 0;">
-              <RouterLink :to="{ name: 'run', params: { id: selectedNode.runId }, query: backQuery }">
-                <button type="button">查看任務詳情</button>
+            <div v-if="selectedNodeActions.length !== 0" class="actions wrap" style="margin: 14px 0;">
+              <RouterLink
+                v-for="action in selectedNodeActions"
+                :key="`${selectedNode.id}:${action.label}`"
+                :to="action.to"
+              >
+                <button type="button">{{ action.label }}</button>
               </RouterLink>
             </div>
 
@@ -625,22 +654,53 @@ watch(graph, (next) => {
               <span>事件數</span>
               <span class="tag">{{ selectedNode.events.length }}</span>
             </div>
-            <div v-if="selectedNode.artifacts.length !== 0" class="artifact-list">
-              <RouterLink
-                v-for="artifact in selectedNode.artifacts"
-                :key="artifact.id"
-                :to="{ name: 'artifact', params: { id: artifact.id }, query: backQuery }"
-                class="artifact-link"
+            <div v-if="selectedNodeArtifactGroups.length !== 0" class="artifact-groups">
+              <section
+                v-for="group in selectedNodeArtifactGroups"
+                :key="`${selectedNode.id}:${group.label}`"
+                class="artifact-group"
               >
-                <span>{{ artifact.label }}</span>
-                <span class="mono">{{ artifact.id }}</span>
-              </RouterLink>
+                <div class="row compact">
+                  <span>{{ group.label }}</span>
+                  <span class="tag">{{ group.items.length }}</span>
+                </div>
+                <div class="artifact-list">
+                  <RouterLink
+                    v-for="artifact in group.items"
+                    :key="artifact.id"
+                    :to="{ name: 'artifact', params: { id: artifact.id }, query: backQuery }"
+                    class="artifact-link"
+                  >
+                    <span>{{ artifact.label }}</span>
+                    <span class="mono">{{ artifact.id }}</span>
+                  </RouterLink>
+                </div>
+              </section>
             </div>
-            <ol v-if="selectedNode.events.length !== 0" class="timeline">
-              <li v-for="event in selectedNode.events" :key="event.event_id || `${event.stream_scope}:${event.sequence}`">
+            <p v-else class="muted">此節點目前沒有可讀產物。</p>
+
+            <div v-if="selectedNodeEventGroups.length !== 0" class="event-groups">
+              <section
+                v-for="group in selectedNodeEventGroups"
+                :key="`${selectedNode.id}:${group.type}`"
+                class="event-group"
+              >
+                <div class="row compact">
+                  <span>{{ group.type }}</span>
+                  <span class="tag">{{ group.count }}</span>
+                </div>
+                <div class="muted">最近時間 {{ group.latestAt || '未提供' }}</div>
+              </section>
+            </div>
+            <ol v-if="selectedNodeRecentEvents.length !== 0" class="timeline">
+              <li
+                v-for="event in selectedNodeRecentEvents"
+                :key="event.event_id || `${event.stream_scope}:${event.sequence}`"
+              >
                 <span class="mono">#{{ event.sequence }}</span>
                 <span>{{ event.event_type }}</span>
                 <span class="mono">{{ event.occurred_at }}</span>
+                <span class="record-value">{{ summarizeNodePayload(event.payload) }}</span>
               </li>
             </ol>
             <p v-else class="muted">此節點目前沒有可讀事件。</p>
@@ -687,17 +747,37 @@ watch(graph, (next) => {
   flex-direction: column;
 }
 
+.wrap {
+  flex-wrap: wrap;
+}
+
 .record-value {
   max-width: 58%;
   text-align: right;
   overflow-wrap: anywhere;
 }
 
+.artifact-groups,
+.event-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.artifact-group,
+.event-group {
+  border: 1px solid #26405f;
+  border-radius: 10px;
+  padding: 12px;
+  background: #0d1d31;
+}
+
 .artifact-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 10px;
 }
 
 .artifact-link {
@@ -715,6 +795,12 @@ watch(graph, (next) => {
   padding-left: 18px;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+.timeline li {
+  display: grid;
+  grid-template-columns: 70px 140px 170px 1fr;
   gap: 10px;
 }
 </style>
