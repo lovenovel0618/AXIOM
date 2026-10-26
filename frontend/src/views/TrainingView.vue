@@ -1,11 +1,28 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { filterModuleList } from '../lib/modulePageUtils'
 import { useModulePage } from '../lib/useModulePage'
 
 const { dashboard, loading, error, load } = useModulePage('training')
-const sources = computed(() => dashboard.value?.lists[2] ?? null)
-const topLists = computed(() => dashboard.value?.lists.slice(0, 2) ?? [])
+const keyword = ref('')
+const sourceFilter = ref<'ALL' | 'READY'>('ALL')
+
+const sources = computed(() => {
+  const list = dashboard.value?.lists[2] ?? null
+  if (list === null) return null
+  const filtered = filterModuleList(list, keyword.value)
+  return {
+    ...filtered,
+    items:
+      sourceFilter.value === 'READY'
+        ? filtered.items.filter((item) => item.badge.includes('READY'))
+        : filtered.items,
+  }
+})
+const topLists = computed(() =>
+  (dashboard.value?.lists.slice(0, 2) ?? []).map((list) => filterModuleList(list, keyword.value)),
+)
 
 onMounted(load)
 </script>
@@ -19,6 +36,11 @@ onMounted(load)
         <p class="muted">{{ dashboard.summary }}</p>
       </div>
       <div class="actions">
+        <input v-model="keyword" class="search" placeholder="搜尋資料集 / 版本 / 產物">
+        <select v-model="sourceFilter" class="filter">
+          <option value="ALL">全部來源</option>
+          <option value="READY">只看可分析</option>
+        </select>
         <button type="button" @click="load">重新載入</button>
         <RouterLink v-for="action in dashboard.actions" :key="action.label" :to="action.to">
           <button type="button" class="primary">{{ action.label }}</button>
@@ -132,6 +154,14 @@ onMounted(load)
 .module-link:hover {
   border-color: #3673c7;
   background: #132842;
+}
+
+.search {
+  min-width: 240px;
+}
+
+.filter {
+  min-width: 150px;
 }
 
 .note-card {
