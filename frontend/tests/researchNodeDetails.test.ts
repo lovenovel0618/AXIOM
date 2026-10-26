@@ -3,6 +3,7 @@ import type { RunEventEnvelope } from '../src/lib/events'
 import type { FlowNode } from '../src/lib/flow'
 import {
   buildNodeActionLinks,
+  collectCandidateCollectionLinks,
   groupNodeArtifacts,
   groupNodeEvents,
   recentNodeEvents,
@@ -77,6 +78,31 @@ describe('researchNodeDetails', () => {
       (extra) => ({ ref: '/researches/r1', ...(extra ?? {}) }),
     )
     expect(submissionActions.map((row) => row.label)).toContain('前往驗證頁')
+  })
+
+  it('collects visible candidate nodes into discoveries links', () => {
+    const links = collectCandidateCollectionLinks([
+      node(),
+      node({
+        id: 'candidate:cand-2',
+        title: '候選 #2',
+        records: [
+          { label: '候選識別碼', value: 'cand-2' },
+          { label: '所屬搜尋任務', value: 'run-search-1' },
+        ],
+      }),
+      node({
+        id: 'candidate:cand-3',
+        title: '候選 #3',
+        records: [
+          { label: '候選識別碼', value: 'cand-3' },
+          { label: '所屬搜尋任務', value: 'run-search-2' },
+        ],
+      }),
+    ])
+    expect(links).toHaveLength(2)
+    expect(links[0]?.searchRunId).toBe('run-search-1')
+    expect(links[0]?.candidateIds).toEqual(['cand-1', 'cand-2'])
   })
 
   it('summarizes large payloads', () => {

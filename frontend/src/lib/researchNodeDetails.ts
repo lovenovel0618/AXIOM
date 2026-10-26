@@ -63,6 +63,12 @@ export interface NodeActionLink {
   }
 }
 
+export interface CandidateCollectionLink {
+  searchRunId: string
+  candidateIds: string[]
+  label: string
+}
+
 export function buildNodeActionLinks(
   node: FlowNode,
   queryFactory: (extra?: Record<string, string | undefined>) => Record<string, string>,
@@ -109,4 +115,29 @@ export function buildNodeActionLinks(
   }
 
   return links
+}
+
+export function collectCandidateCollectionLinks(nodes: FlowNode[]): CandidateCollectionLink[] {
+  const groups = new Map<string, { ids: string[]; titles: string[] }>()
+  for (const node of nodes) {
+    if (node.kind !== 'CANDIDATE') continue
+    const candidateId = recordValue(node.records, '候選識別碼')
+    const searchRunId = recordValue(node.records, '所屬搜尋任務')
+    if (candidateId === null || searchRunId === null) continue
+    const current = groups.get(searchRunId) ?? { ids: [], titles: [] }
+    current.ids.push(candidateId)
+    current.titles.push(node.title)
+    groups.set(searchRunId, current)
+  }
+
+  return [...groups.entries()]
+    .map(([searchRunId, current]) => ({
+      searchRunId,
+      candidateIds: current.ids,
+      label:
+        current.ids.length === 1
+          ? `${current.titles[0] ?? '候選'}`
+          : `${current.ids.length} 個候選節點`,
+    }))
+    .sort((left, right) => right.candidateIds.length - left.candidateIds.length)
 }

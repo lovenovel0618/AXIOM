@@ -29,6 +29,7 @@ import { readQueryString, replaceQueryState } from '../lib/queryState'
 import { filterFlowGraph, highlightFlowNodes, type FlowFilterState } from '../lib/researchFlowFilters'
 import {
   buildNodeActionLinks,
+  collectCandidateCollectionLinks,
   groupNodeArtifacts,
   groupNodeEvents,
   recentNodeEvents,
@@ -138,6 +139,9 @@ const selectedNodeActions = computed(() =>
   selectedNode.value === null
     ? []
     : buildNodeActionLinks(selectedNode.value, (extra) => withBackRef(route.fullPath, extra)),
+)
+const visibleCandidateCollections = computed(() =>
+  displayGraph.value === null ? [] : collectCandidateCollectionLinks(displayGraph.value.nodes),
 )
 const flowHighlightIds = computed(() =>
   displayGraph.value === null ? [] : [...highlightFlowNodes(displayGraph.value, selectedNodeId.value)],
@@ -702,6 +706,23 @@ watch(displayGraph, (next) => {
               </button>
               <span class="tag">{{ displayGraph?.nodes.length ?? 0 }} / {{ graph?.nodes.length ?? 0 }} 節點</span>
             </div>
+            <div v-if="visibleCandidateCollections.length !== 0" class="candidate-actions">
+              <RouterLink
+                v-for="group in visibleCandidateCollections"
+                :key="group.searchRunId"
+                :to="{
+                  name: 'discoveries',
+                  query: withBackRef(route.fullPath, {
+                    run: group.searchRunId,
+                    pins: group.candidateIds.join(','),
+                  }),
+                }"
+                class="candidate-action-link"
+              >
+                <strong>比較 {{ group.label }}</strong>
+                <span class="muted mono">{{ group.searchRunId }}</span>
+              </RouterLink>
+            </div>
             <ResearchFlow
               v-if="displayGraph !== null"
               :graph="displayGraph"
@@ -860,6 +881,24 @@ watch(displayGraph, (next) => {
 
 .flow-filters {
   margin-top: 12px;
+}
+
+.candidate-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.candidate-action-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #26405f;
+  border-radius: 10px;
+  padding: 12px;
+  background: #0d1d31;
 }
 
 .wrap {
