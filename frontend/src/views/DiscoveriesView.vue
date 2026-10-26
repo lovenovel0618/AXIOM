@@ -301,6 +301,7 @@ watch(
               :equations="details.equations"
               :fits="details.fits"
               :details-loading="detailsLoading"
+              :run-id="selectedRun.run.id"
               @toggle="togglePinned"
             />
           </template>

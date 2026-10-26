@@ -5,6 +5,7 @@
  */
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import { listRunCandidates, type Candidate, type ValidationStatus } from '../api/candidates'
 import { getResearchVersion, type ResearchVersion } from '../api/research'
 import { cancelRun, fetchRunEventBatch, getRun, isTerminal, type Run, type RunStatus } from '../api/runs'
 import { readBackRef, withBackRef } from '../lib/navigationState'
@@ -51,6 +52,46 @@ const artifacts = computed<{ id: string; label: string }[]>(() => {
 })
 
 const childRuns = computed(() => run.value?.child_run_ids ?? [])
+
+/** SEARCH／FIT 任務才會產生候選分支，其餘型別不查詢候選分頁。 */
+const CANDIDATE_PAGE_SIZE = 20
+const candidates = ref<Candidate[]>([])
+const candidateCursor = ref<string | null>(null)
+const candidatesLoading = ref(false)
+const candidatesError = ref('')
+
+const statusLabels: Record<ValidationStatus, string> = {
+  NOT_RUN: '尚未執行',
+  PENDING: '進行中',
+  FINISHED: '已完成',
+  INVALID: '無效',
+}
+
+const showsCandidates = computed(() => {
+  const current = run.value
+  return current !== null && (current.type === 'SEARCH' || current.type === 'FIT')
+})
+
+const hasMoreCandidates = computed(() => candidateCursor.value !== null)
+
+async function loadCandidates(reset: boolean): Promise<void> {
+  const current = run.value
+  if (current === null || candidatesLoading.value) return
+  candidatesLoading.value = true
+  candidatesError.value = ''
+  try {
+    const page = await listRunCandidates(client, current.id, {
+      limit: CANDIDATE_PAGE_SIZE,
+      cursor: reset ? null : candidateCursor.value,
+    })
+    candidates.value = reset ? page.items : [...candidates.value, ...page.items]
+    candidateCursor.value = page.next_cursor
+  } catch (cause) {
+    candidatesError.value = describeError(cause)
+  } finally {
+    candidatesLoading.value = false
+  }
+}
 
 const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
 
@@ -113,6 +154,11 @@ async function start(): Promise<void> {
     return
   }
   loading.value = false
+  if (showsCandidates.value) {
+    candidates.value = []
+    candidateCursor.value = null
+    await loadCandidates(true)
+  }
   follower = new EventFollower({
     scope: 'RUN',
     streamId: runId,
@@ -278,6 +324,48 @@ onUnmounted(stopFollowing)
           <span class="mono id">{{ row.id }}</span>
         </li>
       </ul>
+
+      <template v-if="showsCandidates">
+        <h3>候選分支</h3>
+        <p class="muted" aria-live="polite">
+          已載入 {{ candidates.length }} 筆{{ hasMoreCandidates ? '（後端仍有下一頁）' : '（已到最後一頁）' }}。
+        </p>
+        <output v-if="candidatesError !== ''" class="alert-inline">{{ candidatesError }}</output>
+        <p v-if="candidates.length === 0 && !candidatesLoading" class="muted">此任務尚未回報候選。</p>
+        <table v-else class="compact-table">
+          <thead>
+            <tr>
+              <th>名次</th>
+              <th>來源</th>
+              <th>驗證狀態</th>
+              <th>候選識別碼</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in candidates" :key="row.id">
+              <td class="mono">#{{ row.development_rank ?? '—' }}</td>
+              <td>{{ row.source }}</td>
+              <td>{{ statusLabels[row.validation_status] }}</td>
+              <td class="mono">{{ row.id }}</td>
+              <td>
+                <RouterLink :to="{ name: 'candidate', params: { id: row.id }, query: withBackRef(route.fullPath, { run: runId }) }">
+                  檢視公式
+                </RouterLink>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button
+          v-if="hasMoreCandidates"
+          type="button"
+          :disabled="candidatesLoading"
+          style="margin-top: 10px;"
+          @click="loadCandidates(false)"
+        >
+          {{ candidatesLoading ? '載入中…' : '載入更多候選' }}
+        </button>
+      </template>
 
       <h3>事件</h3>
       <p class="muted" aria-live="polite">

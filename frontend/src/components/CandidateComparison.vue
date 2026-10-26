@@ -4,6 +4,7 @@
  * 凍結前不查詢 final_test；此處一律標示「尚未評估」，不推測分數。
  */
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import { MAX_COMPARISON, type Candidate, type EquationVersion, type FitRun, type ValidationStatus } from '../api/candidates'
 import { formulaComplexity, parameterPrecision, renderDomain, renderFormula } from '../lib/formula'
 
@@ -15,6 +16,8 @@ const props = defineProps<{
   equations: Record<string, EquationVersion>
   fits: Record<string, FitRun>
   detailsLoading: boolean
+  /** 來源 SEARCH 任務；提供時可開啟單一候選的公式工作區。 */
+  runId?: string
 }>()
 
 const emit = defineEmits<{ toggle: [id: string] }>()
@@ -76,7 +79,7 @@ function precisionFor(candidate: Candidate): number | null {
         一律顯示「尚未評估」。
       </p>
       <ul class="pin-list">
-        <li v-for="row in candidates" :key="row.id">
+        <li v-for="row in candidates" :key="row.id" class="pin-row">
           <label>
             <input
               type="checkbox"
@@ -88,6 +91,13 @@ function precisionFor(candidate: Candidate): number | null {
             <span class="source">{{ row.source }}</span>
             <span class="mono id">{{ row.id }}</span>
           </label>
+          <RouterLink
+            v-if="runId !== undefined && runId !== ''"
+            class="pin-link"
+            :to="{ name: 'candidate', params: { id: row.id }, query: { run: runId } }"
+          >
+            公式
+          </RouterLink>
         </li>
       </ul>
 
@@ -175,6 +185,16 @@ function precisionFor(candidate: Candidate): number | null {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+}
+.pin-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.pin-link {
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 .pin-list label {
   display: flex;

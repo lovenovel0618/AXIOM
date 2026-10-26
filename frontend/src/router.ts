@@ -2,6 +2,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { sessionStatus } from './lib/session'
 import ArtifactView from './views/ArtifactView.vue'
+import CandidateDetailView from './views/CandidateDetailView.vue'
 import DiscoveriesView from './views/DiscoveriesView.vue'
 import LoginView from './views/LoginView.vue'
 import MemoryView from './views/MemoryView.vue'
@@ -23,6 +24,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/datasets/:id', name: 'dataset', component: DatasetDetailView },
   { path: '/researches/:id?', name: 'researches', component: ResearchView },
   { path: '/discoveries', name: 'discoveries', component: DiscoveriesView },
+  { path: '/candidates/:id', name: 'candidate', component: CandidateDetailView },
   { path: '/verification', name: 'verification', component: VerificationView },
   { path: '/memory', name: 'memory', component: MemoryView },
   { path: '/models', name: 'model', component: ModelView },
