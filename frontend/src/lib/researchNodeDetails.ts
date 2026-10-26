@@ -1,4 +1,4 @@
-import type { FlowArtifact, FlowNode, FlowRecord } from './flow'
+import type { FlowArtifact, FlowNode, FlowRecord, FlowTone } from './flow'
 import type { RunEventEnvelope } from './events'
 
 export interface GroupedArtifacts {
@@ -89,8 +89,98 @@ export interface SubmissionFocusSummary extends FocusSummaryBase {
   group: SubmissionCollectionLink | null
 }
 
+export interface FocusDetailItem {
+  nodeId: string
+  title: string
+  subtitle: string
+  badge: string
+  tone: FlowTone
+  primaryValue: string
+  secondaryValue: string | null
+  artifactCount: number
+  eventCount: number
+}
+
+export interface FocusDetailPanel extends FocusSummaryBase {
+  items: FocusDetailItem[]
+  totalArtifacts: number
+  totalEvents: number
+  toneCounts: Record<FlowTone, number>
+}
+
 function uniqueValues(values: string[]): string[] {
   return [...new Set(values.filter((value) => value !== ''))]
+}
+
+function emptyToneCounts(): Record<FlowTone, number> {
+  return {
+    OK: 0,
+    PENDING: 0,
+    RUNNING: 0,
+    FAILED: 0,
+    NEUTRAL: 0,
+  }
+}
+
+function orderedMatchedNodes(nodes: FlowNode[], label: string, requested: string[]): FlowNode[] {
+  const byValue = new Map<string, FlowNode>()
+  for (const node of nodes) {
+    const value = recordValue(node.records, label)
+    if (value === null || byValue.has(value)) continue
+    byValue.set(value, node)
+  }
+
+  const ordered = requested.map((value) => byValue.get(value)).filter((node): node is FlowNode => node !== undefined)
+  if (ordered.length !== 0) return ordered
+  return nodes
+}
+
+function buildFocusDetailPanel(
+  nodes: FlowNode[],
+  requestedIds: string[],
+  primaryLabel: string,
+  secondaryLabel: string | null,
+): FocusDetailPanel | null {
+  const requested = uniqueValues(requestedIds)
+  if (requested.length === 0) return null
+
+  const expected = new Set(requested)
+  const matchedNodes = nodes.filter((node) => {
+    const value = recordValue(node.records, primaryLabel)
+    return value !== null && expected.has(value)
+  })
+  const orderedNodes = orderedMatchedNodes(matchedNodes, primaryLabel, requested)
+  const matchedValues = uniqueValues(
+    orderedNodes
+      .map((node) => recordValue(node.records, primaryLabel))
+      .filter((value): value is string => value !== null),
+  )
+  const toneCounts = emptyToneCounts()
+  const items = orderedNodes.map((node) => {
+    toneCounts[node.tone] += 1
+    return {
+      nodeId: node.id,
+      title: node.title,
+      subtitle: node.subtitle,
+      badge: node.badge,
+      tone: node.tone,
+      primaryValue: recordValue(node.records, primaryLabel) ?? node.id,
+      secondaryValue: secondaryLabel === null ? null : recordValue(node.records, secondaryLabel),
+      artifactCount: node.artifacts.length,
+      eventCount: node.events.length,
+    }
+  })
+
+  return {
+    requestedIds: requested,
+    matchedValues,
+    matchedNodeIds: items.map((item) => item.nodeId),
+    missingIds: requested.filter((id) => !matchedValues.includes(id)),
+    items,
+    totalArtifacts: items.reduce((sum, item) => sum + item.artifactCount, 0),
+    totalEvents: items.reduce((sum, item) => sum + item.eventCount, 0),
+    toneCounts,
+  }
 }
 
 export function buildNodeActionLinks(
@@ -238,4 +328,17 @@ export function buildSubmissionFocusSummary(nodes: FlowNode[], requestedIds: str
     missingIds: requested.filter((submissionId) => !matchedValues.includes(submissionId)),
     group: collectSubmissionCollectionLink(matchedNodes),
   }
+}
+
+export function buildCandidateFocusDetailPanel(nodes: FlowNode[], requestedIds: string[]): FocusDetailPanel | null {
+  return buildFocusDetailPanel(
+    nodes.filter((node) => node.kind === 'CANDIDATE'),
+    requestedIds,
+    '候選識別碼',
+    '所屬搜尋任務',
+  )
+}
+
+export function buildSubmissionFocusDetailPanel(nodes: FlowNode[], requestedIds: string[]): FocusDetailPanel | null {
+  return buildFocusDetailPanel(nodes.filter((node) => node.kind === 'SUBMISSION'), requestedIds, '提交識別碼', null)
 }

@@ -3,7 +3,9 @@ import type { RunEventEnvelope } from '../src/lib/events'
 import type { FlowNode } from '../src/lib/flow'
 import {
   buildCandidateFocusSummary,
+  buildCandidateFocusDetailPanel,
   buildNodeActionLinks,
+  buildSubmissionFocusDetailPanel,
   buildSubmissionFocusSummary,
   collectCandidateCollectionLinks,
   collectSubmissionCollectionLink,
@@ -173,6 +175,45 @@ describe('researchNodeDetails', () => {
     expect(summary?.groups[0]?.candidateIds).toEqual(['cand-1', 'cand-2'])
   })
 
+  it('builds candidate focus detail panel in requested order with aggregate counts', () => {
+    const panel = buildCandidateFocusDetailPanel(
+      [
+        node({
+          id: 'candidate:cand-1',
+          title: '候選 #1',
+          badge: 'PENDING',
+          tone: 'RUNNING',
+          artifacts: [{ id: 'artifact-1', label: '證據' }],
+          events: [event(1, 'RUN_PROGRESS', '2026-10-26T00:00:00Z')],
+          records: [
+            { label: '候選識別碼', value: 'cand-1' },
+            { label: '所屬搜尋任務', value: 'run-search-1' },
+          ],
+        }),
+        node({
+          id: 'candidate:cand-2',
+          title: '候選 #2',
+          badge: 'FINISHED',
+          tone: 'OK',
+          artifacts: [{ id: 'artifact-2', label: '證據' }],
+          events: [event(2, 'RUN_FINISHED', '2026-10-26T00:01:00Z'), event(3, 'RUN_STABLE', '2026-10-26T00:02:00Z')],
+          records: [
+            { label: '候選識別碼', value: 'cand-2' },
+            { label: '所屬搜尋任務', value: 'run-search-2' },
+          ],
+        }),
+      ],
+      ['cand-2', 'cand-1', 'cand-missing'],
+    )
+
+    expect(panel?.items.map((item) => item.primaryValue)).toEqual(['cand-2', 'cand-1'])
+    expect(panel?.totalArtifacts).toBe(2)
+    expect(panel?.totalEvents).toBe(3)
+    expect(panel?.toneCounts.OK).toBe(1)
+    expect(panel?.toneCounts.RUNNING).toBe(1)
+    expect(panel?.missingIds).toEqual(['cand-missing'])
+  })
+
   it('builds a submission focus summary with missing ids', () => {
     const summary = buildSubmissionFocusSummary(
       [
@@ -194,6 +235,36 @@ describe('researchNodeDetails', () => {
     expect(summary?.matchedValues).toEqual(['sub-1'])
     expect(summary?.missingIds).toEqual(['sub-missing'])
     expect(summary?.group?.submissionIds).toEqual(['sub-1'])
+  })
+
+  it('builds submission focus detail panel', () => {
+    const panel = buildSubmissionFocusDetailPanel(
+      [
+        node({
+          id: 'submission:sub-1',
+          kind: 'SUBMISSION',
+          badge: 'EVALUATED',
+          tone: 'OK',
+          artifacts: [{ id: 'artifact-1', label: '報告' }],
+          events: [event(1, 'FINALIZED', '2026-10-26T00:00:00Z')],
+          records: [{ label: '提交識別碼', value: 'sub-1' }],
+        }),
+        node({
+          id: 'submission:sub-2',
+          kind: 'SUBMISSION',
+          badge: 'PENDING',
+          tone: 'PENDING',
+          records: [{ label: '提交識別碼', value: 'sub-2' }],
+        }),
+      ],
+      ['sub-2', 'sub-1'],
+    )
+
+    expect(panel?.items.map((item) => item.primaryValue)).toEqual(['sub-2', 'sub-1'])
+    expect(panel?.totalArtifacts).toBe(1)
+    expect(panel?.totalEvents).toBe(1)
+    expect(panel?.toneCounts.PENDING).toBe(1)
+    expect(panel?.toneCounts.OK).toBe(1)
   })
 
   it('summarizes large payloads', () => {

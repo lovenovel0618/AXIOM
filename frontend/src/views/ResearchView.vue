@@ -28,8 +28,10 @@ import { readBackRef, withBackRef } from '../lib/navigationState'
 import { readQueryList, readQueryString, replaceQueryState } from '../lib/queryState'
 import { filterFlowGraph, highlightFlowNodes, type FlowFilterState } from '../lib/researchFlowFilters'
 import {
+  buildCandidateFocusDetailPanel,
   buildCandidateFocusSummary,
   buildNodeActionLinks,
+  buildSubmissionFocusDetailPanel,
   buildSubmissionFocusSummary,
   collectCandidateCollectionLinks,
   collectSubmissionCollectionLink,
@@ -158,6 +160,12 @@ const candidateFocusSummary = computed(() =>
 const submissionFocusSummary = computed(() =>
   displayGraph.value === null ? null : buildSubmissionFocusSummary(displayGraph.value.nodes, focusSubmissionIds.value),
 )
+const candidateFocusPanel = computed(() =>
+  displayGraph.value === null ? null : buildCandidateFocusDetailPanel(displayGraph.value.nodes, focusCandidateIds.value),
+)
+const submissionFocusPanel = computed(() =>
+  displayGraph.value === null ? null : buildSubmissionFocusDetailPanel(displayGraph.value.nodes, focusSubmissionIds.value),
+)
 const focusedCandidateNodeIds = computed(() =>
   displayGraph.value === null ? [] : findNodeIdsByRecordValues(displayGraph.value.nodes, '候選識別碼', focusCandidateIds.value),
 )
@@ -165,6 +173,28 @@ const focusedSubmissionNodeIds = computed(() =>
   displayGraph.value === null ? [] : findNodeIdsByRecordValues(displayGraph.value.nodes, '提交識別碼', focusSubmissionIds.value),
 )
 const hasFocusWorkspace = computed(() => candidateFocusSummary.value !== null || submissionFocusSummary.value !== null)
+const activeFocusScope = computed<'candidate' | 'submission' | null>(() => {
+  if (selectedNode.value?.kind === 'CANDIDATE' && candidateFocusPanel.value !== null) return 'candidate'
+  if (selectedNode.value?.kind === 'SUBMISSION' && submissionFocusPanel.value !== null) return 'submission'
+  if (candidateFocusPanel.value !== null) return 'candidate'
+  if (submissionFocusPanel.value !== null) return 'submission'
+  return null
+})
+const activeFocusPanel = computed(() =>
+  activeFocusScope.value === 'candidate'
+    ? candidateFocusPanel.value
+    : activeFocusScope.value === 'submission'
+      ? submissionFocusPanel.value
+      : null,
+)
+const activeFocusLabel = computed(() =>
+  activeFocusScope.value === 'candidate' ? '候選集合導覽' : activeFocusScope.value === 'submission' ? '提交集合導覽' : '',
+)
+const activeFocusIndex = computed(() =>
+  activeFocusPanel.value === null || selectedNode.value === null
+    ? -1
+    : activeFocusPanel.value.items.findIndex((item) => item.nodeId === selectedNode.value?.id),
+)
 const flowHighlightIds = computed(() =>
   displayGraph.value === null
     ? []
@@ -478,6 +508,21 @@ async function clearFocusScope(scope: 'candidate' | 'submission' | 'all'): Promi
   patch.flowkind = nextKind === 'ALL' ? undefined : nextKind
   patch.node = nextNode ?? undefined
   await replaceQueryState(router, route, patch)
+}
+
+function selectFocusPanelItem(nodeId: string): void {
+  selectedNodeId.value = nodeId
+}
+
+function moveFocusSelection(direction: -1 | 1): void {
+  const panel = activeFocusPanel.value
+  if (panel === null || panel.items.length === 0) return
+  const currentIndex = activeFocusIndex.value
+  const nextIndex =
+    currentIndex < 0
+      ? 0
+      : (currentIndex + direction + panel.items.length) % panel.items.length
+  selectedNodeId.value = panel.items[nextIndex]?.nodeId ?? null
 }
 
 function resolveSelectedNodeId(next: FlowGraph | null): string | null {
@@ -981,6 +1026,62 @@ watch(displayGraph, (next) => {
             <p class="muted">選擇流程圖節點後，這裡會顯示實際紀錄、產物與事件。</p>
           </template>
           <template v-else>
+            <section v-if="activeFocusPanel !== null" class="focus-detail-workspace">
+              <div class="focus-detail-head">
+                <div>
+                  <strong>{{ activeFocusLabel }}</strong>
+                  <p class="muted">目前選中 {{ activeFocusIndex + 1 > 0 ? activeFocusIndex + 1 : 0 }} / {{ activeFocusPanel.items.length }}，可直接在這裡切換集合成員並檢視其詳情。</p>
+                </div>
+                <div class="actions wrap">
+                  <button type="button" :disabled="activeFocusPanel.items.length < 2" @click="moveFocusSelection(-1)">上一筆</button>
+                  <button type="button" :disabled="activeFocusPanel.items.length < 2" @click="moveFocusSelection(1)">下一筆</button>
+                </div>
+              </div>
+              <div class="focus-detail-summary">
+                <div class="row compact">
+                  <span>命中成員</span>
+                  <span class="tag">{{ activeFocusPanel.items.length }}</span>
+                </div>
+                <div class="row compact">
+                  <span>總產物</span>
+                  <span class="tag">{{ activeFocusPanel.totalArtifacts }}</span>
+                </div>
+                <div class="row compact">
+                  <span>總事件</span>
+                  <span class="tag">{{ activeFocusPanel.totalEvents }}</span>
+                </div>
+                <div class="row compact">
+                  <span>完成 / 進行 / 待補</span>
+                  <span class="tag">
+                    {{ activeFocusPanel.toneCounts.OK }} / {{ activeFocusPanel.toneCounts.RUNNING + activeFocusPanel.toneCounts.PENDING }} / {{ activeFocusPanel.toneCounts.NEUTRAL + activeFocusPanel.toneCounts.FAILED }}
+                  </span>
+                </div>
+              </div>
+              <div class="focus-item-list">
+                <button
+                  v-for="item in activeFocusPanel.items"
+                  :key="item.nodeId"
+                  type="button"
+                  class="focus-item-card"
+                  :class="{ active: selectedNode.id === item.nodeId }"
+                  @click="selectFocusPanelItem(item.nodeId)"
+                >
+                  <div class="focus-item-main">
+                    <strong>{{ item.title }}</strong>
+                    <span class="tag">{{ item.badge }}</span>
+                  </div>
+                  <span class="muted">{{ item.subtitle }}</span>
+                  <div class="focus-item-meta">
+                    <span class="mono">{{ item.primaryValue }}</span>
+                    <span v-if="item.secondaryValue !== null" class="mono">{{ item.secondaryValue }}</span>
+                  </div>
+                  <div class="focus-item-meta">
+                    <span>產物 {{ item.artifactCount }}</span>
+                    <span>事件 {{ item.eventCount }}</span>
+                  </div>
+                </button>
+              </div>
+            </section>
             <div class="row compact">
               <span>節點</span>
               <span>{{ selectedNode.title }}</span>
@@ -1155,6 +1256,61 @@ watch(displayGraph, (next) => {
   margin-top: 12px;
 }
 
+.focus-detail-workspace {
+  border: 1px solid #26405f;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+  background: #0b1829;
+}
+
+.focus-detail-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.focus-detail-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 14px;
+  margin-bottom: 12px;
+}
+
+.focus-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.focus-item-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #26405f;
+  border-radius: 10px;
+  padding: 12px;
+  background: #0d1d31;
+}
+
+.focus-item-card.active {
+  border-color: #3673c7;
+  background: #132842;
+}
+
+.focus-item-main,
+.focus-item-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
 .candidate-actions {
   display: flex;
   flex-direction: column;
@@ -1228,5 +1384,12 @@ watch(displayGraph, (next) => {
   display: grid;
   grid-template-columns: 70px 140px 170px 1fr;
   gap: 10px;
+}
+
+@media (max-width: 1200px) {
+  .focus-grid,
+  .focus-detail-summary {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
