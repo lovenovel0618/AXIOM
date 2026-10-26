@@ -160,7 +160,7 @@ watch(
       <div class="actions">
         <button v-if="backRef !== ''" type="button" @click="router.push(backRef)">返回來源頁</button>
         <button type="button" @click="load">重新載入</button>
-        <RouterLink :to="{ name: 'researches' }">
+        <RouterLink :to="{ name: 'research-list' }">
           <button type="button" class="primary">前往研究</button>
         </RouterLink>
       </div>
@@ -252,13 +252,13 @@ watch(
                 <button type="button" :disabled="pinned.length === 0" @click="clearPinnedCandidates">清空比較</button>
                 <RouterLink
                   v-if="handoffSummary.researchId !== null && workbenchCandidateQuery !== null"
-                  :to="{ name: 'researches', params: { id: handoffSummary.researchId }, query: workbenchCandidateQuery }"
+                  :to="{ name: 'research-workbench', params: { id: handoffSummary.researchId }, query: workbenchCandidateQuery }"
                 >
                   <button type="button">用目前比較集打開工作台</button>
                 </RouterLink>
                 <RouterLink
                   v-if="handoffSummary.researchId !== null && allCandidatesWorkbenchQuery !== null && handoffSummary.focusIds.length !== handoffSummary.totalCandidates"
-                  :to="{ name: 'researches', params: { id: handoffSummary.researchId }, query: allCandidatesWorkbenchQuery }"
+                  :to="{ name: 'research-workbench', params: { id: handoffSummary.researchId }, query: allCandidatesWorkbenchQuery }"
                 >
                   <button type="button">在工作台看全部候選</button>
                 </RouterLink>
@@ -281,7 +281,7 @@ watch(
               <RouterLink
                 v-if="selectedRun.research !== null"
                 :to="{
-                  name: 'researches',
+                  name: 'research-workbench',
                   params: { id: selectedRun.research.id },
                   query: workbenchCandidateQuery ?? withBackRef(route.fullPath, { version: selectedRun.version?.id ?? '' }),
                 }"
@@ -314,7 +314,7 @@ watch(
             <RouterLink
               v-for="version in center.recentVersions"
               :key="version.id"
-              :to="{ name: 'researches', params: { id: version.research_id }, query: { version: version.id } }"
+              :to="{ name: 'research-workbench', params: { id: version.research_id }, query: { version: version.id } }"
               class="module-link"
             >
               <div>

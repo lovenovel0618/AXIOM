@@ -14,6 +14,8 @@ import ResourceMonitorView from './views/ResourceMonitorView.vue'
 import RunView from './views/RunView.vue'
 import DatasetDetailView from './views/DatasetDetailView.vue'
 import DatasetsView from './views/DatasetsView.vue'
+import ResearchCreateView from './views/ResearchCreateView.vue'
+import ResearchListView from './views/ResearchListView.vue'
 import ResearchView from './views/ResearchView.vue'
 import SettingsView from './views/SettingsView.vue'
 import TrainingView from './views/TrainingView.vue'
@@ -28,7 +30,9 @@ const routes: RouteRecordRaw[] = [
   { path: '/resources', name: 'resources', component: ResourceMonitorView },
   { path: '/datasets', name: 'datasets', component: DatasetsView },
   { path: '/datasets/:id', name: 'dataset', component: DatasetDetailView },
-  { path: '/researches/:id?', name: 'researches', component: ResearchView },
+  { path: '/researches', name: 'research-list', component: ResearchListView },
+  { path: '/researches/new', name: 'research-create', component: ResearchCreateView },
+  { path: '/researches/:id', name: 'research-workbench', component: ResearchView },
   { path: '/discoveries', name: 'discoveries', component: DiscoveriesView },
   { path: '/candidates/:id', name: 'candidate', component: CandidateDetailView },
   { path: '/verification', name: 'verification', component: VerificationView },

@@ -4,7 +4,6 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { getArtifactContent } from '../api/artifacts'
 import { getFinalEvaluation, getValidationRun } from '../api/evaluations'
 import {
-  createResearch,
   createSearchRun,
   fetchResearchEventBatch,
   getResearchVersion,
@@ -13,7 +12,6 @@ import {
   listResearches,
   type Research,
   type ResearchVersion,
-  type ResearchVersionStatus,
 } from '../api/research'
 import type { Run } from '../api/runs'
 import { listRunCandidates, type Candidate } from '../api/candidates'
@@ -48,7 +46,6 @@ const route = useRoute()
 const router = useRouter()
 
 const researches = ref<Research[]>([])
-const researchStatuses = ref<Record<string, ResearchVersionStatus | 'NONE'>>({})
 const versions = ref<ResearchVersion[]>([])
 const workbenchVersion = ref<ResearchVersion | null>(null)
 const runs = ref<Run[]>([])
@@ -60,13 +57,9 @@ const finalEvaluationMap = ref<Record<string, FinalEvaluation>>({})
 
 const loading = ref(false)
 const refreshingWorkbench = ref(false)
-const submitting = ref(false)
 const startingSearch = ref(false)
 const error = ref('')
 const notice = ref('')
-const search = ref('')
-const statusFilter = ref<'ALL' | ResearchVersionStatus | 'NONE'>('ALL')
-const name = ref('')
 const selectedResearch = ref<Research | null>(null)
 const selectedVersionId = ref('')
 const selectedNodeId = ref<string | null>(readQueryString(route.query, 'node') || null)
@@ -89,22 +82,10 @@ const flowToneFilter = ref<'ALL' | FlowTone>(
 )
 const flowQuery = ref(readQueryString(route.query, 'flowq'))
 
-const mode = computed<'list' | 'create' | 'workbench'>(() => {
+/** 目前路由上的研究容器識別碼；`/researches/:id` 以外一律為空字串。 */
+const currentResearchId = computed<string>(() => {
   const id = typeof route.params.id === 'string' ? route.params.id : ''
-  if (id === 'new') return 'create'
-  if (id !== '') return 'workbench'
-  return 'list'
-})
-
-const filteredResearches = computed<Research[]>(() => {
-  const keyword = search.value.trim().toLowerCase()
-  return researches.value.filter((row) => {
-    const matched =
-      keyword === '' || row.name.toLowerCase().includes(keyword) || row.id.toLowerCase().includes(keyword)
-    if (!matched) return false
-    if (statusFilter.value === 'ALL') return true
-    return researchStatuses.value[row.id] === statusFilter.value
-  })
+  return id === 'new' ? '' : id
 })
 
 const graph = computed<FlowGraph | null>(() => {
@@ -147,7 +128,7 @@ const selectedNodeRecentEvents = computed(() =>
 const selectedNodeActions = computed(() =>
   selectedNode.value === null
     ? []
-    : buildNodeActionLinks(selectedNode.value, (extra) => withBackRef(route.fullPath, extra)),
+    : buildNodeActionLinks(selectedNode.value, (extra) => withBackRef(route.fullPath, extra), currentResearchId.value),
 )
 const visibleCandidateCollections = computed(() =>
   displayGraph.value === null ? [] : collectCandidateCollectionLinks(displayGraph.value.nodes),
@@ -258,28 +239,12 @@ function workbenchSteps(version: ResearchVersion | null): Array<{ label: string;
   ]
 }
 
-async function loadResearchStatuses(items: Research[]): Promise<void> {
-  const next: Record<string, ResearchVersionStatus | 'NONE'> = {}
-  await Promise.all(
-    items.map(async (row) => {
-      try {
-        const page = await listResearchVersions(client, row.id, 1)
-        next[row.id] = page.items[0]?.status ?? 'NONE'
-      } catch {
-        next[row.id] = 'NONE'
-      }
-    }),
-  )
-  researchStatuses.value = next
-}
-
 async function loadResearches(): Promise<void> {
   loading.value = true
   error.value = ''
   try {
     const page = await listResearches(client)
     researches.value = page.items
-    await loadResearchStatuses(page.items)
   } catch (cause) {
     error.value = describeError(cause)
   } finally {
@@ -404,24 +369,6 @@ async function loadWorkbench(versionId: string): Promise<void> {
   }
 }
 
-async function submitResearch(): Promise<void> {
-  if (name.value.trim() === '' || submitting.value) return
-  submitting.value = true
-  error.value = ''
-  notice.value = ''
-  try {
-    const created = await createResearch(client, name.value.trim())
-    notice.value = `已建立研究「${created.name}」。`
-    name.value = ''
-    await loadResearches()
-    await router.push({ name: 'researches', params: { id: created.id } })
-  } catch (cause) {
-    error.value = describeError(cause)
-  } finally {
-    submitting.value = false
-  }
-}
-
 async function startSearch(): Promise<void> {
   const version = workbenchVersion.value
   if (version === null || startingSearch.value) return
@@ -437,10 +384,6 @@ async function startSearch(): Promise<void> {
   } finally {
     startingSearch.value = false
   }
-}
-
-function openResearch(row: Research): void {
-  void router.push({ name: 'researches', params: { id: row.id } })
 }
 
 function selectNode(id: string): void {
@@ -569,7 +512,7 @@ watch(
 watch(
   [flowKindFilter, flowToneFilter, flowQuery],
   async ([kind, tone, query]) => {
-    if (mode.value !== 'workbench') return
+    if (currentResearchId.value === '') return
     await replaceQueryState(router, route, {
       flowkind: kind === 'ALL' ? undefined : kind,
       flowtone: tone === 'ALL' ? undefined : tone,
@@ -581,7 +524,7 @@ watch(
 watch(
   selectedNodeId,
   async (value) => {
-    if (mode.value !== 'workbench') return
+    if (currentResearchId.value === '') return
     await replaceQueryState(router, route, { node: value ?? undefined })
   },
 )
@@ -611,7 +554,7 @@ watch(
 watch(
   selectedVersionId,
   async (value) => {
-    if (mode.value !== 'workbench') return
+    if (currentResearchId.value === '') return
     const nextQuery = { ...route.query }
     if (value === '') delete nextQuery.version
     else nextQuery.version = value
@@ -632,23 +575,14 @@ watch(displayGraph, (next) => {
   <section>
     <div class="head">
       <div>
-        <div class="eyebrow">研究 / SCREEN</div>
-        <h1>{{ mode === 'list' ? '研究清單' : mode === 'create' ? '新建研究' : '研究工作台' }}</h1>
-        <p class="muted">
-          {{
-            mode === 'list'
-              ? '查找、篩選與管理研究入口。'
-              : mode === 'create'
-                ? '建立真正的 Research 容器，後續由資料集分析銜接版本。'
-                : '以真實研究版本、任務、候選與事件重建工作流。'
-          }}
-        </p>
+        <div class="eyebrow">研究 / SCREEN 08</div>
+        <h1>研究工作台</h1>
+        <p class="muted">以真實研究版本、任務、候選與事件重建工作流。</p>
       </div>
       <div class="actions">
         <button v-if="backRef !== ''" type="button" @click="router.push(backRef)">返回來源頁</button>
         <button type="button" @click="loadResearches">重新載入</button>
         <button
-          v-if="mode === 'workbench'"
           type="button"
           :disabled="selectedVersionId === '' || refreshingWorkbench"
           @click="loadWorkbench(selectedVersionId)"
@@ -656,7 +590,6 @@ watch(displayGraph, (next) => {
           {{ refreshingWorkbench ? '同步中…' : '同步工作台' }}
         </button>
         <button
-          v-if="mode === 'workbench'"
           type="button"
           class="primary"
           :disabled="workbenchVersion === null || startingSearch"
@@ -664,115 +597,16 @@ watch(displayGraph, (next) => {
         >
           {{ startingSearch ? '建立中…' : '啟動 SEARCH' }}
         </button>
-        <button
-          v-if="mode !== 'create'"
-          type="button"
-          class="primary"
-          @click="router.push({ name: 'researches', params: { id: 'new' } })"
-        >
+        <RouterLink :to="{ name: 'research-list' }">
+          <button type="button">回研究清單</button>
+        </RouterLink>
+        <button type="button" class="primary" @click="router.push({ name: 'research-create' })">
           新增 / 執行
         </button>
-        <button v-else type="button" @click="router.push({ name: 'researches' })">返回</button>
       </div>
     </div>
 
-    <template v-if="mode === 'list'">
-      <div class="layout">
-        <section class="card">
-          <h3>搜尋與篩選</h3>
-          <div class="formgrid">
-            <div class="field">
-              <label>搜尋名稱 / ID</label>
-              <input v-model="search" placeholder="請輸入搜尋名稱 / ID">
-            </div>
-            <div class="field">
-              <label>最新版本狀態</label>
-              <select v-model="statusFilter">
-                <option value="ALL">全部</option>
-                <option value="NONE">尚無版本</option>
-                <option value="DRAFT">草稿</option>
-                <option value="VALIDATING">預檢中</option>
-                <option value="READY">就緒</option>
-                <option value="QUEUED">排隊中</option>
-                <option value="RUNNING">執行中</option>
-                <option value="FAILED">失敗</option>
-                <option value="CANCELLED">已取消</option>
-              </select>
-            </div>
-          </div>
-          <div class="actions">
-            <button type="button" class="primary" @click="router.push({ name: 'researches', params: { id: 'new' } })">
-              建立新項目
-            </button>
-            <button type="button" @click="search = ''; statusFilter = 'ALL'">清空篩選</button>
-          </div>
-        </section>
-
-        <section class="card">
-          <h3>項目清單</h3>
-          <p v-if="loading" class="muted">載入中…</p>
-          <p v-else-if="filteredResearches.length === 0" class="muted">目前沒有符合條件的研究。</p>
-          <table v-else>
-            <thead>
-              <tr>
-                <th>編號</th>
-                <th>名稱</th>
-                <th>最新狀態</th>
-                <th>建立時間</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in filteredResearches" :key="row.id">
-                <td class="mono">{{ row.id }}</td>
-                <td>{{ row.name }}</td>
-                <td><span class="tag">{{ researchStatuses[row.id] ?? 'NONE' }}</span></td>
-                <td>{{ row.created_at }}</td>
-                <td><button type="button" @click="openResearch(row)">進入工作台</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </div>
-    </template>
-
-    <template v-else-if="mode === 'create'">
-      <section class="card">
-        <h3>建立研究容器</h3>
-        <div class="formgrid">
-          <div class="field">
-            <label>研究名稱</label>
-            <input v-model="name" placeholder="例如：週期結構研究">
-          </div>
-          <div class="field">
-            <label>研究類型</label>
-            <select disabled>
-              <option>自動研究</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>研究目標</label>
-            <input placeholder="建立版本時補入" disabled>
-          </div>
-          <div class="field">
-            <label>數據來源</label>
-            <input placeholder="由資料集分析流程自動接入" disabled>
-          </div>
-        </div>
-        <div class="note">
-          這一頁只建立 Research 容器。研究版本、語意、切分、預算與 PROFILE/SEARCH 任務，都由後續工作流依真實資料接續。
-        </div>
-        <div class="actions" style="margin-top: 16px;">
-          <button type="button" @click="router.push({ name: 'researches' })">取消</button>
-          <button type="button" class="primary" :disabled="submitting || name.trim() === ''" @click="submitResearch">
-            建立研究
-          </button>
-        </div>
-      </section>
-    </template>
-
-    <template v-else>
-      <div class="layout cols3">
+    <div class="layout cols3">
         <section class="card">
           <h3>研究版本</h3>
           <div class="row">
@@ -1274,7 +1108,6 @@ watch(displayGraph, (next) => {
           </template>
         </section>
       </div>
-    </template>
 
     <p v-if="error" class="bad" style="margin-top: 16px;">{{ error }}</p>
     <p v-if="notice" class="good" style="margin-top: 16px;">{{ notice }}</p>

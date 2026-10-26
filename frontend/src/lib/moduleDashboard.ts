@@ -190,7 +190,7 @@ function datasetBadge(version: DatasetVersion | null): string {
 }
 
 function routeForResearch(research: Research): ModuleListItem['to'] {
-  return { name: 'researches', params: { id: research.id } }
+  return { name: 'research-workbench', params: { id: research.id } }
 }
 
 function routeForRun(run: Run): ModuleListItem['to'] {
@@ -213,7 +213,7 @@ function buildOverview(snapshot: Snapshot): ModuleDashboard {
     title: '系統總覽',
     summary: '集中查看研究、數據與任務的即時概況。',
     actions: [
-      { label: '前往研究', to: { name: 'researches' } },
+      { label: '前往研究', to: { name: 'research-list' } },
       { label: '前往資料', to: { name: 'datasets' } },
     ],
     metrics: [
@@ -284,7 +284,7 @@ function buildDiscoveries(snapshot: Snapshot): ModuleDashboard {
     section: '發現',
     title: '發現中心',
     summary: '從最近 SEARCH 任務與候選分支查看目前的假設生成狀態。',
-    actions: [{ label: '回研究清單', to: { name: 'researches' } }],
+    actions: [{ label: '回研究清單', to: { name: 'research-list' } }],
     metrics: [
       {
         label: '最近 SEARCH',
@@ -342,7 +342,7 @@ function buildDiscoveries(snapshot: Snapshot): ModuleDashboard {
           title: `${version.purpose} / ${version.status}`,
           subtitle: version.id,
           badge: `${version.frozen_submission_ids.length} 凍結 / ${version.evidence_bundle_ids.length} 證據`,
-          to: { name: 'researches', params: { id: version.research_id } },
+          to: { name: 'research-workbench', params: { id: version.research_id } },
         })),
       },
     ],
@@ -360,7 +360,7 @@ function buildVerification(snapshot: Snapshot): ModuleDashboard {
     section: '驗證',
     title: '驗證中心',
     summary: '整理最近任務、證據與最終評估前置狀態。',
-    actions: [{ label: '前往研究', to: { name: 'researches' } }],
+    actions: [{ label: '前往研究', to: { name: 'research-list' } }],
     metrics: [
       {
         label: '最近任務',
@@ -414,7 +414,7 @@ function buildVerification(snapshot: Snapshot): ModuleDashboard {
             to:
               version.quality_report_id !== null
                 ? routeForArtifact(version.quality_report_id)
-                : { name: 'researches', params: { id: version.research_id } },
+                : { name: 'research-workbench', params: { id: version.research_id } },
           })),
       },
       {
@@ -430,7 +430,7 @@ function buildVerification(snapshot: Snapshot): ModuleDashboard {
               version.frozen_submission_ids.length > 0
                 ? `${version.frozen_submission_ids.length} FROZEN`
                 : 'SEALED READY',
-            to: { name: 'researches', params: { id: version.research_id } },
+            to: { name: 'research-workbench', params: { id: version.research_id } },
           })),
       },
     ],
@@ -485,7 +485,7 @@ function buildMemory(snapshot: Snapshot): ModuleDashboard {
           title: `${version.purpose} / ${version.status}`,
           subtitle: version.id,
           badge: `${version.evidence_bundle_ids.length} BUNDLE`,
-          to: { name: 'researches', params: { id: version.research_id } },
+          to: { name: 'research-workbench', params: { id: version.research_id } },
         })),
       },
       {
@@ -557,7 +557,7 @@ function buildModel(snapshot: Snapshot): ModuleDashboard {
             title: `${version.purpose} / ${version.status}`,
             subtitle: version.id,
             badge: version.research_id,
-            to: { name: 'researches', params: { id: version.research_id } },
+            to: { name: 'research-workbench', params: { id: version.research_id } },
           })),
       },
       {
@@ -724,7 +724,7 @@ function buildSettings(snapshot: Snapshot): ModuleDashboard {
           title: `${version.purpose} / ${version.status}`,
           subtitle: version.id,
           badge: version.research_id,
-          to: { name: 'researches', params: { id: version.research_id } },
+          to: { name: 'research-workbench', params: { id: version.research_id } },
         })),
       },
     ],

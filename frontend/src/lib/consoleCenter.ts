@@ -361,7 +361,7 @@ export function buildPendingQueue(snapshot: ConsoleSnapshot): PendingItem[] {
         status: '待確認',
         reason: '後端回報 VALIDATING；確認前不得以結果覆蓋既有研究事實。',
         action: '等待 PROFILE 終態事件後再決定下一步。',
-        to: { name: 'researches', params: { id: version.research_id } },
+        to: { name: 'research-workbench', params: { id: version.research_id } },
       })
     }
     if (version.status === 'READY' && searhes.length === 0) {
@@ -373,7 +373,7 @@ export function buildPendingQueue(snapshot: ConsoleSnapshot): PendingItem[] {
         status: '待處理',
         reason: '狀態為 READY 且此頁尚未讀到任何 SEARCH 任務。',
         action: '回到研究工作台確認是否要建立 SEARCH 任務。',
-        to: { name: 'researches', params: { id: version.research_id } },
+        to: { name: 'research-workbench', params: { id: version.research_id } },
       })
     }
   }

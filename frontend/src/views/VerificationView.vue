@@ -149,7 +149,7 @@ watch(visibleSubmissionRows, (rows) => {
       <div class="actions">
         <button v-if="backRef !== ''" type="button" @click="router.push(backRef)">返回來源頁</button>
         <button type="button" @click="load">重新載入</button>
-        <RouterLink :to="{ name: 'researches' }">
+        <RouterLink :to="{ name: 'research-list' }">
           <button type="button" class="primary">前往研究</button>
         </RouterLink>
       </div>
@@ -194,7 +194,7 @@ watch(visibleSubmissionRows, (rows) => {
             <RouterLink
               v-for="row in center.evidenceRows"
               :key="row.version.id"
-              :to="{ name: 'researches', params: { id: row.version.research_id }, query: withBackRef(route.fullPath, { version: row.version.id }) }"
+              :to="{ name: 'research-workbench', params: { id: row.version.research_id }, query: withBackRef(route.fullPath, { version: row.version.id }) }"
               class="module-link"
             >
               <div>
@@ -255,7 +255,7 @@ watch(visibleSubmissionRows, (rows) => {
                 <RouterLink
                   v-if="selectedVersionGroup !== null && selectedVersionWorkbenchQuery !== null"
                   :to="{
-                    name: 'researches',
+                    name: 'research-workbench',
                     params: { id: selectedVersionGroup.researchId },
                     query: selectedVersionWorkbenchQuery,
                   }"
@@ -265,7 +265,7 @@ watch(visibleSubmissionRows, (rows) => {
                 <RouterLink
                   v-if="selectedSubmission !== null && currentSubmissionWorkbenchQuery !== null"
                   :to="{
-                    name: 'researches',
+                    name: 'research-workbench',
                     params: { id: selectedSubmission.version.research_id },
                     query: currentSubmissionWorkbenchQuery,
                   }"
@@ -339,7 +339,7 @@ watch(visibleSubmissionRows, (rows) => {
               <div class="actions wrap" style="margin: 12px 0 16px;">
                 <RouterLink
                   :to="{
-                    name: 'researches',
+                    name: 'research-workbench',
                     params: { id: selectedSubmission.version.research_id },
                     query: selectedVersionWorkbenchQuery ?? withBackRef(route.fullPath, { version: selectedSubmission.version.id }),
                   }"
@@ -349,7 +349,7 @@ watch(visibleSubmissionRows, (rows) => {
                 <RouterLink
                   v-if="currentSubmissionWorkbenchQuery !== null"
                   :to="{
-                    name: 'researches',
+                    name: 'research-workbench',
                     params: { id: selectedSubmission.version.research_id },
                     query: currentSubmissionWorkbenchQuery,
                   }"

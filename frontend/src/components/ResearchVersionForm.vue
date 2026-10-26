@@ -6,7 +6,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { getArtifactContent } from '../api/artifacts'
 import { listDatasets, listVersions, type Dataset, type DatasetVersion } from '../api/datasets'
-import { createResearchVersion, type ResearchVersion } from '../api/research'
+import { createResearchVersion, type ResearchPurpose, type ResearchVersion } from '../api/research'
 import { describeError } from '../lib/messages'
 import { client } from '../lib/session'
 import {
@@ -18,7 +18,14 @@ import {
   type VersionFormModel,
 } from '../lib/semantics'
 
-const props = defineProps<{ researchId: string }>()
+const props = defineProps<{
+  researchId: string
+  /** 由新建研究精靈帶入的研究目的；未提供時沿用表單預設。 */
+  presetPurpose?: ResearchPurpose
+  /** 由資料集頁面深連結帶入的資料來源；只在該版本可用時才會被選取。 */
+  presetDatasetId?: string
+  presetDatasetVersionId?: string
+}>()
 const emit = defineEmits<{ created: [ResearchVersion] }>()
 
 const datasets = ref<Dataset[]>([])
@@ -42,6 +49,9 @@ async function loadDatasets(): Promise<void> {
   error.value = ''
   try {
     datasets.value = (await listDatasets(client)).items
+    if (props.presetDatasetId !== undefined && datasets.value.some((row) => row.id === props.presetDatasetId)) {
+      selectedDatasetId.value = props.presetDatasetId
+    }
   } catch (cause) {
     error.value = describeError(cause)
   } finally {
@@ -59,6 +69,10 @@ async function loadVersions(): Promise<void> {
   error.value = ''
   try {
     versions.value = (await listVersions(client, selectedDatasetId.value)).items
+    const preset = props.presetDatasetVersionId
+    if (preset !== undefined && availableVersions.value.some((row) => row.id === preset)) {
+      form.value.datasetVersionId = preset
+    }
   } catch (cause) {
     error.value = describeError(cause)
   } finally {
@@ -118,7 +132,10 @@ watch(
     void loadMetadata()
   },
 )
-onMounted(loadDatasets)
+onMounted(async () => {
+  if (props.presetPurpose !== undefined) form.value.purpose = props.presetPurpose
+  await loadDatasets()
+})
 </script>
 
 <template>

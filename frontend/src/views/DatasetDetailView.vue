@@ -228,7 +228,7 @@ async function analyzeDataset(): Promise<void> {
     const freshVersion = await getResearchVersion(client, createdVersion.id)
     notice.value = `已從資料集「${current.name}」建立研究並啟動分析，任務狀態：${run.status}。`
     await router.push({
-      name: 'researches',
+      name: 'research-workbench',
       params: { id: research.id },
       query: { version: freshVersion.id },
     })

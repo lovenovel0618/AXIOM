@@ -239,7 +239,7 @@ onUnmounted(stopFollowing)
           <RouterLink
             v-if="researchVersion !== null"
             :to="{
-              name: 'researches',
+              name: 'research-workbench',
               params: { id: researchVersion.research_id },
               query: withBackRef(route.fullPath, { version: researchVersion.id }),
             }"
@@ -252,7 +252,7 @@ onUnmounted(stopFollowing)
         <dd>
           <RouterLink
             v-if="researchVersion !== null"
-            :to="{ name: 'researches', params: { id: researchVersion.research_id }, query: backQuery }"
+            :to="{ name: 'research-workbench', params: { id: researchVersion.research_id }, query: backQuery }"
           >
             {{ researchVersion.research_id }}
           </RouterLink>

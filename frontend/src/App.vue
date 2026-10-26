@@ -12,7 +12,7 @@ const primaryNav = [
   { label: '活動中心', icon: '◷', route: { name: 'activity' as const } },
   { label: '待處理事件', icon: '⚑', route: { name: 'pending' as const } },
   { label: '資源監控', icon: '◔', route: { name: 'resources' as const } },
-  { label: '研究', icon: '◈', route: { name: 'researches' as const } },
+  { label: '研究', icon: '◈', route: { name: 'research-list' as const } },
   { label: '數據', icon: '▦', route: { name: 'datasets' as const } },
   { label: '發現', icon: '◇', route: { name: 'discoveries' as const } },
   { label: '驗證', icon: '✓', route: { name: 'verification' as const } },
@@ -28,7 +28,9 @@ const currentSection = computed<string>(() => {
   if (route.name === 'pending') return '待處理事件'
   if (route.name === 'resources') return '資源監控'
   if (route.name === 'datasets') return '數據'
-  if (route.name === 'researches') return '研究'
+  if (route.name === 'research-list' || route.name === 'research-create' || route.name === 'research-workbench') {
+    return '研究'
+  }
   if (route.name === 'discoveries') return '發現'
   if (route.name === 'verification' || route.name === 'run' || route.name === 'artifact') return '驗證'
   if (route.name === 'memory') return '記憶'
@@ -51,12 +53,9 @@ const crumb = computed<string>(() => {
   if (route.name === 'training') return 'AXIOM / 訓練 / 訓練中心'
   if (route.name === 'settings') return 'AXIOM / 設定 / 系統設定'
   if (route.name === 'run') return 'AXIOM / 驗證 / 任務詳情'
-  if (route.name === 'researches') {
-    const id = typeof route.params.id === 'string' ? route.params.id : ''
-    if (id === 'new') return 'AXIOM / 研究 / 新建研究'
-    if (id !== '') return 'AXIOM / 研究 / 研究工作台'
-    return 'AXIOM / 研究 / 研究清單'
-  }
+  if (route.name === 'research-list') return 'AXIOM / 研究 / 研究清單'
+  if (route.name === 'research-create') return 'AXIOM / 研究 / 新建研究'
+  if (route.name === 'research-workbench') return 'AXIOM / 研究 / 研究工作台'
   if (route.name === 'artifact') return 'AXIOM / 驗證 / 產物詳情'
   return 'AXIOM'
 })

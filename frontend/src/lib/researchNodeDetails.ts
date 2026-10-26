@@ -231,6 +231,8 @@ function buildFocusDetailPanel(
 export function buildNodeActionLinks(
   node: FlowNode,
   queryFactory: (extra?: Record<string, string | undefined>) => Record<string, string>,
+  /** 目前工作台所屬的研究容器；缺少時無法組出工作台路徑，該連結一律不產生。 */
+  researchId?: string,
 ): NodeActionLink[] {
   const links: NodeActionLink[] = []
   if (node.runId !== null) {
@@ -263,11 +265,12 @@ export function buildNodeActionLinks(
     })
   }
 
-  if (node.kind === 'VERSION') {
+  if (node.kind === 'VERSION' && researchId !== undefined && researchId !== '') {
     links.push({
       label: '回到研究版本',
       to: {
-        name: 'researches',
+        name: 'research-workbench',
+        params: { id: researchId },
         query: queryFactory(),
       },
     })

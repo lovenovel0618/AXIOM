@@ -265,7 +265,7 @@ onMounted(load)
           <tbody>
             <tr v-for="budget in summary.budgets" :key="budget.researchVersionId">
               <td>
-                <RouterLink :to="{ name: 'researches', params: { id: budget.researchId } }">
+                <RouterLink :to="{ name: 'research-workbench', params: { id: budget.researchId } }">
                   <span class="mono">{{ budget.researchVersionId }}</span>
                 </RouterLink>
                 <div class="muted">研究 {{ budget.researchId }}</div>
