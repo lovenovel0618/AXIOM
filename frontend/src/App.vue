@@ -27,7 +27,17 @@ const currentSection = computed<string>(() => {
   if (route.name === 'activity') return '活動中心'
   if (route.name === 'pending') return '待處理事件'
   if (route.name === 'resources') return '資源監控'
-  if (route.name === 'datasets') return '數據'
+  if (
+    route.name === 'datasets' ||
+    route.name === 'data-upload' ||
+    route.name === 'data-preview' ||
+    route.name === 'data-quality' ||
+    route.name === 'data-pipeline' ||
+    route.name === 'data-explore' ||
+    route.name === 'data-diff'
+  ) {
+    return '數據'
+  }
   if (route.name === 'research-list' || route.name === 'research-create' || route.name === 'research-workbench') {
     return '研究'
   }
@@ -71,6 +81,12 @@ const crumb = computed<string>(() => {
   if (route.name === 'pending') return 'AXIOM / 總覽 / 待處理事件'
   if (route.name === 'resources') return 'AXIOM / 總覽 / 資源監控'
   if (route.name === 'datasets') return 'AXIOM / 數據 / 資料集清單'
+  if (route.name === 'data-upload') return 'AXIOM / 數據 / 資料上傳精靈'
+  if (route.name === 'data-preview') return 'AXIOM / 數據 / 資料預覽'
+  if (route.name === 'data-quality') return 'AXIOM / 數據 / 資料品質'
+  if (route.name === 'data-pipeline') return 'AXIOM / 數據 / 前處理管線'
+  if (route.name === 'data-explore') return 'AXIOM / 數據 / 多維探索'
+  if (route.name === 'data-diff') return 'AXIOM / 數據 / 資料版本比較'
   if (route.name === 'discoveries') return 'AXIOM / 發現 / 候選公式庫'
   if (route.name === 'discovery-compare') return 'AXIOM / 發現 / 公式比較'
   if (route.name === 'discovery-latent') return 'AXIOM / 發現 / 隱藏變數探索'

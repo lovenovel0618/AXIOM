@@ -19,8 +19,13 @@ import OverviewView from './views/OverviewView.vue'
 import PendingEventsView from './views/PendingEventsView.vue'
 import ResourceMonitorView from './views/ResourceMonitorView.vue'
 import RunView from './views/RunView.vue'
-import DatasetDetailView from './views/DatasetDetailView.vue'
-import DatasetsView from './views/DatasetsView.vue'
+import DataCatalogView from './views/DataCatalogView.vue'
+import DataDiffView from './views/DataDiffView.vue'
+import DataExploreView from './views/DataExploreView.vue'
+import DataPipelineView from './views/DataPipelineView.vue'
+import DataPreviewView from './views/DataPreviewView.vue'
+import DataQualityView from './views/DataQualityView.vue'
+import DataUploadView from './views/DataUploadView.vue'
 import ResearchCreateView from './views/ResearchCreateView.vue'
 import ResearchListView from './views/ResearchListView.vue'
 import ResearchView from './views/ResearchView.vue'
@@ -39,8 +44,13 @@ const routes: RouteRecordRaw[] = [
   { path: '/activity', name: 'activity', component: ActivityCenterView },
   { path: '/pending', name: 'pending', component: PendingEventsView },
   { path: '/resources', name: 'resources', component: ResourceMonitorView },
-  { path: '/datasets', name: 'datasets', component: DatasetsView },
-  { path: '/datasets/:id', name: 'dataset', component: DatasetDetailView },
+  { path: '/datasets', name: 'datasets', component: DataCatalogView },
+  { path: '/datasets/:id/upload', name: 'data-upload', component: DataUploadView },
+  { path: '/datasets/:id/preview', name: 'data-preview', component: DataPreviewView },
+  { path: '/datasets/:id/quality', name: 'data-quality', component: DataQualityView },
+  { path: '/datasets/:id/pipeline', name: 'data-pipeline', component: DataPipelineView },
+  { path: '/datasets/:id/explore', name: 'data-explore', component: DataExploreView },
+  { path: '/datasets/:id/diff', name: 'data-diff', component: DataDiffView },
   { path: '/researches', name: 'research-list', component: ResearchListView },
   { path: '/researches/new', name: 'research-create', component: ResearchCreateView },
   { path: '/researches/:id', name: 'research-workbench', component: ResearchView },

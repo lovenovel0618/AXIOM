@@ -138,13 +138,13 @@
     },
     {
       "path": "08-前端UX/23-頁面清單與資訊架構.md",
-      "bytes": 8837,
-      "sha256": "db4c11ac0a555136e8290908eee87690d3e83eb74ebc4902d4884c54756519f7"
+      "bytes": 10578,
+      "sha256": "c60b7f5781ab033b2cc97da6415bae98d956456f6e81e4d1caeebadf79c967c9"
     },
     {
       "path": "08-前端UX/24-畫面線框與互動流程.md",
-      "bytes": 50756,
-      "sha256": "77bf15d9a38d63162d840751a3bfeb3f8ab4f4bd6e7ce9f7f0d69334f2cb6b2d"
+      "bytes": 61546,
+      "sha256": "98d3f82e9b06b9fd2c3a0734a72b855093687135dd716890b2cecb31dc32acea"
     },
     {
       "path": "09-非功能/25-效能與成本治理.md",
@@ -243,8 +243,8 @@
     },
     {
       "path": "13-專題深化/46-驗收矩陣與交付證據.md",
-      "bytes": 21330,
-      "sha256": "b7f021464fd2c2b3844f2b441832d212dc060a1c18c5e7d9f95302d9fd23d7c8"
+      "bytes": 23324,
+      "sha256": "cf3faa7a2a625c5798354764c30075f372f4348ee0a2ea2251cdd240a0ce39a0"
     },
     {
       "path": "13-專題深化/47-完整研究物件契約.md",

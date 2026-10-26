@@ -196,7 +196,7 @@ onMounted(load)
             <tbody>
               <tr v-for="row in storageRows" :key="row.datasetId">
                 <td>
-                  <RouterLink :to="{ name: 'dataset', params: { id: row.datasetId } }">{{ row.name }}</RouterLink>
+                  <RouterLink :to="{ name: 'data-preview', params: { id: row.datasetId } }">{{ row.name }}</RouterLink>
                   <div class="mono">{{ row.datasetId }}</div>
                 </td>
                 <td class="mono">{{ row.versionId ?? UNKNOWN }}</td>

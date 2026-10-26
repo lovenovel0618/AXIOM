@@ -403,7 +403,7 @@ export function buildPendingQueue(snapshot: ConsoleSnapshot): PendingItem[] {
         status: '待處理',
         reason: '此頁尚未讀到任何資料版本；不代表資料集為空。',
         action: '前往資料集工作區上傳資料或確認匯入任務。',
-        to: { name: 'dataset', params: { id: dataset.id } },
+        to: { name: 'data-upload', params: { id: dataset.id } },
       })
     } else if (latest.status !== 'AVAILABLE') {
       push({
@@ -414,7 +414,7 @@ export function buildPendingQueue(snapshot: ConsoleSnapshot): PendingItem[] {
         status: '待審核',
         reason: `最新資料版本 ${latest.id} 狀態為 ${latest.status}。`,
         action: '在資料集工作區檢核版本狀態，必要時重新上傳。',
-        to: { name: 'dataset', params: { id: dataset.id, version: latest.id } },
+        to: { name: 'data-quality', params: { id: dataset.id } },
       })
     }
   }
