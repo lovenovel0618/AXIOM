@@ -527,3 +527,12 @@ class FinalEvaluationTests(TransactionTestCase):
             with self.subTest(action=action), self.assertRaises(IntegrityError):
                 enforce(action)
         self.assertEqual(FrozenSubmission.objects.get(pk=identity).status, "FROZEN")
+
+    def test_uncreated_member_slot_keeps_submission_evaluating(self) -> None:
+        submission = self.submit([self.frozen, self.outsider])
+        first, _created = acquire(self.actor, submission, self.frozen)
+        settle(self.actor, first, "COMPLETED", self.result(first))
+        self.assertEqual(FrozenSubmission.objects.get(pk=submission.pk).status, "EVALUATING")
+        second, _created = acquire(self.actor, FrozenSubmission.objects.get(pk=submission.pk), self.outsider)
+        settle(self.actor, second, "COMPLETED", self.result(second))
+        self.assertEqual(FrozenSubmission.objects.get(pk=submission.pk).status, "EVALUATED")

@@ -9,6 +9,7 @@ from catalog.ingest_manifest import code_digest, environment
 from catalog.models import Account, FrozenCandidate, FrozenSubmission, ResearchBudget, ResearchVersion
 from catalog.validation import ApiError
 from runtime.budget_types import LIMIT_KEYS, BudgetLimit, read_limit
+from runtime.models import RuntimeRun
 from runtime.contracts import JsonObject, identity_hash
 from runtime.records import db_now, task_input_hash
 
@@ -20,7 +21,10 @@ REQUEST: BudgetLimit = {"cpu_seconds": 60, "gpu_seconds": 0, "tokens": 0,
 
 def limit_for(account: ResearchBudget) -> BudgetLimit:
     """最終評估的固定預留需求；研究設定限額或剩餘不足以涵蓋即拒絕，不以較小假預留超賣容量。"""
-    available = remaining(account)
+    # 搜尋完成後研究為 CLOSING；僅既定最終評估可繼續，絕不重新 OPEN 或放行 CLOSED。
+    finishing = RuntimeRun.objects.filter(document__type="SEARCH", document__status="SUCCEEDED",
+        rootbudget__research_budget=account).exists()
+    available = remaining(account, allow_closing=finishing)
     configured = read_limit(account.document["limit"])
     if any(REQUEST[key] > configured[key] for key in LIMIT_KEYS):
         raise ApiError("RUN_BUDGET_EXHAUSTED", 429)

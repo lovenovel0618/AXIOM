@@ -13,6 +13,8 @@ from runtime.contracts import JsonObject
 from runtime.models import RuntimeAttempt, RuntimeRun
 
 
+SHA256_PATTERN = r"^[0-9a-f]{64}$"
+
 class Tenant(models.Model):
     id: models.UUIDField[UUID, UUID] = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name: models.TextField[str, str] = models.TextField()
@@ -298,7 +300,7 @@ class ResearchState(models.Model):
     seal_id: UUID | None
 
     class Meta:
-        constraints = [models.CheckConstraint(condition=models.Q(status__in=["DRAFT", "VALIDATING", "READY"]), name="research_state_local_status"),
+        constraints = [models.CheckConstraint(condition=models.Q(status__in=["DRAFT", "VALIDATING", "READY", "QUEUED", "RUNNING", "FAILED", "CANCELLED"]), name="research_state_local_status"),
                        models.CheckConstraint(condition=~models.Q(status="READY") | models.Q(seal__isnull=False), name="research_state_ready_requires_seal")]
 
 
@@ -444,7 +446,7 @@ class EquationVersion(models.Model):
         constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="equation_version_tenant_identity"),
                        models.UniqueConstraint(fields=["tenant", "identity_hash", "dsl_version"], name="equation_version_identity_hash"),
                        models.CheckConstraint(condition=models.Q(dsl_version="1.0"), name="equation_version_dsl_version"),
-                       models.CheckConstraint(condition=models.Q(identity_hash__regex="^[0-9a-f]{64}$"), name="equation_version_identity_hash_format")]
+                       models.CheckConstraint(condition=models.Q(identity_hash__regex=SHA256_PATTERN), name="equation_version_identity_hash_format")]
 
 
 class ObservationSplit(models.Model):
@@ -461,7 +463,7 @@ class ObservationSplit(models.Model):
     class Meta:
         constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="observation_split_tenant_identity"),
                        models.UniqueConstraint(fields=["dataset_version", "row_ids_hash"], name="observation_split_row_hash_unique"),
-                       models.CheckConstraint(condition=models.Q(row_ids_hash__regex="^[0-9a-f]{64}$"), name="observation_split_row_hash_format")]
+                       models.CheckConstraint(condition=models.Q(row_ids_hash__regex=SHA256_PATTERN), name="observation_split_row_hash_format")]
 
 
 class RepresentationSpec(models.Model):
@@ -482,7 +484,7 @@ class RepresentationSpec(models.Model):
     class Meta:
         constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="representation_spec_tenant_identity"),
                        models.UniqueConstraint(fields=["research_version", "observation_split", "fit_rows_hash"], name="representation_spec_identity_unique"),
-                       models.CheckConstraint(condition=models.Q(fit_rows_hash__regex="^[0-9a-f]{64}$"), name="representation_spec_fit_rows_hash_format")]
+                       models.CheckConstraint(condition=models.Q(fit_rows_hash__regex=SHA256_PATTERN), name="representation_spec_fit_rows_hash_format")]
 
 
 class Candidate(models.Model):
@@ -526,7 +528,7 @@ class FitRun(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="fit_run_tenant_identity"),
-                       models.CheckConstraint(condition=models.Q(fit_rows_hash__regex="^[0-9a-f]{64}$"), name="fit_run_fit_rows_hash_format")]
+                       models.CheckConstraint(condition=models.Q(fit_rows_hash__regex=SHA256_PATTERN), name="fit_run_fit_rows_hash_format")]
 
 
 class FrozenCandidate(models.Model):
@@ -556,8 +558,8 @@ class FrozenCandidate(models.Model):
         constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="frozen_candidate_tenant_identity"),
                        models.UniqueConstraint(fields=["candidate", "fit_run"], name="frozen_candidate_selection_unique"),
                        models.CheckConstraint(condition=models.Q(development_rank__gte=1), name="frozen_candidate_development_rank"),
-                       models.CheckConstraint(condition=models.Q(dsl_identity_hash__regex="^[0-9a-f]{64}$"), name="frozen_candidate_dsl_identity_format"),
-                       models.CheckConstraint(condition=models.Q(parameter_binding_hash__regex="^[0-9a-f]{64}$"), name="frozen_candidate_binding_hash_format")]
+                       models.CheckConstraint(condition=models.Q(dsl_identity_hash__regex=SHA256_PATTERN), name="frozen_candidate_dsl_identity_format"),
+                       models.CheckConstraint(condition=models.Q(parameter_binding_hash__regex=SHA256_PATTERN), name="frozen_candidate_binding_hash_format")]
 
 
 class FrozenSubmission(models.Model):
@@ -581,5 +583,12 @@ class FrozenSubmission(models.Model):
         constraints = [models.UniqueConstraint(fields=["id", "tenant"], name="frozen_submission_tenant_identity"),
                        models.UniqueConstraint(fields=["research_version", "snapshot_hash"], name="frozen_submission_snapshot_unique"),
                        models.CheckConstraint(condition=models.Q(metric_version="2.0"), name="frozen_submission_metric_version"),
-                       models.CheckConstraint(condition=models.Q(snapshot_hash__regex="^[0-9a-f]{64}$"), name="frozen_submission_snapshot_format"),
+                       models.CheckConstraint(condition=models.Q(snapshot_hash__regex=SHA256_PATTERN), name="frozen_submission_snapshot_format"),
                        models.CheckConstraint(condition=models.Q(status__in=["FROZEN", "EVALUATING", "EVALUATED", "FAILED"]), name="frozen_submission_status")]
+
+
+class SearchAttemptStop(models.Model):
+    """可信 SEARCH handler 在隔離程序已回收後留下不可變停止證明，與 lease 過期分開。"""
+    attempt: models.OneToOneField[RuntimeAttempt, RuntimeAttempt] = models.OneToOneField("runtime.RuntimeAttempt", on_delete=models.PROTECT, primary_key=True)
+    attempt_id: UUID
+    created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(default=timezone.now)

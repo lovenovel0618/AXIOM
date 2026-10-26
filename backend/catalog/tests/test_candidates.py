@@ -244,7 +244,7 @@ class CandidateTests(TransactionTestCase):
         self.assertIn("final_test", self.version.document["observation_split"])
         self.assertFalse(hasattr(Request, "final_test"))
 
-    def test_search_and_fit_roots_stay_queued_and_outside_both_relays(self) -> None:
+    def test_offline_search_and_fit_roots_stay_queued_without_snapshots(self) -> None:
         rows = self.store()
         runs = RuntimeRun.objects.filter(document__type__in=["SEARCH", "FIT"])
         self.assertEqual(runs.count(), len(rows) + 1)
@@ -258,6 +258,11 @@ class CandidateTests(TransactionTestCase):
             self.assertFalse(model.objects.filter(run__in=runs).exists())
         self.assertFalse(Reservation.objects.filter(root__run__in=runs).exists())
         self.assertTrue(RuntimeRun.objects.filter(document__type="INGEST").exists())
+        from catalog.tasks import relay_search
+        from unittest.mock import patch
+        with patch("catalog.tasks.app.send_task") as send:
+            self.assertEqual(relay_search(), 0)
+            send.assert_not_called()
 
     def test_parameter_binding_hash_matches_the_conformance_example(self) -> None:
         self.assertEqual(binding_hash({"a": "2", "b": "1"})[:8], "f7a837dc")

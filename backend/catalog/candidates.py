@@ -1,11 +1,10 @@
-"""候選、擬合與兩個 recipe 的權威落庫與授權讀取：觀測切分、識別表徵、候選身分、擬合結果與凍結副本。
+"""候選與擬合的權威落庫及授權讀取，不接觸 final_test。
 
-Offline candidate, fit and recipe persistence plus owner-scoped reads; no dispatch, no scoring and no final_test.
-
-本模組只把 #3 的離線搜尋報告落成不可變列，不派送 run、不建 InputSnapshot、不建帳本列，
-也不評估 final_test。`SEARCH`／`FIT` root 由 `catalog.search_run` 建立並停在 `QUEUED`，
-`catalog.tasks` 的兩個 relay 只掃 INGEST 與 ProfileBinding，因此不會被撿走。"""
+離線 persist 保留最小 SEARCH root；派送 worker 透過 persist_under 綁既有 root。
+FIT 結果沿用最小離線 root，專用 relay 只派送具有快照的 SEARCH root。
+"""
 from collections.abc import Sequence
+import json
 from uuid import UUID, uuid4
 from django.core import signing
 from django.db.models import Q
@@ -19,6 +18,7 @@ from runtime.contracts import JsonObject, canonical_bytes, identity_hash, valida
 from runtime.models import RuntimeRun
 from runtime.records import db_now
 
+RUNTIME_SCHEMA = "runtime-v2.schema.json"
 PRECISION_BITS = 53
 IDENTITY_METHOD = "IDENTITY"
 IDENTITY_CONFIG: JsonObject = {"method": IDENTITY_METHOD, "input_dimension": 1, "output_dimension": 1,
@@ -34,7 +34,7 @@ def rows_hash(rows: Sequence[int]) -> str:
 def observation_split(actor: Account, version: ResearchVersion) -> ObservationSplit:
     """把研究版本已固定的觀測切分落成不可變 recipe；同資料版本同 row_ids_hash 只留一列。"""
     document: JsonObject = version.document["observation_split"]
-    validate(document, "runtime-v2.schema.json", "ObservationSplit")
+    validate(document, RUNTIME_SCHEMA, "ObservationSplit")
     row, _created = ObservationSplit.objects.get_or_create(dataset_version_id=version.dataset_version_id,
         row_ids_hash=document["row_ids_hash"], defaults={"id": UUID(document["id"]), "tenant_id": actor.tenant_id,
         "created_at": db_now(), "document": document})
@@ -95,7 +95,7 @@ def _fit_run(actor: Account, version: ResearchVersion, budget: ResearchBudget, e
         "split_role": "FIT", "precision_bits": PRECISION_BITS, "fit_row_ids": fit_rows, "fit_rows_hash": fit_hash,
         "refit_policy_artifact_id": None, "execution_manifest_id": str(root.document["execution_manifest_id"]),
         "preprocessor_artifact_id": None, "representation_artifact_id": str(representation_row.id)}
-    validate(document, "runtime-v2.schema.json", "FitRun")
+    validate(document, RUNTIME_SCHEMA, "FitRun")
     return FitRun.objects.create(id=identity, tenant_id=actor.tenant_id, run=root, equation_version=equation,
         dataset_version=version.dataset_version, observation_split=split, representation_artifact=representation_row,
         fit_rows_hash=fit_hash, document=document, created_at=created)
@@ -109,7 +109,7 @@ def _candidate(actor: Account, search_run_id: UUID, equation: EquationVersion, r
         "schema_version": "2.0", "created_at": created.isoformat(), "search_run_id": str(search_run_id),
         "equation_version_id": str(equation.id), "source": source, "development_rank": rank,
         "validation_status": "NOT_RUN", "fit_run_ids": [str(fit.id)], "validation_run_ids": []}
-    validate(document, "runtime-v2.schema.json", "Candidate")
+    validate(document, RUNTIME_SCHEMA, "Candidate")
     return Candidate.objects.create(id=identity, tenant_id=actor.tenant_id, search_run_id=search_run_id,
         equation_version=equation, development_rank=rank, document=document, created_at=created)
 
@@ -118,14 +118,28 @@ def persist(actor: Account, version: ResearchVersion, budget: ResearchBudget, re
     """把 #3 的離線搜尋報告落成 SEARCH root、兩個 recipe、候選與擬合；零候選時不建立任何列。
 
     呼叫端須自行開啟交易。回傳的候選已依 `development_rank` 排序，與報告順序一致。"""
-    entries: list[JsonObject] = report["candidates"]
+    if not report["candidates"]:
+        return []
+    return persist_under(actor, version, budget, create_root_run(actor, version, budget, "SEARCH"), report)
+
+
+def persist_under(actor: Account, version: ResearchVersion, budget: ResearchBudget,
+                  search_run: RuntimeRun, report: dict[str, object]) -> list[Candidate]:
+    """呼叫端須持 root 鎖及交易；綁定既有 SEARCH，已提交則讀回原列，避免重送建立第二個 root。"""
+    if (search_run.tenant_id != actor.tenant_id or search_run.document["type"] != "SEARCH"
+            or search_run.document["research_version_id"] != str(version.id)
+            or search_run.document["research_budget_account_id"] != str(budget.id)):
+        raise ApiError("INVALID_SCHEMA", 422)
+    existing = list(Candidate.objects.filter(search_run=search_run).order_by("development_rank"))
+    if existing:
+        return existing
+    entries = json.loads(canonical_bytes(report))["candidates"]
     if not entries:
         return []
     split = observation_split(actor, version)
     representation_row = representation(actor, version, split)
     fit_rows: list[int] = list(version.document["observation_split"]["fit"])
     fit_hash = rows_hash(fit_rows)
-    search_run = create_root_run(actor, version, budget, "SEARCH")
     rows: list[Candidate] = []
     for rank, entry in enumerate(entries, start=1):
         plan = compile_dsl(canonical_bytes(entry["dsl"]))

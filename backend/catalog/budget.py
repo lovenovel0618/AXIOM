@@ -3,7 +3,7 @@
 Single authority for atomic research/root reservations and cumulative receipts."""
 from uuid import UUID, uuid4
 from django.db import transaction
-from catalog.models import ResearchBudget, ResearchVersion, Reservation, RootBudget, UsageReceipt
+from catalog.models import SearchAttemptStop, ResearchBudget, ResearchVersion, Reservation, RootBudget, UsageReceipt
 from catalog.validation import ApiError
 from runtime.contracts import JsonObject, identity_hash, validate
 from runtime.budget_types import COUNTERS as CUMULATIVE, BudgetLimit, UsageReport, accumulated, exceeds, read_limit, read_report, read_usage, zero_usage
@@ -71,11 +71,13 @@ def reserve(run: RuntimeRun, root_doc: JsonObject) -> RootBudget:
     return root
 
 
-def remaining(account: ResearchBudget) -> BudgetLimit:
+def remaining(account: ResearchBudget, *, allow_closing: bool = False) -> BudgetLimit:
     """計算新 root 可用餘額；累計資源扣實耗與 held，記憶體只扣活躍預留。"""
-    if account.document["status"]!="OPEN":
+    if account.document["status"] != "OPEN" and not (allow_closing and account.document["status"] == "CLOSING"):
         raise ApiError("RESEARCH_BUDGET_EXHAUSTED",429)
     loans = Reservation.objects.filter(root__research_budget=account).exclude(state="RELEASED")
+    if loans.filter(state="UNCERTAIN").exists():
+        raise ApiError("RESEARCH_BUDGET_EXHAUSTED", 429)
     held = [read_limit(row.held) for row in loans]
     limit,usage = read_limit(account.document["limit"]),read_usage(account.document["usage"])
     result = {key:max(0,limit[key]-usage[counter]-sum(row[key] for row in held)) for key,counter in CUMULATIVE.items()}
@@ -126,12 +128,14 @@ def settle_locked(run: RuntimeRun, research: ResearchBudget, root: RootBudget, s
     for resource,counter in CUMULATIVE.items():
         held[resource] = max(0,requested[resource]-usage[counter])
     loan.held = dict(held)
+    if stopped and run.document["type"] == "SEARCH" and run.document["is_root"]:
+        stopped = run.document["status"] in {"SUCCEEDED", "FAILED", "CANCELLED", "CANCEL_REQUESTED"} and not RuntimeAttempt.objects.filter(run=run).exclude(pk__in=SearchAttemptStop.objects.values("attempt_id")).exists()
     if stopped or loan.state=="RELEASED":
         loan.held = dict.fromkeys(loan.requested,0)
         loan.state = "RELEASED"
         root.document["status"] = "CLOSED"
     loan.save(update_fields=["held","state"])
-    if exhausted(research.document):
+    if exhausted(research.document) and research.document["status"] != "CLOSED":
         research.document["status"] = "CLOSING"
     if exhausted(root.document) and loan.state!="RELEASED":
         root.document["status"] = "CLOSING"
@@ -203,7 +207,9 @@ def release_unstarted(run: RuntimeRun) -> None:
     root = RootBudget.objects.get(run=run)
     research = ResearchBudget.objects.select_for_update().get(pk=root.research_budget_id)
     root = RootBudget.objects.select_for_update().get(pk=root.id)
-    if run.first_started_at is None:
+    known_stopped = (run.document["type"] == "SEARCH" and run.document["status"] in {"SUCCEEDED", "FAILED", "CANCELLED"}
+        and not RuntimeAttempt.objects.filter(run=run).exclude(pk__in=SearchAttemptStop.objects.values("attempt_id")).exists())
+    if run.first_started_at is None or known_stopped:
         settle_locked(run,research,root,True)
     elif Reservation.objects.get(root=root).state!="RELEASED":
         Reservation.objects.filter(root=root).update(state="UNCERTAIN")

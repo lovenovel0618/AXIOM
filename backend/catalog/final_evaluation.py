@@ -13,7 +13,7 @@ from django.db import IntegrityError, transaction
 from jsonschema.exceptions import ValidationError
 from catalog.evidence import register_validation
 from catalog.final_manifest import documents, limit_for
-from catalog.models import Account, FrozenCandidate, FrozenSubmission, Provenance, ResearchBudget, ResearchVersion
+from catalog.models import Account, FrozenCandidate, FrozenSubmission, Provenance, ResearchBudget, ResearchVersion, Reservation
 from catalog.sealing import consume, reserve, retire
 from catalog.services import provenance
 from catalog.validation import ApiError
@@ -53,7 +53,7 @@ def _lookup(tenant_id: UUID, submission_id: UUID, candidate_id: UUID, metric_ver
         frozen_candidate_id=candidate_id, metric_version=metric_version).first()
 
 
-def _advance(submission: FrozenSubmission, status: str, now: datetime) -> None:
+def _advance(submission: FrozenSubmission, status: str) -> None:
     """只前進提交狀態；身分與快照仍不可改，guard 會擋下非相鄰轉移。"""
     document = dict(submission.document)
     document["status"] = status
@@ -115,16 +115,16 @@ def acquire(actor: Account, submission: FrozenSubmission, candidate: FrozenCandi
                 raise
             return raced, False
         if submission.status == "FROZEN":
-            _advance(submission, "EVALUATING", now)
+            _advance(submission, "EVALUATING")
         return slot, True
 
 
-def _aggregate(tenant_id: UUID, submission_id: UUID, metric_version: str) -> str:
+def _aggregate(tenant_id: UUID, submission_id: UUID, metric_version: str, expected: int) -> str:
     """包全部必要結果齊備才 EVALUATED；任一候選失敗即整包 FAILED，其餘維持評估中。"""
     slots = FinalEvaluationSlot.objects.filter(tenant_id=tenant_id, submission_id=submission_id, metric_version=metric_version)
     if slots.filter(status="FAILED").exists():
         return "FAILED"
-    return "EVALUATING" if slots.exclude(status="COMPLETED").exists() else "EVALUATED"
+    return "EVALUATED" if slots.filter(status="COMPLETED").count() == expected else "EVALUATING"
 
 
 def _verified(actor: Account, slot: FinalEvaluationSlot, submission: FrozenSubmission,
@@ -178,7 +178,7 @@ def settle(actor: Account, slot: FinalEvaluationSlot, status: str, result: JsonO
         locked = FinalEvaluationSlot.objects.select_for_update().get(pk=slot.id)
         if locked.status != "PENDING":
             raise ApiError("INVALID_TRANSITION", 409)
-        submission = FrozenSubmission.objects.filter(pk=locked.submission_id, tenant_id=actor.tenant_id).first()
+        submission = FrozenSubmission.objects.select_for_update().filter(pk=locked.submission_id, tenant_id=actor.tenant_id).first()
         if submission is None:
             raise ApiError("NOT_FOUND", 404)
         version = _authorized(actor, submission)
@@ -201,11 +201,29 @@ def settle(actor: Account, slot: FinalEvaluationSlot, status: str, result: JsonO
         document["validation_run_id"] = None if reference is None else str(reference)
         validate(document, SCHEMA, "FinalEvaluationSlot")
         FinalEvaluationSlot.objects.filter(pk=locked.id).update(status=status, validation_run_id=reference, document=document)
-        target = _aggregate(actor.tenant_id, locked.submission_id, locked.metric_version)
+        target = _aggregate(actor.tenant_id, locked.submission_id, locked.metric_version, len(submission.document["frozen_candidate_ids"]))
         if submission.status != target:
-            _advance(submission, target, now)
+            _advance(submission, target)
         locked.status, locked.validation_run_id, locked.document = status, reference, document
+        close_research_after_final(version)
         return locked
+
+
+def close_research_after_final(version: ResearchVersion) -> None:
+    """SEARCH 已停止且全部固定提交／槽位收斂才關帳；CLOSING 期間拒絕再開新探索。"""
+    account = ResearchBudget.objects.select_for_update().get(research_version=version)
+    if account.document["status"] != "CLOSING":
+        return
+    if Reservation.objects.filter(root__research_budget=account).exclude(state="RELEASED").exists():
+        return
+    submissions = FrozenSubmission.objects.filter(research_version=version)
+    if not submissions.exists() or submissions.exclude(status__in=["EVALUATED", "FAILED"]).exists():
+        return
+    if FinalEvaluationSlot.objects.filter(submission_id__in=submissions.values("id"), status="PENDING").exists():
+        return
+    account.document["status"] = "CLOSED"
+    validate(account.document, SCHEMA, "ResearchBudgetAccount")
+    account.save(update_fields=["document"])
 
 
 def authorized_result(actor: Account, identity: UUID) -> ValidationRun:
@@ -224,7 +242,7 @@ def authorized_result(actor: Account, identity: UUID) -> ValidationRun:
     return row
 
 
-def _slot_view(slot: FinalEvaluationSlot) -> JsonObject:
+def _slot_view(slot: FinalEvaluationSlot) -> dict[str, object]:
     """公開槽位投影：只回固定的身分與狀態，不含任何私有控制欄位。"""
     return {"frozen_candidate_id": str(slot.frozen_candidate_id), "slot_id": str(slot.id), "run_id": str(slot.run_id),
         "validation_run_id": None if slot.validation_run_id is None else str(slot.validation_run_id),

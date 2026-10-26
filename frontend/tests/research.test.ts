@@ -215,3 +215,16 @@ describe('getArtifactContent', () => {
     expect(calls[0]?.method).toBe('GET')
   })
 })
+
+describe('SEARCH dispatch', () => {
+  it('sends the current revision, fixed type and seed with an idempotency key', async () => {
+    const { createSearchRun } = await import('../src/api/research')
+    const { calls, client } = scenario(() => new Response(JSON.stringify({ id: 'run', type: 'SEARCH', status: 'QUEUED' }), { status: 202, headers: { 'Content-Type': 'application/json' } }))
+    await createSearchRun(client, VERSION_ID, 7, 42)
+    const call = calls[0]
+    expect(call?.url).toBe(`/api/v2/research-versions/${VERSION_ID}/runs`)
+    expect(call?.headers.get('If-Control-Revision')).toBe('7')
+    expect(call?.headers.get('Idempotency-Key')).toBeTruthy()
+    expect(JSON.parse(String(call?.body))).toEqual({ type: 'SEARCH', seed: 42 })
+  })
+})

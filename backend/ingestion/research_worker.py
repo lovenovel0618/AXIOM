@@ -1,6 +1,6 @@
-"""固定研究 child 入口：只執行可信品質／已知 DSL 核心，輸出白名單報告，不執行任意代碼。
+"""固定研究 child 入口：只執行可信品質／已知 DSL 核心，輸出白名單報告或 fit/development 投影，不執行任意代碼。
 
-Fixed research entry point; raw data never appears on stdout or stderr."""
+Fixed research entry point; final data and diagnostics never expose raw values."""
 import json
 from pathlib import Path
 import sys

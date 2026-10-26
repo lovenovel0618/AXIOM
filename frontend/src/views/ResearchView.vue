@@ -7,6 +7,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
   createResearch,
+  createSearchRun,
   fetchResearchEventBatch,
   getResearchVersion,
   listResearchVersionRuns,
@@ -120,7 +121,7 @@ const canTrigger = computed<boolean>(
 )
 
 /** 候選掛在 SEARCH root 之下；FIT root 沒有候選，因此只認 SEARCH。 */
-const searchRun = computed<Run | null>(() => runs.value.find((row) => row.type === 'SEARCH') ?? null)
+const searchRun = computed<Run | null>(() => runs.value.find((row) => row.type === 'SEARCH' && row.is_root !== false) ?? null)
 
 const blindEvaluation = computed(() => {
   const version = selectedVersion.value
@@ -163,8 +164,9 @@ function startResearchFollow(version: ResearchVersion): void {
     fetchBatch: (cursor) => fetchResearchEventBatch(client, version.id, cursor),
     sync: async () => {
       selectedVersion.value = await getResearchVersion(client, version.id)
+      await reloadRuns()
     },
-    isTerminal: () => selectedVersion.value?.status !== 'VALIDATING',
+    isTerminal: () => !['VALIDATING', 'RUNNING', 'QUEUED'].includes(selectedVersion.value?.status ?? ''),
     snapshotCursor: async () => {
       const fresh = await getResearchVersion(client, version.id)
       selectedVersion.value = fresh
@@ -264,7 +266,7 @@ async function pickVersion(version: ResearchVersion): Promise<void> {
   await loadQuality()
   await loadBundle()
   await loadFinalEvaluations(version.frozen_submission_ids)
-  if (version.status === 'VALIDATING') startResearchFollow(version)
+  if (['VALIDATING', 'RUNNING', 'QUEUED'].includes(version.status)) startResearchFollow(version)
 }
 
 async function reloadRuns(): Promise<void> {
@@ -514,6 +516,25 @@ async function trigger(): Promise<void> {
   } catch (cause) {
     error.value = describeError(cause)
     await refreshVersion()
+  } finally {
+    triggering.value = false
+  }
+}
+
+async function triggerSearch(): Promise<void> {
+  const version = selectedVersion.value
+  if (version === null || triggering.value) return
+  triggering.value = true
+  error.value = ''
+  try {
+    const fresh = await getResearchVersion(client, version.id)
+    await createSearchRun(client, fresh.id, fresh.revision, fresh.observation_split.seed)
+    notice.value = '已排入 SEARCH；可在版本任務追蹤搜尋相位與候選進度。'
+    await refreshVersion()
+    const current = selectedVersion.value
+    if (current !== null) startResearchFollow(current)
+  } catch (cause) {
+    error.value = describeError(cause)
   } finally {
     triggering.value = false
   }
@@ -847,6 +868,10 @@ onUnmounted(stopFollowingResearch)
             {{ triggering ? '送出中…' : '觸發 PROFILE 驗證' }}
           </button>
 
+          <h3>公式搜尋</h3>
+          <button type="button" :disabled="triggering || selectedVersion.status !== 'READY' || runs.some(row => row.type === 'SEARCH' && row.is_root !== false && row.status === 'SUCCEEDED')" @click="triggerSearch">
+            {{ triggering ? '送出中…' : '開始 SEARCH 搜尋' }}
+          </button>
           <div class="panel-head">
             <h3>版本任務</h3>
             <button type="button" @click="reloadRuns">重新載入</button>
@@ -857,6 +882,10 @@ onUnmounted(stopFollowingResearch)
               <RouterLink :to="{ name: 'run', params: { id: row.id } }">
                 {{ row.type }}／{{ runStatusLabel[row.status] }}
               </RouterLink>
+              <span v-if="row.type === 'SEARCH'" class="muted">
+                {{ row.phase === 'SEARCHING' ? '搜尋中（SEARCHING）' : (row.phase ?? '等待開始') }}
+                ／候選 {{ row.budget_usage?.candidates_generated ?? 0 }} 產生、{{ row.budget_usage?.candidates_accepted ?? 0 }} 接受
+              </span>
               <span class="muted mono">{{ row.id }}</span>
               <span class="muted mono">{{ row.created_at }}</span>
             </li>
@@ -881,10 +910,10 @@ onUnmounted(stopFollowingResearch)
             <template v-if="follow.lastSyncedAt !== null">最後同步 {{ follow.lastSyncedAt }}。</template>
             <template v-if="researchEvents.length > 0">已收到 {{ researchEvents.length }} 筆。</template>
           </p>
-          <p v-if="follow.error !== ''" class="alert-inline" role="status">{{ follow.error }}</p>
-          <p v-if="follow.gapDetected" class="alert-inline" role="status">
+          <output v-if="follow.error !== ''" class="alert-inline">{{ follow.error }}</output>
+          <output v-if="follow.gapDetected" class="alert-inline">
             游標已過期，已依伺服器 snapshot 重新同步；期間的事件可能不完整，畫面不補猜。
-          </p>
+          </output>
           <p v-if="researchEvents.length === 0" class="muted">尚無研究事件。</p>
           <ol v-else class="timeline">
             <li v-for="event in researchEvents" :key="event.event_id">

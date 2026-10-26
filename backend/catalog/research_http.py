@@ -129,13 +129,24 @@ def control_revision(request: HttpRequest) -> int:
     return int(value)
 
 
-@allowed_methods(["GET"])
+@allowed_methods(["GET", "POST"])
 @api
 def runs(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
     """研究內全部 root 與子 run 的穩定分頁，供重開頁找回任務；is_root 標示根。
 
     以研究版本（同研究 owner）為唯一授權範圍，簽章 cursor 與每次租戶分區檢查缺一不可。"""
-    version_for(actor,identity)
+    version = version_for(actor,identity)
+    if request.method == "POST":
+        from catalog.search import enqueue_search
+        available_version(actor, version.dataset_version_id)
+        expected = control_revision(request)
+        data = body(request, "CreateSearchRun")
+        def authorize(_previous: dict[str, object]) -> None:
+            version_for(actor, identity)
+            available_version(actor, version.dataset_version_id)
+        result = replay(actor, request.path, request.headers.get("Idempotency-Key", ""), data,
+            lambda: enqueue_search(actor, version, data, expected), authorize)
+        return JsonResponse(result, status=202)
     cursor, limit = paging(request)
     binding = {"actor":str(actor.id),"tenant":str(actor.tenant_id),"version":str(identity)}
     rows = RuntimeRun.objects.filter(tenant_id=actor.tenant_id,control_only=False,document__research_version_id=str(identity)).order_by("-document__created_at","-id")

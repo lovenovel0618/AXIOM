@@ -1,0 +1,176 @@
+{
+  "date": "2026-10-26",
+  "scope": "T07_SEARCH_DISPATCH_SLICE3",
+  "base_commit": "50140e8",
+  "review_method": "SELF_REVIEW",
+  "status": "IMPLEMENTED_AND_VERIFIED",
+  "ticket_t07_status": "IN_PROGRESS",
+  "product_gate_status": "NOT_RUN",
+  "decisions": {
+    "projection": "isolated SEARCH_PROJECTION; immutable SEALED_DETAIL source recipe; no final values/positions in solver input",
+    "state": "READY -> QUEUED -> RUNNING; SEARCH success -> CLOSING, fixed final submissions settled -> CLOSED; failures/cancellation close only with stop proof; never reopen CLOSED",
+    "candidates": "persist_under binds existing SEARCH root; offline persist retained",
+    "checkpoint": "per family reports + projection; checksum and lease fencing; skip completed families on retry"
+  },
+  "strategies": [
+    "linear@1",
+    "polynomial@1",
+    "harmonic@1"
+  ],
+  "search_limits": {
+    "max_rows": 4096,
+    "max_strategy_seconds": 10,
+    "max_candidates": 8
+  },
+  "api_operations": {
+    "baseline_50140e8": 30,
+    "current": 30,
+    "openapi_changed": false
+  },
+  "checks": {
+    "python_strict": {
+      "status": "PASS",
+      "errors": 0,
+      "command": ".venv-backend/bin/pyright"
+    },
+    "typing_policy": {
+      "status": "PASS",
+      "new_dynamic_boundary_allowances": 0
+    },
+    "frontend": {
+      "status": "PASS",
+      "tests": 129,
+      "typecheck": "PASS",
+      "build": "PASS"
+    },
+    "engineering_tools": {
+      "status": "PASS",
+      "tests": 80
+    },
+    "new_pipeline_integration": {
+      "status": "PASS",
+      "tests": 2,
+      "scope": "real PROFILE/seal -> SEARCH -> freeze -> isolated final; pending uncreated member slots"
+    },
+    "backend": {
+      "status": "PASS",
+      "tests": 449,
+      "new_tests_since_50140e8": 20,
+      "seconds": 677.961,
+      "command": "docker compose run --rm --no-deps web python manage.py test --noinput -v 1"
+    },
+    "http_smoke": {
+      "status": "PASS",
+      "cases": 6,
+      "formats": [
+        "CSV",
+        "JSON",
+        "PARQUET"
+      ],
+      "routes": [
+        "backend",
+        "frontend_proxy"
+      ],
+      "command": "docker compose exec -T web python manage.py search_smoke",
+      "research_state_after_search": "CLOSING; fixed final evaluation closes it"
+    },
+    "migrations": {
+      "status": "PASS",
+      "result": "No changes detected"
+    },
+    "documentation_contracts": {
+      "status": "PASS",
+      "api_operations": 30
+    }
+  },
+  "sonar": {
+    "status": "ANALYSIS_SUCCESS",
+    "unresolved_issues": 0,
+    "dashboard": "https://sonarqube.gogotdi.com/dashboard?id=axion",
+    "quality_gate": "ERROR",
+    "remaining_condition": {
+      "metric": "new_coverage",
+      "actual": 0,
+      "required": 80,
+      "reason": "Coverage report integration remains a project gap"
+    },
+    "rules_or_suppressions_changed": false
+  },
+  "limitations": [
+    "FIT execution pipeline remains disabled",
+    "Unknown lost-attempt costs retain reservations; fixed final evaluation is blocked until stop proof",
+    "Formal product Gate and capacity SLO remain NOT_RUN",
+    "Sonar coverage report integration remains unimplemented"
+  ],
+  "deployed_backend_source_digest": "0bf9975e07671a59e46936192e251225ee890c573749bb112f5dd6d31f45f153",
+  "post_full_suite_change": "Removed trailing whitespace in search_smoke.py only; no behavior change.",
+  "services": {
+    "preserved_running": true,
+    "http": {
+      "frontend": 200,
+      "proxy_ready": 200,
+      "backend_ready": 200
+    },
+    "components": [
+      {
+        "service": "frontend",
+        "state": "running",
+        "health": "healthy"
+      },
+      {
+        "service": "ingest",
+        "state": "running",
+        "health": ""
+      },
+      {
+        "service": "journal",
+        "state": "running",
+        "health": "healthy"
+      },
+      {
+        "service": "postgres",
+        "state": "running",
+        "health": "healthy"
+      },
+      {
+        "service": "profile",
+        "state": "running",
+        "health": ""
+      },
+      {
+        "service": "redis",
+        "state": "running",
+        "health": "healthy"
+      },
+      {
+        "service": "relay",
+        "state": "running",
+        "health": ""
+      },
+      {
+        "service": "search",
+        "state": "running",
+        "health": ""
+      },
+      {
+        "service": "web",
+        "state": "running",
+        "health": "healthy"
+      },
+      {
+        "service": "worker",
+        "state": "running",
+        "health": ""
+      }
+    ]
+  },
+  "self_review": [
+    "Lease/epoch fencing before input, each checkpoint and result commit",
+    "Existing SEARCH root reused; minimal FIT/offline roots excluded from dispatch",
+    "Known stopped retry retains remaining reservation; unknown attempt never releases it",
+    "CLOSED accepts authorized late cost without reopening",
+    "Successful SEARCH stays CLOSING for fixed final evaluation; missing member slots prevent early closure",
+    "No OpenAPI operation added; baseline 50140e8 already has 30",
+    "Sonar 0 issues; coverage gate remains unconfigured and is not claimed passed"
+  ]
+}

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 from django.db import transaction
 from runtime.contracts import JsonObject, identity_hash
+from runtime.budget_types import read_usage
 from runtime.models import InputSnapshot, RuntimeAttempt, RuntimeCheckpoint, RuntimeRun
 from runtime.records import (
     CANCEL_REQUESTED, CHILD_TYPES, QUEUED, ROOT_TYPES, RUNNING, TERMINAL, ControlError,
@@ -47,13 +48,13 @@ def lock_pair(tenant_id: UUID, run_id: UUID) -> tuple[RuntimeRun, RuntimeRun | N
     return lock_run(tenant_id, run_id), root
 
 
-def _initial(record: JsonObject, budget: JsonObject) -> None:
+def _initial(record: dict[str, object], budget: JsonObject) -> None:
     """新 root 必須零用量、無預留且處於 pristine QUEUED；不能挾帶偽造終態入庫。
 
     起始 `dispatch_stage` 由型別裁決：`VALIDATE` 只以 `FINAL_ONLY` 派送，其餘 root 從
     `SEARCH_OPEN` 開始探索，呼叫端不得自選。"""
     stage = "FINAL_ONLY" if record["type"] == "VALIDATE" else "SEARCH_OPEN"
-    required: JsonObject = {"status": QUEUED, "revision": 0, "active_attempt_id": None, "lease_generation": 0, "cancellation_epoch": 0, "root_epoch_at_dispatch": 0, "cancel_requested_at": None, "dispatch_stage": stage, "phase": None, "stop_reason": None, "evidence_bundle_ids": [], "diagnostic_artifact_ids": [], "research_trace_artifact_ids": [], "skipped_phases": [], "outcome_status": None, "current_event_cursor": f"RUN:{record['id']}:0", "budget_reservations": []}
+    required: dict[str, object] = {"status": QUEUED, "revision": 0, "active_attempt_id": None, "lease_generation": 0, "cancellation_epoch": 0, "root_epoch_at_dispatch": 0, "cancel_requested_at": None, "dispatch_stage": stage, "phase": None, "stop_reason": None, "evidence_bundle_ids": [], "diagnostic_artifact_ids": [], "research_trace_artifact_ids": [], "skipped_phases": [], "outcome_status": None, "current_event_cursor": f"RUN:{record['id']}:0", "budget_reservations": []}
     if any(record[key] != value for key, value in required.items()):
         raise ValueError("New root must have pristine queued state")
     if budget["status"] != "OPEN" or budget["research_budget_account_id"] != record["research_budget_account_id"] or budget["reservations"]:
@@ -94,12 +95,12 @@ def enqueue(tenant_id: UUID, record: JsonObject, task: JsonObject, execution: Js
         return run.id
 
 
-def _pristine_child(record: JsonObject, stage: str) -> None:
+def _pristine_child(record: dict[str, object], stage: str) -> None:
     """研究子任務必須 pristine QUEUED，且沿用根的派送階段，不能自選或挾帶終態入庫。"""
-    required: JsonObject = {"status": QUEUED, "revision": 0, "active_attempt_id": None, "lease_generation": 0, "cancellation_epoch": 0, "root_epoch_at_dispatch": 0, "cancel_requested_at": None, "dispatch_stage": stage, "phase": None, "stop_reason": None, "evidence_bundle_ids": [], "child_run_ids": [], "diagnostic_artifact_ids": [], "research_trace_artifact_ids": [], "skipped_phases": [], "outcome_status": None, "current_event_cursor": f"RUN:{record['id']}:0", "budget_reservations": []}
+    required: dict[str, object] = {"status": QUEUED, "revision": 0, "active_attempt_id": None, "lease_generation": 0, "cancellation_epoch": 0, "root_epoch_at_dispatch": 0, "cancel_requested_at": None, "dispatch_stage": stage, "phase": None, "stop_reason": None, "evidence_bundle_ids": [], "child_run_ids": [], "diagnostic_artifact_ids": [], "research_trace_artifact_ids": [], "skipped_phases": [], "outcome_status": None, "current_event_cursor": f"RUN:{record['id']}:0", "budget_reservations": []}
     if any(record[key] != value for key, value in required.items()):
         raise ValueError("New child must have pristine queued state")
-    if any(value != 0 for value in record["budget_usage"].values()):
+    if any(value != 0 for value in read_usage(record["budget_usage"]).values()):
         raise ValueError("New child usage must be zero")
 
 
@@ -253,6 +254,8 @@ def _start_attempt(run: RuntimeRun, worker_id: str, now: datetime, epoch: int) -
     record.update(status=RUNNING, active_attempt_id=str(attempt_id), lease_generation=generation)
     if record["type"]=="PROFILE":
         record["phase"] = "PROFILING"
+    elif record["type"] == "SEARCH":
+        record["phase"] = "SEARCHING"
     record["revision"] += 1
     if run.first_started_at is None:
         run.first_started_at = now
@@ -372,12 +375,12 @@ def _requeue(run: RuntimeRun, policy: JsonObject, now: datetime) -> None:
     save_run(run)
 
 
-def _plugin_hashes(snapshot: InputSnapshot) -> JsonObject:
+def _plugin_hashes(snapshot: InputSnapshot) -> dict[str, object]:
     """以插件身分與程式碼雜湊固定執行環境，重試時據此判斷 checkpoint 相容性。"""
     return {plugin["plugin_id"]: plugin["code_sha256"] for plugin in snapshot.execution["plugins"]}
 
 
-def save_checkpoint(lease: Lease, progress: JsonObject) -> UUID:
+def save_checkpoint(lease: Lease, progress: dict[str, object]) -> UUID:
     """持有有效租約時保存不可變 checkpoint；只記錄進度，不結算帳本，因此重試不重置用量。"""
     with transaction.atomic():
         run, root = lock_pair(lease.tenant_id, lease.run_id)

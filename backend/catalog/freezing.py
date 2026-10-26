@@ -8,12 +8,12 @@ Fail-closed freeze decisions mirroring contract_scenarios; final_test execution 
 import re
 from uuid import UUID, uuid4
 from catalog.ingest_manifest import environment
-from catalog.models import Account, Artifact, Candidate, EquationVersion, FitRun, FrozenCandidate, FrozenSubmission, RepresentationSpec, ResearchVersion, SealRegistration
+from catalog.models import Account, Artifact, Candidate, EquationVersion, FitRun, FrozenCandidate, FrozenSubmission, RepresentationSpec, ResearchBudget, ResearchVersion, SealRegistration
 from catalog.validation import ApiError
 from runtime.contracts import JsonObject, identity_hash, validate
 from runtime.records import db_now
 
-DECIMAL = re.compile(r"^-?(0|[1-9][0-9]*)(\.[0-9]+)?$")
+DECIMAL = re.compile(r"^-?(0|[1-9]\d*)(\.\d+)?$", flags=re.ASCII)
 
 
 def canonical_decimal(value: str) -> str:
@@ -193,6 +193,9 @@ def freeze_candidates(actor: Account, version: ResearchVersion, candidate_ids: l
         raise ApiError("REVISION_CONFLICT", 412)
     if state.status != "READY" or state.active_run_id is not None:
         raise ApiError("INVALID_TRANSITION", 409)
+    account = ResearchBudget.objects.select_for_update().get(research_version=version)
+    if account.document["status"] == "CLOSED":
+        raise ApiError("RESEARCH_BUDGET_EXHAUSTED", 429)
     if not candidate_ids:
         raise ApiError("INVALID_SCHEMA", 422)
     rows = {row.id: row for row in Candidate.objects.filter(pk__in=candidate_ids, tenant_id=actor.tenant_id)}

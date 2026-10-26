@@ -71,12 +71,9 @@ export function parseEventBatch(text: string): RunEventEnvelope[] {
 /** 伺服器提示的重連間隔（SSE retry 欄位）；非 0～60000 的整數一律忽略，不自行猜測。 */
 export function parseRetryDirective(text: string): number | null {
   for (const line of text.split('\n')) {
-    const trimmed = line.endsWith('\r') ? line.slice(0, -1) : line
-    if (trimmed.startsWith(':')) continue
-    const separator = trimmed.indexOf(':')
-    const field = separator === -1 ? trimmed : trimmed.slice(0, separator)
-    if (field !== 'retry') continue
-    const raw = (separator === -1 ? '' : trimmed.slice(separator + 1)).trim()
+    const trimmed = line.trimEnd()
+    if (!trimmed.startsWith('retry:') && trimmed !== 'retry') continue
+    const raw = trimmed.slice(6).trim()
     if (!/^\d+$/.test(raw)) continue
     const value = Number(raw)
     if (value >= 0 && value <= 60_000) return value

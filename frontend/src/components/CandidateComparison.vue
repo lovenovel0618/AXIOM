@@ -212,7 +212,7 @@ function precisionFor(candidate: Candidate): number | null {
   vertical-align: top;
   text-align: left;
   font-size: 0.9rem;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 .matrix thead th {
   background: var(--surface-muted);

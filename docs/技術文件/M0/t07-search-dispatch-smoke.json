@@ -1,0 +1,115 @@
+{
+  "scope": "T07_ACTUAL_SEARCH",
+  "status": "PASS",
+  "results": [
+    {
+      "format": "CSV",
+      "via_frontend": false,
+      "run_id": "97f0f300-e0a9-4e1c-8dec-913078f49972",
+      "research_version_id": "4087836c-7c8c-4565-aa63-4cf711aa5700",
+      "candidate_count": 8,
+      "research_budget_status": "CLOSING",
+      "root_budget_status": "CLOSED",
+      "usage": {
+        "tokens": 0,
+        "cpu_seconds": 5,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 160399360,
+        "candidates_accepted": 8,
+        "candidates_generated": 8,
+        "elapsed_wall_seconds": 5
+      }
+    },
+    {
+      "format": "JSON",
+      "via_frontend": false,
+      "run_id": "b7261c8d-561e-472c-a29e-73f939e44f51",
+      "research_version_id": "bf75c282-0f94-4fa3-8fba-7ccadecc6e98",
+      "candidate_count": 8,
+      "research_budget_status": "CLOSING",
+      "root_budget_status": "CLOSED",
+      "usage": {
+        "tokens": 0,
+        "cpu_seconds": 5,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 160972800,
+        "candidates_accepted": 8,
+        "candidates_generated": 8,
+        "elapsed_wall_seconds": 5
+      }
+    },
+    {
+      "format": "PARQUET",
+      "via_frontend": false,
+      "run_id": "1eaee688-f8fa-42d8-bc49-46953c664483",
+      "research_version_id": "84893084-59a4-444b-af48-4fe8b30d3c46",
+      "candidate_count": 8,
+      "research_budget_status": "CLOSING",
+      "root_budget_status": "CLOSED",
+      "usage": {
+        "tokens": 0,
+        "cpu_seconds": 5,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 170450944,
+        "candidates_accepted": 8,
+        "candidates_generated": 8,
+        "elapsed_wall_seconds": 5
+      }
+    },
+    {
+      "format": "CSV",
+      "via_frontend": true,
+      "run_id": "d54a8b1c-7594-4294-ad55-2c97e6c13be6",
+      "research_version_id": "c9933d96-61d4-49b2-b9df-53169c9271a2",
+      "candidate_count": 8,
+      "research_budget_status": "CLOSING",
+      "root_budget_status": "CLOSED",
+      "usage": {
+        "tokens": 0,
+        "cpu_seconds": 8,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 160833536,
+        "candidates_accepted": 8,
+        "candidates_generated": 8,
+        "elapsed_wall_seconds": 9
+      }
+    },
+    {
+      "format": "JSON",
+      "via_frontend": true,
+      "run_id": "0ca8dc5b-fa70-47f8-8c5f-799d6c72f409",
+      "research_version_id": "6e2ee2c7-c0c9-4ffe-a257-c3fc06d6c4fe",
+      "candidate_count": 8,
+      "research_budget_status": "CLOSING",
+      "root_budget_status": "CLOSED",
+      "usage": {
+        "tokens": 0,
+        "cpu_seconds": 5,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 160841728,
+        "candidates_accepted": 8,
+        "candidates_generated": 8,
+        "elapsed_wall_seconds": 6
+      }
+    },
+    {
+      "format": "PARQUET",
+      "via_frontend": true,
+      "run_id": "36d2c5b5-9e1b-4011-9751-bdbd1abcdf3d",
+      "research_version_id": "ccdfba0c-6d61-4482-810e-9a742533c7d5",
+      "candidate_count": 8,
+      "research_budget_status": "CLOSING",
+      "root_budget_status": "CLOSED",
+      "usage": {
+        "tokens": 0,
+        "cpu_seconds": 5,
+        "gpu_seconds": 0,
+        "peak_memory_bytes": 170340352,
+        "candidates_accepted": 8,
+        "candidates_generated": 8,
+        "elapsed_wall_seconds": 5
+      }
+    }
+  ],
+  "product_gate_status": "NOT_RUN"
+}

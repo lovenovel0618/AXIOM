@@ -47,7 +47,7 @@ const artifacts = computed<{ id: string; label: string }[]>(() => {
 
 const canCancel = computed<boolean>(() => {
   const current = run.value
-  return current !== null && current.type === 'PROFILE' && !isTerminal(current.status)
+  return current !== null && current.is_root !== false && ['PROFILE', 'SEARCH'].includes(current.type) && !isTerminal(current.status)
 })
 
 const events = computed(() => follow.value.events)
@@ -203,10 +203,10 @@ onUnmounted(stopFollowing)
         <template v-if="follow.lastSyncedAt !== null">最後同步 {{ follow.lastSyncedAt }}。</template>
         <template v-if="events.length > 0">已收到 {{ events.length }} 筆。</template>
       </p>
-      <p v-if="follow.error !== ''" class="alert-inline" role="status">{{ follow.error }}</p>
-      <p v-if="follow.gapDetected" class="alert-inline" role="status">
+      <output v-if="follow.error !== ''" class="alert-inline">{{ follow.error }}</output>
+      <output v-if="follow.gapDetected" class="alert-inline">
         游標已過期，已依伺服器 snapshot 重新同步；期間的事件可能不完整，畫面不補猜。
-      </p>
+      </output>
       <p v-if="events.length === 0" class="muted">尚無事件。</p>
       <ol v-else class="timeline">
         <li v-for="event in events" :key="event.event_id">

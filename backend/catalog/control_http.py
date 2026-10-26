@@ -5,7 +5,7 @@ import json
 from uuid import UUID
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from catalog.http import allowed_methods, api, body
-from catalog.models import Account, ProfileBinding, ResearchEvent
+from catalog.models import Account, ResearchEvent
 from catalog.profile import recover_profile
 from catalog.read_http import run_for
 from catalog.research import available_version, version_for
@@ -13,7 +13,7 @@ from catalog.research_http import control_revision
 from catalog.services import replay
 from catalog.validation import ApiError
 from runtime.control import cancel
-from runtime.models import RunEvent
+from runtime.models import InputSnapshot, RunEvent
 from runtime.records import TERMINAL, lock_run, public_run
 
 
@@ -28,10 +28,11 @@ def cancel_run(request: HttpRequest, actor: Account, identity: UUID) -> JsonResp
         root_id = UUID(run.document["root_run_id"])
         run_for(actor,root_id)
         raise ApiError("CHILD_RUN_NOT_CANCELLABLE",409,[{"field":"root_run_id","reason":str(root_id)}])
-    if run.document["type"]!="PROFILE":
+    if run.document["type"] not in {"PROFILE", "SEARCH"}:
         raise ApiError("DEPENDENCY_UNAVAILABLE",503)
-    binding = ProfileBinding.objects.get(run=run)
-    version = version_for(actor,binding.research_version_id)
+    if run.document["type"] == "SEARCH" and not InputSnapshot.objects.filter(run=run).exists():
+        raise ApiError("DEPENDENCY_UNAVAILABLE", 503)
+    version = version_for(actor, UUID(run.document["research_version_id"]))
     available_version(actor,version.dataset_version_id)
     expected = control_revision(request)
     data = body(request,"Empty")
@@ -42,7 +43,11 @@ def cancel_run(request: HttpRequest, actor: Account, identity: UUID) -> JsonResp
         if row.document["status"] in TERMINAL:
             raise ApiError("INVALID_TRANSITION",409)
         cancel(actor.tenant_id,identity,expected)
-        recover_profile(actor.tenant_id,identity)
+        if run.document["type"] == "SEARCH":
+            from catalog.search import recover_search
+            recover_search(actor.tenant_id, identity)
+        else:
+            recover_profile(actor.tenant_id,identity)
         return public_run(actor.tenant_id,identity)
     def authorize(_previous: dict[str,object]) -> None:
         version_for(actor,version.id)

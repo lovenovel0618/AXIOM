@@ -128,11 +128,11 @@ def datasets(request: HttpRequest, actor: Account) -> JsonResponse:
 @allowed_methods(["POST"])
 @api
 def uploads(request: HttpRequest, actor: Account, identity: UUID) -> JsonResponse:
-    dataset = dataset_for(actor, identity, write=True)
+    dataset = dataset_for(actor, identity)
     data = body(request, "CreateUpload")
     origin = request.build_absolute_uri("/").rstrip("/")
     def authorize(_previous: JsonObject) -> None:
-        dataset_for(actor, identity, write=True)
+        dataset_for(actor, identity)
     response = replay(actor, request.path, request.headers.get("Idempotency-Key", ""), data, lambda: create_upload(actor, dataset, data, origin), authorize)
     return JsonResponse(response, status=201)
 

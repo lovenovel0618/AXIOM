@@ -268,3 +268,12 @@ export async function fetchResearchVersionEvents(
 ): Promise<RunEventEnvelope[]> {
   return (await fetchResearchEventBatch(client, versionId, cursor)).events
 }
+
+
+/** SEARCH 固定策略由後端產生；使用目前控制 revision 與獨立冪等鍵。 */
+export async function createSearchRun(client: ApiClient, versionId: string, revision: number, seed: number): Promise<Run> {
+  return client.request<Run>('POST', `/api/v2/research-versions/${versionId}/runs`, {
+    json: { type: 'SEARCH', seed },
+    headers: { 'Idempotency-Key': newKey(), 'If-Control-Revision': String(revision) },
+  })
+}

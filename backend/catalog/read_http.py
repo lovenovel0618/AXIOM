@@ -112,10 +112,10 @@ def run_detail(_request: HttpRequest, actor: Account, identity: UUID) -> JsonRes
     usage_status = "UNKNOWN"
     if row.first_started_at is None:
         usage_status = "NOT_STARTED"
-    elif row.document["type"]=="PROFILE":
-        if Reservation.objects.get(root__run=row).state=="RELEASED":
+    elif row.document["type"] in {"PROFILE", "SEARCH"}:
+        if row.document["is_root"] and Reservation.objects.filter(root__run=row, state="RELEASED").exists():
             usage_status = "MEASURED_UPPER_BOUND"
-    else:
+    elif row.document["type"] == "INGEST":
         binding = IngestBinding.objects.get(run=row)
         if row.document["status"] in {"SUCCEEDED","CANCELLED"} or (row.document["status"]=="FAILED" and binding.error_code is not None):
             usage_status = "MEASURED_UPPER_BOUND"

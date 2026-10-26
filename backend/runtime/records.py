@@ -57,6 +57,8 @@ def producer_for(run: RuntimeRun) -> str:
     kind = run.document["type"]
     if kind == "PROFILE":
         return "t07-profile-v1"
+    if kind in {"SEARCH", "FIT"}:
+        return "t07-" + kind.lower() + "-v1"
     if kind == "VALIDATE":
         return "t07-validate-v1"
     return "t07-ingest-v1"

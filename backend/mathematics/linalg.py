@@ -24,6 +24,34 @@ def _finite(value: float) -> float:
     return value
 
 
+def _reflect(work: list[list[float]], rhs: list[float], k: int, length: float, rows: int, columns: int) -> float:
+    """套用單一步 Householder 反射；運算及迭代順序與原求解器一致。"""
+    vector = [work[index][k] for index in range(k, rows)]
+    alpha = -length if vector[0] >= 0 else length
+    vector[0] -= alpha
+    square = math.fsum(value * value for value in vector)
+    beta = 0 if square == 0 else 2 / square
+    for column in range(k + 1, columns):
+        dot = math.fsum(vector[index - k] * work[index][column] for index in range(k, rows))
+        for index in range(k, rows):
+            work[index][column] = _finite(work[index][column] - beta * vector[index - k] * dot)
+    projection = math.fsum(vector[index - k] * rhs[index] for index in range(k, rows))
+    for index in range(k, rows):
+        rhs[index] = _finite(rhs[index] - beta * vector[index - k] * projection)
+    return alpha
+
+
+def _pivot(work: list[list[float]], norms: list[float], order: list[int], k: int, best: int) -> int:
+    """按原順序交換主元行、範數與索引；回傳本步是否發生交換。"""
+    if best == k:
+        return 0
+    for row in work:
+        row[k], row[best] = row[best], row[k]
+    norms[k], norms[best] = norms[best], norms[k]
+    order[k], order[best] = order[best], order[k]
+    return 1
+
+
 def solve(matrix: Sequence[Sequence[float]], target: Sequence[float]) -> LeastSquares:
     """解 min ||A x - b||；A 為列乘行，rank 不足時不強行給唯一參數。"""
     rows = len(matrix)
@@ -40,27 +68,11 @@ def solve(matrix: Sequence[Sequence[float]], target: Sequence[float]) -> LeastSq
     diagonal: list[float] = []
     for k in range(min(rows, columns)):
         best = max(range(k, columns), key=lambda index: norms[index])
-        if best != k:
-            for row in work:
-                row[k], row[best] = row[best], row[k]
-            norms[k], norms[best] = norms[best], norms[k]
-            order[k], order[best] = order[best], order[k]
-            pivots += 1
+        pivots += _pivot(work, norms, order, k, best)
         length = math.sqrt(norms[k])
         if length == 0:
             break
-        vector = [work[index][k] for index in range(k, rows)]
-        alpha = -length if vector[0] >= 0 else length
-        vector[0] -= alpha
-        square = math.fsum(value * value for value in vector)
-        beta = 0 if square == 0 else 2 / square
-        for column in range(k + 1, columns):
-            dot = math.fsum(vector[index - k] * work[index][column] for index in range(k, rows))
-            for index in range(k, rows):
-                work[index][column] = _finite(work[index][column] - beta * vector[index - k] * dot)
-        projection = math.fsum(vector[index - k] * rhs[index] for index in range(k, rows))
-        for index in range(k, rows):
-            rhs[index] = _finite(rhs[index] - beta * vector[index - k] * projection)
+        alpha = _reflect(work, rhs, k, length, rows, columns)
         work[k][k] = alpha
         diagonal.append(alpha)
         for column in range(k + 1, columns):

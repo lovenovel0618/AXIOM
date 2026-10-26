@@ -1,12 +1,14 @@
 """子程序輸出信任邊界：只允許固定鍵、有限有界數值及正確評分分母。
-未預期欄位、final 原值／位置或不一致計數一律拒絕，不能直接相信 child JSON。
+未預期欄位、final 原值／位置或不一致計數一律拒絕；SEARCH_PROJECTION 另只放行兩區有限數值字串。
 
-Strict allowlist for the child report; no observation or final fields pass."""
+Strict child allowlist; only SEARCH_PROJECTION permits fit/development observations."""
 from decimal import Decimal, InvalidOperation
 from fractions import Fraction
 import re
 import json
-from typing import Any
+import math
+from typing import Any, cast
+from runtime.budget_types import object_fields
 from ingestion.limits import require
 from ingestion.research import POLICY
 
@@ -49,7 +51,34 @@ def fit_check(value: dict[str, Any], count: int) -> None:
     require(number(value["target_iqr"]) >= 0, DEPENDENCY)
 
 
+def array_items(value: object) -> list[object]:
+    """只收斂已驗證的 list 容器；元素仍為 object，必須逐項檢查。"""
+    if not isinstance(value, list):
+        raise ValueError(DEPENDENCY)
+    return cast(list[object], value)
+
+
+def projection_check(value: object, config: object) -> None:
+    """SEARCH 專用數值通道只容許兩區、固定列數與有限十進位字串。"""
+    document = object_fields(value)
+    split = object_fields(object_fields(object_fields(config)["research"])["observation_split"])
+    require(set(document) == {"kind", "precision_bits", "fit", "development"}, DEPENDENCY)
+    require(type(document["precision_bits"]) is int and document["precision_bits"] == 53, DEPENDENCY)
+    for role in ("fit", "development"):
+        rows = array_items(document[role])
+        require(len(rows) == len(array_items(split[role])), DEPENDENCY)
+        for value_row in rows:
+            row = array_items(value_row)
+            require(len(row) == 2, DEPENDENCY)
+            for cell in row:
+                if not isinstance(cell, str) or not 1 <= len(cell) <= 64 or not math.isfinite(float(cell)):
+                    raise ValueError(DEPENDENCY)
+
+
 def report_check(value: dict[str, Any], config: dict[str, Any]) -> None:
+    if config.get("mode") == "SEARCH_PROJECTION" and value.get("kind") == "SearchProjection":
+        projection_check(value, config)
+        return
     require(set(value) == {"policy_version", "quality", "blocking_code", "precision_bits", "fit_summary", "model_evaluation"}, DEPENDENCY)
     require(value["policy_version"] == POLICY and type(value["precision_bits"]) is int and value["precision_bits"] == 53, DEPENDENCY)
     require(value["quality"] in {"PASS", "BLOCKED"}, DEPENDENCY)

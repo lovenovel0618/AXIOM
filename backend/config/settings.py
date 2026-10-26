@@ -73,3 +73,7 @@ SEALING_DATA = Path(os.environ.get("AXIOM_SEALING_DATA","/var/lib/axiom/sealed")
 SEALING_KEYS = Path(os.environ.get("AXIOM_SEALING_KEYS","/var/lib/axiom/sealed-keys"))
 JOURNAL_SOCKET = os.environ.get("AXIOM_JOURNAL_SOCKET","/var/lib/axiom/socket/journal.sock")
 JOURNAL_TOKEN = os.environ.get("AXIOM_JOURNAL_TOKEN","")
+
+# SEARCH 專用容量與佇列，預設關閉。
+SEARCH_ENABLED = os.environ.get("AXIOM_SEARCH_ENABLED", "0") == "1"
+SEARCH_LIMITS_JSON = os.environ.get("AXIOM_SEARCH_LIMITS", "")

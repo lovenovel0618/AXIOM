@@ -11,7 +11,7 @@ def state_for(version: ResearchVersion) -> ResearchState:
     return ResearchState.objects.select_for_update().get(pk=state.pk)
 
 
-def transition(state: ResearchState, status: str) -> None:
+def transition(state: ResearchState, status: str, producer: str = "t07-profile-v1") -> None:
     """控制狀態每次加一 revision，並在同交易保存不可變研究事件；用量更新不走此路徑。"""
     state.status = status
     state.revision += 1
@@ -19,7 +19,7 @@ def transition(state: ResearchState, status: str) -> None:
     identity = uuid4()
     event: JsonObject = {"event_id":str(identity),"schema_version":"2.0","event_type":"ResearchVersionStateChanged","tenant_id":str(state.tenant_id),
         "research_version_id":str(state.research_version_id),"run_id":None,"stream_scope":"RESEARCH","stream_id":str(state.research_version_id),"sequence":state.revision,
-        "occurred_at":db_now().isoformat(),"trace_id":str(state.research_version_id),"producer_version":"t07-profile-v1","payload":{"status":status,"revision":state.revision}}
+        "occurred_at":db_now().isoformat(),"trace_id":str(state.research_version_id),"producer_version":producer,"payload":{"status":status,"revision":state.revision}}
     validate(event,"event-v2.schema.json")
     ResearchEvent.objects.create(id=identity,research_version_id=state.research_version_id,sequence=state.revision,document=event)
 

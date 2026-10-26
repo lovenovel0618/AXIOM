@@ -1,6 +1,6 @@
 # T07 SEARCH 執行器設計
 
-狀態：已實作、已驗收（限本批離線策略核心與 EquationVersion 落庫）；T07 仍為 IN_PROGRESS。本批只把 fit／development 資料擬合成公式候選並保存不可變候選身分，不建立 SEARCH run、不建立 Candidate／FitRun，也不開放對外端點。實測見[驗證紀錄](<T07-SEARCH執行器驗證紀錄.md>)。
+狀態：切片3已實作，驗證結果與限制見[SEARCH 派送驗證紀錄](<T07-SEARCH派送驗證紀錄.md>)。離線三策略核心保持相容；本輪接上固定輸入、SEARCH root、逐策略 checkpoint、候選落庫、研究帳本與工作台。T07 整體仍為 IN_PROGRESS，產品 Gate 為 NOT_RUN。
 
 ## 交付邊界
 
@@ -28,4 +28,18 @@
 
 測試涵蓋：三策略數值結果與獨立參考對照（精確有理數閉式解、另一套求解路徑）、等價 AST 去重且保留來源、rank 不足與混疊診斷、manifest 未知欄位與越界值拒絕、`final_test` 不出現在輸入介面、真 PostgreSQL 上的唯一鍵與 guard、重複登記讀回同一列、跨租戶不可見。
 
-明確不在本批：SEARCH run 與派送／租約／checkpoint、Candidate／FitRun／FrozenCandidate 資料列、validation 引用、`final_test` 評估、候選凍結與對外 API、outbox 與異步清除。
+歷史離線切片的邊界已由後續交付擴充。SEARCH root／租約／checkpoint、Candidate／FitRun／FrozenCandidate 與凍結 API 均已有實作；本輪仍不提供 FIT 執行管線、任意插件、時間／群組切分、外送或正式產品 Gate。
+
+## 切片3：固定 SEARCH 執行鏈
+
+`POST /research-versions/{id}/runs` 使用既有 CreateSearchRun（type、seed、可選 run_budget）、Idempotency-Key 與 If-Control-Revision；只接受 READY，enqueue 與預留同交易推進版本至 QUEUED，claim 後才轉 RUNNING。Run 相位為 SEARCHING，研究及 Run 事件 producer 為 t07-search-v1；FIT 事件使用 t07-fit-v1。成功保留原封存與 READY；失敗／超時轉 FAILED，取消轉 CANCELLED。版本終態不代表正式研究結論已成立。
+
+`SEARCH_LIMITS_JSON` 為獨立 SearchLimits，完整必填 max_rows（1～4096）、max_strategy_seconds（1～30）、max_candidates（1～1000）。解析器另採封閉 ImportLimits：128 欄、單格 1 MiB、解碼 64 MiB、30 秒。專用 Linux search worker 為 2 GiB／1 CPU；每族使用獨立程序與 CPU／wall／輸出上限。預設關閉，缺容量配置回 503。
+
+TaskInput 的 projection_artifact_id 指向不可變 SearchProjectionSource recipe，僅含 fit/development row IDs、來源版本與 SHA、語意映射及定義域；不是未落庫 UUID，也不是 HTTP 內未計費解析所得的觀測值。隔離 research worker 的 SEARCH_PROJECTION 模式解析固定來源，stdout 嚴格白名單只輸出 fit/development 的 float64 十進位字串；字串避免 canonical JSON 禁止浮點而無法為 checkpoint 計算 checksum。final_test 值與位置不進投影、策略子程序或 checkpoint。TaskInput 本身亦註冊 SEALED_DETAIL，content 與快照完全一致；一般 artifact API 不可讀。
+
+策略版本由後端 STRATEGIES registry 固定生成 linear@1、polynomial@1、harmonic@1。每完成一族便原子保存累計用量及 checkpoint（已完成族、分族報告與投影）；恢復先驗輸入／環境／插件與 checksum，從未完成族繼續，再跨族去重與穩定排序。候選透過 persist_under 綁定原 root，不再建立第二個 SEARCH root；離線 persist 保留最小 root 的既有相容行為，FIT 最小 root 仍不派送。
+
+候選產生數取 proposed_count；接受數取跨族去重後的增量。CPU／wall／RSS 沿用保守 Meter，各 attempt 分別回報並彙總至原 root／研究帳本；終態按跨 attempt 總量檢查預算，超支如實入帳並拒收結果。每個 child 已回收後由 SearchAttemptStop 保存不可變停止證明；失聯續跑不釋放前次未知成本，研究帳本保持 CLOSING，失敗／取消且停止證明齊全才 CLOSED；成功搜尋保持 CLOSING 供固定提交的最終評估收尾，全部提交與槽位終態後才 CLOSED。終態後仍可接受授權遲到成本，沒有使用者暫停／恢復 API。
+
+relay_search 只掃有 InputSnapshot 的 SEARCH root，依 last_polled_at nulls_first 公平輪詢；離線最小 root、SEARCH child 與 FIT 均不進入口。catalog 0026～0028 保護 SEARCH 原生帳本／狀態／快照／私有產物關聯與 READY→QUEUED→RUNNING，未放寬 PROJECT 白名單。

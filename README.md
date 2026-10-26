@@ -79,10 +79,13 @@ docker compose exec -T -e AXIOM_NEW_PASSWORD="$AXIOM_NEW_PASSWORD" web \
 unset AXIOM_NEW_PASSWORD
 ```
 
-前台已有可用 MVP：登入後可建立資料集、以檔案選擇器上傳（前端自行計算 SHA-256）、查看版本列表，並進入任務詳情追蹤事件與檢視 PROJECT 產物；亦可在研究頁建立研究容器、以引導式表單完成語意確認與不可變 ResearchVersion 草稿，並以控制 revision 觸發 PROFILE。候選比較與證據檢視仍屬後續里程碑。同源 /api/v2/datasets 與上傳 API 也可直接測試。上傳僅保存私有原始 bytes，complete 預設回503；依 infra/README.md 明確啟用 ingest profile 及完整限制後，回202並由專用worker產生版本與純結構預覽。已支援人工語意確認與不可變 ResearchVersion 草稿；已有本機品質與已知公式預檢，另可明確啟用 PROFILE 任務／研究帳本，依 [操作說明](infra/README.md#研究帳本與profile任務t07第五切片) 取得品質及 fit-only 報告。正式封存／曝光尚未完成，研究保持 DRAFT。
+前台已有可用 MVP：登入後可建立資料集、以檔案選擇器上傳（前端自行計算 SHA-256）、查看版本列表，並進入任務詳情追蹤事件與檢視 PROJECT 產物；亦可在研究頁建立研究容器、以引導式表單完成語意確認與不可變 ResearchVersion 草稿，並以控制 revision 觸發 PROFILE。候選比較、證據檢視、最終評估槽位與 SEARCH 進度已有工作台呈現。同源 /api/v2/datasets 與上傳 API 也可直接測試。上傳僅保存私有原始 bytes，complete 預設回503；依 infra/README.md 明確啟用 ingest profile 及完整限制後，回202並由專用worker產生版本與純結構預覽。已支援人工語意確認與不可變 ResearchVersion 草稿；已有本機品質與已知公式預檢，另可明確啟用 PROFILE 任務／研究帳本，依 [操作說明](infra/README.md#研究帳本與profile任務t07第五切片) 取得品質及 fit-only 報告。正式封存與隔離 Evaluator 已有實作；PROFILE／封存完成後版本為 READY，SEARCH 派送需使用最新控制 revision。
 
 ## 未決事項
 
 GPU（D-02）、正式對外架設（D-09）等阻擋條件見 [AX-37 決策待確認清單](docs/企劃案/12-附錄/37-決策待確認清單.md)。
 
 開發服務完成驗證後保留運行，測試環境清理不得連帶停止 `axiom-dev`。服務／型別／中文註解規範見 [工程規範](docs/技術文件/M0/T07-服務常駐與型別註解規範.md)。Python 的既有動態 JSON 邊界由 `tools/typing-boundaries.json` 逐檔列管；strict 零診斷不代表這些邊界已全部消除。
+
+
+SEARCH 切片3：[執行鏈與驗證紀錄](<docs/技術文件/M0/T07-SEARCH派送驗證紀錄.md>)、[機器循證](<docs/技術文件/M0/t07-search-dispatch-validation.json>)。支援 READY 版本派送、逐策略 checkpoint 續跑、研究帳本收斂與工作台 SEARCHING／候選進度；FIT 執行管線與正式產品 Gate 仍未開放。

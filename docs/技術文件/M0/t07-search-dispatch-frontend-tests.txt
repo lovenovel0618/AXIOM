@@ -1,0 +1,31 @@
+
+> axiom-frontend@0.0.0 typecheck
+> vue-tsc --noEmit
+
+
+> axiom-frontend@0.0.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/dino/DinoProject/AXIOM/frontend
+
+
+ Test Files  15 passed (15)
+      Tests  129 passed (129)
+   Start at  13:13:38
+   Duration  3.38s (transform 9.14s, setup 0ms, import 13.23s, tests 3.63s, environment 86ms)
+
+
+> axiom-frontend@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 72 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.37 kB │ gzip:  0.29 kB
+dist/assets/index-Ci6G_sWL.css   12.25 kB │ gzip:  2.32 kB
+dist/assets/index-DDwyFx40.js   172.23 kB │ gzip: 60.38 kB
+
+✓ built in 1.05s

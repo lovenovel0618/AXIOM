@@ -71,6 +71,7 @@ def in_domain(value: Fraction, domain: dict[str, Any]) -> bool:
 
 class Inspector:
     def __init__(self, config: dict[str, Any]) -> None:
+        self.projection = config.get("mode") == "SEARCH_PROJECTION"
         self.research = config["research"]
         split = self.research["observation_split"]
         self.members = {row: name for name in PARTITIONS for row in split[name]}
@@ -109,6 +110,10 @@ class Inspector:
             "precision_bits": 53, "fit_summary": None, "model_evaluation": None}
         if self.bad:
             return result
+        if self.projection:
+            return {"kind": "SearchProjection", "precision_bits": 53,
+                "fit": [[repr(row[1]), repr(row[2])] for row in self.selected["fit"]],
+                "development": [[repr(row[1]), repr(row[2])] for row in self.selected["development"]]}
         fit = self.selected["fit"]
         targets = sorted(row[0] for row in fit)
         result["fit_summary"] = {"selected_count": len(fit), "unique_x": len({row[1] for row in fit}), "target_min": str(targets[0]), "target_max": str(targets[-1]),

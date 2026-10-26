@@ -14,10 +14,10 @@ from runtime.contracts import JsonObject, catalog, canonical_bytes
 
 
 class ApiError(ValueError):
-    def __init__(self, code: str, status: int, details: list[JsonObject] | None = None) -> None:
+    def __init__(self, code: str, status: int, details: list[dict[str, object]] | None = None) -> None:
         """保留穩定錯誤碼與 HTTP 狀態；details 僅能帶契約允許的欄位級說明。"""
         self.code, self.status = code, status
-        self.details: list[JsonObject] = [] if details is None else details
+        self.details: list[dict[str, object]] = [] if details is None else details
         super().__init__(code)
 
 

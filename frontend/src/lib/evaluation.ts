@@ -114,6 +114,25 @@ function parseMetricReasons(source: object): Record<string, string> | null {
   return result
 }
 
+function coverageValue(source: object): number | null {
+  const coverage = has(source, 'valid_coverage') ? field(source, 'valid_coverage') : undefined
+  return typeof coverage === 'number' && Number.isFinite(coverage) && coverage >= 0 && coverage <= 1 ? coverage : null
+}
+
+function shaValue(source: object): string | null {
+  const value = text(source, 'sha256')
+  return value !== null && SHA256.test(value) ? value : null
+}
+
+function parseMetrics(source: object): { mae: number | null; rmse: number | null } | null {
+  if (!has(source, 'metrics')) return null
+  const metrics = field(source, 'metrics')
+  if (typeof metrics !== 'object' || metrics === null) return null
+  const mae = metric(metrics, 'mae')
+  const rmse = metric(metrics, 'rmse')
+  return mae === undefined || rmse === undefined ? null : { mae, rmse }
+}
+
 /** 契約要求 outcome、誤差量、覆蓋率與計數全部可讀才接受整份結果。 */
 export function parseValidationRun(value: unknown): ValidationRun | null {
   if (typeof value !== 'object' || value === null) return null
@@ -131,22 +150,19 @@ export function parseValidationRun(value: unknown): ValidationRun | null {
   if (empiricalLevel === null) return null
   const proofLevel = oneOf(source, 'proof_level', PROOF_LEVELS)
   if (proofLevel === null) return null
-  if (!has(source, 'metrics')) return null
-  const metrics = field(source, 'metrics')
-  if (typeof metrics !== 'object' || metrics === null) return null
-  const mae = metric(metrics, 'mae')
-  const rmse = metric(metrics, 'rmse')
-  if (mae === undefined || rmse === undefined) return null
+  const metrics = parseMetrics(source)
+  if (metrics === null) return null
+  const { mae, rmse } = metrics
   const metricReasons = parseMetricReasons(source)
   if (metricReasons === null) return null
-  const coverage = has(source, 'valid_coverage') ? field(source, 'valid_coverage') : undefined
-  if (typeof coverage !== 'number' || !Number.isFinite(coverage) || coverage < 0 || coverage > 1) return null
+  const coverage = coverageValue(source)
+  if (coverage === null) return null
   const selected = count(source, 'selected_count')
   const valid = count(source, 'valid_count')
   const failed = count(source, 'failed_count')
   if (selected === null || valid === null || failed === null) return null
-  const sha = text(source, 'sha256')
-  if (sha === null || !SHA256.test(sha)) return null
+  const sha = shaValue(source)
+  if (sha === null) return null
   const createdAt = text(source, 'created_at')
   if (createdAt === null) return null
   return {

@@ -135,6 +135,16 @@ export class EventFollower {
     }, delayMs)
   }
 
+  private async recoverCursor(cause: unknown): Promise<void> {
+    if (!(cause instanceof ApiError) || cause.code !== 'INVALID_CURSOR') return
+    this.state.gapDetected = true
+    try {
+      this.state.cursor = await this.options.snapshotCursor()
+    } catch {
+      this.state.error = '游標已失效且無法重新取得同步點；將繼續重連。'
+    }
+  }
+
   private async attempt(): Promise<void> {
     if (!this.running) return
     try {
@@ -164,14 +174,7 @@ export class EventFollower {
       this.state.attempts += 1
       this.state.status = 'RECONNECTING'
       this.state.error = describeError(cause)
-      if (cause instanceof ApiError && cause.code === 'INVALID_CURSOR') {
-        this.state.gapDetected = true
-        try {
-          this.state.cursor = await this.options.snapshotCursor()
-        } catch {
-          this.state.error = '游標已失效且無法重新取得同步點；將繼續重連。'
-        }
-      }
+      await this.recoverCursor(cause)
       if (!this.running) return
       this.publish()
       this.schedule(retryDelay(this.state.attempts, this.retryMs))

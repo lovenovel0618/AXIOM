@@ -47,7 +47,7 @@ class ConcurrencyTests(TransactionTestCase):
         with transaction.atomic():
             actor = actor_for(self.actor.user_id)
             dataset = create_dataset(actor, {"name": "same"})
-            row = dataset_for(actor, UUID(dataset["id"]), write=True)
+            row = dataset_for(actor, UUID(dataset["id"]))
             upload = create_upload(actor, row, {"filename": "test.csv", "format": "CSV", "size_bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()}, "http://localhost")
         identity, token = UUID(upload["id"]), upload["required_headers"]["X-Upload-Token"]
         def put(_index: int) -> None:

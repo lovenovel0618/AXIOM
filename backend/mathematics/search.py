@@ -402,7 +402,27 @@ def _cost_key(cost: JsonObject) -> tuple[int, int, int, int, int, int, int, str]
             cost["timeout_seconds"], cost["memory_bytes"], cost["resource_class"])
 
 
-def search(request: Request) -> JsonObject:
+def propose_family(request: Request, registered: Strategy) -> tuple[list[Proposal], list[Diagnostic]]:
+    """同一族變體依 registry 原序提出候選；拒用診斷與數值順序保持不變。"""
+    diagnostics: list[Diagnostic] = []
+    selected: list[Proposal] = []
+    for index, _label in registered.variants:
+        try:
+            produced, notes = registered.propose(request, index)
+        except DslError as error:
+            diagnostics.extend([Diagnostic(error.code, f"{registered.family} variant {index} rejected")])
+            continue
+        selected.extend(produced)
+        diagnostics.extend(notes)
+    return selected, diagnostics
+
+
+def development_score(request: Request, plan: Plan, parameters: dict[str, str]) -> JsonObject | None:
+    """development 只評分，不參與擬合；空分區沿用明確的無分數輸出。"""
+    return None if not request.development else score(plan, parameters, request.variable.name, list(request.development))
+
+
+def search(request: Request, families: tuple[str, ...] | None = None) -> JsonObject:
     """在 fit 上擬合、只在 development 上評分，回傳帶診斷與成本形狀的確定性候選順序。"""
     require(len(request.variable.unit) == 7 and len(request.target_unit) == 7, UNIT_ERROR)
     require(bool(request.fit), LIMIT)
@@ -413,16 +433,9 @@ def search(request: Request) -> JsonObject:
     bindings: dict[str, dict[str, str]] = {}
     proposed = 0
     for registered in STRATEGIES:
-        diagnostics: list[Diagnostic] = []
-        selected: list[Proposal] = []
-        for index, _label in registered.variants:
-            try:
-                produced, notes = registered.propose(request, index)
-            except DslError as error:
-                diagnostics.extend([Diagnostic(error.code, f"{registered.family} variant {index} rejected")])
-                continue
-            selected.extend(produced)
-            diagnostics.extend(notes)
+        if families is not None and registered.family not in families:
+            continue
+        selected, diagnostics = propose_family(request, registered)
         proposed += len(selected)
         for proposal in selected:
             identity = proposal.plan.identity_hash
@@ -434,17 +447,14 @@ def search(request: Request) -> JsonObject:
         strategies.append(registered.manifest.document() | {"family": registered.family,
             "status": EXECUTED if selected else NOT_APPLICABLE, "proposed_count": len(selected),
             "diagnostics": [note.document() for note in diagnostics]})
-    candidates: list[JsonObject] = []
     ranking: list[tuple[tuple[object, ...], JsonObject]] = []
     for identity, sources in origins.items():
-        development = None if not request.development else score(plans[identity], bindings[identity],
-            request.variable.name, list(request.development))
+        development = development_score(request, plans[identity], bindings[identity])
         ordered = sorted(sources, key=lambda entry: (entry[0], _cost_key(entry[1])))
         cost = min((entry[1] for entry in ordered), key=_cost_key)
         entry: JsonObject = {"identity_hash": identity, "dsl": json.loads(plans[identity].canonical),
             "node_count": plans[identity].node_count, "cost_shape": cost, "development": development,
             "origins": [{"source": source, "cost_shape": shape} for source, shape in ordered]}
-        candidates.append(entry)
         error = development["mae"] if development is not None and development["mae"] is not None else math.inf
         ranking.append(((float(error), plans[identity].node_count, _cost_key(cost), identity), entry))
     ranking.sort(key=lambda item: item[0])
@@ -456,3 +466,38 @@ def search(request: Request) -> JsonObject:
         return report | {"diagnostics": [Diagnostic("EMPTY_DEVELOPMENT",
             "development partition is empty; candidates carry no score and keep the deterministic tie-break").document()]}
     return report | {"diagnostics": []}
+
+
+def merge_reports(reports: Sequence[dict[str, object]]) -> dict[str, object]:
+    """合併已完成策略的持久報告，跨族去重與排序完全沿用完整搜尋口徑。"""
+    require(bool(reports), "INVALID_SCHEMA")
+    # 報告僅由本模組產生並經 checkpoint checksum 保護；重新編譯仍驗 DSL 身分。
+    merged = json.loads(canonical_bytes(reports[0]))
+    unique: dict[str, dict[str, object]] = {}
+    for report in reports:
+        entries = json.loads(canonical_bytes(report))["candidates"]
+        for entry in entries:
+            plan = compile_dsl(canonical_bytes(entry["dsl"]))
+            require(plan.identity_hash == entry["identity_hash"], "INVALID_SCHEMA")
+            identity = plan.identity_hash
+            if identity in unique:
+                combined = json.loads(canonical_bytes(unique[identity]))
+                combined["origins"].extend(entry["origins"])
+                unique[identity] = combined
+            else:
+                unique[identity] = json.loads(canonical_bytes(entry))
+    for identity, value in unique.items():
+        entry = json.loads(canonical_bytes(value))
+        entry["origins"] = sorted(entry["origins"], key=lambda origin: (origin["source"], _cost_key(origin["cost_shape"])))
+        entry["cost_shape"] = min((origin["cost_shape"] for origin in entry["origins"]), key=_cost_key)
+        unique[identity] = entry
+    def ranking(entry: dict[str, object]) -> tuple[object, ...]:
+        value = json.loads(canonical_bytes(entry))
+        development = value["development"]
+        error = development["mae"] if development is not None and development["mae"] is not None else math.inf
+        return (float(error), value["node_count"], _cost_key(value["cost_shape"]), value["identity_hash"])
+    merged["candidates"] = sorted(unique.values(), key=ranking)
+    merged["strategies"] = [strategy for report in reports for strategy in json.loads(canonical_bytes(report))["strategies"]]
+    merged["proposed_count"] = sum(int(json.loads(canonical_bytes(report))["proposed_count"]) for report in reports)
+    merged["duplicate_count"] = merged["proposed_count"] - len(unique)
+    return merged

@@ -54,6 +54,7 @@ export interface Run {
   research_trace_artifact_ids?: string[]
   evidence_bundle_ids?: string[]
   child_run_ids?: string[]
+  is_root?: boolean
 }
 
 export const TERMINAL_STATUSES: readonly RunStatus[] = ['SUCCEEDED', 'FAILED', 'CANCELLED']
@@ -66,7 +67,7 @@ export async function getRun(client: ApiClient, id: string): Promise<Run> {
   return client.request<Run>('GET', `/api/v2/runs/${id}`)
 }
 
-/** 取消需帶目前控制 revision；後端只對 PROFILE 任務提供，其餘回 503。 */
+/** 取消需帶目前控制 revision；後端對 PROFILE／SEARCH 根任務提供，其餘回 503。 */
 export async function cancelRun(client: ApiClient, run: Run): Promise<Run> {
   return client.request<Run>('POST', `/api/v2/runs/${run.id}/cancel`, {
     json: {},

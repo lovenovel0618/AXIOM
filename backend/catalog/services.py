@@ -22,7 +22,7 @@ def actor_for(user_id: int) -> Account:
     return actor
 
 
-def dataset_for(actor: Account, identity: UUID, write: bool = False) -> Dataset:
+def dataset_for(actor: Account, identity: UUID) -> Dataset:
     row = Dataset.objects.select_for_update().filter(pk=identity, tenant_id=actor.tenant_id).first()
     if row is None:
         raise ApiError("NOT_FOUND", 404)
@@ -106,7 +106,7 @@ def upload_for(actor: Account, identity: UUID) -> Upload:
     candidate = Upload.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
     if candidate is None:
         raise ApiError("NOT_FOUND", 404)
-    dataset_for(actor, candidate.dataset_id, write=True)
+    dataset_for(actor, candidate.dataset_id)
     return Upload.objects.select_for_update().get(pk=identity, tenant_id=actor.tenant_id)
 
 

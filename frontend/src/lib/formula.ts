@@ -34,8 +34,10 @@ export function renderFormula(node: DslNode): string {
       return `${node.op}(${node.args.map(renderFormula).join(', ')})`
     case 'piecewise':
       return renderPiecewise(node)
-    default:
-      return `(${node.args.map(renderFormula).join(` ${BINARY[node.op]} `)})`
+    default: {
+      const separator = ` ${BINARY[node.op]} `
+      return `(${node.args.map(renderFormula).join(separator)})`
+    }
   }
 }
 
@@ -44,7 +46,8 @@ function renderPiecewise(node: Extract<DslNode, { op: 'piecewise' }>): string {
     const operator = COMPARATORS[branch.when.comparator]
     return `${renderFormula(branch.then)} 若 ${branch.when.var} ${operator} ${renderRational(branch.when.value)}`
   })
-  return `{ ${[...branches, `否則 ${renderFormula(node.otherwise)}`].join('；')} }`
+  const otherwise = `否則 ${renderFormula(node.otherwise)}`
+  return `{ ${[...branches, otherwise].join('；')} }`
 }
 
 /** 模型複雜度定義為 AST 節點總數（含常數與葉節點），可跨候選一致比較。 */
