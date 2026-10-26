@@ -2,7 +2,8 @@
 /** 產物詳情：只呈現後端 metadata；內容以同源附件下載，不在前端解析。 */
 import { onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { artifactContentPath, getArtifact, type Artifact, type ArtifactStatus } from '../api/artifacts'
+import { artifactContentPath, getArtifact, getArtifactContent, type Artifact, type ArtifactStatus } from '../api/artifacts'
+import { formatArtifactPreview, supportsArtifactPreview } from '../lib/artifactPreview'
 import { describeError } from '../lib/messages'
 import { readBackRef } from '../lib/navigationState'
 import { client } from '../lib/session'
@@ -14,6 +15,8 @@ const backRef = readBackRef(route.query)
 const artifact = ref<Artifact | null>(null)
 const error = ref('')
 const loading = ref(true)
+const preview = ref('')
+const previewError = ref('')
 
 const statusLabel: Record<ArtifactStatus, string> = {
   AVAILABLE: '可用',
@@ -26,8 +29,17 @@ const downloadPath = artifactContentPath(artifactId)
 async function load(): Promise<void> {
   loading.value = true
   error.value = ''
+  preview.value = ''
+  previewError.value = ''
   try {
     artifact.value = await getArtifact(client, artifactId)
+    if (supportsArtifactPreview(artifact.value)) {
+      try {
+        preview.value = formatArtifactPreview(await getArtifactContent<unknown>(client, artifact.value.id))
+      } catch (cause) {
+        previewError.value = describeError(cause)
+      }
+    }
   } catch (cause) {
     artifact.value = null
     error.value = describeError(cause)
@@ -83,6 +95,13 @@ onMounted(load)
         由後端在回傳前重新校驗雜湊與大小；狀態不是「可用」時會回 409，不以快取內容替代。
       </p>
       <a :href="downloadPath" download>下載 JSON 內容</a>
+
+      <template v-if="supportsArtifactPreview(artifact)">
+        <h3>預覽</h3>
+        <p v-if="previewError !== ''" class="muted">{{ previewError }}</p>
+        <p v-else-if="preview === ''" class="muted">此產物尚未取得可預覽內容。</p>
+        <pre v-else class="preview"><code>{{ preview }}</code></pre>
+      </template>
     </template>
   </section>
 
@@ -136,6 +155,16 @@ h3 {
 .muted {
   color: var(--text-muted);
   font-size: 0.9rem;
+}
+.preview {
+  margin: 0.75rem 0 0;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface-2);
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 .alert {
   padding: 0.6rem 0.75rem;

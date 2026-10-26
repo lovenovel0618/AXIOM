@@ -5,8 +5,9 @@
  */
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import { getResearchVersion, type ResearchVersion } from '../api/research'
 import { cancelRun, fetchRunEventBatch, getRun, isTerminal, type Run, type RunStatus } from '../api/runs'
-import { readBackRef } from '../lib/navigationState'
+import { readBackRef, withBackRef } from '../lib/navigationState'
 import {
   EventFollower,
   FOLLOW_STATUS_LABELS,
@@ -21,6 +22,7 @@ const runId = String(route.params.id ?? '')
 const backRef = readBackRef(route.query)
 
 const run = ref<Run | null>(null)
+const researchVersion = ref<ResearchVersion | null>(null)
 const follow = ref<FollowState>(INITIAL_FOLLOW_STATE)
 const error = ref('')
 const notice = ref('')
@@ -44,8 +46,13 @@ const artifacts = computed<{ id: string; label: string }[]>(() => {
   return [
     ...(current.diagnostic_artifact_ids ?? []).map((id) => ({ id, label: '診斷產物' })),
     ...(current.research_trace_artifact_ids ?? []).map((id) => ({ id, label: '研究軌跡產物' })),
+    ...(current.evidence_bundle_ids ?? []).map((id) => ({ id, label: '證據 Bundle' })),
   ]
 })
+
+const childRuns = computed(() => run.value?.child_run_ids ?? [])
+
+const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
 
 const canCancel = computed<boolean>(() => {
   const current = run.value
@@ -69,6 +76,15 @@ function summarize(payload: Record<string, unknown>): string {
 
 async function syncRun(): Promise<void> {
   run.value = await getRun(client, runId)
+  if (run.value.research_version_id === null) {
+    researchVersion.value = null
+    return
+  }
+  try {
+    researchVersion.value = await getResearchVersion(client, run.value.research_version_id)
+  } catch {
+    researchVersion.value = null
+  }
 }
 
 /** AX-21：游標過期時重新讀取權威 run 投影，取得目前序號後再續接。 */
@@ -170,6 +186,65 @@ onUnmounted(stopFollowing)
         <dd class="mono">{{ run.dataset_id ?? '不適用' }}</dd>
       </dl>
 
+      <h3>關聯上下文</h3>
+      <dl class="facts">
+        <dt>研究版本</dt>
+        <dd>
+          <RouterLink
+            v-if="researchVersion !== null"
+            :to="{
+              name: 'researches',
+              params: { id: researchVersion.research_id },
+              query: withBackRef(route.fullPath, { version: researchVersion.id }),
+            }"
+          >
+            {{ researchVersion.id }}
+          </RouterLink>
+          <span v-else class="mono">{{ run.research_version_id ?? '不適用' }}</span>
+        </dd>
+        <dt>研究容器</dt>
+        <dd>
+          <RouterLink
+            v-if="researchVersion !== null"
+            :to="{ name: 'researches', params: { id: researchVersion.research_id }, query: backQuery }"
+          >
+            {{ researchVersion.research_id }}
+          </RouterLink>
+          <span v-else class="muted">未取得</span>
+        </dd>
+        <dt>子任務數</dt>
+        <dd class="mono">{{ childRuns.length }}</dd>
+        <dt>略過階段</dt>
+        <dd class="mono">{{ run.skipped_phases?.length ?? 0 }}</dd>
+      </dl>
+
+      <div v-if="childRuns.length !== 0" class="link-stack">
+        <RouterLink
+          v-for="id in childRuns"
+          :key="id"
+          :to="{ name: 'run', params: { id }, query: backQuery }"
+          class="resource-link"
+        >
+          <span>子任務</span>
+          <span class="mono">{{ id }}</span>
+        </RouterLink>
+      </div>
+
+      <table v-if="(run.skipped_phases?.length ?? 0) !== 0" class="compact-table">
+        <thead>
+          <tr>
+            <th>略過階段</th>
+            <th>原因</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in run.skipped_phases" :key="`${row.phase}:${row.reason}`">
+            <td>{{ row.phase }}</td>
+            <td>{{ row.reason }}</td>
+          </tr>
+        </tbody>
+      </table>
+
       <h3>預算用量</h3>
       <p v-if="run.budget_usage === undefined" class="muted">後端未提供用量投影。</p>
       <dl v-else class="facts">
@@ -197,7 +272,7 @@ onUnmounted(stopFollowing)
       <p v-if="artifacts.length === 0" class="muted">此任務未回報產物識別碼。</p>
       <ul v-else class="list">
         <li v-for="row in artifacts" :key="row.id">
-          <RouterLink :to="{ name: 'artifact', params: { id: row.id } }">
+          <RouterLink :to="{ name: 'artifact', params: { id: row.id }, query: backQuery }">
             {{ row.label }}
           </RouterLink>
           <span class="mono id">{{ row.id }}</span>
@@ -294,6 +369,25 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+}
+.link-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.resource-link {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.65rem 0.8rem;
+  background: var(--surface-2);
+}
+.compact-table {
+  width: 100%;
+  margin-top: 0.75rem;
 }
 .timeline {
   list-style: none;
