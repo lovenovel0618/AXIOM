@@ -2,11 +2,13 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { sessionStatus } from './lib/session'
 import ArtifactView from './views/ArtifactView.vue'
+import DiscoveriesView from './views/DiscoveriesView.vue'
 import LoginView from './views/LoginView.vue'
 import ModuleView from './views/ModuleView.vue'
 import RunView from './views/RunView.vue'
 import DatasetsView from './views/DatasetsView.vue'
 import ResearchView from './views/ResearchView.vue'
+import VerificationView from './views/VerificationView.vue'
 
 const routes: RouteRecordRaw[] = [
   { path: '/', redirect: { name: 'overview' } },
@@ -14,8 +16,8 @@ const routes: RouteRecordRaw[] = [
   { path: '/overview', name: 'overview', component: ModuleView },
   { path: '/datasets', name: 'datasets', component: DatasetsView },
   { path: '/researches/:id?', name: 'researches', component: ResearchView },
-  { path: '/discoveries', name: 'discoveries', component: ModuleView },
-  { path: '/verification', name: 'verification', component: ModuleView },
+  { path: '/discoveries', name: 'discoveries', component: DiscoveriesView },
+  { path: '/verification', name: 'verification', component: VerificationView },
   { path: '/memory', name: 'memory', component: ModuleView },
   { path: '/models', name: 'model', component: ModuleView },
   { path: '/training', name: 'training', component: ModuleView },
