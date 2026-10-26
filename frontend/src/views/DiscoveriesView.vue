@@ -6,10 +6,11 @@ import { getEquationVersion, getFitRun } from '../api/candidates'
 import { listResearchVersionRuns, listResearchVersions, listResearches } from '../api/research'
 import { loadCandidateDetails, loadDiscoveriesCenter, type CandidateDetailBundle, type DiscoveriesCenter } from '../lib/discoveries'
 import { describeError } from '../lib/messages'
-import { withBackRef } from '../lib/navigationState'
+import { readBackRef, withBackRef } from '../lib/navigationState'
 import { readQueryList, readQueryString, replaceQueryState } from '../lib/queryState'
 import { client } from '../lib/session'
 import { listRunCandidates } from '../api/candidates'
+import { buildDiscoveriesHandoffSummary } from '../lib/workflowHandoff'
 
 const route = useRoute()
 const router = useRouter()
@@ -21,19 +22,39 @@ const selectedRunId = ref(readQueryString(route.query, 'run'))
 const pinned = ref<string[]>(readQueryList(route.query, 'pins'))
 const details = ref<CandidateDetailBundle>({ equations: {}, fits: {} })
 
+const backRef = computed(() => readBackRef(route.query))
 const selectedRun = computed(() => center.value?.searchRuns.find((row) => row.run.id === selectedRunId.value) ?? null)
 const selectedCandidates = computed(() => selectedRun.value?.candidates ?? [])
 const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
+const handoffSummary = computed(() => buildDiscoveriesHandoffSummary(selectedRun.value, pinned.value))
 const workbenchCandidateQuery = computed<Record<string, string> | null>(() => {
-  const current = selectedRun.value
-  if (current === null || current.research === null || current.version === null) return null
-  const focusIds = pinned.value.length === 0 ? current.candidates.map((candidate) => candidate.id) : pinned.value
+  const summary = handoffSummary.value
+  if (summary === null || summary.researchId === null || summary.versionId === null || summary.focusIds.length === 0) return null
   return withBackRef(route.fullPath, {
-    version: current.version.id,
+    version: summary.versionId,
     flowkind: 'CANDIDATE',
-    focuscandidates: focusIds.join(','),
-    node: focusIds[0] === undefined ? undefined : `candidate:${focusIds[0]}`,
+    focuscandidates: summary.focusIds.join(','),
+    node: summary.focusIds[0] === undefined ? undefined : `candidate:${summary.focusIds[0]}`,
   })
+})
+const allCandidatesWorkbenchQuery = computed<Record<string, string> | null>(() => {
+  const summary = handoffSummary.value
+  if (summary === null || summary.researchId === null || summary.versionId === null || summary.candidates.length === 0) return null
+  const ids = summary.candidates.map((candidate) => candidate.id)
+  return withBackRef(route.fullPath, {
+    version: summary.versionId,
+    flowkind: 'CANDIDATE',
+    focuscandidates: ids.join(','),
+    node: ids[0] === undefined ? undefined : `candidate:${ids[0]}`,
+  })
+})
+const previewCandidates = computed(() => {
+  const summary = handoffSummary.value
+  if (summary === null) return []
+  const previewIds = summary.pinnedIds.length === 0 ? summary.suggestedPinnedIds : summary.pinnedIds
+  return previewIds
+    .map((id) => summary.candidates.find((candidate) => candidate.id === id))
+    .filter((candidate): candidate is NonNullable<typeof candidate> => candidate !== undefined)
 })
 
 async function load(): Promise<void> {
@@ -62,6 +83,14 @@ async function load(): Promise<void> {
 
 function togglePinned(id: string): void {
   pinned.value = pinned.value.includes(id) ? pinned.value.filter((row) => row !== id) : [...pinned.value, id]
+}
+
+function pinSuggestedCandidates(): void {
+  pinned.value = handoffSummary.value?.suggestedPinnedIds ?? []
+}
+
+function clearPinnedCandidates(): void {
+  pinned.value = []
 }
 
 onMounted(load)
@@ -129,6 +158,7 @@ watch(
         <p class="muted">從最近 SEARCH 任務與候選分支，直接查看目前的假設生成與比較結果。</p>
       </div>
       <div class="actions">
+        <button v-if="backRef !== ''" type="button" @click="router.push(backRef)">返回來源頁</button>
         <button type="button" @click="load">重新載入</button>
         <RouterLink :to="{ name: 'researches' }">
           <button type="button" class="primary">前往研究</button>
@@ -177,6 +207,71 @@ watch(
           <h3>候選比較</h3>
           <p v-if="selectedRun === null" class="muted">請先選擇一個 SEARCH 任務。</p>
           <template v-else>
+            <section v-if="handoffSummary !== null" class="handoff-workspace">
+              <div class="handoff-head">
+                <div>
+                  <strong>分支接力工作區</strong>
+                  <p class="muted">在發現頁完成比較後，可直接把目前候選集合送回研究工作台，或恢復整個 SEARCH 分支。</p>
+                </div>
+                <span class="tag">{{ handoffSummary.totalCandidates }} 候選</span>
+              </div>
+              <div class="handoff-grid">
+                <div class="row compact">
+                  <span>研究</span>
+                  <span>{{ handoffSummary.researchName }}</span>
+                </div>
+                <div class="row compact">
+                  <span>研究版本</span>
+                  <span class="mono">{{ handoffSummary.versionId ?? '未取得' }}</span>
+                </div>
+                <div class="row compact">
+                  <span>已選比較</span>
+                  <span class="tag">{{ handoffSummary.pinnedIds.length }}</span>
+                </div>
+                <div class="row compact">
+                  <span>剩餘槽位</span>
+                  <span class="tag">{{ handoffSummary.availableSlots }}</span>
+                </div>
+                <div class="row compact">
+                  <span>已完成驗證</span>
+                  <span class="tag">{{ handoffSummary.statusCounts.FINISHED }}</span>
+                </div>
+                <div class="row compact">
+                  <span>驗證進行中</span>
+                  <span class="tag">{{ handoffSummary.statusCounts.PENDING }}</span>
+                </div>
+              </div>
+              <div class="actions wrap" style="margin: 12px 0;">
+                <button
+                  type="button"
+                  :disabled="handoffSummary.suggestedPinnedIds.length === 0 || handoffSummary.pinnedIds.length === handoffSummary.suggestedPinnedIds.length"
+                  @click="pinSuggestedCandidates"
+                >
+                  挑選前四候選
+                </button>
+                <button type="button" :disabled="pinned.length === 0" @click="clearPinnedCandidates">清空比較</button>
+                <RouterLink
+                  v-if="handoffSummary.researchId !== null && workbenchCandidateQuery !== null"
+                  :to="{ name: 'researches', params: { id: handoffSummary.researchId }, query: workbenchCandidateQuery }"
+                >
+                  <button type="button">用目前比較集打開工作台</button>
+                </RouterLink>
+                <RouterLink
+                  v-if="handoffSummary.researchId !== null && allCandidatesWorkbenchQuery !== null && handoffSummary.focusIds.length !== handoffSummary.totalCandidates"
+                  :to="{ name: 'researches', params: { id: handoffSummary.researchId }, query: allCandidatesWorkbenchQuery }"
+                >
+                  <button type="button">在工作台看全部候選</button>
+                </RouterLink>
+              </div>
+              <div v-if="previewCandidates.length !== 0" class="preview-list">
+                <div v-for="candidate in previewCandidates" :key="candidate.id" class="preview-card">
+                  <strong>#{{ candidate.developmentRank ?? '—' }}</strong>
+                  <span>{{ candidate.source }}</span>
+                  <span class="tag">{{ candidate.validationStatus }}</span>
+                  <span class="mono">{{ candidate.id }}</span>
+                </div>
+              </div>
+            </section>
             <div class="row compact">
               <span>研究版本</span>
               <span class="mono">{{ selectedRun.version?.id ?? '未取得' }}</span>
@@ -296,12 +391,54 @@ watch(
   padding: 10px 0;
 }
 
+.handoff-workspace {
+  border: 1px solid #27405d;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: #0b1829;
+}
+
+.handoff-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.handoff-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+
+.preview-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid #27405d;
+  border-radius: 10px;
+  padding: 12px;
+  background: #0e1e31;
+}
+
 @media (max-width: 1200px) {
   .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .discovery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .handoff-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -6,10 +6,11 @@ import { listResearchVersionRuns, listResearchVersions, listResearches } from '.
 import { parseValidationRun } from '../lib/evaluation'
 import { parseFinalEvaluation } from '../lib/finalEvaluation'
 import { describeError } from '../lib/messages'
-import { withBackRef } from '../lib/navigationState'
+import { readBackRef, withBackRef } from '../lib/navigationState'
 import { readQueryList, readQueryString, replaceQueryState } from '../lib/queryState'
 import { client } from '../lib/session'
 import { loadVerificationCenter, type VerificationCenter } from '../lib/verificationCenter'
+import { buildVerificationHandoffSummary } from '../lib/workflowHandoff'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,27 +20,56 @@ const error = ref('')
 const filteredSubmissionIds = ref<string[]>(readQueryList(route.query, 'submissions'))
 const selectedSubmissionId = ref(readQueryString(route.query, 'submission'))
 
+const backRef = computed(() => readBackRef(route.query))
 const visibleSubmissionRows = computed(() => {
   const rows = center.value?.submissionRows ?? []
   if (filteredSubmissionIds.value.length === 0) return rows
   const allowed = new Set(filteredSubmissionIds.value)
   return rows.filter((row) => allowed.has(row.submissionId))
 })
+const handoffSummary = computed(() =>
+  buildVerificationHandoffSummary(center.value?.submissionRows ?? [], filteredSubmissionIds.value, selectedSubmissionId.value),
+)
 
 const selectedSubmission = computed(
   () => visibleSubmissionRows.value.find((row) => row.submissionId === selectedSubmissionId.value) ?? null,
 )
 const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
-const workbenchSubmissionQuery = computed<Record<string, string> | null>(() => {
+const selectedVersionGroup = computed(() =>
+  handoffSummary.value.groups.find((group) => group.submissionIds.includes(selectedSubmissionId.value)) ??
+  handoffSummary.value.groups[0] ??
+  null,
+)
+const selectedVersionWorkbenchQuery = computed<Record<string, string> | null>(() => {
+  const group = selectedVersionGroup.value
+  if (group === null) return null
+  const focusIds = group.submissionIds
+  const nodeId = group.selectedSubmissionId ?? focusIds[0]
+  return withBackRef(route.fullPath, {
+    version: group.versionId,
+    flowkind: 'SUBMISSION',
+    focussubmissions: focusIds.join(','),
+    node: nodeId === undefined ? undefined : `submission:${nodeId}`,
+  })
+})
+const currentSubmissionWorkbenchQuery = computed<Record<string, string> | null>(() => {
   const row = selectedSubmission.value
   if (row === null) return null
   return withBackRef(route.fullPath, {
     version: row.version.id,
     flowkind: 'SUBMISSION',
-    focussubmissions: visibleSubmissionRows.value.map((entry) => entry.submissionId).join(','),
+    focussubmissions: row.submissionId,
     node: `submission:${row.submissionId}`,
   })
 })
+
+function showAllSubmissions(): void {
+  filteredSubmissionIds.value = []
+}
+
+function showOnlySubmissionIds(ids: string[]): void {
+  filteredSubmissionIds.value = ids
+}
 
 async function load(): Promise<void> {
   loading.value = true
@@ -117,6 +147,7 @@ watch(visibleSubmissionRows, (rows) => {
         <p class="muted">集中檢視最近任務、證據版本與 frozen submission 的最終評估投影。</p>
       </div>
       <div class="actions">
+        <button v-if="backRef !== ''" type="button" @click="router.push(backRef)">返回來源頁</button>
         <button type="button" @click="load">重新載入</button>
         <RouterLink :to="{ name: 'researches' }">
           <button type="button" class="primary">前往研究</button>
@@ -184,6 +215,80 @@ watch(visibleSubmissionRows, (rows) => {
           <h3>最終評估</h3>
           <p v-if="center.submissionRows.length === 0" class="muted">最近沒有 frozen submission 的最終評估資料。</p>
           <div v-else class="submission-layout">
+            <section class="handoff-workspace">
+              <div class="handoff-head">
+                <div>
+                  <strong>提交接力工作區</strong>
+                  <p class="muted">驗證中心會先按研究版本整理 submission 子集，再把同版本的集合送回研究工作台，避免跨版本混線。</p>
+                </div>
+                <span class="tag">{{ handoffSummary.visibleSubmissions }} / {{ handoffSummary.totalSubmissions }}</span>
+              </div>
+              <div class="handoff-grid">
+                <div class="row compact">
+                  <span>目前可見提交</span>
+                  <span class="tag">{{ handoffSummary.visibleSubmissions }}</span>
+                </div>
+                <div class="row compact">
+                  <span>已隱藏提交</span>
+                  <span class="tag">{{ handoffSummary.hiddenSubmissions }}</span>
+                </div>
+                <div class="row compact">
+                  <span>版本群組</span>
+                  <span class="tag">{{ handoffSummary.groups.length }}</span>
+                </div>
+                <div class="row compact">
+                  <span>目前選中</span>
+                  <span class="mono">{{ handoffSummary.selectedSubmissionId || '未取得' }}</span>
+                </div>
+              </div>
+              <div class="actions wrap" style="margin: 12px 0;">
+                <button type="button" :disabled="handoffSummary.hiddenSubmissions === 0" @click="showAllSubmissions">
+                  顯示全部提交
+                </button>
+                <button
+                  type="button"
+                  :disabled="selectedVersionGroup === null"
+                  @click="showOnlySubmissionIds(selectedVersionGroup?.submissionIds ?? [])"
+                >
+                  僅看目前版本
+                </button>
+                <RouterLink
+                  v-if="selectedVersionGroup !== null && selectedVersionWorkbenchQuery !== null"
+                  :to="{
+                    name: 'researches',
+                    params: { id: selectedVersionGroup.researchId },
+                    query: selectedVersionWorkbenchQuery,
+                  }"
+                >
+                  <button type="button">打開目前版本工作台</button>
+                </RouterLink>
+                <RouterLink
+                  v-if="selectedSubmission !== null && currentSubmissionWorkbenchQuery !== null"
+                  :to="{
+                    name: 'researches',
+                    params: { id: selectedSubmission.version.research_id },
+                    query: currentSubmissionWorkbenchQuery,
+                  }"
+                >
+                  <button type="button">只聚焦這筆提交</button>
+                </RouterLink>
+              </div>
+              <div v-if="handoffSummary.groups.length !== 0" class="group-list">
+                <button
+                  v-for="group in handoffSummary.groups"
+                  :key="group.versionId"
+                  type="button"
+                  class="group-card"
+                  :class="{ active: selectedVersionGroup?.versionId === group.versionId }"
+                  @click="showOnlySubmissionIds(group.submissionIds)"
+                >
+                  <strong>{{ group.researchName }}</strong>
+                  <span class="mono">{{ group.versionId }}</span>
+                  <span class="tag">{{ group.submissionIds.length }} 提交</span>
+                  <span class="muted">已評估 {{ group.evaluatedCount }} / 待補 {{ group.pendingCount }}</span>
+                </button>
+              </div>
+            </section>
             <div v-if="filteredSubmissionIds.length !== 0" class="note" style="margin-bottom: 16px;">
               目前只顯示從工作台帶入的 {{ visibleSubmissionRows.length }} / {{ center.submissionRows.length }} 筆提交。
             </div>
@@ -231,15 +336,25 @@ watch(visibleSubmissionRows, (rows) => {
                 <span>槽位數</span>
                 <span class="tag">{{ selectedSubmission.finalEvaluation?.slots.length ?? 0 }}</span>
               </div>
-              <div class="actions" style="margin: 12px 0 16px;">
+              <div class="actions wrap" style="margin: 12px 0 16px;">
                 <RouterLink
                   :to="{
                     name: 'researches',
                     params: { id: selectedSubmission.version.research_id },
-                    query: workbenchSubmissionQuery ?? withBackRef(route.fullPath, { version: selectedSubmission.version.id }),
+                    query: selectedVersionWorkbenchQuery ?? withBackRef(route.fullPath, { version: selectedSubmission.version.id }),
                   }"
                 >
-                  <button type="button">打開工作台</button>
+                  <button type="button">打開目前版本工作台</button>
+                </RouterLink>
+                <RouterLink
+                  v-if="currentSubmissionWorkbenchQuery !== null"
+                  :to="{
+                    name: 'researches',
+                    params: { id: selectedSubmission.version.research_id },
+                    query: currentSubmissionWorkbenchQuery,
+                  }"
+                >
+                  <button type="button">只看這筆提交</button>
                 </RouterLink>
               </div>
 
@@ -337,6 +452,51 @@ watch(visibleSubmissionRows, (rows) => {
   gap: 16px;
 }
 
+.handoff-workspace {
+  grid-column: 1 / -1;
+  border: 1px solid #27405d;
+  border-radius: 12px;
+  padding: 14px;
+  background: #0b1829;
+}
+
+.handoff-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.handoff-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+
+.group-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.group-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  border: 1px solid #27405d;
+  border-radius: 10px;
+  padding: 12px;
+  background: #0e1e31;
+  text-align: left;
+}
+
+.group-card.active {
+  border-color: #3673c7;
+  background: #132842;
+}
+
 .compact {
   padding: 10px 0;
 }
@@ -348,6 +508,10 @@ watch(visibleSubmissionRows, (rows) => {
 
   .verification-grid,
   .submission-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .handoff-grid {
     grid-template-columns: 1fr;
   }
 }
