@@ -1,13 +1,15 @@
 <script setup lang="ts">
 /** 產物詳情：只呈現後端 metadata；內容以同源附件下載，不在前端解析。 */
 import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { artifactContentPath, getArtifact, type Artifact, type ArtifactStatus } from '../api/artifacts'
 import { describeError } from '../lib/messages'
+import { readBackRef } from '../lib/navigationState'
 import { client } from '../lib/session'
 
 const route = useRoute()
 const artifactId = String(route.params.id ?? '')
+const backRef = readBackRef(route.query)
 
 const artifact = ref<Artifact | null>(null)
 const error = ref('')
@@ -41,7 +43,12 @@ onMounted(load)
   <section class="panel">
     <div class="panel-head">
       <h2>產物</h2>
-      <button type="button" :disabled="loading" @click="load">重新載入</button>
+      <div class="actions">
+        <RouterLink v-if="backRef !== ''" :to="backRef">
+          <button type="button">返回來源頁</button>
+        </RouterLink>
+        <button type="button" :disabled="loading" @click="load">重新載入</button>
+      </div>
     </div>
     <p class="mono id">{{ artifactId }}</p>
 
@@ -94,6 +101,11 @@ onMounted(load)
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+}
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
 }
 h2 {
   margin: 0;

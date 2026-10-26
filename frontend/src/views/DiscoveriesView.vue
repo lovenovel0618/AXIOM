@@ -6,6 +6,7 @@ import { getEquationVersion, getFitRun } from '../api/candidates'
 import { listResearchVersionRuns, listResearchVersions, listResearches } from '../api/research'
 import { loadCandidateDetails, loadDiscoveriesCenter, type CandidateDetailBundle, type DiscoveriesCenter } from '../lib/discoveries'
 import { describeError } from '../lib/messages'
+import { withBackRef } from '../lib/navigationState'
 import { readQueryList, readQueryString, replaceQueryState } from '../lib/queryState'
 import { client } from '../lib/session'
 import { listRunCandidates } from '../api/candidates'
@@ -22,6 +23,7 @@ const details = ref<CandidateDetailBundle>({ equations: {}, fits: {} })
 
 const selectedRun = computed(() => center.value?.searchRuns.find((row) => row.run.id === selectedRunId.value) ?? null)
 const selectedCandidates = computed(() => selectedRun.value?.candidates ?? [])
+const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
 
 async function load(): Promise<void> {
   loading.value = true
@@ -172,11 +174,16 @@ watch(
               <span>研究入口</span>
               <RouterLink
                 v-if="selectedRun.research !== null"
-                :to="{ name: 'researches', params: { id: selectedRun.research.id }, query: { version: selectedRun.version?.id ?? '' } }"
+                :to="{ name: 'researches', params: { id: selectedRun.research.id }, query: withBackRef(route.fullPath, { version: selectedRun.version?.id ?? '' }) }"
               >
                 <span class="tag">打開工作台</span>
               </RouterLink>
               <span v-else class="muted">未取得</span>
+            </div>
+            <div class="actions" style="margin-bottom: 14px;">
+              <RouterLink v-if="selectedRun !== null" :to="{ name: 'run', params: { id: selectedRun.run.id }, query: backQuery }">
+                <button type="button">查看任務詳情</button>
+              </RouterLink>
             </div>
             <CandidateComparison
               :candidates="selectedCandidates"

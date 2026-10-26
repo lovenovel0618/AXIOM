@@ -24,6 +24,7 @@ import { parseValidationRun, type ValidationRun } from '../lib/evaluation'
 import { parseFinalEvaluation, type FinalEvaluation } from '../lib/finalEvaluation'
 import { buildFlow, type FlowGraph, type FlowNode } from '../lib/flow'
 import { describeError } from '../lib/messages'
+import { readBackRef, withBackRef } from '../lib/navigationState'
 import { client } from '../lib/session'
 
 const route = useRoute()
@@ -52,6 +53,7 @@ const name = ref('')
 const selectedResearch = ref<Research | null>(null)
 const selectedVersionId = ref('')
 const selectedNodeId = ref<string | null>(null)
+const backRef = computed(() => readBackRef(route.query))
 
 const mode = computed<'list' | 'create' | 'workbench'>(() => {
   const id = typeof route.params.id === 'string' ? route.params.id : ''
@@ -89,6 +91,8 @@ const selectedNode = computed<FlowNode | null>(() => {
   if (current === null) return null
   return current.nodes.find((node) => node.id === selectedNodeId.value) ?? current.nodes[0] ?? null
 })
+
+const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
 
 const runCounts = computed(() => ({
   total: runs.value.length,
@@ -374,6 +378,7 @@ watch(graph, (next) => {
         </p>
       </div>
       <div class="actions">
+        <button v-if="backRef !== ''" type="button" @click="router.push(backRef)">返回來源頁</button>
         <button type="button" @click="loadResearches">重新載入</button>
         <button
           v-if="mode === 'workbench'"
@@ -597,7 +602,7 @@ watch(graph, (next) => {
               <span>{{ selectedNode.subtitle }}</span>
             </div>
             <div v-if="selectedNode.runId !== null" class="actions" style="margin: 14px 0;">
-              <RouterLink :to="{ name: 'run', params: { id: selectedNode.runId } }">
+              <RouterLink :to="{ name: 'run', params: { id: selectedNode.runId }, query: backQuery }">
                 <button type="button">查看任務詳情</button>
               </RouterLink>
             </div>
@@ -624,7 +629,7 @@ watch(graph, (next) => {
               <RouterLink
                 v-for="artifact in selectedNode.artifacts"
                 :key="artifact.id"
-                :to="{ name: 'artifact', params: { id: artifact.id } }"
+                :to="{ name: 'artifact', params: { id: artifact.id }, query: backQuery }"
                 class="artifact-link"
               >
                 <span>{{ artifact.label }}</span>

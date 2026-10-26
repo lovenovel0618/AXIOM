@@ -6,6 +6,7 @@ import { listResearchVersionRuns, listResearchVersions, listResearches } from '.
 import { parseValidationRun } from '../lib/evaluation'
 import { parseFinalEvaluation } from '../lib/finalEvaluation'
 import { describeError } from '../lib/messages'
+import { withBackRef } from '../lib/navigationState'
 import { readQueryString, replaceQueryState } from '../lib/queryState'
 import { client } from '../lib/session'
 import { loadVerificationCenter, type VerificationCenter } from '../lib/verificationCenter'
@@ -20,6 +21,7 @@ const selectedSubmissionId = ref(readQueryString(route.query, 'submission'))
 const selectedSubmission = computed(
   () => center.value?.submissionRows.find((row) => row.submissionId === selectedSubmissionId.value) ?? null,
 )
+const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
 
 async function load(): Promise<void> {
   loading.value = true
@@ -108,7 +110,7 @@ watch(
             <RouterLink
               v-for="run in center.runs"
               :key="run.id"
-              :to="{ name: 'run', params: { id: run.id } }"
+              :to="{ name: 'run', params: { id: run.id }, query: backQuery }"
               class="module-link"
             >
               <div>
@@ -128,7 +130,7 @@ watch(
             <RouterLink
               v-for="row in center.evidenceRows"
               :key="row.version.id"
-              :to="{ name: 'researches', params: { id: row.version.research_id }, query: { version: row.version.id } }"
+              :to="{ name: 'researches', params: { id: row.version.research_id }, query: withBackRef(route.fullPath, { version: row.version.id }) }"
               class="module-link"
             >
               <div>
@@ -194,7 +196,7 @@ watch(
                 <span class="tag">{{ selectedSubmission.finalEvaluation?.slots.length ?? 0 }}</span>
               </div>
               <div class="actions" style="margin: 12px 0 16px;">
-                <RouterLink :to="{ name: 'researches', params: { id: selectedSubmission.version.research_id }, query: { version: selectedSubmission.version.id } }">
+                <RouterLink :to="{ name: 'researches', params: { id: selectedSubmission.version.research_id }, query: withBackRef(route.fullPath, { version: selectedSubmission.version.id }) }">
                   <button type="button">打開工作台</button>
                 </RouterLink>
               </div>

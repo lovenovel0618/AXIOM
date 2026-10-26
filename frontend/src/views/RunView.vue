@@ -6,6 +6,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { cancelRun, fetchRunEventBatch, getRun, isTerminal, type Run, type RunStatus } from '../api/runs'
+import { readBackRef } from '../lib/navigationState'
 import {
   EventFollower,
   FOLLOW_STATUS_LABELS,
@@ -17,6 +18,7 @@ import { client } from '../lib/session'
 
 const route = useRoute()
 const runId = String(route.params.id ?? '')
+const backRef = readBackRef(route.query)
 
 const run = ref<Run | null>(null)
 const follow = ref<FollowState>(INITIAL_FOLLOW_STATE)
@@ -135,7 +137,12 @@ onUnmounted(stopFollowing)
   <section class="panel">
     <div class="panel-head">
       <h2>任務</h2>
-      <button type="button" :disabled="loading" @click="start">重新載入</button>
+      <div class="actions">
+        <RouterLink v-if="backRef !== ''" :to="backRef">
+          <button type="button">返回來源頁</button>
+        </RouterLink>
+        <button type="button" :disabled="loading" @click="start">重新載入</button>
+      </div>
     </div>
     <p class="mono id">{{ runId }}</p>
 
@@ -235,6 +242,11 @@ onUnmounted(stopFollowing)
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+}
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
 }
 h2 {
   margin: 0;
