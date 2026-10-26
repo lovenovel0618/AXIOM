@@ -9,6 +9,7 @@ import { FLOW_KIND_LABELS, type FlowGraph, type FlowNode, type FlowNodeKind } fr
 const props = defineProps<{
   graph: FlowGraph
   selectedId: string | null
+  highlightIds?: string[]
 }>()
 
 const emit = defineEmits<{ select: [id: string] }>()
@@ -70,6 +71,7 @@ function curve(from: Placed, to: Placed): string {
 
 const drawn = computed<DrawnEdge[]>(() => {
   const map = positions.value
+  const highlights = new Set(props.highlightIds ?? [])
   const rows: DrawnEdge[] = []
   for (const [index, edge] of props.graph.edges.entries()) {
     const from = map.get(edge.from)
@@ -79,7 +81,10 @@ const drawn = computed<DrawnEdge[]>(() => {
       key: `${edge.from}->${edge.to}:${String(index)}`,
       path: curve(from, to),
       branch: edge.branch,
-      active: props.selectedId === edge.from || props.selectedId === edge.to,
+      active:
+        props.selectedId === edge.from ||
+        props.selectedId === edge.to ||
+        (highlights.has(edge.from) && highlights.has(edge.to)),
     })
   }
   return rows
@@ -124,7 +129,9 @@ function onKey(event: KeyboardEvent, id: string): void {
     </div>
 
     <div class="canvas" role="group" aria-label="研究流程圖">
+      <p v-if="placed.length === 0" class="empty">目前篩選條件下沒有節點。</p>
       <svg
+        v-else
         :width="width * scale"
         :height="height * scale"
         :viewBox="`0 0 ${width} ${height}`"
@@ -143,7 +150,13 @@ function onKey(event: KeyboardEvent, id: string): void {
           v-for="entry in placed"
           :key="entry.node.id"
           class="node"
-          :class="[`tone-${entry.node.tone}`, { selected: props.selectedId === entry.node.id }]"
+          :class="[
+            `tone-${entry.node.tone}`,
+            {
+              selected: props.selectedId === entry.node.id,
+              related: (props.highlightIds ?? []).includes(entry.node.id) && props.selectedId !== entry.node.id,
+            },
+          ]"
           role="button"
           tabindex="0"
           :aria-pressed="props.selectedId === entry.node.id"
@@ -204,6 +217,11 @@ function onKey(event: KeyboardEvent, id: string): void {
   border-radius: 0.6rem;
   background: var(--surface-muted);
 }
+.empty {
+  margin: 0;
+  padding: 1rem;
+  color: var(--text-muted);
+}
 svg {
   display: block;
 }
@@ -234,6 +252,10 @@ svg {
 .node.selected .box {
   stroke: var(--accent);
   stroke-width: 3;
+}
+.node.related .box {
+  stroke: #6ea8ff;
+  stroke-width: 2.25;
 }
 .tone-OK .box {
   stroke: var(--ok);

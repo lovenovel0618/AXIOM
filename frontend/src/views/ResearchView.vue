@@ -22,9 +22,11 @@ import { parseQualityReport, describeBlindEvaluation, type QualityReport } from 
 import type { RunEventEnvelope } from '../lib/events'
 import { parseValidationRun, type ValidationRun } from '../lib/evaluation'
 import { parseFinalEvaluation, type FinalEvaluation } from '../lib/finalEvaluation'
-import { buildFlow, type FlowGraph, type FlowNode } from '../lib/flow'
+import { buildFlow, type FlowGraph, type FlowNode, type FlowNodeKind, type FlowTone } from '../lib/flow'
 import { describeError } from '../lib/messages'
 import { readBackRef, withBackRef } from '../lib/navigationState'
+import { readQueryString, replaceQueryState } from '../lib/queryState'
+import { filterFlowGraph, highlightFlowNodes, type FlowFilterState } from '../lib/researchFlowFilters'
 import {
   buildNodeActionLinks,
   groupNodeArtifacts,
@@ -59,8 +61,23 @@ const statusFilter = ref<'ALL' | ResearchVersionStatus | 'NONE'>('ALL')
 const name = ref('')
 const selectedResearch = ref<Research | null>(null)
 const selectedVersionId = ref('')
-const selectedNodeId = ref<string | null>(null)
+const selectedNodeId = ref<string | null>(readQueryString(route.query, 'node') || null)
 const backRef = computed(() => readBackRef(route.query))
+const flowKindFilter = ref<'ALL' | FlowNodeKind>(
+  (['ALL', 'DATASET', 'VERSION', 'RUN', 'EVIDENCE', 'CANDIDATE', 'SUBMISSION', 'VALIDATION'] as const).includes(
+    readQueryString(route.query, 'flowkind') as 'ALL' | FlowNodeKind,
+  )
+    ? (readQueryString(route.query, 'flowkind') as 'ALL' | FlowNodeKind)
+    : 'ALL',
+)
+const flowToneFilter = ref<'ALL' | FlowTone>(
+  (['ALL', 'NEUTRAL', 'PENDING', 'RUNNING', 'OK', 'FAILED'] as const).includes(
+    readQueryString(route.query, 'flowtone') as 'ALL' | FlowTone,
+  )
+    ? (readQueryString(route.query, 'flowtone') as 'ALL' | FlowTone)
+    : 'ALL',
+)
+const flowQuery = ref(readQueryString(route.query, 'flowq'))
 
 const mode = computed<'list' | 'create' | 'workbench'>(() => {
   const id = typeof route.params.id === 'string' ? route.params.id : ''
@@ -93,8 +110,18 @@ const graph = computed<FlowGraph | null>(() => {
   })
 })
 
+const flowFilters = computed<FlowFilterState>(() => ({
+  kind: flowKindFilter.value,
+  tone: flowToneFilter.value,
+  query: flowQuery.value,
+}))
+
+const displayGraph = computed<FlowGraph | null>(() =>
+  graph.value === null ? null : filterFlowGraph(graph.value, flowFilters.value),
+)
+
 const selectedNode = computed<FlowNode | null>(() => {
-  const current = graph.value
+  const current = displayGraph.value
   if (current === null) return null
   return current.nodes.find((node) => node.id === selectedNodeId.value) ?? current.nodes[0] ?? null
 })
@@ -112,8 +139,22 @@ const selectedNodeActions = computed(() =>
     ? []
     : buildNodeActionLinks(selectedNode.value, (extra) => withBackRef(route.fullPath, extra)),
 )
+const flowHighlightIds = computed(() =>
+  displayGraph.value === null ? [] : [...highlightFlowNodes(displayGraph.value, selectedNodeId.value)],
+)
 
 const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
+const flowKindOptions: Array<'ALL' | FlowNodeKind> = [
+  'ALL',
+  'DATASET',
+  'VERSION',
+  'RUN',
+  'EVIDENCE',
+  'CANDIDATE',
+  'SUBMISSION',
+  'VALIDATION',
+]
+const flowToneOptions: Array<'ALL' | FlowTone> = ['ALL', 'NEUTRAL', 'PENDING', 'RUNNING', 'OK', 'FAILED']
 
 const runCounts = computed(() => ({
   total: runs.value.length,
@@ -340,6 +381,16 @@ function summarizeNodePayload(payload: Record<string, unknown>): string {
   return summarizeEventPayload(payload)
 }
 
+function resolveSelectedNodeId(next: FlowGraph | null): string | null {
+  if (next === null || next.nodes.length === 0) return null
+  const requested = readQueryString(route.query, 'node')
+  if (requested !== '' && next.nodes.some((node) => node.id === requested)) return requested
+  if (selectedNodeId.value !== null && next.nodes.some((node) => node.id === selectedNodeId.value)) {
+    return selectedNodeId.value
+  }
+  return next.nodes[0]?.id ?? null
+}
+
 onMounted(async () => {
   await loadResearches()
   await loadVersions()
@@ -362,6 +413,46 @@ watch(
 )
 
 watch(
+  [flowKindFilter, flowToneFilter, flowQuery],
+  async ([kind, tone, query]) => {
+    if (mode.value !== 'workbench') return
+    await replaceQueryState(router, route, {
+      flowkind: kind === 'ALL' ? undefined : kind,
+      flowtone: tone === 'ALL' ? undefined : tone,
+      flowq: query === '' ? undefined : query,
+    })
+  },
+)
+
+watch(
+  selectedNodeId,
+  async (value) => {
+    if (mode.value !== 'workbench') return
+    await replaceQueryState(router, route, { node: value ?? undefined })
+  },
+)
+
+watch(
+  () => route.query,
+  () => {
+    flowKindFilter.value =
+      (['ALL', 'DATASET', 'VERSION', 'RUN', 'EVIDENCE', 'CANDIDATE', 'SUBMISSION', 'VALIDATION'] as const).includes(
+        readQueryString(route.query, 'flowkind') as 'ALL' | FlowNodeKind,
+      )
+        ? (readQueryString(route.query, 'flowkind') as 'ALL' | FlowNodeKind)
+        : 'ALL'
+    flowToneFilter.value =
+      (['ALL', 'NEUTRAL', 'PENDING', 'RUNNING', 'OK', 'FAILED'] as const).includes(
+        readQueryString(route.query, 'flowtone') as 'ALL' | FlowTone,
+      )
+        ? (readQueryString(route.query, 'flowtone') as 'ALL' | FlowTone)
+        : 'ALL'
+    flowQuery.value = readQueryString(route.query, 'flowq')
+    selectedNodeId.value = readQueryString(route.query, 'node') || null
+  },
+)
+
+watch(
   selectedVersionId,
   async (value) => {
     if (mode.value !== 'workbench') return
@@ -376,13 +467,8 @@ watch(
   { immediate: true },
 )
 
-watch(graph, (next) => {
-  if (next === null) {
-    selectedNodeId.value = null
-    return
-  }
-  if (selectedNodeId.value !== null && next.nodes.some((node) => node.id === selectedNodeId.value)) return
-  selectedNodeId.value = next.nodes[0]?.id ?? null
+watch(displayGraph, (next) => {
+  selectedNodeId.value = resolveSelectedNodeId(next)
 })
 </script>
 
@@ -592,10 +678,35 @@ watch(graph, (next) => {
               <span>研究狀態</span>
               <span class="tag">{{ workbenchVersion.status }}</span>
             </div>
+            <div class="formgrid flow-filters">
+              <div class="field">
+                <label>節點類型</label>
+                <select v-model="flowKindFilter">
+                  <option v-for="option in flowKindOptions" :key="option" :value="option">{{ option }}</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>節點狀態</label>
+                <select v-model="flowToneFilter">
+                  <option v-for="option in flowToneOptions" :key="option" :value="option">{{ option }}</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>關鍵字</label>
+                <input v-model="flowQuery" placeholder="搜尋標題 / 摘要 / 欄位">
+              </div>
+            </div>
+            <div class="actions wrap" style="margin-bottom: 12px;">
+              <button type="button" @click="flowKindFilter = 'ALL'; flowToneFilter = 'ALL'; flowQuery = ''">
+                清空流程篩選
+              </button>
+              <span class="tag">{{ displayGraph?.nodes.length ?? 0 }} / {{ graph?.nodes.length ?? 0 }} 節點</span>
+            </div>
             <ResearchFlow
-              v-if="graph !== null"
-              :graph="graph"
+              v-if="displayGraph !== null"
+              :graph="displayGraph"
               :selected-id="selectedNodeId"
+              :highlight-ids="flowHighlightIds"
               @select="selectNode"
             />
             <p class="muted" style="margin-top: 14px;">
@@ -745,6 +856,10 @@ watch(graph, (next) => {
 .record-list {
   display: flex;
   flex-direction: column;
+}
+
+.flow-filters {
+  margin-top: 12px;
 }
 
 .wrap {
