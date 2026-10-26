@@ -79,6 +79,16 @@
     "JsonObject": 3,
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
+  "backend/catalog/deletion.py": {
+    "Any": 0,
+    "JsonObject": 2,
+    "reason": "對外刪除工作的 dry-run 影響清單與狀態視圖在 OpenAPI 驗證前是動態 JSON 邊界；額度只可收斂。"
+  },
+  "backend/catalog/deletion_http.py": {
+    "Any": 0,
+    "JsonObject": 1,
+    "reason": "冪等重播的回呼需以既有回應文件做授權回查，屬框架相容邊界；額度只可收斂。"
+  },
   "backend/catalog/profile_manifest.py": {
     "Any": 0,
     "JsonObject": 11,
@@ -285,9 +295,9 @@
     "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
   },
   "backend/catalog/tests/test_deletion.py": {
-    "Any": 0,
+    "Any": 1,
     "JsonObject": 2,
-    "reason": "既有 JSON／schema／框架相容邊界；額度只可收斂，不代表核心已具體型別化。"
+    "reason": "測試以真實 HTTP 回應文件驗證對外刪除入口；回應為動態 JSON，額度只可收斂。"
   },
   "backend/catalog/tests/test_equations.py": {
     "Any": 0,

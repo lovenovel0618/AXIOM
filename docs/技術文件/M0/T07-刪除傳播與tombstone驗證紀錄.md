@@ -47,3 +47,29 @@
 ## 提交後 CI 補批
 
 日期：2026-10-22；承接 3eb3363。三個工作流於本提交全部成功：`docs-check` 36s、`compatibility-check` 48s、`product-check` 5m56s。因此 Linux amd64 上的完整後端測試與 `research_draft_smoke`（含本批新增的失效宣告段：宣告後 artifact 轉 409、證據包轉 404、二次宣告 409）皆為實際往返，不是由本機推論。產品 Gate 仍 NOT_RUN。
+
+## 對外入口與非同步收斂補批
+
+日期：2026-10-27。本批把失效宣告從服務層推向對外邊界，並在政策放行後接上異步逐項收斂；不動 tombstone 的「宣告即生效」語意，也不開放硬刪除。
+
+交付：
+
+- `POST /api/v2/dataset-versions/{id}/deletion-requests/dry-run`：只列 lineage 影響（`DeletionImpact`），不寫任何列；政策未放行時 `propagation_enabled=false`。
+- `POST /api/v2/dataset-versions/{id}/deletion-requests`：以 `Idempotency-Key` 冪等宣告，回 `DeletionRequestView`；`GET` 讀回同一份工作，重送同鍵回同一結果。
+- 來源授權 `source_for()`：租戶分區與資料集 owner 皆須相符，否則一律 404（不因知道 UUID 而可讀）。
+- `catalog/deletion.py::due()`／`propagate()` 與 `relay_deletion()`／`catalog.deletion_tick`：政策放行後逐項核對 tombstone 存在再把 `DeletionTarget` 轉 `DONE`，全部完成才把請求轉 `COMPLETED` 並遞增 revision；缺 tombstone 者記 `BLOCKED`／`INVALID_TRANSITION` 不冒充完成。政策未放行時 `due()` 名單為空、`propagate()` 直接回 503 `FEATURE_DISABLED`。
+- 契約三方同步：`openapi-v2.json` 新增 2 path／3 operation＋`DeletionImpact`／`DeletionRequestView` schema，AX-21 端點表同步，`api_operations` 30→33。
+
+| 檢查 | 結果 |
+|---|---|
+| 完整後端 | PostgreSQL／Linux 容器全量通過，含刪除傳播 16 項斷言（10→16），無 skip |
+| 服務層聚焦 | `catalog.tests.test_deletion` 16／16 OK |
+| 工程工具 | `typing_policy` PASS（為 deletion／deletion_http／test_deletion 明列額度）；`development_baseline` PASS；`check_docs.py` exit 0（`api_operations` 33） |
+| 真 HTTP（直連） | dry-run 200（受影響 8 項、未寫任何列）→ 宣告 201 → 同鍵重送回同一結果 → GET 讀回一致 → 二次宣告 409 `INVALID_TRANSITION`；宣告後 artifact 409、證據包 404 |
+| 真 HTTP（前端同源） | 同上經 15173 同源代理，結果一致 |
+| Fail-Closed 實測 | `AXIOM_DELETION_PROPAGATION_ENABLED=0` 時 `deletion_status=BLOCKED`、`policy_status=BLOCKED`、`blocked_code=FEATURE_DISABLED`、`outstanding=8`；`due()` 名單為空、`propagate()` 回 503 |
+| 收斂實測 | 測試以 `override_settings` 放行後 `due()` 取得該請求、`relay_deletion()` 派送 1 次、`propagate()` 將 8 項收斂至 `DONE` 並轉 `COMPLETED`（revision +1） |
+
+證據：[真實 HTTP](<t07-deletion-smoke.json>)、[來源與檢查摘要](<t07-deletion-validation.json>)。
+
+本批仍不宣稱：outbox 事件、索引／快取／訓練快照的實際清除、備份還原重播；`QUARANTINED` 仍只是值域預留。D-05 未決前政策維持預設關閉，G2 仍 BLOCKED，產品 Gate 仍 NOT_RUN。

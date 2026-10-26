@@ -6,6 +6,8 @@ from catalog.ingest import ingest_tick
 from catalog.profile import profile_tick, recover_profile
 from catalog.final_evaluator import validate_tick
 from catalog.search import search_tick, recover_search
+from catalog.deletion import due as deletion_due
+from catalog.deletion import propagate
 from catalog.models import ProfileBinding
 from runtime.control import recover
 from runtime.models import RuntimeRun
@@ -15,6 +17,7 @@ app.task(name="catalog.ingest_tick", ignore_result=True)(ingest_tick)
 app.task(name="catalog.profile_tick", ignore_result=True)(profile_tick)
 app.task(name="catalog.validate_tick", ignore_result=True)(validate_tick)
 app.task(name="catalog.search_tick", ignore_result=True)(search_tick)
+app.task(name="catalog.deletion_tick", ignore_result=True)(propagate)
 
 
 def relay_ingest() -> int:
@@ -69,3 +72,11 @@ def relay_search() -> int:
         if settings.SEARCH_ENABLED and row.document["status"] == "QUEUED" and row.available_at <= db_now():
             app.send_task("catalog.search_tick", args=[str(row.tenant_id), str(row.id), row.document["lease_generation"]], queue="search", retry=False)
     return len(rows)
+
+
+def relay_deletion() -> int:
+    """只派政策已放行且仍有待處理物件的刪除工作；未放行時名單為空，不繞過 D-05 閘門。"""
+    pairs = deletion_due(100)
+    for tenant_id, request_id in pairs:
+        app.send_task("catalog.deletion_tick", args=[tenant_id, request_id], queue="foundation", retry=False)
+    return len(pairs)

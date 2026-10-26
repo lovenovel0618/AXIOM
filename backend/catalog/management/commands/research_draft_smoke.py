@@ -3,18 +3,14 @@ import json
 import secrets
 from argparse import ArgumentParser
 from typing import Any
-from uuid import UUID, uuid4
+from uuid import uuid4
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
-from catalog.deletion import declare
 from catalog.management.commands.business_ingest_smoke import upload, wait_run
 from catalog.management.commands.catalog_smoke import BASE, Browser, FRONTEND_BASE
-from catalog.models import Account, DeletionTarget, Tenant
-from catalog.services import actor_for
-from catalog.validation import ApiError, validate_api
+from catalog.models import Account, DeletionRequest, DeletionTarget, Tenant
+from catalog.validation import validate_api
 from runtime.contracts import JsonObject, identity_hash
-from runtime.records import db_now
 
 
 def configuration(version: str) -> JsonObject:
@@ -35,14 +31,8 @@ def check(condition: bool, message: str) -> None:
         raise CommandError(message)
 
 
-def declare_source(account: Account, version_id: str) -> tuple[str, str, str, int]:
-    with transaction.atomic():
-        request = declare(actor_for(account.user_id), UUID(version_id), db_now())
-    return str(request.id), str(request.status), str(request.policy_status), DeletionTarget.objects.filter(deletion_request=request).count()
-
-
 class Command(BaseCommand):
-    help = "Exercise real INGEST, Unicode semantic confirmation, DRAFT persistence, sealed PROFILE READY, evidence bundle reads and Fail-Closed source declaration"
+    help = "Exercise real INGEST, Unicode semantic confirmation, DRAFT persistence, sealed PROFILE READY, evidence bundle reads and Fail-Closed source declaration over loopback HTTP"
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--frontend", action="store_true")
@@ -102,18 +92,33 @@ class Command(BaseCommand):
         check(status == 404, "Unknown evidence bundle was exposed")
         status, _ = browser.request(f'/api/v2/artifacts/{ready["quality_report_id"]}')
         check(status == 200, f"Sealed quality artifact was not readable before declaration: {status}")
-        request_id, request_status, policy_status, target_count = declare_source(account, version["id"])
-        check(request_status == "BLOCKED" and policy_status == "BLOCKED", "Deletion work did not stay Fail-Closed while the policy is closed")
-        check(target_count > 1, "Declaration recorded no derived objects to purge")
+        impact_path = f'/api/v2/dataset-versions/{version["id"]}/deletion-requests/dry-run'
+        status, raw = browser.request(impact_path, "POST")
+        check(status == 200, f"Deletion dry-run failed: {status}")
+        impact = json.loads(raw)
+        validate_api(impact, "DeletionImpact")
+        check(impact["propagation_enabled"] is False and len(impact["affected"]) > 1, "Dry-run did not enumerate the lineage while the policy is closed")
+        check(DeletionRequest.objects.filter(tenant_id=account.tenant_id).count() == 0 and DeletionTarget.objects.filter(tenant_id=account.tenant_id).count() == 0, "Dry-run wrote deletion state")
+        request_path = f'/api/v2/dataset-versions/{version["id"]}/deletion-requests'
+        status, raw = browser.request(request_path, "POST", b"", {"Idempotency-Key": "fixed-declaration"})
+        check(status == 201, f"Deletion declaration failed: {status} {raw.decode('utf-8', 'replace')[:300]}")
+        declared = json.loads(raw)
+        validate_api(declared, "DeletionRequestView")
+        check(declared["status"] == "BLOCKED" and declared["policy_status"] == "BLOCKED" and declared["blocked_code"] == "FEATURE_DISABLED", "Deletion work did not stay Fail-Closed while the policy is closed")
+        check(declared["outstanding"] == len(declared["targets"]) > 1, "Declaration recorded no derived objects to purge")
+        status, replay = browser.request(request_path, "POST", b"", {"Idempotency-Key": "fixed-declaration"})
+        check(status == 201 and json.loads(replay) == declared, "Declaration idempotency failed")
+        status, raw = browser.request(request_path)
+        check(status == 200 and json.loads(raw) == declared, "Deletion read-back differs from the declared work")
+        check(DeletionRequest.objects.filter(tenant_id=account.tenant_id).count() == 1, "One declaration wrote more than one deletion request")
+        request_id, request_status = declared["deletion_request_id"], declared["status"]
+        policy_status, target_count = declared["policy_status"], len(declared["targets"])
         status, _ = browser.request(f'/api/v2/artifacts/{ready["quality_report_id"]}')
         check(status == 409, f"Artifact stayed readable after declaration: {status}")
         status, _ = browser.request(f'/api/v2/artifacts/{ready["quality_report_id"]}/content')
         check(status == 409, f"Artifact stayed downloadable after declaration: {status}")
         status, _ = browser.request(f"/api/v2/evidence-bundles/{bundle_id}")
         check(status == 404, f"Evidence bundle stayed readable after declaration: {status}")
-        try:
-            declare_source(account, version["id"])
-            check(False, "Second declaration of the same source was accepted")
-        except ApiError as error:
-            check(error.code == "INVALID_TRANSITION" and error.status == 409, f"Repeat declaration returned {error.code}")
-        self.stdout.write(json.dumps({"scope": "T07_RESEARCH_DRAFT_HTTP", "status": "PASS", "via_frontend": bool(options["frontend"]), "ingest_status": run["status"], "research_version_status": ready["status"], "draft_id": draft["id"], "draft_hash": identity_hash(draft), "policy_hash": draft["evaluation_policy_hash"], "unicode_source_mapping": "PASS", "replay_and_restore": "PASS", "profile_http_status": queue_status, "profile_run_status": run["status"], "sealed_test_registered": ready["observation_split"]["sealed_test_id"] is not None, "evidence_bundle_id": bundle_id, "evidence_bundle_status": bundle["status"], "evidence_bundle_revision": bundle["revision"], "evidence_bundle_proof_count": len(bundle["proof_artifact_ids"]), "unknown_bundle_http_status": 404, "deletion_request_id": request_id, "deletion_status": request_status, "deletion_policy_status": policy_status, "deletion_target_count": target_count, "artifact_http_status_after_declaration": 409, "evidence_bundle_http_status_after_declaration": 404, "repeat_declaration": "REJECTED_409", "product_gate_status": "NOT_RUN"}, indent=2))
+        status, raw = browser.request(request_path, "POST", b"", {"Idempotency-Key": "another-declaration"})
+        check(status == 409 and json.loads(raw)["code"] == "INVALID_TRANSITION", f"Second declaration of the same source returned {status}")
+        self.stdout.write(json.dumps({"scope": "T07_RESEARCH_DRAFT_HTTP", "status": "PASS", "via_frontend": bool(options["frontend"]), "ingest_status": run["status"], "research_version_status": ready["status"], "draft_id": draft["id"], "draft_hash": identity_hash(draft), "policy_hash": draft["evaluation_policy_hash"], "unicode_source_mapping": "PASS", "replay_and_restore": "PASS", "profile_http_status": queue_status, "profile_run_status": run["status"], "sealed_test_registered": ready["observation_split"]["sealed_test_id"] is not None, "evidence_bundle_id": bundle_id, "evidence_bundle_status": bundle["status"], "evidence_bundle_revision": bundle["revision"], "evidence_bundle_proof_count": len(bundle["proof_artifact_ids"]), "unknown_bundle_http_status": 404, "deletion_dry_run_http_status": 200, "deletion_dry_run_target_count": len(impact["affected"]), "deletion_declaration_http_status": 201, "deletion_readback_http_status": 200, "deletion_declaration_idempotent": True, "deletion_request_id": request_id, "deletion_status": request_status, "deletion_policy_status": policy_status, "deletion_target_count": target_count, "deletion_outstanding": declared["outstanding"], "artifact_http_status_after_declaration": 409, "evidence_bundle_http_status_after_declaration": 404, "repeat_declaration": "REJECTED_409", "product_gate_status": "NOT_RUN"}, indent=2))

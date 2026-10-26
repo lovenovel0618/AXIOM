@@ -45,6 +45,9 @@ MVP API 前綴 /api/v2，JSON 使用 UTF-8，傳輸使用 HTTPS（本機開發�
 | GET /validation-runs/{id} | FINAL_TEST 依 access_class 分類政策 | 200 ValidationRun，指標／覆蓋率與證據雙軸 |
 | GET /artifacts/{id} | access_class／lineage政策 | 200 Artifact metadata，資料來源與 hash |
 | GET /artifacts/{id}/content | access_class／lineage政策 | 200 受控串流內容，禁止跳轉未授權物件 URI |
+| POST /dataset-versions/{id}/deletion-requests/dry-run | — | 200 DeletionImpact，唯讀計算lineage影響，不寫tombstone／工作／任何列 |
+| POST /dataset-versions/{id}/deletion-requests | — | 201 DeletionRequestView，同交易寫tombstone與逐項工作；政策未放行停在BLOCKED |
+| GET /dataset-versions/{id}/deletion-requests | — | 200 DeletionRequestView（最新一筆）；尚未宣告404 |
 
 Upload URL 只可 PUT 指定暫存 key，不可讀／列 bucket；大小超限 413，格式不允許 415，checksum 不符 422 CHECKSUM_MISMATCH。v2 單檔暫定 50 MiB，容量正式門檻見 D-01。complete 重送不重建版本；未完成暫存 24 小時過期清理。CSV／JSON／Parquet 的支援與品質規則見 AX-09。
 

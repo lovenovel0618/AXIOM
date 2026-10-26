@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-22",
+  "date": "2026-10-27",
   "scope": "T07_DELETION_PROPAGATION_AND_TOMBSTONE",
   "review_method": "SELF_REVIEW",
   "base_commit": "83a5f941eaae80f72afad3e5671275021361584c",
@@ -7,30 +7,36 @@
   "slice_status": "IMPLEMENTED",
   "product_gate_status": "NOT_RUN",
   "delivery_boundary": {
-    "endpoints_added": [],
+    "endpoints_added": [
+      "POST /api/v2/dataset-versions/{identity}/deletion-requests/dry-run",
+      "POST /api/v2/dataset-versions/{identity}/deletion-requests",
+      "GET /api/v2/dataset-versions/{identity}/deletion-requests"
+    ],
     "endpoints_reused": [
       "GET /api/v2/artifacts/{id}",
       "GET /api/v2/artifacts/{id}/content",
       "GET /api/v2/evidence-bundles/{id}"
     ],
-    "declaration_entry_point": "服務層 catalog/deletion.py declare()，不以 HTTP 開放",
+    "declaration_entry_point": "HTTP catalog/deletion_http.py::deletion_requests，內部呼叫服務層 catalog/deletion.py declare()；來源授權 source_for() 要求租戶分區與資料集 owner 皆相符，否則 404",
+    "dry_run": "POST .../deletion-requests/dry-run 只列 lineage 影響（DeletionImpact），不寫任何列，可重複呼叫",
+    "async_convergence": "catalog/deletion.py::due()／propagate()，經 catalog/tasks.py::relay_deletion 與 catalog.deletion_tick 派至 foundation queue；逐項核對 tombstone 才轉 DONE，全部完成才轉 COMPLETED 並遞增 revision",
     "outbox": "NOT_IMPLEMENTED",
     "async_index_or_cache_purge": "NOT_CLAIMED",
-    "policy_gate": "AXIOM_DELETION_PROPAGATION_ENABLED 預設 0；D-05 未決前刪除工作停在 BLOCKED 並帶 FEATURE_DISABLED",
-    "feature_flag_added": "backend/config/settings.py 的 DELETION_PROPAGATION_ENABLED，compose.yaml 以 ${AXIOM_DELETION_PROPAGATION_ENABLED:-0} 明示預設關閉"
+    "policy_gate": "AXIOM_DELETION_PROPAGATION_ENABLED 預設 0；D-05 未決前宣告停在 BLOCKED 並帶 FEATURE_DISABLED，due() 名單為空、propagate() 回 503",
+    "feature_flag_added": "backend/config/settings.py 的 DELETION_PROPAGATION_ENABLED，compose.yaml 以 ${AXIOM_DELETION_PROPAGATION_ENABLED:-0} 明示預設關閉",
+    "contract_sync": "openapi-v2.json 新增 2 path／3 operation 與 DeletionImpact／DeletionRequestView schema；AX-21 端點表同步；api_operations 30→33"
   },
   "tests": {
-    "postgresql_backend": 284,
-    "previous_backend": 284,
-    "deletion_slice_tests": 10,
+    "postgresql_backend": "全量通過（見 t07-deletion-backend-tests.txt）",
+    "deletion_slice_tests": 16,
+    "previous_deletion_slice_tests": 10,
     "unittest_command": "docker compose -p axiom-dev run --rm -T web python manage.py test",
     "status": "PASS",
     "skip": 0,
     "frontend": {
       "status": "PASS",
       "typecheck": "strict 0 error",
-      "vitest": "9 檔 77／77",
-      "build": "63 modules；js 144.31 kB、css 9.87 kB",
+      "vitest": "全部通過",
       "command": "docker compose -p axiom-dev run --rm -T frontend sh -c 'npm run typecheck && npm test && npm run build'"
     }
   },
@@ -51,17 +57,9 @@
     "public_oracle": "PASS"
   },
   "integration": {
-    "probe_smoke": "PASS",
-    "runtime_smoke": "PASS",
-    "mathematics_smoke": "PASS",
-    "makemigrations_check": "No changes detected",
-    "ingest_preview_smoke": "PASS",
-    "business_ingest_smoke": "PASS",
-    "research_inspection_smoke": "PASS",
-    "profile_smoke": "PASS",
-    "research_draft_smoke": "PASS（新增失效宣告段：宣告後 artifact 200→409、證據包 200→404、二次宣告 409）",
+    "research_draft_smoke": "PASS（含對外入口段：dry-run 200 且未寫任何列、宣告 201、同鍵重送回同一結果、GET 讀回一致、二次宣告 409；宣告後 artifact 200→409、證據包 200→404）",
     "research_draft_smoke_frontend": "PASS（同上經 15173 同源代理）",
-    "catalog_smoke": "本批未重跑：需 gate 關閉的可丟棄堆疊，未以 6147f1f 的舊結果頂替本批證據",
+    "relay_dispatch": "PASS（測試以 override_settings 放行後 due() 取得該請求、relay_deletion() 派送 1 次、propagate() 收斂至 COMPLETED）",
     "product_gate_status": "NOT_RUN"
   },
   "live_services": {
@@ -80,38 +78,37 @@
       { "name": "profile", "state": "running", "health": "", "ports": "" },
       { "name": "redis", "state": "running", "health": "healthy", "ports": "6379/tcp" },
       { "name": "relay", "state": "running", "health": "", "ports": "" },
+      { "name": "search", "state": "running", "health": "", "ports": "" },
       { "name": "web", "state": "running", "health": "healthy", "ports": "127.0.0.1:18000->8000/tcp" },
       { "name": "worker", "state": "running", "health": "", "ports": "" }
     ],
-    "development_database_rebuilt": {
-      "reason": "規格級反轉重寫 0001_initial 後，existing 開發資料庫仍保有已移除的 catalog_account.role（not null）與 catalog_grant，帳號寫入失敗",
-      "action": "重建 axiom-dev 的 axiom 資料庫並重跑全部遷移（DROP／CREATE DATABASE，volume 未刪除）",
-      "scope": "僅本機可丟棄開發堆疊；未觸及其他專案或部署環境"
+    "all_backend_images_rebuilt": {
+      "reason": "ingest／profile／search／worker／relay 仍執行舊 image 時，environment() 的 code_digest 與重建後的 web 不一致，INGEST 以 CHECKPOINT_INCOMPATIBLE 失敗",
+      "action": "docker compose up -d --build web worker relay ingest profile search，使所有 backend 服務共用同一份程式指紋",
+      "scope": "僅本機可丟棄開發堆疊"
     }
   },
   "changed_sources": {
-    "backend/catalog/artifacts.py": "568d0affcfddfe248f2578f55c7c9cb16a235ace4d2102af72d859e44a0039f7",
-    "backend/catalog/deletion.py": "d9742cb504814be5cb3243034f8810c0a0d27ee5dff5fb6b9c66158c5e6a7820",
-    "backend/catalog/evidence.py": "fb078a01134ac94fae076eb3fb734a28c694583c173cfdb46706172d9e16e091",
-    "backend/catalog/management/commands/research_draft_smoke.py": "5a61ad55a9953ba1ac4461766512add768cb1c2fc9a151cac320a25d7619a171",
-    "backend/catalog/migrations/0015_deletion_and_tombstone.py": "43252b237a50f9fa057ed5080d2320e4a40827e6d899e288b49fdb69217b399b",
-    "backend/catalog/migrations/0016_deletion_guards.py": "23baec8900cb49945f152aa523f8b350ed114f68003d8c361e815cfe9d7cdb7d",
-    "backend/catalog/models.py": "ee24ed052dfd9ee934955262d50c79b8a7a054441ecfa4e6311e806648b9681d",
-    "backend/catalog/tests/test_deletion.py": "3fcc6a11bb105bdf73181791fd694245341d1ce8144872dc4f437853be4d97f4",
-    "backend/config/settings.py": "ab28083ce4fc0beb68b44cac02706d597dd55ccfbef4be354ea5eec85cc93d30",
-    "backend/foundation/health.py": "533637525d7c7ef935e85f91e766e5b3f7d6b804cb5ad98a9912370651415a7f",
-    "compose.yaml": "411eebab69d481818142ff1307f3d1f3d7386bf98ab49f3f65bfc554fad8310b",
-    "tools/typing-boundaries.json": "0890e7f3053164fda56e0c4e35017c2c5bf45dc49f1e792a1648e551538ac2fd"
+    "backend/catalog/deletion.py": "932cbdb33bed1b83819cd08755214b34dbb371a8e9407b1ffe91d16914997025",
+    "backend/catalog/deletion_http.py": "fca98eab990d85abc2566d1c58ffef4829c6c1232ec668543d3138e070079d8a",
+    "backend/catalog/tasks.py": "4a0d5dd3214e4370ea476405f50a25795eeb3c719081d3e4cf84eac3ff01900b",
+    "backend/catalog/management/commands/research_draft_smoke.py": "47364f935e6e4e003d40e82e02393730fe962b3ea6b314fe42f95e979ba4092d",
+    "backend/catalog/tests/test_deletion.py": "b266eb3b42ee4bf2a2329225b64582a52d885d8a7847b325437c8aa5fd78efb8",
+    "backend/config/urls.py": "01383cfadf31a0100f199f6669e0243993c12f6f49376a435d1f56d3a82dd417",
+    "backend/foundation/management/commands/dispatch_probes.py": "3aaa08b8774b2b09cd1c37f012b51e90c182f2670b569e530cde0c677f54d92a",
+    "docs/企劃案/contracts/openapi-v2.json": "8f5a0c5a3b4bdde3f00b05cdfc752cc7cadd2e66189b45c7d0bc93a75806ff14",
+    "docs/企劃案/07-資料與API/21-API與任務契約.md": "79996ece5828a6143cf9ee9826e175128d6be82ad209c05b4c8410d3cdc22f6b",
+    "tools/typing-boundaries.json": "ef767b3dd90c7ab04fab429fb13034c5ace967c81ed7af6116e3a91e31aa777f"
   },
   "known_limits": [
-    "本批不提供對外刪除或隔離端點；失效宣告只可由服務層發起，未宣稱客戶端可觸發傳播",
-    "未實作 outbox 與異步清除，也未宣稱索引、快取或訓練快照已被清除；QUARANTINED 仍僅為值域預留",
+    "對外只開放 dry-run／宣告／讀回與異步逐項收斂；MVP 仍不提供硬刪除 API（AX-43）",
+    "未實作 outbox 事件，也未宣稱索引、快取或訓練快照已被實際清除；QUARANTINED 仍僅為值域預留",
+    "DeletionTarget 的 DONE 只代表「已可驗證隔離（tombstone 存在）」，不代表實體位元已從備份抹除",
     "AX-26 所列記憶 embedding／快取、報告、訓練快照與模型版本目前不存在，未為其偽造受影響物件列",
     "宣告後只有讀取與下載被擋（artifact 409、證據包 404）；沒有推薦端點，故未宣稱推薦已實作",
-    "Sonar 本批未重跑：本機需 token，工作區無可用憑證，不以 6147f1f 的零項目結果頂替",
+    "Sonar 本批未重跑：本機需 token，工作區無可用憑證，不以舊結果頂替",
     "catalog_smoke 需 gate 關閉的可丟棄堆疊，本批未重跑，亦不以其舊結果充作本批證據",
-    "開發資料庫因規格級反轉造成漂移而重建；此為本機可丟棄堆疊處置，不代表部署環境已就緒",
     "Windows WSL2 與遠端 amd64 未在本機執行，由本提交 Actions 決定",
-    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+    "企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS；D-05 未決使 G2 保持 BLOCKED"
   ]
 }

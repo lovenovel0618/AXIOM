@@ -5,16 +5,19 @@ import hashlib
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
+from unittest.mock import patch
 from uuid import UUID, uuid4
 from django.contrib.auth.models import User
 from django.db import IntegrityError, connection, transaction
 from django.test import TransactionTestCase, override_settings
 from catalog.artifacts import register
-from catalog.deletion import affected, declare, is_tombstoned, outstanding
+from catalog.deletion import affected, declare, due, is_tombstoned, outstanding, propagate
 from catalog.ingest import complete_upload, ingest_tick
 from catalog.models import Account, Artifact, Dataset, DatasetVersion, DeletionRequest, DeletionTarget, EvidenceBundle, IngestBinding, Provenance, ResearchVersion, Tenant, Tombstone, Upload
 from catalog.research import create_research, create_version, research_for
 from catalog.services import actor_for, create_dataset, create_upload, put_upload
+from catalog.tasks import relay_deletion
 from catalog.tests.test_research import draft_data
 from catalog.validation import ApiError, validate_api
 from runtime.contracts import JsonObject
@@ -84,6 +87,14 @@ class DeletionTests(TransactionTestCase):
     def declare(self) -> DeletionRequest:
         with transaction.atomic():
             return declare(actor_for(self.actor.user_id), self.version.id, db_now())
+
+    def deletion_url(self) -> str:
+        return f"/api/v2/dataset-versions/{self.version.id}/deletion-requests"
+
+    def http_declare(self, key: str = "deletion-key") -> Any:
+        response = self.client.post(self.deletion_url(), headers={"Idempotency-Key": key})
+        self.assertEqual(response.status_code, 201)
+        return response.json()
 
     def test_declaration_records_work_and_stays_blocked_while_policy_is_closed(self) -> None:
         request = self.declare()
@@ -169,3 +180,74 @@ class DeletionTests(TransactionTestCase):
         DeletionTarget.objects.filter(deletion_request=request).update(outcome="DONE")
         enforce(lambda: rows.update(status="COMPLETED", revision=1))
         self.assertEqual(DeletionRequest.objects.get(pk=request.id).status, "COMPLETED")
+
+    def test_http_dry_run_lists_lineage_without_writing_anything(self) -> None:
+        url = f"{self.deletion_url()}/dry-run"
+        first = self.client.post(url)
+        self.assertEqual(first.status_code, 200)
+        document = first.json()
+        self.assertFalse(document["propagation_enabled"])
+        self.assertEqual({str(item["object_id"]) for item in document["affected"]},
+                         {str(object_id) for _, object_id, _ in affected(self.actor, self.version)})
+        self.assertFalse(Tombstone.objects.exists())
+        self.assertFalse(DeletionRequest.objects.exists())
+        self.assertFalse(DeletionTarget.objects.exists())
+        self.assertEqual(self.client.post(url).json(), document)
+
+    def test_http_declaration_replays_and_reads_back_the_same_work(self) -> None:
+        created = self.http_declare()
+        self.assertEqual((created["status"], created["policy_status"], created["blocked_code"]), ("BLOCKED", "BLOCKED", "FEATURE_DISABLED"))
+        self.assertEqual(created["outstanding"], len(affected(self.actor, self.version)))
+        self.assertEqual([target["object_type"] for target in created["targets"]], sorted(target["object_type"] for target in created["targets"]))
+        self.assertEqual(self.http_declare(), created)
+        self.assertEqual(DeletionRequest.objects.count(), 1)
+        read = self.client.get(self.deletion_url())
+        self.assertEqual(read.status_code, 200)
+        self.assertEqual(read.json(), created)
+
+    def test_http_declaration_stops_reads_and_rejects_a_second_declaration(self) -> None:
+        preview = self.version.preview_id
+        self.assertEqual(self.client.get(f"/api/v2/artifacts/{preview}").status_code, 200)
+        self.http_declare()
+        self.assertEqual(self.client.get(f"/api/v2/artifacts/{preview}").status_code, 409)
+        self.assertEqual(self.client.post(self.deletion_url(), headers={"Idempotency-Key": "another-key"}).status_code, 409)
+
+    def test_http_source_access_is_404_for_other_tenant_and_before_declaration(self) -> None:
+        self.assertEqual(self.client.get(self.deletion_url()).status_code, 404)
+        self.client.force_login(self.other.user)
+        self.assertEqual(self.client.get(self.deletion_url()).status_code, 404)
+        self.assertEqual(self.client.post(f"{self.deletion_url()}/dry-run").status_code, 404)
+        self.assertEqual(self.client.post(self.deletion_url(), headers={"Idempotency-Key": "other"}).status_code, 404)
+        self.assertFalse(DeletionRequest.objects.exists())
+
+    def test_relay_and_propagation_converge_only_while_policy_is_open(self) -> None:
+        with self.settings(DELETION_PROPAGATION_ENABLED=True):
+            created = self.http_declare()
+            self.assertEqual((created["status"], created["policy_status"]), ("PROPAGATING", "ACTIVE"))
+            request = DeletionRequest.objects.get(pk=UUID(str(created["deletion_request_id"])))
+            self.assertEqual(due(100), [(str(self.tenant.id), str(request.id))])
+            with patch("catalog.tasks.app.send_task") as send:
+                self.assertEqual(relay_deletion(), 1)
+            send.assert_called_once()
+            self.assertTrue(propagate(self.tenant.id, request.id))
+            self.assertFalse(propagate(self.tenant.id, request.id))
+            request.refresh_from_db()
+            self.assertEqual((request.status, request.revision, request.blocked_code), ("COMPLETED", 1, None))
+            self.assertEqual(outstanding(request), 0)
+            self.assertEqual(DeletionTarget.objects.filter(outcome="DONE").count(), len(affected(self.actor, self.version)))
+            self.assertEqual(due(100), [])
+            read = self.client.get(self.deletion_url()).json()
+            self.assertEqual((read["status"], read["outstanding"], read["revision"]), ("COMPLETED", 0, 1))
+
+    def test_closed_policy_keeps_the_relay_empty_and_refuses_propagation(self) -> None:
+        request = self.declare()
+        with patch("catalog.tasks.app.send_task") as send:
+            self.assertEqual(relay_deletion(), 0)
+        send.assert_not_called()
+        self.assertEqual(due(100), [])
+        with self.assertRaises(ApiError) as raised:
+            propagate(self.tenant.id, request.id)
+        self.assertEqual((raised.exception.code, raised.exception.status), ("FEATURE_DISABLED", 503))
+        request.refresh_from_db()
+        self.assertEqual((request.status, request.policy_status), ("BLOCKED", "BLOCKED"))
+        self.assertEqual(DeletionTarget.objects.filter(outcome="PENDING").count(), len(affected(self.actor, self.version)))

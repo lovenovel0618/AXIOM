@@ -1,6 +1,6 @@
 from django.urls import path
 from foundation.health import live, ready
-from catalog import http, read_http, research_http, control_http
+from catalog import control_http, deletion_http, http, read_http, research_http
 
 urlpatterns = [path("health/live/", live), path("health/ready/", ready)]
 
@@ -17,6 +17,8 @@ urlpatterns += [
     path("api/v2/research-versions/<uuid:identity>/frozen-submissions", research_http.freeze_submission),
     path("api/v2/datasets/<uuid:identity>/versions", read_http.versions),
     path("api/v2/datasets/<uuid:identity>/runs", read_http.dataset_runs),
+    path("api/v2/dataset-versions/<uuid:identity>/deletion-requests", deletion_http.deletion_requests),
+    path("api/v2/dataset-versions/<uuid:identity>/deletion-requests/dry-run", deletion_http.dry_run),
     path("api/v2/runs/<uuid:identity>", read_http.run_detail),
     path("api/v2/runs/<uuid:identity>/candidates", read_http.run_candidates),
     path("api/v2/equation-versions/<uuid:identity>", read_http.equation_detail),

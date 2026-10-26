@@ -21,7 +21,7 @@
     },
     {
       "path": "docs/企劃案/13-專題深化/46-驗收矩陣與交付證據.md",
-      "sha256": "32212d9f1ba3dee88def8f04845c326f80fa4243f4353e5012e344d75ac414b3"
+      "sha256": "b92444fdf5926ecc8a0de448ef5750f22db0fbc7ab658bbd636b7e41aa2319f7"
     },
     {
       "path": "docs/企劃案/15-工程/53-工程治理與開發者工作流.md",
@@ -106,7 +106,7 @@
       "scope": "MVP_BASELINE",
       "delivery": "M3／P0",
       "documents": "AX-22／23／24／35／44",
-      "acceptance": "AC-22-01～04、AC-23-01～04、AC-24-01～04、AC-35-01～04、AC-44-01～04、AC-21-09～12、AC-26-05～07",
+      "acceptance": "AC-22-01～04、AC-23-01～17、AC-24-01～52、AC-35-01～04、AC-44-01～08、AC-21-09～12、AC-26-05～07",
       "gates": "G6"
     },
     {
@@ -154,7 +154,7 @@
       "scope": "MVP_BASELINE",
       "delivery": "M3／P1",
       "documents": "AX-22／24／35／44",
-      "acceptance": "AC-22-01～04、AC-24-01～04、AC-35-01～04、AC-44-01～04",
+      "acceptance": "AC-22-01～04、AC-24-01～52、AC-35-01～04、AC-44-01～08",
       "gates": "G6"
     },
     {
