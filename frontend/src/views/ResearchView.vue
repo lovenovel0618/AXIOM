@@ -30,6 +30,7 @@ import { filterFlowGraph, highlightFlowNodes, type FlowFilterState } from '../li
 import {
   buildCandidateFocusDetailPanel,
   buildCandidateFocusSummary,
+  buildFocusCollectionDigest,
   buildNodeActionLinks,
   buildSubmissionFocusDetailPanel,
   buildSubmissionFocusSummary,
@@ -194,6 +195,11 @@ const activeFocusIndex = computed(() =>
   activeFocusPanel.value === null || selectedNode.value === null
     ? -1
     : activeFocusPanel.value.items.findIndex((item) => item.nodeId === selectedNode.value?.id),
+)
+const activeFocusDigest = computed(() =>
+  activeFocusPanel.value === null || displayGraph.value === null
+    ? null
+    : buildFocusCollectionDigest(displayGraph.value.nodes, activeFocusPanel.value),
 )
 const flowHighlightIds = computed(() =>
   displayGraph.value === null
@@ -1081,6 +1087,91 @@ watch(displayGraph, (next) => {
                   </div>
                 </button>
               </div>
+
+              <div v-if="activeFocusDigest !== null" class="focus-digest">
+                <div class="focus-detail-head">
+                  <div>
+                    <strong>集合彙總</strong>
+                    <p class="muted">彙整這組成員的產物與事件，並標示跨成員共用的項目；只呈現節點已揭露的內容。</p>
+                  </div>
+                  <div class="actions wrap">
+                    <span class="tag">共用產物 {{ activeFocusDigest.sharedArtifactLabels.length }}</span>
+                    <span class="tag">共用事件 {{ activeFocusDigest.sharedEventTypes.length }}</span>
+                  </div>
+                </div>
+
+                <h4 class="digest-heading">成員分布</h4>
+                <div class="focus-member-stats">
+                  <button
+                    v-for="stat in activeFocusDigest.memberStats"
+                    :key="`digest-member:${stat.nodeId}`"
+                    type="button"
+                    class="focus-member-row"
+                    :class="{ active: selectedNode.id === stat.nodeId }"
+                    @click="selectFocusPanelItem(stat.nodeId)"
+                  >
+                    <span class="mono">{{ stat.value }}</span>
+                    <span>{{ stat.title }}</span>
+                    <span>產物 {{ stat.artifactCount }}</span>
+                    <span>事件 {{ stat.eventCount }}</span>
+                    <span class="muted mono">{{ stat.latestEventAt || '尚無事件' }}</span>
+                  </button>
+                </div>
+
+                <h4 class="digest-heading">產物彙總</h4>
+                <p v-if="activeFocusDigest.artifactGroups.length === 0" class="muted">此集合目前沒有可讀產物。</p>
+                <div v-else class="artifact-groups">
+                  <section
+                    v-for="group in activeFocusDigest.artifactGroups"
+                    :key="`digest-artifact:${group.label}`"
+                    class="artifact-group"
+                  >
+                    <div class="row compact">
+                      <span>{{ group.label }}</span>
+                      <span class="tag" :class="group.shared ? 'good' : ''">
+                        {{ group.items.length }} 項 / {{ group.memberCount }} 成員
+                      </span>
+                    </div>
+                    <div class="artifact-list">
+                      <RouterLink
+                        v-for="item in group.items"
+                        :key="`digest-artifact:${item.id}`"
+                        :to="{ name: 'artifact', params: { id: item.id }, query: backQuery }"
+                        class="artifact-link"
+                      >
+                        <span>{{ item.sourceValue }} · {{ item.sourceTitle }}</span>
+                        <span class="mono">{{ item.id }}</span>
+                      </RouterLink>
+                    </div>
+                  </section>
+                </div>
+
+                <h4 class="digest-heading">事件彙總</h4>
+                <p v-if="activeFocusDigest.eventGroups.length === 0" class="muted">此集合目前沒有可讀事件。</p>
+                <div v-else class="event-groups">
+                  <section
+                    v-for="group in activeFocusDigest.eventGroups"
+                    :key="`digest-event:${group.type}`"
+                    class="event-group"
+                  >
+                    <div class="row compact">
+                      <span>{{ group.type }}</span>
+                      <span class="tag" :class="group.shared ? 'good' : ''">
+                        {{ group.count }} 筆 / {{ group.memberCount }} 成員
+                      </span>
+                    </div>
+                    <div class="muted">最近時間 {{ group.latestAt || '未提供' }}</div>
+                    <ol class="timeline compact-timeline">
+                      <li v-for="event in group.recent" :key="event.event_id || `${group.type}:${event.sequence}`">
+                        <span class="mono">#{{ event.sequence }}</span>
+                        <span>{{ event.event_type }}</span>
+                        <span class="mono">{{ event.occurred_at }}</span>
+                        <span class="record-value">{{ summarizeNodePayload(event.payload) }}</span>
+                      </li>
+                    </ol>
+                  </section>
+                </div>
+              </div>
             </section>
             <div class="row compact">
               <span>節點</span>
@@ -1301,6 +1392,44 @@ watch(displayGraph, (next) => {
 .focus-item-card.active {
   border-color: #3673c7;
   background: #132842;
+}
+
+.focus-digest {
+  margin-top: 18px;
+  border-top: 1px solid #26405f;
+  padding-top: 14px;
+}
+
+.digest-heading {
+  margin: 16px 0 8px;
+}
+
+.focus-member-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.focus-member-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(120px, 2fr) 90px 90px minmax(120px, 1.4fr);
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #26405f;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #0d1d31;
+}
+
+.focus-member-row.active {
+  border-color: #3673c7;
+  background: #132842;
+}
+
+.compact-timeline {
+  grid-template-columns: 60px 130px 165px 1fr;
 }
 
 .focus-item-main,

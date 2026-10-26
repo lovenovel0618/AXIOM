@@ -102,10 +102,54 @@ export interface FocusDetailItem {
 }
 
 export interface FocusDetailPanel extends FocusSummaryBase {
+  /** 這個集合以哪個欄位辨識成員；供集合彙總沿用同一組成員。 */
+  recordLabel: string
   items: FocusDetailItem[]
   totalArtifacts: number
   totalEvents: number
   toneCounts: Record<FlowTone, number>
+}
+
+export interface CollectionArtifactItem {
+  id: string
+  label: string
+  sourceNodeId: string
+  sourceTitle: string
+  sourceValue: string
+}
+
+export interface CollectionArtifactGroup {
+  label: string
+  items: CollectionArtifactItem[]
+  /** 這個產物標籤出現在幾個成員上。 */
+  memberCount: number
+  shared: boolean
+}
+
+export interface CollectionEventGroup {
+  type: string
+  count: number
+  latestAt: string
+  memberCount: number
+  shared: boolean
+  recent: RunEventEnvelope[]
+}
+
+export interface CollectionMemberStat {
+  nodeId: string
+  title: string
+  value: string
+  artifactCount: number
+  eventCount: number
+  latestEventAt: string
+}
+
+export interface CollectionDigest {
+  memberStats: CollectionMemberStat[]
+  artifactGroups: CollectionArtifactGroup[]
+  eventGroups: CollectionEventGroup[]
+  sharedArtifactLabels: string[]
+  sharedEventTypes: string[]
 }
 
 function uniqueValues(values: string[]): string[] {
@@ -176,6 +220,7 @@ function buildFocusDetailPanel(
     matchedValues,
     matchedNodeIds: items.map((item) => item.nodeId),
     missingIds: requested.filter((id) => !matchedValues.includes(id)),
+    recordLabel: primaryLabel,
     items,
     totalArtifacts: items.reduce((sum, item) => sum + item.artifactCount, 0),
     totalEvents: items.reduce((sum, item) => sum + item.eventCount, 0),
@@ -341,4 +386,79 @@ export function buildCandidateFocusDetailPanel(nodes: FlowNode[], requestedIds: 
 
 export function buildSubmissionFocusDetailPanel(nodes: FlowNode[], requestedIds: string[]): FocusDetailPanel | null {
   return buildFocusDetailPanel(nodes.filter((node) => node.kind === 'SUBMISSION'), requestedIds, '提交識別碼', null)
+}
+
+/**
+ * 把一組焦點成員的產物與事件彙總成集合層級檢視。
+ * 只依節點已揭露的產物與事件計算，並標示哪些項目跨成員共用，不補任何推測內容。
+ */
+export function buildFocusCollectionDigest(nodes: FlowNode[], panel: FocusDetailPanel): CollectionDigest | null {
+  if (panel.items.length === 0) return null
+  const byId = new Map(nodes.map((node) => [node.id, node]))
+  const members = panel.items
+    .map((item) => ({ item, node: byId.get(item.nodeId) }))
+    .filter((entry): entry is { item: FocusDetailItem; node: FlowNode } => entry.node !== undefined)
+  if (members.length === 0) return null
+
+  const artifactMap = new Map<string, CollectionArtifactItem[]>()
+  const eventMap = new Map<string, { count: number; latestAt: string; events: RunEventEnvelope[]; memberIds: Set<string> }>()
+
+  const memberStats: CollectionMemberStat[] = members.map(({ item, node }) => {
+    for (const artifact of node.artifacts) {
+      const items = artifactMap.get(artifact.label) ?? []
+      items.push({
+        id: artifact.id,
+        label: artifact.label,
+        sourceNodeId: node.id,
+        sourceTitle: node.title,
+        sourceValue: item.primaryValue,
+      })
+      artifactMap.set(artifact.label, items)
+    }
+    for (const event of node.events) {
+      const current =
+        eventMap.get(event.event_type) ?? { count: 0, latestAt: '', events: [], memberIds: new Set<string>() }
+      current.count += 1
+      current.events.push(event)
+      current.memberIds.add(node.id)
+      if (current.latestAt === '' || current.latestAt < event.occurred_at) current.latestAt = event.occurred_at
+      eventMap.set(event.event_type, current)
+    }
+    const latestEventAt =
+      [...node.events].map((event) => event.occurred_at).sort((left, right) => (left < right ? 1 : -1))[0] ?? ''
+    return {
+      nodeId: node.id,
+      title: node.title,
+      value: item.primaryValue,
+      artifactCount: node.artifacts.length,
+      eventCount: node.events.length,
+      latestEventAt,
+    }
+  })
+
+  const artifactGroups: CollectionArtifactGroup[] = [...artifactMap.entries()]
+    .map(([label, items]) => {
+      const memberCount = new Set(items.map((item) => item.sourceNodeId)).size
+      return { label, items, memberCount, shared: memberCount > 1 }
+    })
+    .sort((left, right) => right.memberCount - left.memberCount || right.items.length - left.items.length)
+
+  const eventGroups: CollectionEventGroup[] = [...eventMap.entries()]
+    .map(([type, current]) => ({
+      type,
+      count: current.count,
+      latestAt: current.latestAt,
+      memberCount: current.memberIds.size,
+      shared: current.memberIds.size > 1,
+      recent: [...current.events].sort((left, right) => right.sequence - left.sequence).slice(0, 5),
+    }))
+    .sort((left, right) => right.memberCount - left.memberCount || right.count - left.count)
+
+  return {
+    memberStats,
+    artifactGroups,
+    eventGroups,
+    sharedArtifactLabels: artifactGroups.filter((group) => group.shared).map((group) => group.label),
+    sharedEventTypes: eventGroups.filter((group) => group.shared).map((group) => group.type),
+  }
 }

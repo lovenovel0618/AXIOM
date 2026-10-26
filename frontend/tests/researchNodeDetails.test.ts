@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest'
 import type { RunEventEnvelope } from '../src/lib/events'
 import type { FlowNode } from '../src/lib/flow'
 import {
-  buildCandidateFocusSummary,
   buildCandidateFocusDetailPanel,
+  buildCandidateFocusSummary,
+  buildFocusCollectionDigest,
   buildNodeActionLinks,
   buildSubmissionFocusDetailPanel,
   buildSubmissionFocusSummary,
@@ -269,5 +270,57 @@ describe('researchNodeDetails', () => {
 
   it('summarizes large payloads', () => {
     expect(summarizeEventPayload({ text: 'x'.repeat(400) })).toContain('...')
+  })
+
+  it('aggregates collection artifacts and events across focus members', () => {
+    const nodes = [
+      node({
+        id: 'candidate:cand-1',
+        title: '候選 #1',
+        artifacts: [{ id: 'artifact-shared', label: '證據包' }],
+        events: [event(1, 'RUN_PROGRESS', '2026-10-26T00:00:00Z')],
+        records: [
+          { label: '候選識別碼', value: 'cand-1' },
+          { label: '所屬搜尋任務', value: 'run-search-1' },
+        ],
+      }),
+      node({
+        id: 'candidate:cand-2',
+        title: '候選 #2',
+        artifacts: [
+          { id: 'artifact-shared', label: '證據包' },
+          { id: 'artifact-only-2', label: '診斷產物' },
+        ],
+        events: [
+          event(2, 'RUN_PROGRESS', '2026-10-26T00:05:00Z'),
+          event(3, 'RUN_FINISHED', '2026-10-26T00:06:00Z'),
+        ],
+        records: [
+          { label: '候選識別碼', value: 'cand-2' },
+          { label: '所屬搜尋任務', value: 'run-search-1' },
+        ],
+      }),
+    ]
+    const panel = buildCandidateFocusDetailPanel(nodes, ['cand-1', 'cand-2'])
+    expect(panel).not.toBeNull()
+
+    const digest = panel === null ? null : buildFocusCollectionDigest(nodes, panel)
+    expect(digest?.memberStats.map((stat) => stat.value)).toEqual(['cand-1', 'cand-2'])
+    expect(digest?.memberStats[1]?.eventCount).toBe(2)
+    expect(digest?.artifactGroups[0]?.label).toBe('證據包')
+    expect(digest?.artifactGroups[0]?.shared).toBe(true)
+    expect(digest?.artifactGroups[0]?.memberCount).toBe(2)
+    expect(digest?.sharedArtifactLabels).toEqual(['證據包'])
+    expect(digest?.eventGroups[0]?.type).toBe('RUN_PROGRESS')
+    expect(digest?.eventGroups[0]?.count).toBe(2)
+    expect(digest?.eventGroups[0]?.shared).toBe(true)
+    expect(digest?.sharedEventTypes).toContain('RUN_PROGRESS')
+    expect(digest?.sharedEventTypes).not.toContain('RUN_FINISHED')
+  })
+
+  it('returns no digest when a focus panel has no members', () => {
+    const panel = buildCandidateFocusDetailPanel([], ['cand-1'])
+    expect(panel?.items).toEqual([])
+    expect(panel === null ? null : buildFocusCollectionDigest([], panel)).toBeNull()
   })
 })
