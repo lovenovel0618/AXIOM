@@ -95,8 +95,8 @@ watch(visible, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">模型 / SCREEN 32</div>
-        <h1>Ollama 模型管理</h1>
+        <div class="eyebrow">模型 / 第 32 頁</div>
+        <h1>模型管理</h1>
         <p class="muted">
           專屬任務畫面設計｜模型載入、上下文、版本與資源：資源用量取自已揭露的任務與版本預算；模型名稱、上下文長度與模型版本後端未揭露時一律「未取得」。
         </p>

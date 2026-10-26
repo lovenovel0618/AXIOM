@@ -45,7 +45,7 @@ onMounted(load)
   <section>
     <div class="head">
       <div>
-        <div class="eyebrow">總覽 / SCREEN 03</div>
+        <div class="eyebrow">總覽 / 第 3 頁</div>
         <h1>待處理事件</h1>
         <p class="muted">審核、衝突、風險與待確認事項 · 只列後端已回報狀態，不代替使用者決策</p>
       </div>

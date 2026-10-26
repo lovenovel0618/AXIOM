@@ -139,7 +139,7 @@ watch(visibleSubmissionRows, (rows) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">驗證 / SCREEN 22</div>
+        <div class="eyebrow">驗證 / 第 22 頁</div>
         <h1>驗證中心</h1>
         <p class="muted">專屬任務畫面設計｜多面向證據矩陣與驗證任務：以已揭露的 validation run、證據包與品質報告建立，不混用實證分數與證明狀態。</p>
       </div>

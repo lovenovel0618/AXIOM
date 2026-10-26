@@ -147,7 +147,7 @@ watch(
   <section>
     <div class="head">
       <div>
-        <div class="eyebrow">發現 / SCREEN 19</div>
+        <div class="eyebrow">發現 / 第 19 頁</div>
         <h1>公式比較</h1>
         <p class="muted">模型誤差、複雜度與泛化比較 · 專屬任務畫面設計</p>
       </div>

@@ -121,7 +121,7 @@ function restart(): void {
   <section>
     <div class="head">
       <div>
-        <div class="eyebrow">研究 / SCREEN 06</div>
+        <div class="eyebrow">研究 / 第 6 頁</div>
         <h1>新建研究</h1>
         <p class="muted">研究目標 → 資料來源與語意 → 不可變版本 → 排入 PROFILE 佇列</p>
       </div>

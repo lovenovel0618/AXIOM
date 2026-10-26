@@ -85,7 +85,7 @@ watch(targetId, async (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">數據 / SCREEN 17</div>
+        <div class="eyebrow">數據 / 第 17 頁</div>
         <h1>資料版本比較</h1>
         <p class="muted">
           版本差異、血緣、回復與影響｜差異只比較兩個不可變版本的已揭露欄位；血緣、回復流程與下游影響未揭露時標示「未取得」。

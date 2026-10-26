@@ -74,7 +74,7 @@ watch(selectedVersionId, async (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">數據 / SCREEN 13</div>
+        <div class="eyebrow">數據 / 第 13 頁</div>
         <h1>資料預覽</h1>
         <p class="muted">
           欄位、取樣、搜尋與資料字典｜欄位與列數取自不可變版本的結構預覽產物；取樣列內容與語意定義未揭露時標示「未取得」。

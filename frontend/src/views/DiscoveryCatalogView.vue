@@ -105,7 +105,7 @@ watch(
   <section>
     <div class="head">
       <div>
-        <div class="eyebrow">發現 / SCREEN 18</div>
+        <div class="eyebrow">發現 / 第 18 頁</div>
         <h1>候選公式庫</h1>
         <p class="muted">候選公式排序、適用條件及證據 · 專屬任務畫面設計</p>
       </div>

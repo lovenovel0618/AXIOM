@@ -115,7 +115,7 @@ onMounted(async () => {
   <section>
     <div class="head">
       <div>
-        <div class="eyebrow">研究 / SCREEN 05</div>
+        <div class="eyebrow">研究 / 第 5 頁</div>
         <h1>研究清單</h1>
         <p class="muted">查找、篩選、排序與批次管理研究入口 · 候選假設與已驗證證據不混用</p>
       </div>

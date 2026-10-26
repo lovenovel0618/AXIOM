@@ -82,7 +82,7 @@ watch(rows, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">記憶 / SCREEN 30</div>
+        <div class="eyebrow">記憶 / 第 30 頁</div>
         <h1>假設恢復</h1>
         <p class="muted">專屬任務畫面設計｜恢復條件、重新評估與候選佇列：只納入實際失敗的版本，並以已揭露的證據與評估狀態說明可恢復程度。</p>
       </div>

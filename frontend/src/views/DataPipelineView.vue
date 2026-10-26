@@ -63,7 +63,7 @@ watch(selectedNodeId, async (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">數據 / SCREEN 15</div>
+        <div class="eyebrow">數據 / 第 15 頁</div>
         <h1>前處理管線</h1>
         <p class="muted">
           轉換 DAG、參數、前後差異｜節點鏈只由不可變版本快照推導；轉換節點與參數沒有後端端點，一律標示「未取得」。

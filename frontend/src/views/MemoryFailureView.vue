@@ -117,7 +117,7 @@ watch(filtered, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">記憶 / SCREEN 29</div>
+        <div class="eyebrow">記憶 / 第 29 頁</div>
         <h1>失敗案例</h1>
         <p class="muted">專屬任務畫面設計｜否定證據、數值失敗與修復可能：只列出後端已揭露的失敗跡象與理由，不推測根因或修復方案。</p>
       </div>

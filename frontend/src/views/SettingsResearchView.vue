@@ -77,7 +77,7 @@ watch(visible, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">設定 / SCREEN 40</div>
+        <div class="eyebrow">設定 / 第 40 頁</div>
         <h1>研究策略設定</h1>
         <p class="muted">
           專屬任務畫面設計｜評估政策、切分、預算與研究域：只投影研究版本已固定的策略欄位；策略名稱、預設範本與治理規則後端未揭露時一律「未取得」。

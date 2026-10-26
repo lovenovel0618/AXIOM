@@ -13,10 +13,10 @@ interface ModelTab {
 }
 
 const MODEL_TABS: ModelTab[] = [
-  { name: 'model', screen: 'SCREEN 32', label: 'Ollama 模型管理', task: '模型載入、上下文、版本與資源' },
-  { name: 'model-routing', screen: 'SCREEN 33', label: '模型路由', task: '任務分類、候選模型與路由策略' },
-  { name: 'model-evaluation', screen: 'SCREEN 34', label: '模型能力評估', task: '數學任務基準、延遲與成本' },
-  { name: 'model-storage', screen: 'SCREEN 35', label: 'Token 與儲存', task: '事件保存、壓縮、留存及成本' },
+  { name: 'model', screen: '第 32 頁', label: '模型管理', task: '模型載入、上下文、版本與資源' },
+  { name: 'model-routing', screen: '第 33 頁', label: '模型路由', task: '任務分類、候選模型與路由策略' },
+  { name: 'model-evaluation', screen: '第 34 頁', label: '模型能力評估', task: '數學任務基準、延遲與成本' },
+  { name: 'model-storage', screen: '第 35 頁', label: '用量與儲存', task: '事件保存、壓縮、留存及成本' },
 ]
 </script>
 

@@ -106,7 +106,7 @@ watch(selectedVersionId, async (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">數據 / SCREEN 12</div>
+        <div class="eyebrow">數據 / 第 12 頁</div>
         <h1>資料上傳精靈</h1>
         <p class="muted">
           匯入、映射、檢核與不可變快照｜四道程序只依後端已揭露狀態判定，未揭露的欄位標示「未取得」而非以預設值送出。

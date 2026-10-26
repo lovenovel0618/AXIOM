@@ -13,10 +13,10 @@ interface DiscoveryTab {
 }
 
 const DISCOVERY_TABS: DiscoveryTab[] = [
-  { name: 'discoveries', screen: 'SCREEN 18', label: '候選公式庫', task: '候選公式排序、適用條件及證據' },
-  { name: 'discovery-compare', screen: 'SCREEN 19', label: '公式比較', task: '模型誤差、複雜度與泛化比較' },
-  { name: 'discovery-latent', screen: 'SCREEN 20', label: '隱藏變數探索', task: '潛在狀態、內在維度及可識別性' },
-  { name: 'discovery-derivation', screen: 'SCREEN 21', label: '研究推演', task: '假設推導、依賴前提及回溯' },
+  { name: 'discoveries', screen: '第 18 頁', label: '候選公式庫', task: '候選公式排序、適用條件及證據' },
+  { name: 'discovery-compare', screen: '第 19 頁', label: '公式比較', task: '模型誤差、複雜度與泛化比較' },
+  { name: 'discovery-latent', screen: '第 20 頁', label: '隱藏變數探索', task: '潛在狀態、內在維度及可識別性' },
+  { name: 'discovery-derivation', screen: '第 21 頁', label: '研究推演', task: '假設推導、依賴前提及回溯' },
 ]
 </script>
 

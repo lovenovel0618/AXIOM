@@ -81,7 +81,7 @@ watch(rows, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">驗證 / SCREEN 25</div>
+        <div class="eyebrow">驗證 / 第 25 頁</div>
         <h1>形式化證明</h1>
         <p class="muted">專屬任務畫面設計｜命題、前提、Lean 目標及證明狀態：只呈現證據包引用的證明產物與後端已回報的 P0／P1／P2 等級，不推測證明語意。</p>
       </div>

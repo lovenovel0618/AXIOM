@@ -67,7 +67,7 @@ watch(visible, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">設定 / SCREEN 39</div>
+        <div class="eyebrow">設定 / 第 39 頁</div>
         <h1>系統與安全設定</h1>
         <p class="muted">
           專屬任務畫面設計｜角色與權限、金鑰與 Token、稽核與留存：每一列都附可追溯來源；後端沒有對應端點的設定項一律「未取得」，不代填任何政策內容。

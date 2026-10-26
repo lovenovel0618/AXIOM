@@ -85,7 +85,7 @@ watch(rows, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">記憶 / SCREEN 27</div>
+        <div class="eyebrow">記憶 / 第 27 頁</div>
         <h1>知識庫</h1>
         <p class="muted">專屬任務畫面設計｜已驗證結論、來源與檢索：只列出後端已揭露的證據包、品質報告與驗證結論，不把候選假設當成已驗證知識。</p>
       </div>

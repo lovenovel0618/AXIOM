@@ -110,7 +110,7 @@ watch(graph, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">記憶 / SCREEN 31</div>
+        <div class="eyebrow">記憶 / 第 31 頁</div>
         <h1>知識演化</h1>
         <p class="muted">專屬任務畫面設計｜版本、修正、撤回與證據更新：以實際引用關係建立節點與邊，據此呈現知識如何隨版本演進。</p>
       </div>

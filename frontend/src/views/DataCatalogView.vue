@@ -104,7 +104,7 @@ onMounted(load)
 
     <div class="head">
       <div>
-        <div class="eyebrow">數據 / SCREEN 11</div>
+        <div class="eyebrow">數據 / 第 11 頁</div>
         <h1>資料集清單</h1>
         <p class="muted">
           資料來源、版本、權限與品質｜只列出後端已揭露的資料集與不可變版本；權限、品質評分與來源型別沒有對應端點，一律標示「未取得」。

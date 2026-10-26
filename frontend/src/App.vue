@@ -110,10 +110,10 @@ const crumb = computed<string>(() => {
   if (route.name === 'memory-failure') return 'AXIOM / 記憶 / 失敗案例'
   if (route.name === 'memory-recovery') return 'AXIOM / 記憶 / 假設恢復'
   if (route.name === 'memory-evolution') return 'AXIOM / 記憶 / 知識演化'
-  if (route.name === 'model') return 'AXIOM / 模型 / Ollama 模型管理'
+  if (route.name === 'model') return 'AXIOM / 模型 / 模型管理'
   if (route.name === 'model-routing') return 'AXIOM / 模型 / 模型路由'
   if (route.name === 'model-evaluation') return 'AXIOM / 模型 / 模型能力評估'
-  if (route.name === 'model-storage') return 'AXIOM / 模型 / Token 與儲存'
+  if (route.name === 'model-storage') return 'AXIOM / 模型 / 用量與儲存'
   if (route.name === 'training') return 'AXIOM / 訓練 / 訓練資料集'
   if (route.name === 'training-finetune') return 'AXIOM / 訓練 / 微調任務'
   if (route.name === 'training-release') return 'AXIOM / 訓練 / 模型版本發布'
@@ -126,6 +126,8 @@ const crumb = computed<string>(() => {
   if (route.name === 'artifact') return 'AXIOM / 驗證 / 產物詳情'
   return 'AXIOM'
 })
+
+const crumbText = computed<string>(() => crumb.value.replace(/^AXIOM \/ /, ''))
 
 async function refreshReadiness(): Promise<void> {
   readiness.value = 'loading'
@@ -149,7 +151,7 @@ onMounted(refreshReadiness)
       <aside class="sidebar">
         <div class="logo">
           AXIOM
-          <small>RESEARCH OS / WORKBENCH</small>
+          <small>研究作業系統 · 工作台</small>
         </div>
         <div class="group">研究導覽</div>
         <RouterLink
@@ -165,7 +167,7 @@ onMounted(refreshReadiness)
 
       <div class="main">
         <header class="top">
-          <div>{{ crumb }}</div>
+          <div>{{ crumbText }}</div>
           <div class="actions">
             <span class="tag">服務 {{ readiness === 'ready' ? '已就緒' : readiness === 'loading' ? '檢查中' : '異常' }}</span>
             <button type="button" @click="refreshReadiness">重新檢查</button>

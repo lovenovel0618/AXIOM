@@ -75,7 +75,7 @@ watch(nodes, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">驗證 / SCREEN 26</div>
+        <div class="eyebrow">驗證 / 第 26 頁</div>
         <h1>證據關聯圖</h1>
         <p class="muted">專屬任務畫面設計｜證據共享依賴與獨立性評估：以實際引用關係建立節點與邊，並據此判定證據是否彼此獨立。</p>
       </div>

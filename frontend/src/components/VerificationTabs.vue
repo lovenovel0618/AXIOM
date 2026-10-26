@@ -13,11 +13,11 @@ interface VerificationTab {
 }
 
 const VERIFICATION_TABS: VerificationTab[] = [
-  { name: 'verification', screen: 'SCREEN 22', label: '驗證中心', task: '多面向證據矩陣與驗證任務' },
-  { name: 'verification-falsify', screen: 'SCREEN 23', label: '反例搜尋', task: '反例空間、邊界條件與失效案例' },
-  { name: 'verification-inverse', screen: 'SCREEN 24', label: '逆向推導', task: '參數恢復、逆問題及多解集合' },
-  { name: 'verification-proof', screen: 'SCREEN 25', label: '形式化證明', task: '命題、前提、Lean 目標及證明狀態' },
-  { name: 'verification-graph', screen: 'SCREEN 26', label: '證據關聯圖', task: '證據共享依賴與獨立性評估' },
+  { name: 'verification', screen: '第 22 頁', label: '驗證中心', task: '多面向證據矩陣與驗證任務' },
+  { name: 'verification-falsify', screen: '第 23 頁', label: '反例搜尋', task: '反例空間、邊界條件與失效案例' },
+  { name: 'verification-inverse', screen: '第 24 頁', label: '逆向推導', task: '參數恢復、逆問題及多解集合' },
+  { name: 'verification-proof', screen: '第 25 頁', label: '形式化證明', task: '命題、前提、證明目標及證明狀態' },
+  { name: 'verification-graph', screen: '第 26 頁', label: '證據關聯圖', task: '證據共享依賴與獨立性評估' },
 ]
 </script>
 

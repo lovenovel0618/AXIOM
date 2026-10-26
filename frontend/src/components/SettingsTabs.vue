@@ -13,8 +13,8 @@ interface SettingsTab {
 }
 
 const SETTINGS_TABS: SettingsTab[] = [
-  { name: 'settings', screen: 'SCREEN 39', label: '系統與安全設定', task: '角色與權限、金鑰與稽核留存' },
-  { name: 'settings-research', screen: 'SCREEN 40', label: '研究策略設定', task: '評估政策、切分、預算與研究域' },
+  { name: 'settings', screen: '第 39 頁', label: '系統與安全設定', task: '角色與權限、金鑰與稽核留存' },
+  { name: 'settings-research', screen: '第 40 頁', label: '研究策略設定', task: '評估政策、切分、預算與研究域' },
 ]
 </script>
 

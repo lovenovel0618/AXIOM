@@ -26,13 +26,13 @@ interface DataTab {
 const props = defineProps<{ datasetId?: string }>()
 
 const DATA_TABS: DataTab[] = [
-  { name: 'datasets', screen: 'SCREEN 11', label: '資料集清單', task: '資料來源、版本、權限與品質', scoped: false },
-  { name: 'data-upload', screen: 'SCREEN 12', label: '資料上傳精靈', task: '匯入、映射、檢核與不可變快照', scoped: true },
-  { name: 'data-preview', screen: 'SCREEN 13', label: '資料預覽', task: '欄位、取樣與資料字典', scoped: true },
-  { name: 'data-quality', screen: 'SCREEN 14', label: '資料品質', task: '缺失、異常、偏移與洩漏風險', scoped: true },
-  { name: 'data-pipeline', screen: 'SCREEN 15', label: '前處理管線', task: '轉換 DAG、參數與前後差異', scoped: true },
-  { name: 'data-explore', screen: 'SCREEN 16', label: '多維探索', task: '時間、相空間、頻域與高維投影', scoped: true },
-  { name: 'data-diff', screen: 'SCREEN 17', label: '資料版本比較', task: '版本差異、血緣與影響', scoped: true },
+  { name: 'datasets', screen: '第 11 頁', label: '資料集清單', task: '資料來源、版本、權限與品質', scoped: false },
+  { name: 'data-upload', screen: '第 12 頁', label: '資料上傳精靈', task: '匯入、映射、檢核與不可變快照', scoped: true },
+  { name: 'data-preview', screen: '第 13 頁', label: '資料預覽', task: '欄位、取樣與資料字典', scoped: true },
+  { name: 'data-quality', screen: '第 14 頁', label: '資料品質', task: '缺失、異常、偏移與洩漏風險', scoped: true },
+  { name: 'data-pipeline', screen: '第 15 頁', label: '前處理管線', task: '轉換流程、參數與前後差異', scoped: true },
+  { name: 'data-explore', screen: '第 16 頁', label: '多維探索', task: '時間、相空間、頻域與高維投影', scoped: true },
+  { name: 'data-diff', screen: '第 17 頁', label: '資料版本比較', task: '版本差異、血緣與影響', scoped: true },
 ]
 
 interface LinkedTab {

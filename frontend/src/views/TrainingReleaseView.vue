@@ -77,7 +77,7 @@ watch(visible, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">訓練 / SCREEN 38</div>
+        <div class="eyebrow">訓練 / 第 38 頁</div>
         <h1>模型版本發布</h1>
         <p class="muted">
           專屬任務畫面設計｜版本、發布渠道與回滾：只呈現研究版本本身的就緒度；發布渠道、發布時間與回滾目標後端未揭露時一律「未取得」。

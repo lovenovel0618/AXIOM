@@ -104,7 +104,7 @@ watch(
   <section>
     <div class="head">
       <div>
-        <div class="eyebrow">發現 / SCREEN 21</div>
+        <div class="eyebrow">發現 / 第 21 頁</div>
         <h1>研究推演</h1>
         <p class="muted">假設推導、依賴前提及回溯 · 專屬任務畫面設計</p>
       </div>

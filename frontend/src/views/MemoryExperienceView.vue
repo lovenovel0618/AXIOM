@@ -119,7 +119,7 @@ watch(filtered, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">記憶 / SCREEN 28</div>
+        <div class="eyebrow">記憶 / 第 28 頁</div>
         <h1>研究經驗</h1>
         <p class="muted">專屬任務畫面設計｜策略成功與失敗經驗及條件：以任務時間軸呈現已揭露的執行條件與結果，不推測後端未提供的策略與教訓。</p>
       </div>

@@ -93,8 +93,8 @@ watch(visible, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">模型 / SCREEN 35</div>
-        <h1>Token 與儲存</h1>
+        <div class="eyebrow">模型 / 第 35 頁</div>
+        <h1>用量與儲存</h1>
         <p class="muted">
           專屬任務畫面設計｜事件保存、壓縮、留存及成本：Token 上限與累計用量取自版本預算；留存、壓縮與儲存配額後端未揭露時一律「未取得」。
         </p>

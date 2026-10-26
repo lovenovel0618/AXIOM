@@ -13,11 +13,11 @@ interface MemoryTab {
 }
 
 const MEMORY_TABS: MemoryTab[] = [
-  { name: 'memory', screen: 'SCREEN 27', label: '知識庫', task: '已驗證結論、來源與檢索' },
-  { name: 'memory-experience', screen: 'SCREEN 28', label: '研究經驗', task: '策略成功與失敗經驗及條件' },
-  { name: 'memory-failure', screen: 'SCREEN 29', label: '失敗案例', task: '否定證據、數值失敗與修復可能' },
-  { name: 'memory-recovery', screen: 'SCREEN 30', label: '假設恢復', task: '恢復條件、重新評估與候選佇列' },
-  { name: 'memory-evolution', screen: 'SCREEN 31', label: '知識演化', task: '版本、修正、撤回與證據更新' },
+  { name: 'memory', screen: '第 27 頁', label: '知識庫', task: '已驗證結論、來源與檢索' },
+  { name: 'memory-experience', screen: '第 28 頁', label: '研究經驗', task: '策略成功與失敗經驗及條件' },
+  { name: 'memory-failure', screen: '第 29 頁', label: '失敗案例', task: '否定證據、數值失敗與修復可能' },
+  { name: 'memory-recovery', screen: '第 30 頁', label: '假設恢復', task: '恢復條件、重新評估與候選佇列' },
+  { name: 'memory-evolution', screen: '第 31 頁', label: '知識演化', task: '版本、修正、撤回與證據更新' },
 ]
 </script>
 

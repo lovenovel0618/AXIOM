@@ -116,7 +116,7 @@ onMounted(load)
   <section>
     <div class="head">
       <div>
-        <div class="eyebrow">總覽 / SCREEN 04</div>
+        <div class="eyebrow">總覽 / 第 4 頁</div>
         <h1>資源監控</h1>
         <p class="muted">CPU／GPU、記憶體、儲存與任務容量 · 僅呈現後端已揭露的觀測與帳本</p>
       </div>

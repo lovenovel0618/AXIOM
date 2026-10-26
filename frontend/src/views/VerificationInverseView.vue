@@ -105,7 +105,7 @@ watch(solutions, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">驗證 / SCREEN 24</div>
+        <div class="eyebrow">驗證 / 第 24 頁</div>
         <h1>逆向推導</h1>
         <p class="muted">專屬任務畫面設計｜參數恢復、逆問題及多解集合：由候選公式與擬合參數整理恢復結果與多解跡象，不推測解集合。</p>
       </div>

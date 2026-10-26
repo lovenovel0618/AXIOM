@@ -43,7 +43,7 @@ onMounted(load)
   <section>
     <div class="head">
       <div>
-        <div class="eyebrow">總覽 / SCREEN 02</div>
+        <div class="eyebrow">總覽 / 第 2 頁</div>
         <h1>研究活動中心</h1>
         <p class="muted">跨專案研究事件與決策追蹤 · 僅呈現前台已授權讀取的任務投影</p>
       </div>

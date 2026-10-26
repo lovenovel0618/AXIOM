@@ -77,7 +77,7 @@ watch(rows, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">驗證 / SCREEN 23</div>
+        <div class="eyebrow">驗證 / 第 23 頁</div>
         <h1>反例搜尋</h1>
         <p class="muted">專屬任務畫面設計｜反例空間、邊界條件與失效案例：只列出後端已揭露的否證、失敗列數與拒答理由，不推測反例空間。</p>
       </div>

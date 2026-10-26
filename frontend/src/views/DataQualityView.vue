@@ -70,7 +70,7 @@ watch(selectedVersionId, async (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">數據 / SCREEN 14</div>
+        <div class="eyebrow">數據 / 第 14 頁</div>
         <h1>資料品質</h1>
         <p class="muted">
           缺失、異常、偏移、洩漏風險｜可判定檢核依後端已揭露欄位逐項列出；統計類品質面向沒有端點時一律標示「未取得」。

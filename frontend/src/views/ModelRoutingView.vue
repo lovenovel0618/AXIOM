@@ -85,7 +85,7 @@ watch(classes, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">模型 / SCREEN 33</div>
+        <div class="eyebrow">模型 / 第 33 頁</div>
         <h1>模型路由</h1>
         <p class="muted">
           專屬任務畫面設計｜任務分類、候選模型與路由策略：任務分類只由已讀取任務的型別推導；候選模型與路由策略後端未揭露時一律「未取得」。

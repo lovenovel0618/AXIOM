@@ -86,7 +86,7 @@ watch(
   <section>
     <div class="head">
       <div>
-        <div class="eyebrow">發現 / SCREEN 20</div>
+        <div class="eyebrow">發現 / 第 20 頁</div>
         <h1>隱藏變數探索</h1>
         <p class="muted">潛在狀態、內在維度及可識別性 · 專屬任務畫面設計</p>
       </div>

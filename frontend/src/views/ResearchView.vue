@@ -575,7 +575,7 @@ watch(displayGraph, (next) => {
   <section>
     <div class="head">
       <div>
-        <div class="eyebrow">研究 / SCREEN 08</div>
+        <div class="eyebrow">研究 / 第 8 頁</div>
         <h1>研究工作台</h1>
         <p class="muted">以真實研究版本、任務、候選與事件重建工作流。</p>
       </div>

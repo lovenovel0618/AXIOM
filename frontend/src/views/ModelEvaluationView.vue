@@ -75,7 +75,7 @@ watch(rows, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">模型 / SCREEN 34</div>
+        <div class="eyebrow">模型 / 第 34 頁</div>
         <h1>模型能力評估</h1>
         <p class="muted">
           專屬任務畫面設計｜數學任務基準、延遲與成本：基準分數需後端基準端點，一律「未取得」；本頁只比較已揭露的延遲與 Token 成本。
@@ -85,7 +85,7 @@ watch(rows, (value) => {
         <button v-if="backRef !== ''" type="button" @click="router.push(backRef)">返回來源頁</button>
         <button type="button" @click="load">重新載入</button>
         <RouterLink :to="{ name: 'model-storage' }">
-          <button type="button" class="primary">前往 Token 與儲存</button>
+          <button type="button" class="primary">前往用量與儲存</button>
         </RouterLink>
       </div>
     </div>

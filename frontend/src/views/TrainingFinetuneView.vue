@@ -91,7 +91,7 @@ watch(visible, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">訓練 / SCREEN 37</div>
+        <div class="eyebrow">訓練 / 第 37 頁</div>
         <h1>微調任務</h1>
         <p class="muted">
           專屬任務畫面設計｜LoRA 任務、資源配額及訓練監控：配額取研究版本預算、用量取任務預算用量；LoRA 目標、基底模型與檢查點後端未揭露時一律「未取得」。

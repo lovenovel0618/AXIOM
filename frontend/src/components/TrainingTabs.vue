@@ -13,9 +13,9 @@ interface TrainingTab {
 }
 
 const TRAINING_TABS: TrainingTab[] = [
-  { name: 'training', screen: 'SCREEN 36', label: '訓練資料集', task: '已驗證經驗樣本、標籤與品質門檻' },
-  { name: 'training-finetune', screen: 'SCREEN 37', label: '微調任務', task: 'LoRA 任務、資源配額及訓練監控' },
-  { name: 'training-release', screen: 'SCREEN 38', label: '模型版本發布', task: '版本、發布渠道與回滾' },
+  { name: 'training', screen: '第 36 頁', label: '訓練資料集', task: '已驗證經驗樣本、標籤與品質門檻' },
+  { name: 'training-finetune', screen: '第 37 頁', label: '微調任務', task: '低秩微調任務、資源配額及訓練監控' },
+  { name: 'training-release', screen: '第 38 頁', label: '模型版本發布', task: '版本、發布渠道與回滾' },
 ]
 </script>
 

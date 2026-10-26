@@ -81,7 +81,7 @@ watch(visible, (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">訓練 / SCREEN 36</div>
+        <div class="eyebrow">訓練 / 第 36 頁</div>
         <h1>訓練資料集</h1>
         <p class="muted">
           專屬任務畫面設計｜已驗證經驗樣本、標籤與品質門檻：樣本以研究版本宣告的凍結提交為來源，狀態由可讀的最終評估推導；品質門檻後端未揭露時一律「未取得」。

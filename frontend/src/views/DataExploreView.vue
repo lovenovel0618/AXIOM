@@ -79,7 +79,7 @@ watch(selectedAxisName, async (value) => {
 
     <div class="head">
       <div>
-        <div class="eyebrow">數據 / SCREEN 16</div>
+        <div class="eyebrow">數據 / 第 16 頁</div>
         <h1>多維探索</h1>
         <p class="muted">
           時間、相空間、頻域及高維投影｜候選座標軸取自結構預覽；投影座標與統計摘要沒有後端產物時一律標示「未取得」。
