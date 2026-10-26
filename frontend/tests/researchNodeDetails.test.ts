@@ -4,6 +4,7 @@ import type { FlowNode } from '../src/lib/flow'
 import {
   buildNodeActionLinks,
   collectCandidateCollectionLinks,
+  collectSubmissionCollectionLink,
   groupNodeArtifacts,
   groupNodeEvents,
   recentNodeEvents,
@@ -103,6 +104,23 @@ describe('researchNodeDetails', () => {
     expect(links).toHaveLength(2)
     expect(links[0]?.searchRunId).toBe('run-search-1')
     expect(links[0]?.candidateIds).toEqual(['cand-1', 'cand-2'])
+  })
+
+  it('collects visible submission nodes into one verification link', () => {
+    const link = collectSubmissionCollectionLink([
+      node({
+        id: 'submission:sub-1',
+        kind: 'SUBMISSION',
+        records: [{ label: '提交識別碼', value: 'sub-1' }],
+      }),
+      node({
+        id: 'submission:sub-2',
+        kind: 'SUBMISSION',
+        title: '提交 #2',
+        records: [{ label: '提交識別碼', value: 'sub-2' }],
+      }),
+    ])
+    expect(link?.submissionIds).toEqual(['sub-1', 'sub-2'])
   })
 
   it('summarizes large payloads', () => {

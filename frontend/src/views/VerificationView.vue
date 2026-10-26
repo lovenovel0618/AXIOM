@@ -7,7 +7,7 @@ import { parseValidationRun } from '../lib/evaluation'
 import { parseFinalEvaluation } from '../lib/finalEvaluation'
 import { describeError } from '../lib/messages'
 import { withBackRef } from '../lib/navigationState'
-import { readQueryString, replaceQueryState } from '../lib/queryState'
+import { readQueryList, readQueryString, replaceQueryState } from '../lib/queryState'
 import { client } from '../lib/session'
 import { loadVerificationCenter, type VerificationCenter } from '../lib/verificationCenter'
 
@@ -16,10 +16,18 @@ const router = useRouter()
 const center = ref<VerificationCenter | null>(null)
 const loading = ref(false)
 const error = ref('')
+const filteredSubmissionIds = ref<string[]>(readQueryList(route.query, 'submissions'))
 const selectedSubmissionId = ref(readQueryString(route.query, 'submission'))
 
+const visibleSubmissionRows = computed(() => {
+  const rows = center.value?.submissionRows ?? []
+  if (filteredSubmissionIds.value.length === 0) return rows
+  const allowed = new Set(filteredSubmissionIds.value)
+  return rows.filter((row) => allowed.has(row.submissionId))
+})
+
 const selectedSubmission = computed(
-  () => center.value?.submissionRows.find((row) => row.submissionId === selectedSubmissionId.value) ?? null,
+  () => visibleSubmissionRows.value.find((row) => row.submissionId === selectedSubmissionId.value) ?? null,
 )
 const backQuery = computed<Record<string, string>>(() => withBackRef(route.fullPath))
 
@@ -46,8 +54,8 @@ async function load(): Promise<void> {
         }
       },
     })
-    const first = center.value.submissionRows[0]
-    if (first !== undefined && center.value.submissionRows.every((row) => row.submissionId !== selectedSubmissionId.value)) {
+    const first = visibleSubmissionRows.value[0] ?? center.value.submissionRows[0]
+    if (first !== undefined && visibleSubmissionRows.value.every((row) => row.submissionId !== selectedSubmissionId.value)) {
       selectedSubmissionId.value = first.submissionId
     }
   } catch (cause) {
@@ -68,11 +76,26 @@ watch(
 )
 
 watch(
-  () => route.query.submission,
+  filteredSubmissionIds,
+  async (value) => {
+    await replaceQueryState(router, route, { submissions: value.length === 0 ? undefined : value.join(',') })
+  },
+  { deep: true },
+)
+
+watch(
+  () => route.query,
   () => {
+    filteredSubmissionIds.value = readQueryList(route.query, 'submissions')
     selectedSubmissionId.value = readQueryString(route.query, 'submission')
   },
 )
+
+watch(visibleSubmissionRows, (rows) => {
+  if (rows.length === 0) return
+  if (rows.some((row) => row.submissionId === selectedSubmissionId.value)) return
+  selectedSubmissionId.value = rows[0]?.submissionId ?? ''
+})
 </script>
 
 <template>
@@ -151,9 +174,12 @@ watch(
           <h3>最終評估</h3>
           <p v-if="center.submissionRows.length === 0" class="muted">最近沒有 frozen submission 的最終評估資料。</p>
           <div v-else class="submission-layout">
+            <div v-if="filteredSubmissionIds.length !== 0" class="note" style="margin-bottom: 16px;">
+              目前只顯示從工作台帶入的 {{ visibleSubmissionRows.length }} / {{ center.submissionRows.length }} 筆提交。
+            </div>
             <div class="list-rows">
               <button
-                v-for="row in center.submissionRows"
+                v-for="row in visibleSubmissionRows"
                 :key="row.submissionId"
                 type="button"
                 class="module-link selectable"
@@ -224,6 +250,7 @@ watch(
                 </tbody>
               </table>
             </div>
+            <p v-else class="muted">目前篩選條件下沒有可讀取的提交詳情。</p>
           </div>
           <div class="note" style="margin-top: 16px;">
             驗證頁目前聚焦最近 frozen submission 與 validation run 投影；更完整的全域證據關聯圖仍待後續接線。

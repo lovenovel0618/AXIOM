@@ -69,6 +69,11 @@ export interface CandidateCollectionLink {
   label: string
 }
 
+export interface SubmissionCollectionLink {
+  submissionIds: string[]
+  label: string
+}
+
 export function buildNodeActionLinks(
   node: FlowNode,
   queryFactory: (extra?: Record<string, string | undefined>) => Record<string, string>,
@@ -140,4 +145,17 @@ export function collectCandidateCollectionLinks(nodes: FlowNode[]): CandidateCol
           : `${current.ids.length} 個候選節點`,
     }))
     .sort((left, right) => right.candidateIds.length - left.candidateIds.length)
+}
+
+export function collectSubmissionCollectionLink(nodes: FlowNode[]): SubmissionCollectionLink | null {
+  const submissionIds = nodes
+    .filter((node) => node.kind === 'SUBMISSION')
+    .map((node) => recordValue(node.records, '提交識別碼'))
+    .filter((value): value is string => value !== null)
+
+  if (submissionIds.length === 0) return null
+  return {
+    submissionIds,
+    label: submissionIds.length === 1 ? '1 個提交節點' : `${submissionIds.length} 個提交節點`,
+  }
 }

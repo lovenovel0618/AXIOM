@@ -30,6 +30,7 @@ import { filterFlowGraph, highlightFlowNodes, type FlowFilterState } from '../li
 import {
   buildNodeActionLinks,
   collectCandidateCollectionLinks,
+  collectSubmissionCollectionLink,
   groupNodeArtifacts,
   groupNodeEvents,
   recentNodeEvents,
@@ -142,6 +143,9 @@ const selectedNodeActions = computed(() =>
 )
 const visibleCandidateCollections = computed(() =>
   displayGraph.value === null ? [] : collectCandidateCollectionLinks(displayGraph.value.nodes),
+)
+const visibleSubmissionCollection = computed(() =>
+  displayGraph.value === null ? null : collectSubmissionCollectionLink(displayGraph.value.nodes),
 )
 const flowHighlightIds = computed(() =>
   displayGraph.value === null ? [] : [...highlightFlowNodes(displayGraph.value, selectedNodeId.value)],
@@ -721,6 +725,21 @@ watch(displayGraph, (next) => {
               >
                 <strong>比較 {{ group.label }}</strong>
                 <span class="muted mono">{{ group.searchRunId }}</span>
+              </RouterLink>
+            </div>
+            <div v-if="visibleSubmissionCollection !== null" class="candidate-actions">
+              <RouterLink
+                :to="{
+                  name: 'verification',
+                  query: withBackRef(route.fullPath, {
+                    submission: visibleSubmissionCollection.submissionIds[0],
+                    submissions: visibleSubmissionCollection.submissionIds.join(','),
+                  }),
+                }"
+                class="candidate-action-link"
+              >
+                <strong>查看 {{ visibleSubmissionCollection.label }}</strong>
+                <span class="muted mono">驗證中心</span>
               </RouterLink>
             </div>
             <ResearchFlow
