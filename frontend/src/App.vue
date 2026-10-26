@@ -1,11 +1,56 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { checkReadiness, type HealthStatus } from './health'
 import { isAuthenticated, logOut } from './lib/session'
 
 const router = useRouter()
+const route = useRoute()
 const readiness = ref<HealthStatus | 'loading'>('loading')
+const primaryNav = [
+  { label: '總覽', icon: '◫', route: { name: 'overview' as const } },
+  { label: '研究', icon: '◈', route: { name: 'researches' as const } },
+  { label: '數據', icon: '▦', route: { name: 'datasets' as const } },
+  { label: '發現', icon: '◇', route: { name: 'discoveries' as const } },
+  { label: '驗證', icon: '✓', route: { name: 'verification' as const } },
+  { label: '記憶', icon: '◎', route: { name: 'memory' as const } },
+  { label: '模型', icon: '⬡', route: { name: 'model' as const } },
+  { label: '訓練', icon: '↗', route: { name: 'training' as const } },
+  { label: '設定', icon: '⚙', route: { name: 'settings' as const } },
+]
+
+const currentSection = computed<string>(() => {
+  if (route.name === 'overview') return '總覽'
+  if (route.name === 'datasets') return '數據'
+  if (route.name === 'researches') return '研究'
+  if (route.name === 'discoveries') return '發現'
+  if (route.name === 'verification' || route.name === 'run' || route.name === 'artifact') return '驗證'
+  if (route.name === 'memory') return '記憶'
+  if (route.name === 'model') return '模型'
+  if (route.name === 'training') return '訓練'
+  if (route.name === 'settings') return '設定'
+  return '總覽'
+})
+
+const crumb = computed<string>(() => {
+  if (route.name === 'overview') return 'AXIOM / 總覽 / 系統總覽'
+  if (route.name === 'datasets') return 'AXIOM / 數據 / 資料集清單'
+  if (route.name === 'discoveries') return 'AXIOM / 發現 / 假設與候選'
+  if (route.name === 'verification') return 'AXIOM / 驗證 / 驗證中心'
+  if (route.name === 'memory') return 'AXIOM / 記憶 / 知識與記錄'
+  if (route.name === 'model') return 'AXIOM / 模型 / 模型管理'
+  if (route.name === 'training') return 'AXIOM / 訓練 / 訓練中心'
+  if (route.name === 'settings') return 'AXIOM / 設定 / 系統設定'
+  if (route.name === 'run') return 'AXIOM / 驗證 / 任務詳情'
+  if (route.name === 'researches') {
+    const id = typeof route.params.id === 'string' ? route.params.id : ''
+    if (id === 'new') return 'AXIOM / 研究 / 新建研究'
+    if (id !== '') return 'AXIOM / 研究 / 研究工作台'
+    return 'AXIOM / 研究 / 研究清單'
+  }
+  if (route.name === 'artifact') return 'AXIOM / 驗證 / 產物詳情'
+  return 'AXIOM'
+})
 
 async function refreshReadiness(): Promise<void> {
   readiness.value = 'loading'
@@ -21,66 +66,65 @@ onMounted(refreshReadiness)
 </script>
 
 <template>
-  <div class="shell">
-    <header>
-      <div class="brand">AXIOM 研究工作台</div>
-      <nav aria-label="主要導覽">
-        <RouterLink v-if="isAuthenticated" :to="{ name: 'datasets' }">資料集</RouterLink>
-        <RouterLink v-if="isAuthenticated" :to="{ name: 'researches' }">研究</RouterLink>
-        <button v-if="isAuthenticated" type="button" @click="handleLogout">登出</button>
-      </nav>
-    </header>
-    <main>
+  <div class="app-shell" :class="{ guest: !isAuthenticated }">
+    <template v-if="!isAuthenticated">
       <RouterView />
-    </main>
-    <footer aria-live="polite" :aria-busy="readiness === 'loading'">
-      <span class="mono">服務狀態：</span>
-      <span v-if="readiness === 'loading'">檢查中…</span>
-      <span v-else-if="readiness === 'ready'">已就緒</span>
-      <span v-else>暫時無法使用</span>
-      <button type="button" :disabled="readiness === 'loading'" @click="refreshReadiness">重新檢查</button>
-    </footer>
+    </template>
+    <template v-else>
+      <aside class="sidebar">
+        <div class="logo">
+          AXIOM
+          <small>RESEARCH OS / WORKBENCH</small>
+        </div>
+        <div class="group">研究導覽</div>
+        <RouterLink
+          v-for="item in primaryNav"
+          :key="item.label"
+          class="nav"
+          :class="{ active: currentSection === item.label }"
+          :to="item.route"
+        >
+          <span>{{ item.icon }}</span>{{ item.label }}
+        </RouterLink>
+      </aside>
+
+      <div class="main">
+        <header class="top">
+          <div>{{ crumb }}</div>
+          <div class="actions">
+            <span class="tag">服務 {{ readiness === 'ready' ? '已就緒' : readiness === 'loading' ? '檢查中' : '異常' }}</span>
+            <button type="button" @click="refreshReadiness">重新檢查</button>
+            <button type="button" @click="handleLogout">登出</button>
+          </div>
+        </header>
+
+        <main class="content">
+          <RouterView />
+        </main>
+      </div>
+    </template>
   </div>
 </template>
 
 <style scoped>
-.shell {
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.75rem;
-}
-.brand {
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-nav {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-main {
-  flex: 1;
-  padding: 1.5rem 0;
-}
-footer {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  border-top: 1px solid var(--border);
-  padding-top: 0.75rem;
-  color: var(--text-muted);
-  font-size: 0.9rem;
+.app-shell { display: grid; grid-template-columns: 216px 1fr; min-height: 100vh; }
+.app-shell.guest { display: block; }
+.sidebar { background: #0b182a; border-right: 1px solid #22324b; padding: 24px 12px; }
+.logo { font-size: 25px; font-weight: 850; letter-spacing: 3px; color: #fff; padding: 2px 12px 24px; }
+.logo small { display: block; letter-spacing: 1px; font-size: 10px; color: #7fa1ce; font-weight: 400; }
+.group { font-size: 10px; color: #607998; letter-spacing: 2px; padding: 16px 14px 7px; }
+.nav { display: flex; align-items: center; gap: 10px; padding: 11px 13px; border-radius: 8px; margin: 2px 0; color: #91a9c8; }
+.nav.active, .nav.router-link-active { background: #12345b; color: #6fb5ff; }
+.nav span { width: 22px; font-size: 18px; }
+.main { min-width: 0; }
+.top { height: 66px; border-bottom: 1px solid #23364e; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; background: #0d1b2c; }
+.content { padding: 28px 32px; max-width: 1660px; margin: auto; }
+@media (max-width: 900px) {
+  .app-shell { grid-template-columns: 64px 1fr; }
+  .sidebar { padding: 12px 4px; }
+  .logo { font-size: 10px; letter-spacing: 0; }
+  .nav { font-size: 0; }
+  .nav span { font-size: 20px; }
+  .content { padding: 15px; }
 }
 </style>

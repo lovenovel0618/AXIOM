@@ -1,0 +1,322 @@
+[
+  {
+    "id": 1,
+    "category": "總覽",
+    "title": "系統總覽",
+    "type": "overview",
+    "description": "研究健康度、資源負載與異常事件",
+    "file": "01_系統總覽.html"
+  },
+  {
+    "id": 2,
+    "category": "總覽",
+    "title": "研究活動中心",
+    "type": "timeline",
+    "description": "跨專案研究事件與決策追蹤",
+    "file": "02_研究活動中心.html"
+  },
+  {
+    "id": 3,
+    "category": "總覽",
+    "title": "待處理事件",
+    "type": "inbox",
+    "description": "審核、衝突、風險及待確認事項",
+    "file": "03_待處理事件.html"
+  },
+  {
+    "id": 4,
+    "category": "總覽",
+    "title": "資源監控",
+    "type": "monitor",
+    "description": "CPU/GPU、記憶體、儲存與任務容量",
+    "file": "04_資源監控.html"
+  },
+  {
+    "id": 5,
+    "category": "研究",
+    "title": "研究清單",
+    "type": "catalog",
+    "description": "查找、篩選、排序與批次管理研究",
+    "file": "05_研究清單.html"
+  },
+  {
+    "id": 6,
+    "category": "研究",
+    "title": "新建研究",
+    "type": "wizard",
+    "description": "資料、目標、自治策略與資源設定",
+    "file": "06_新建研究.html"
+  },
+  {
+    "id": 7,
+    "category": "研究",
+    "title": "研究工作台",
+    "type": "workbench",
+    "description": "多面板自主研究進度與假設探索",
+    "file": "07_研究工作台.html"
+  },
+  {
+    "id": 8,
+    "category": "研究",
+    "title": "研究詳情",
+    "type": "profile",
+    "description": "目標、執行快照、成果與版本",
+    "file": "08_研究詳情.html"
+  },
+  {
+    "id": 9,
+    "category": "研究",
+    "title": "研究分支圖",
+    "type": "graph",
+    "description": "研究 DAG、依賴與分支恢復",
+    "file": "09_研究分支圖.html"
+  },
+  {
+    "id": 10,
+    "category": "研究",
+    "title": "研究任務紀錄",
+    "type": "timeline",
+    "description": "執行排程、重試、失敗與事件重播",
+    "file": "10_研究任務紀錄.html"
+  },
+  {
+    "id": 11,
+    "category": "數據",
+    "title": "資料集清單",
+    "type": "catalog",
+    "description": "資料來源、版本、權限與品質",
+    "file": "11_資料集清單.html"
+  },
+  {
+    "id": 12,
+    "category": "數據",
+    "title": "資料上傳精靈",
+    "type": "wizard",
+    "description": "匯入、映射、檢核與不可變快照",
+    "file": "12_資料上傳精靈.html"
+  },
+  {
+    "id": 13,
+    "category": "數據",
+    "title": "資料預覽",
+    "type": "grid",
+    "description": "欄位、取樣、搜尋與資料字典",
+    "file": "13_資料預覽.html"
+  },
+  {
+    "id": 14,
+    "category": "數據",
+    "title": "資料品質",
+    "type": "quality",
+    "description": "缺失、異常、偏移、洩漏風險",
+    "file": "14_資料品質.html"
+  },
+  {
+    "id": 15,
+    "category": "數據",
+    "title": "前處理管線",
+    "type": "pipeline",
+    "description": "轉換 DAG、參數、前後差異",
+    "file": "15_前處理管線.html"
+  },
+  {
+    "id": 16,
+    "category": "數據",
+    "title": "多維探索",
+    "type": "explore",
+    "description": "時間、相空間、頻域及高維投影",
+    "file": "16_多維探索.html"
+  },
+  {
+    "id": 17,
+    "category": "數據",
+    "title": "資料版本比較",
+    "type": "diff",
+    "description": "版本差異、血緣、回復與影響",
+    "file": "17_資料版本比較.html"
+  },
+  {
+    "id": 18,
+    "category": "發現",
+    "title": "候選公式庫",
+    "type": "formula",
+    "description": "候選公式排序、適用條件及證據",
+    "file": "18_候選公式庫.html"
+  },
+  {
+    "id": 19,
+    "category": "發現",
+    "title": "公式比較",
+    "type": "compare",
+    "description": "模型誤差、複雜度與泛化比較",
+    "file": "19_公式比較.html"
+  },
+  {
+    "id": 20,
+    "category": "發現",
+    "title": "隱藏變數探索",
+    "type": "latent",
+    "description": "潛在狀態、內在維度及可識別性",
+    "file": "20_隱藏變數探索.html"
+  },
+  {
+    "id": 21,
+    "category": "發現",
+    "title": "研究推演",
+    "type": "graph",
+    "description": "假設推導、依賴前提及回溯",
+    "file": "21_研究推演.html"
+  },
+  {
+    "id": 22,
+    "category": "驗證",
+    "title": "驗證中心",
+    "type": "quality",
+    "description": "多面向證據矩陣與驗證任務",
+    "file": "22_驗證中心.html"
+  },
+  {
+    "id": 23,
+    "category": "驗證",
+    "title": "反例搜尋",
+    "type": "falsify",
+    "description": "反例空間、邊界條件與失效案例",
+    "file": "23_反例搜尋.html"
+  },
+  {
+    "id": 24,
+    "category": "驗證",
+    "title": "逆向推導",
+    "type": "inverse",
+    "description": "參數恢復、逆問題及多解集合",
+    "file": "24_逆向推導.html"
+  },
+  {
+    "id": 25,
+    "category": "驗證",
+    "title": "形式化證明",
+    "type": "proof",
+    "description": "命題、前提、Lean 目標及證明狀態",
+    "file": "25_形式化證明.html"
+  },
+  {
+    "id": 26,
+    "category": "驗證",
+    "title": "證據關聯圖",
+    "type": "graph",
+    "description": "證據共享依賴與獨立性評估",
+    "file": "26_證據關聯圖.html"
+  },
+  {
+    "id": 27,
+    "category": "記憶",
+    "title": "知識庫",
+    "type": "knowledge",
+    "description": "已驗證結論、來源與檢索",
+    "file": "27_知識庫.html"
+  },
+  {
+    "id": 28,
+    "category": "記憶",
+    "title": "研究經驗",
+    "type": "timeline",
+    "description": "策略成功與失敗經驗及條件",
+    "file": "28_研究經驗.html"
+  },
+  {
+    "id": 29,
+    "category": "記憶",
+    "title": "失敗案例",
+    "type": "falsify",
+    "description": "否定證據、數值失敗與修復可能",
+    "file": "29_失敗案例.html"
+  },
+  {
+    "id": 30,
+    "category": "記憶",
+    "title": "假設恢復",
+    "type": "recovery",
+    "description": "恢復條件、重新評估與候選佇列",
+    "file": "30_假設恢復.html"
+  },
+  {
+    "id": 31,
+    "category": "記憶",
+    "title": "知識演化",
+    "type": "graph",
+    "description": "版本、修正、撤回與證據更新",
+    "file": "31_知識演化.html"
+  },
+  {
+    "id": 32,
+    "category": "模型",
+    "title": "Ollama 模型管理",
+    "type": "models",
+    "description": "模型載入、上下文、版本與資源",
+    "file": "32_Ollama_模型管理.html"
+  },
+  {
+    "id": 33,
+    "category": "模型",
+    "title": "模型路由",
+    "type": "pipeline",
+    "description": "任務分類、候選模型與路由策略",
+    "file": "33_模型路由.html"
+  },
+  {
+    "id": 34,
+    "category": "模型",
+    "title": "模型能力評估",
+    "type": "compare",
+    "description": "數學任務基準、延遲與成本",
+    "file": "34_模型能力評估.html"
+  },
+  {
+    "id": 35,
+    "category": "模型",
+    "title": "Token 與儲存",
+    "type": "monitor",
+    "description": "事件保存、壓縮、留存及成本",
+    "file": "35_Token_與儲存.html"
+  },
+  {
+    "id": 36,
+    "category": "訓練",
+    "title": "訓練資料集",
+    "type": "grid",
+    "description": "已驗證經驗樣本、標籤與品質門檻",
+    "file": "36_訓練資料集.html"
+  },
+  {
+    "id": 37,
+    "category": "訓練",
+    "title": "微調任務",
+    "type": "train",
+    "description": "LoRA 任務、資源配額及訓練監控",
+    "file": "37_微調任務.html"
+  },
+  {
+    "id": 38,
+    "category": "訓練",
+    "title": "模型版本發布",
+    "type": "release",
+    "description": "基準門檻、灰度發布及回退",
+    "file": "38_模型版本發布.html"
+  },
+  {
+    "id": 39,
+    "category": "設定",
+    "title": "系統與安全設定",
+    "type": "settings",
+    "description": "存取控制、外部 API 與資料保護",
+    "file": "39_系統與安全設定.html"
+  },
+  {
+    "id": 40,
+    "category": "設定",
+    "title": "研究策略設定",
+    "type": "settings",
+    "description": "自主程度、停止條件與驗證預算",
+    "file": "40_研究策略設定.html"
+  }
+]

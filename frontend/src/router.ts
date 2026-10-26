@@ -2,16 +2,24 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { sessionStatus } from './lib/session'
 import ArtifactView from './views/ArtifactView.vue'
-import DatasetsView from './views/DatasetsView.vue'
 import LoginView from './views/LoginView.vue'
-import ResearchView from './views/ResearchView.vue'
+import ModuleView from './views/ModuleView.vue'
 import RunView from './views/RunView.vue'
+import DatasetsView from './views/DatasetsView.vue'
+import ResearchView from './views/ResearchView.vue'
 
 const routes: RouteRecordRaw[] = [
-  { path: '/', redirect: { name: 'datasets' } },
+  { path: '/', redirect: { name: 'overview' } },
   { path: '/login', name: 'login', component: LoginView },
+  { path: '/overview', name: 'overview', component: ModuleView },
   { path: '/datasets', name: 'datasets', component: DatasetsView },
   { path: '/researches/:id?', name: 'researches', component: ResearchView },
+  { path: '/discoveries', name: 'discoveries', component: ModuleView },
+  { path: '/verification', name: 'verification', component: ModuleView },
+  { path: '/memory', name: 'memory', component: ModuleView },
+  { path: '/models', name: 'model', component: ModuleView },
+  { path: '/training', name: 'training', component: ModuleView },
+  { path: '/settings', name: 'settings', component: ModuleView },
   { path: '/runs/:id', name: 'run', component: RunView },
   { path: '/artifacts/:id', name: 'artifact', component: ArtifactView },
 ]

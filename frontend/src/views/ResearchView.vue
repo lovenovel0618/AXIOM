@@ -1,68 +1,28 @@
 <script setup lang="ts">
-/**
- * 研究工作台（語意確認）：建立研究容器、固定不可變草稿、觸發 PROFILE。
- * 版本一旦建立即不可變；觸發需帶目前控制 revision，後端仍是唯一權威。
- */
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { getArtifactContent } from '../api/artifacts'
+import { getFinalEvaluation, getValidationRun } from '../api/evaluations'
 import {
   createResearch,
   createSearchRun,
   fetchResearchEventBatch,
   getResearchVersion,
   listResearchVersionRuns,
-  listResearches,
   listResearchVersions,
-  validateDraft,
+  listResearches,
   type Research,
   type ResearchVersion,
   type ResearchVersionStatus,
 } from '../api/research'
-import {
-  getEquationVersion,
-  getFitRun,
-  listRunCandidates,
-  MAX_COMPARISON,
-  type Candidate,
-  type EquationVersion,
-  type FitRun,
-} from '../api/candidates'
-import { type Run, type RunStatus } from '../api/runs'
-import CandidateComparison from '../components/CandidateComparison.vue'
-import ResearchVersionForm from '../components/ResearchVersionForm.vue'
-import { getArtifact, getArtifactContent, type Artifact } from '../api/artifacts'
-import { getEvidenceBundle } from '../api/evidence'
-import { getFinalEvaluation, getValidationRun } from '../api/evaluations'
-import {
-  OUTCOME_DETAILS,
-  OUTCOME_LABELS,
-  parseValidationRun,
-  refusalReasons,
-  type ValidationRun,
-} from '../lib/evaluation'
-import {
-  parseFinalEvaluation,
-  SLOT_STATUS_LABELS,
-  SUBMISSION_STATUS_LABELS,
-  type FinalEvaluation,
-} from '../lib/finalEvaluation'
-import {
-  describeRemaining,
-  describeBlindEvaluation,
-  EVIDENCE_STATUS_LABELS,
-  parseEvidenceBundle,
-  parseQualityReport,
-  QUALITY_LABELS,
-  READINESS_LABELS,
-  type EvidenceBundle,
-  type QualityReport,
-} from '../lib/evidence'
-import {
-  EventFollower,
-  FOLLOW_STATUS_LABELS,
-  INITIAL_FOLLOW_STATE,
-  type FollowState,
-} from '../lib/stream'
+import type { Run } from '../api/runs'
+import { listRunCandidates, type Candidate } from '../api/candidates'
+import ResearchFlow from '../components/ResearchFlow.vue'
+import { parseQualityReport, describeBlindEvaluation, type QualityReport } from '../lib/evidence'
+import type { RunEventEnvelope } from '../lib/events'
+import { parseValidationRun, type ValidationRun } from '../lib/evaluation'
+import { parseFinalEvaluation, type FinalEvaluation } from '../lib/finalEvaluation'
+import { buildFlow, type FlowGraph, type FlowNode } from '../lib/flow'
 import { describeError } from '../lib/messages'
 import { client } from '../lib/session'
 
@@ -70,1042 +30,686 @@ const route = useRoute()
 const router = useRouter()
 
 const researches = ref<Research[]>([])
+const researchStatuses = ref<Record<string, ResearchVersionStatus | 'NONE'>>({})
 const versions = ref<ResearchVersion[]>([])
-const selected = ref<Research | null>(null)
-const selectedVersion = ref<ResearchVersion | null>(null)
+const workbenchVersion = ref<ResearchVersion | null>(null)
 const runs = ref<Run[]>([])
 const candidates = ref<Candidate[]>([])
-const pinned = ref<string[]>([])
-const equations = ref<Record<string, EquationVersion>>({})
-const fits = ref<Record<string, FitRun>>({})
-const candidatesLoading = ref(false)
-const detailsLoading = ref(false)
+const researchEvents = ref<RunEventEnvelope[]>([])
 const quality = ref<QualityReport | null>(null)
-const qualityLoading = ref(false)
-const bundle = ref<EvidenceBundle | null>(null)
-const bundleLoading = ref(false)
-const evaluations = ref<Record<string, ValidationRun>>({})
-const evaluationsLoading = ref(false)
-const finalEvaluations = ref<Record<string, FinalEvaluation>>({})
-const finalEvaluationsLoading = ref(false)
-const inspected = ref<Record<string, { meta: Artifact; text: string }>>({})
-const inspecting = ref<string[]>([])
-const follow = ref<FollowState>(INITIAL_FOLLOW_STATE)
-const name = ref('')
+const validationMap = ref<Record<string, ValidationRun>>({})
+const finalEvaluationMap = ref<Record<string, FinalEvaluation>>({})
+
 const loading = ref(false)
-const triggering = ref(false)
+const refreshingWorkbench = ref(false)
+const submitting = ref(false)
+const startingSearch = ref(false)
 const error = ref('')
 const notice = ref('')
+const search = ref('')
+const statusFilter = ref<'ALL' | ResearchVersionStatus | 'NONE'>('ALL')
+const name = ref('')
+const selectedResearch = ref<Research | null>(null)
+const selectedVersionId = ref('')
+const selectedNodeId = ref<string | null>(null)
 
-const versionStatusLabel: Record<ResearchVersionStatus, string> = {
-  DRAFT: '草稿',
-  VALIDATING: '驗證中',
-  READY: '就緒',
-  QUEUED: '排隊中',
-  RUNNING: '執行中',
-  FAILED: '失敗',
-  CANCELLED: '已取消',
-}
+const mode = computed<'list' | 'create' | 'workbench'>(() => {
+  const id = typeof route.params.id === 'string' ? route.params.id : ''
+  if (id === 'new') return 'create'
+  if (id !== '') return 'workbench'
+  return 'list'
+})
 
-const runStatusLabel: Record<RunStatus, string> = {
-  QUEUED: '排隊中',
-  RUNNING: '執行中',
-  CANCEL_REQUESTED: '取消處理中',
-  SUCCEEDED: '成功',
-  FAILED: '失敗',
-  CANCELLED: '已取消',
-}
+const filteredResearches = computed<Research[]>(() => {
+  const keyword = search.value.trim().toLowerCase()
+  return researches.value.filter((row) => {
+    const matched =
+      keyword === '' || row.name.toLowerCase().includes(keyword) || row.id.toLowerCase().includes(keyword)
+    if (!matched) return false
+    if (statusFilter.value === 'ALL') return true
+    return researchStatuses.value[row.id] === statusFilter.value
+  })
+})
 
-const canTrigger = computed<boolean>(
-  () => selectedVersion.value !== null && selectedVersion.value.status === 'DRAFT' && !triggering.value,
+const graph = computed<FlowGraph | null>(() => {
+  if (workbenchVersion.value === null) return null
+  return buildFlow({
+    version: workbenchVersion.value,
+    runs: runs.value,
+    candidates: candidates.value,
+    evaluations: validationMap.value,
+    finalEvaluations: finalEvaluationMap.value,
+    quality: quality.value,
+    events: researchEvents.value,
+  })
+})
+
+const selectedNode = computed<FlowNode | null>(() => {
+  const current = graph.value
+  if (current === null) return null
+  return current.nodes.find((node) => node.id === selectedNodeId.value) ?? current.nodes[0] ?? null
+})
+
+const runCounts = computed(() => ({
+  total: runs.value.length,
+  active: runs.value.filter((row) => ['QUEUED', 'RUNNING', 'CANCEL_REQUESTED'].includes(row.status)).length,
+  failed: runs.value.filter((row) => row.status === 'FAILED').length,
+}))
+
+const blindEvaluation = computed(() =>
+  describeBlindEvaluation({
+    sealedTestId: workbenchVersion.value?.observation_split.sealed_test_id ?? null,
+    frozenSubmissionCount: workbenchVersion.value?.frozen_submission_ids.length ?? 0,
+  }),
 )
 
-/** 候選掛在 SEARCH root 之下；FIT root 沒有候選，因此只認 SEARCH。 */
-const searchRun = computed<Run | null>(() => runs.value.find((row) => row.type === 'SEARCH' && row.is_root !== false) ?? null)
-
-const blindEvaluation = computed(() => {
-  const version = selectedVersion.value
-  if (version === null) return null
-  return describeBlindEvaluation({
-    sealedTestId: version.observation_split.sealed_test_id,
-    frozenSubmissionCount: version.frozen_submission_ids.length,
-  })
-})
-
-const researchEvents = computed(() => follow.value.events)
-
-const followLabel = computed<string>(() => {
-  const current = follow.value
-  if (current.status === 'RECONNECTING') {
-    return `${FOLLOW_STATUS_LABELS.RECONNECTING}（第 ${String(current.attempts)} 次，最後同步內容保留顯示）`
+function workbenchSteps(version: ResearchVersion | null): Array<{ label: string; done: boolean }> {
+  if (version === null) {
+    return [
+      { label: '建立研究', done: false },
+      { label: '建立研究版本', done: false },
+      { label: '啟動 PROFILE', done: false },
+      { label: '產生候選分支', done: false },
+      { label: '封存與驗證', done: false },
+    ]
   }
-  return FOLLOW_STATUS_LABELS[current.status]
-})
-
-let researchFollower: EventFollower | null = null
-
-function summarizeEvent(payload: Record<string, unknown>): string {
-  const text = JSON.stringify(payload)
-  return text.length > 200 ? `${text.slice(0, 200)}…` : text
+  return [
+    { label: '建立研究', done: true },
+    { label: '建立研究版本', done: true },
+    { label: '啟動 PROFILE', done: version.status !== 'DRAFT' },
+    { label: '產生候選分支', done: candidates.value.length > 0 },
+    { label: '封存與驗證', done: version.frozen_submission_ids.length > 0 || version.evidence_bundle_ids.length > 0 },
+  ]
 }
 
-function stopFollowingResearch(): void {
-  researchFollower?.stop()
-  researchFollower = null
-}
-
-function startResearchFollow(version: ResearchVersion): void {
-  stopFollowingResearch()
-  selectedVersion.value = version
-  follow.value = INITIAL_FOLLOW_STATE
-  researchFollower = new EventFollower({
-    scope: 'RESEARCH',
-    streamId: version.id,
-    fetchBatch: (cursor) => fetchResearchEventBatch(client, version.id, cursor),
-    sync: async () => {
-      selectedVersion.value = await getResearchVersion(client, version.id)
-      await reloadRuns()
-    },
-    isTerminal: () => !['VALIDATING', 'RUNNING', 'QUEUED'].includes(selectedVersion.value?.status ?? ''),
-    snapshotCursor: async () => {
-      const fresh = await getResearchVersion(client, version.id)
-      selectedVersion.value = fresh
-      return fresh.current_event_cursor
-    },
-    onUpdate: (next) => {
-      follow.value = next
-    },
-  })
-  researchFollower.start()
+async function loadResearchStatuses(items: Research[]): Promise<void> {
+  const next: Record<string, ResearchVersionStatus | 'NONE'> = {}
+  await Promise.all(
+    items.map(async (row) => {
+      try {
+        const page = await listResearchVersions(client, row.id, 1)
+        next[row.id] = page.items[0]?.status ?? 'NONE'
+      } catch {
+        next[row.id] = 'NONE'
+      }
+    }),
+  )
+  researchStatuses.value = next
 }
 
 async function loadResearches(): Promise<void> {
   loading.value = true
   error.value = ''
   try {
-    researches.value = (await listResearches(client)).items
+    const page = await listResearches(client)
+    researches.value = page.items
+    await loadResearchStatuses(page.items)
   } catch (cause) {
     error.value = describeError(cause)
   } finally {
     loading.value = false
+  }
+}
+
+function clearWorkbench(): void {
+  workbenchVersion.value = null
+  runs.value = []
+  candidates.value = []
+  researchEvents.value = []
+  quality.value = null
+  validationMap.value = {}
+  finalEvaluationMap.value = {}
+  selectedNodeId.value = null
+}
+
+async function loadVersions(): Promise<void> {
+  const id = typeof route.params.id === 'string' ? route.params.id : ''
+  if (id === '' || id === 'new') {
+    selectedResearch.value = null
+    versions.value = []
+    selectedVersionId.value = ''
+    clearWorkbench()
+    return
+  }
+
+  selectedResearch.value = researches.value.find((row) => row.id === id) ?? null
+  if (selectedResearch.value === null) {
+    versions.value = []
+    selectedVersionId.value = ''
+    clearWorkbench()
+    return
+  }
+
+  try {
+    const page = await listResearchVersions(client, id)
+    versions.value = page.items
+    const requestedVersion = typeof route.query.version === 'string' ? route.query.version : ''
+    selectedVersionId.value = versions.value.some((row) => row.id === requestedVersion)
+      ? requestedVersion
+      : (versions.value[0]?.id ?? '')
+  } catch (cause) {
+    versions.value = []
+    selectedVersionId.value = ''
+    clearWorkbench()
+    error.value = describeError(cause)
+  }
+}
+
+async function loadWorkbench(versionId: string): Promise<void> {
+  if (versionId === '') {
+    clearWorkbench()
+    return
+  }
+
+  refreshingWorkbench.value = true
+  error.value = ''
+  try {
+    const version = await getResearchVersion(client, versionId)
+    workbenchVersion.value = version
+    versions.value = versions.value.map((row) => (row.id === version.id ? version : row))
+
+    const runPage = await listResearchVersionRuns(client, versionId)
+    runs.value = runPage.items
+
+    researchEvents.value = (await fetchResearchEventBatch(client, versionId, null)).events
+
+    const collectedCandidates: Candidate[] = []
+    for (const row of runPage.items) {
+      if (row.type !== 'SEARCH') continue
+      try {
+        const page = await listRunCandidates(client, row.id, { limit: 50 })
+        collectedCandidates.push(...page.items)
+      } catch {
+        // 候選分頁單獨失敗時保留其餘資料，不用空資料覆蓋整個工作台。
+      }
+    }
+    candidates.value = collectedCandidates
+
+    const validations: Record<string, ValidationRun> = {}
+    const validationIds = new Set<string>()
+    for (const row of collectedCandidates) {
+      for (const validationId of row.validation_run_ids) validationIds.add(validationId)
+    }
+    for (const validationId of validationIds) {
+      try {
+        const parsed = parseValidationRun(await getValidationRun(client, validationId))
+        if (parsed !== null) validations[validationId] = parsed
+      } catch {
+        // 逐筆缺失不推測也不拋全域錯。
+      }
+    }
+    validationMap.value = validations
+
+    const finalEvaluations: Record<string, FinalEvaluation> = {}
+    for (const submissionId of version.frozen_submission_ids) {
+      try {
+        const parsed = parseFinalEvaluation(await getFinalEvaluation(client, submissionId))
+        if (parsed !== null) finalEvaluations[submissionId] = parsed
+      } catch {
+        // 評估尚未產生時保持空白狀態。
+      }
+    }
+    finalEvaluationMap.value = finalEvaluations
+
+    if (version.quality_report_id === null) {
+      quality.value = null
+    } else {
+      try {
+        quality.value = parseQualityReport(await getArtifactContent<unknown>(client, version.quality_report_id))
+      } catch {
+        quality.value = null
+      }
+    }
+  } catch (cause) {
+    clearWorkbench()
+    error.value = describeError(cause)
+  } finally {
+    refreshingWorkbench.value = false
   }
 }
 
 async function submitResearch(): Promise<void> {
-  if (name.value.trim() === '' || loading.value) return
-  loading.value = true
+  if (name.value.trim() === '' || submitting.value) return
+  submitting.value = true
   error.value = ''
   notice.value = ''
   try {
     const created = await createResearch(client, name.value.trim())
-    name.value = ''
-    researches.value = [created, ...researches.value]
     notice.value = `已建立研究「${created.name}」。`
-    await select(created)
+    name.value = ''
+    await loadResearches()
+    await router.push({ name: 'researches', params: { id: created.id } })
   } catch (cause) {
     error.value = describeError(cause)
   } finally {
-    loading.value = false
+    submitting.value = false
   }
 }
 
-async function select(research: Research): Promise<void> {
-  selected.value = research
-  selectedVersion.value = null
-  runs.value = []
-  resetCandidates()
-  versions.value = []
-  error.value = ''
-  notice.value = ''
-  if (route.params.id !== research.id) {
-    await router.replace({ name: 'researches', params: { id: research.id } })
-  }
-  await reloadVersions()
-}
-
-async function reloadVersions(): Promise<void> {
-  const research = selected.value
-  if (research === null) return
-  try {
-    versions.value = (await listResearchVersions(client, research.id)).items
-  } catch (cause) {
-    error.value = describeError(cause)
-    return
-  }
-  await restoreVersion()
-}
-
-/** 重開工作台時依 URL 的 version 還原選定版本；沒有就取最新一筆，讓 Run 清單與事件串流得以重建。 */
-async function restoreVersion(): Promise<void> {
-  const research = selected.value
-  if (research === null) return
-  const requested = typeof route.query.version === 'string' ? route.query.version : ''
-  const found = versions.value.find((row) => row.id === requested) ?? versions.value[0]
-  if (found === undefined) return
-  await pickVersion(found)
-}
-
-async function pickVersion(version: ResearchVersion): Promise<void> {
-  stopFollowingResearch()
-  selectedVersion.value = version
-  runs.value = []
-  resetCandidates()
-  quality.value = null
-  bundle.value = null
-  follow.value = INITIAL_FOLLOW_STATE
-  error.value = ''
-  notice.value = ''
-  if (route.query.version !== version.id) {
-    await router.replace({
-      name: 'researches',
-      params: { id: version.research_id },
-      query: { version: version.id },
-    })
-  }
-  await reloadRuns()
-  await loadQuality()
-  await loadBundle()
-  await loadFinalEvaluations(version.frozen_submission_ids)
-  if (['VALIDATING', 'RUNNING', 'QUEUED'].includes(version.status)) startResearchFollow(version)
-}
-
-async function reloadRuns(): Promise<void> {
-  const version = selectedVersion.value
-  if (version === null) return
-  try {
-    runs.value = (await listResearchVersionRuns(client, version.id)).items
-  } catch (cause) {
-    error.value = describeError(cause)
-    return
-  }
-  await loadCandidates()
-}
-
-function resetCandidates(): void {
-  candidates.value = []
-  pinned.value = []
-  equations.value = {}
-  fits.value = {}
-}
-
-/** 只抓釘選候選的公式與擬合；單一候選失敗不影響其他欄位。 */
-async function loadCandidateDetails(ids: string[]): Promise<void> {
-  const rows = candidates.value.filter((row) => ids.includes(row.id))
-  if (rows.length === 0) return
-  detailsLoading.value = true
-  try {
-    const results = await Promise.all(
-      rows.map(async (row) => {
-        const equation = await getEquationVersion(client, row.equation_version_id)
-        const fitId = row.fit_run_ids[0]
-        const fit = fitId === undefined ? null : await getFitRun(client, fitId)
-        return { equation, fit }
-      }),
-    )
-    const nextEquations: Record<string, EquationVersion> = {}
-    const nextFits: Record<string, FitRun> = {}
-    for (const result of results) {
-      nextEquations[result.equation.id] = result.equation
-      if (result.fit !== null) nextFits[result.fit.id] = result.fit
-    }
-    equations.value = { ...equations.value, ...nextEquations }
-    fits.value = { ...fits.value, ...nextFits }
-  } catch (cause) {
-    error.value = describeError(cause)
-  } finally {
-    detailsLoading.value = false
-  }
-}
-
-/** SEARCH run 的候選一律整頁讀取；前端只釘選前四條，不自行排序或補值。 */
-async function loadCandidates(): Promise<void> {
-  resetCandidates()
-  const run = searchRun.value
-  if (run === null) return
-  candidatesLoading.value = true
-  try {
-    const page = await listRunCandidates(client, run.id, { limit: 200 })
-    candidates.value = page.items
-    const initial = page.items.slice(0, MAX_COMPARISON).map((row) => row.id)
-    pinned.value = initial
-    await loadCandidateDetails(initial)
-  } catch (cause) {
-    error.value = describeError(cause)
-  } finally {
-    candidatesLoading.value = false
-  }
-}
-
-async function togglePin(id: string): Promise<void> {
-  if (pinned.value.includes(id)) {
-    pinned.value = pinned.value.filter((row) => row !== id)
-    return
-  }
-  if (pinned.value.length >= MAX_COMPARISON) return
-  pinned.value = [...pinned.value, id]
-  await loadCandidateDetails([id])
-}
-
-/** 品質報告是遮罩產物；未產生時不顯示任何推測內容。 */
-async function loadQuality(): Promise<void> {
-  const version = selectedVersion.value
-  quality.value = null
-  const report = version?.quality_report_id ?? null
-  if (report === null) return
-  qualityLoading.value = true
-  try {
-    const content = await getArtifactContent<unknown>(client, report)
-    const parsed = parseQualityReport(content)
-    if (parsed === null) {
-      error.value = '品質報告產物格式不符，無法顯示；請重新載入。'
-      return
-    }
-    quality.value = parsed
-  } catch (cause) {
-    error.value = describeError(cause)
-  } finally {
-    qualityLoading.value = false
-  }
-}
-
-/** 證據包只在封存成功後產生；形狀不符或引用為空一律不顯示推測內容。 */
-async function loadBundle(): Promise<void> {
-  const version = selectedVersion.value
-  bundle.value = null
-  const first = version?.evidence_bundle_ids[0] ?? null
-  if (first === null) {
-    await loadEvaluations([])
-    return
-  }
-  bundleLoading.value = true
-  try {
-    const parsed = parseEvidenceBundle(await getEvidenceBundle(client, first))
-    if (parsed === null) {
-      error.value = '證據包格式不符，無法顯示；請重新載入。'
-      return
-    }
-    bundle.value = parsed
-    await loadEvaluations(parsed.validationIds)
-  } catch (cause) {
-    error.value = describeError(cause)
-  } finally {
-    bundleLoading.value = false
-  }
-}
-
-/**
- * 證據包引用的最終評估結果逐一讀取；單一引用失敗只記錄訊息，不影響其他引用。
- *
- * 後端結果不揭露失敗前提，因此這裡只顯示文件明載的結論與理由，缺的欄位不補值。
- */
-async function loadEvaluations(ids: string[]): Promise<void> {
-  evaluations.value = {}
-  inspected.value = {}
-  if (ids.length === 0) return
-  evaluationsLoading.value = true
-  const next: Record<string, ValidationRun> = {}
-  const problems: string[] = []
-  try {
-    const results = await Promise.all(
-      ids.map(async (id) => {
-        try {
-          const parsed = parseValidationRun(await getValidationRun(client, id))
-          return { id, parsed, message: parsed === null ? `驗證結果 ${id} 格式不符契約，未顯示。` : '' }
-        } catch (cause) {
-          return { id, parsed: null, message: `驗證結果 ${id}：${describeError(cause)}` }
-        }
-      }),
-    )
-    for (const result of results) {
-      if (result.parsed === null) {
-        problems.push(result.message)
-        continue
-      }
-      next[result.id] = result.parsed
-    }
-    evaluations.value = next
-    if (problems.length > 0) error.value = problems.join(' ')
-  } finally {
-    evaluationsLoading.value = false
-  }
-}
-
-/**
- * 槽位最終評估投影逐一讀取；曝光帳本權威狀態留在隔離 Evaluator 的私有域，這裡只呈現公開槽位可推導的計數。
- * 單一提交失敗只記錄訊息，不影響其他提交，也不補任何推測內容。
- */
-async function loadFinalEvaluations(ids: string[]): Promise<void> {
-  finalEvaluations.value = {}
-  if (ids.length === 0) return
-  finalEvaluationsLoading.value = true
-  const next: Record<string, FinalEvaluation> = {}
-  const problems: string[] = []
-  try {
-    const results = await Promise.all(
-      ids.map(async (id) => {
-        try {
-          const parsed = parseFinalEvaluation(await getFinalEvaluation(client, id))
-          return { id, parsed, message: parsed === null ? `最終評估投影 ${id} 格式不符契約，未顯示。` : '' }
-        } catch (cause) {
-          return { id, parsed: null, message: `最終評估投影 ${id}：${describeError(cause)}` }
-        }
-      }),
-    )
-    for (const result of results) {
-      if (result.parsed === null) {
-        problems.push(result.message)
-        continue
-      }
-      next[result.id] = result.parsed
-    }
-    finalEvaluations.value = next
-    if (problems.length > 0) error.value = problems.join(' ')
-  } finally {
-    finalEvaluationsLoading.value = false
-  }
-}
-
-/** 證據檢視：展開時才讀內容，再按一次收合，不在背景批次抓取全部產物。 */
-async function toggleInspect(id: string): Promise<void> {
-  if (inspected.value[id] !== undefined) {
-    const next = { ...inspected.value }
-    delete next[id]
-    inspected.value = next
-    return
-  }
-  if (inspecting.value.includes(id)) return
-  inspecting.value = [...inspecting.value, id]
-  try {
-    const meta = await getArtifact(client, id)
-    const content = await getArtifactContent<unknown>(client, id)
-    inspected.value = { ...inspected.value, [id]: { meta, text: JSON.stringify(content, null, 2) } }
-  } catch (cause) {
-    error.value = describeError(cause)
-  } finally {
-    inspecting.value = inspecting.value.filter((row) => row !== id)
-  }
-}
-
-async function refreshVersion(): Promise<void> {
-  const version = selectedVersion.value
-  if (version === null) return
-  try {
-    const fresh = await getResearchVersion(client, version.id)
-    selectedVersion.value = fresh
-    await reloadRuns()
-    await loadQuality()
-    await loadBundle()
-    await loadFinalEvaluations(fresh.frozen_submission_ids)
-  } catch (cause) {
-    error.value = describeError(cause)
-  }
-}
-
-async function trigger(): Promise<void> {
-  const version = selectedVersion.value
-  if (version === null || triggering.value) return
-  triggering.value = true
+async function startSearch(): Promise<void> {
+  const version = workbenchVersion.value
+  if (version === null || startingSearch.value) return
+  startingSearch.value = true
   error.value = ''
   notice.value = ''
   try {
-    const fresh = await getResearchVersion(client, version.id)
-    selectedVersion.value = fresh
-    const run = await validateDraft(client, fresh.id, fresh.revision)
-    notice.value = `已排入 PROFILE 任務（狀態 ${runStatusLabel[run.status]}）；完成後按「重新載入」可看到品質報告與封存登記。`
-    await refreshVersion()
-  } catch (cause) {
-    error.value = describeError(cause)
-    await refreshVersion()
-  } finally {
-    triggering.value = false
-  }
-}
-
-async function triggerSearch(): Promise<void> {
-  const version = selectedVersion.value
-  if (version === null || triggering.value) return
-  triggering.value = true
-  error.value = ''
-  try {
-    const fresh = await getResearchVersion(client, version.id)
-    await createSearchRun(client, fresh.id, fresh.revision, fresh.observation_split.seed)
-    notice.value = '已排入 SEARCH；可在版本任務追蹤搜尋相位與候選進度。'
-    await refreshVersion()
-    const current = selectedVersion.value
-    if (current !== null) startResearchFollow(current)
+    const run = await createSearchRun(client, version.id, version.revision, Date.now())
+    notice.value = `已建立 SEARCH 任務 ${run.id}。`
+    await loadWorkbench(version.id)
   } catch (cause) {
     error.value = describeError(cause)
   } finally {
-    triggering.value = false
+    startingSearch.value = false
   }
 }
 
-async function onVersionCreated(version: ResearchVersion): Promise<void> {
-  versions.value = [version, ...versions.value]
-  await pickVersion(version)
+function openResearch(row: Research): void {
+  void router.push({ name: 'researches', params: { id: row.id } })
 }
+
+function selectNode(id: string): void {
+  selectedNodeId.value = id
+}
+
+onMounted(async () => {
+  await loadResearches()
+  await loadVersions()
+})
 
 watch(
   () => route.params.id,
-  (value) => {
-    const id = typeof value === 'string' ? value : ''
-    if (id === '') return
-    if (selected.value?.id === id) return
-    const found = researches.value.find((row) => row.id === id)
-    if (found !== undefined) void select(found)
+  async () => {
+    await loadResearches()
+    await loadVersions()
   },
 )
 
 watch(
   () => route.query.version,
-  (value) => {
-    const id = typeof value === 'string' ? value : ''
-    if (id === '' || selectedVersion.value?.id === id) return
-    const found = versions.value.find((row) => row.id === id)
-    if (found !== undefined) void pickVersion(found)
+  async (value) => {
+    const requested = typeof value === 'string' ? value : ''
+    if (requested !== '' && requested !== selectedVersionId.value) selectedVersionId.value = requested
   },
 )
 
-onMounted(async () => {
-  await loadResearches()
-  const id = typeof route.params.id === 'string' ? route.params.id : ''
-  if (id === '') return
-  const found = researches.value.find((row) => row.id === id)
-  if (found !== undefined) await select(found)
+watch(
+  selectedVersionId,
+  async (value) => {
+    if (mode.value !== 'workbench') return
+    const nextQuery = { ...route.query }
+    if (value === '') delete nextQuery.version
+    else nextQuery.version = value
+    if ((typeof route.query.version === 'string' ? route.query.version : '') !== value) {
+      await router.replace({ query: nextQuery })
+    }
+    await loadWorkbench(value)
+  },
+  { immediate: true },
+)
+
+watch(graph, (next) => {
+  if (next === null) {
+    selectedNodeId.value = null
+    return
+  }
+  if (selectedNodeId.value !== null && next.nodes.some((node) => node.id === selectedNodeId.value)) return
+  selectedNodeId.value = next.nodes[0]?.id ?? null
 })
-onUnmounted(stopFollowingResearch)
 </script>
 
 <template>
-  <div class="grid">
-    <section class="panel">
-      <div class="panel-head">
-        <h2>研究</h2>
-        <button type="button" :disabled="loading" @click="loadResearches">重新載入</button>
+  <section>
+    <div class="head">
+      <div>
+        <div class="eyebrow">研究 / SCREEN</div>
+        <h1>{{ mode === 'list' ? '研究清單' : mode === 'create' ? '新建研究' : '研究工作台' }}</h1>
+        <p class="muted">
+          {{
+            mode === 'list'
+              ? '查找、篩選與管理研究入口。'
+              : mode === 'create'
+                ? '建立真正的 Research 容器，後續由資料集分析銜接版本。'
+                : '以真實研究版本、任務、候選與事件重建工作流。'
+          }}
+        </p>
       </div>
+      <div class="actions">
+        <button type="button" @click="loadResearches">重新載入</button>
+        <button
+          v-if="mode === 'workbench'"
+          type="button"
+          :disabled="selectedVersionId === '' || refreshingWorkbench"
+          @click="loadWorkbench(selectedVersionId)"
+        >
+          {{ refreshingWorkbench ? '同步中…' : '同步工作台' }}
+        </button>
+        <button
+          v-if="mode === 'workbench'"
+          type="button"
+          class="primary"
+          :disabled="workbenchVersion === null || startingSearch"
+          @click="startSearch"
+        >
+          {{ startingSearch ? '建立中…' : '啟動 SEARCH' }}
+        </button>
+        <button
+          v-if="mode !== 'create'"
+          type="button"
+          class="primary"
+          @click="router.push({ name: 'researches', params: { id: 'new' } })"
+        >
+          新增 / 執行
+        </button>
+        <button v-else type="button" @click="router.push({ name: 'researches' })">返回</button>
+      </div>
+    </div>
 
-      <form class="create" @submit.prevent="submitResearch">
-        <label>
-          新研究名稱
-          <input v-model="name" name="research-name" maxlength="200" required>
-        </label>
-        <button type="submit" :disabled="loading || name.trim() === ''">建立研究</button>
-      </form>
-
-      <p v-if="loading" class="muted">載入中…</p>
-      <p v-else-if="researches.length === 0" class="muted">尚無研究，請先建立一個。</p>
-      <ul v-else class="list">
-        <li v-for="row in researches" :key="row.id">
-          <button
-            type="button"
-            :aria-pressed="selected?.id === row.id"
-            :class="{ active: selected?.id === row.id }"
-            @click="select(row)"
-          >
-            <span class="name">{{ row.name }}</span>
-            <span class="mono id">{{ row.id }}</span>
-          </button>
-        </li>
-      </ul>
-    </section>
-
-    <section class="panel">
-      <h2>研究版本</h2>
-      <template v-if="selected === null">
-        <p class="muted">請從左側選擇一個研究。</p>
-      </template>
-      <template v-else>
-        <p class="muted">目前研究：<strong>{{ selected.name }}</strong></p>
-
-        <div class="panel-head">
-          <h3>版本</h3>
-          <button type="button" @click="reloadVersions">重新載入</button>
-        </div>
-        <p v-if="versions.length === 0" class="muted">此研究尚無版本。</p>
-        <ul v-else class="versions">
-          <li v-for="row in versions" :key="row.id">
-            <button
-              type="button"
-              :aria-pressed="selectedVersion?.id === row.id"
-              :class="{ active: selectedVersion?.id === row.id }"
-              @click="pickVersion(row)"
-            >
-              <span class="mono id">{{ row.id }}</span>
-              <span>{{ versionStatusLabel[row.status] }}（{{ row.status }}）</span>
-              <span class="muted">控制版本 {{ row.revision }}</span>
+    <template v-if="mode === 'list'">
+      <div class="layout">
+        <section class="card">
+          <h3>搜尋與篩選</h3>
+          <div class="formgrid">
+            <div class="field">
+              <label>搜尋名稱 / ID</label>
+              <input v-model="search" placeholder="請輸入搜尋名稱 / ID">
+            </div>
+            <div class="field">
+              <label>最新版本狀態</label>
+              <select v-model="statusFilter">
+                <option value="ALL">全部</option>
+                <option value="NONE">尚無版本</option>
+                <option value="DRAFT">草稿</option>
+                <option value="VALIDATING">預檢中</option>
+                <option value="READY">就緒</option>
+                <option value="QUEUED">排隊中</option>
+                <option value="RUNNING">執行中</option>
+                <option value="FAILED">失敗</option>
+                <option value="CANCELLED">已取消</option>
+              </select>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" class="primary" @click="router.push({ name: 'researches', params: { id: 'new' } })">
+              建立新項目
             </button>
-          </li>
-        </ul>
-
-        <ResearchVersionForm :research-id="selected.id" @created="onVersionCreated" />
-
-        <template v-if="selectedVersion !== null">
-          <div class="panel-head">
-            <h3>版本內容</h3>
-            <button type="button" @click="refreshVersion">重新載入</button>
+            <button type="button" @click="search = ''; statusFilter = 'ALL'">清空篩選</button>
           </div>
-          <dl class="facts">
-            <dt>狀態</dt>
-            <dd>{{ versionStatusLabel[selectedVersion.status] }}（{{ selectedVersion.status }}）</dd>
-            <dt>控制版本</dt>
-            <dd class="mono">{{ selectedVersion.revision }}</dd>
-            <dt>目的</dt>
-            <dd>{{ selectedVersion.purpose }}</dd>
-            <dt>切分</dt>
-            <dd>
-              {{ selectedVersion.observation_split.kind }}／fit {{ selectedVersion.observation_split.fit.length }} 列／development
-              {{ selectedVersion.observation_split.development.length }} 列／final_test
-              {{ selectedVersion.observation_split.final_test.length }} 列／splitter
-              <span class="mono">{{ selectedVersion.observation_split.splitter_version }}</span>
-            </dd>
-            <dt>評估政策雜湊</dt>
-            <dd class="mono">{{ selectedVersion.evaluation_policy_hash }}</dd>
-          </dl>
+        </section>
 
-          <h3>最終盲測評估</h3>
-          <p class="muted" :class="{ alertInline: blindEvaluation?.tone === 'BLOCKED' }">
-            {{ blindEvaluation?.summary }}
-          </p>
-          <p class="muted">{{ blindEvaluation?.detail }}</p>
-          <dl class="facts">
-            <dt>sealed_test_id</dt>
-            <dd class="mono">{{ selectedVersion.observation_split.sealed_test_id ?? '尚未登記' }}</dd>
-            <dt>FrozenSubmission</dt>
-            <dd v-if="selectedVersion.frozen_submission_ids.length === 0" class="muted">尚未產生</dd>
-            <dd v-else class="mono">
-              <ul class="remaining">
-                <li v-for="id in selectedVersion.frozen_submission_ids" :key="id">{{ id }}</li>
-              </ul>
-            </dd>
-          </dl>
+        <section class="card">
+          <h3>項目清單</h3>
+          <p v-if="loading" class="muted">載入中…</p>
+          <p v-else-if="filteredResearches.length === 0" class="muted">目前沒有符合條件的研究。</p>
+          <table v-else>
+            <thead>
+              <tr>
+                <th>編號</th>
+                <th>名稱</th>
+                <th>最新狀態</th>
+                <th>建立時間</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in filteredResearches" :key="row.id">
+                <td class="mono">{{ row.id }}</td>
+                <td>{{ row.name }}</td>
+                <td><span class="tag">{{ researchStatuses[row.id] ?? 'NONE' }}</span></td>
+                <td>{{ row.created_at }}</td>
+                <td><button type="button" @click="openResearch(row)">進入工作台</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </template>
 
-          <h3>槽位最終評估與曝光預算</h3>
-          <p v-if="selectedVersion.frozen_submission_ids.length === 0" class="muted">
-            尚未產生凍結提交，沒有可顯示的槽位最終評估。
-          </p>
-          <p v-else-if="finalEvaluationsLoading" class="muted">讀取槽位最終評估中…</p>
-          <p v-else-if="Object.keys(finalEvaluations).length === 0" class="muted">
-            凍結提交都無法取得，未顯示任何推測內容。
-          </p>
+    <template v-else-if="mode === 'create'">
+      <section class="card">
+        <h3>建立研究容器</h3>
+        <div class="formgrid">
+          <div class="field">
+            <label>研究名稱</label>
+            <input v-model="name" placeholder="例如：週期結構研究">
+          </div>
+          <div class="field">
+            <label>研究類型</label>
+            <select disabled>
+              <option>自動研究</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>研究目標</label>
+            <input placeholder="建立版本時補入" disabled>
+          </div>
+          <div class="field">
+            <label>數據來源</label>
+            <input placeholder="由資料集分析流程自動接入" disabled>
+          </div>
+        </div>
+        <div class="note">
+          這一頁只建立 Research 容器。研究版本、語意、切分、預算與 PROFILE/SEARCH 任務，都由後續工作流依真實資料接續。
+        </div>
+        <div class="actions" style="margin-top: 16px;">
+          <button type="button" @click="router.push({ name: 'researches' })">取消</button>
+          <button type="button" class="primary" :disabled="submitting || name.trim() === ''" @click="submitResearch">
+            建立研究
+          </button>
+        </div>
+      </section>
+    </template>
+
+    <template v-else>
+      <div class="layout cols3">
+        <section class="card">
+          <h3>研究版本</h3>
+          <div class="row">
+            <span>研究名稱</span>
+            <span>{{ selectedResearch?.name ?? '未找到研究' }}</span>
+          </div>
+          <div class="row">
+            <span>最新版本數</span>
+            <span class="tag">{{ versions.length }}</span>
+          </div>
+          <div class="row">
+            <span>任務數</span>
+            <span class="tag">{{ runCounts.total }}</span>
+          </div>
+          <div class="row">
+            <span>候選分支</span>
+            <span class="tag">{{ candidates.length }}</span>
+          </div>
+          <div class="row">
+            <span>盲測狀態</span>
+            <span class="tag" :class="blindEvaluation.tone === 'BLOCKED' ? 'bad' : 'warn'">
+              {{ blindEvaluation.summary }}
+            </span>
+          </div>
+
+          <div v-if="versions.length === 0" class="muted" style="margin-top: 12px;">目前研究尚無研究版本。</div>
+          <button
+            v-for="row in versions"
+            :key="row.id"
+            type="button"
+            class="branch"
+            :class="{ active: selectedVersionId === row.id }"
+            @click="selectedVersionId = row.id"
+          >
+            <div>
+              <strong>{{ row.purpose }}</strong>
+              <div class="muted mono">{{ row.id }}</div>
+            </div>
+            <span class="tag">{{ row.status }}</span>
+          </button>
+
+          <div class="stage-list">
+            <div v-for="step in workbenchSteps(workbenchVersion)" :key="step.label" class="row">
+              <span>{{ step.label }}</span>
+              <span class="tag" :class="step.done ? 'good' : 'warn'">{{ step.done ? '完成' : '待續' }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3>工作流流程圖</h3>
+          <p v-if="workbenchVersion === null" class="muted">請先選擇一個研究版本。</p>
           <template v-else>
-            <p class="muted">
-              計數只由公開槽位狀態推導（預留＝待評估、消耗＝已完成、退役＝失敗）；曝光帳本的權威狀態留在隔離
-              Evaluator 的私有域，本畫面不宣稱其即時狀態。
+            <div class="row compact">
+              <span>資料集版本</span>
+              <span class="mono">{{ workbenchVersion.dataset_version_id }}</span>
+            </div>
+            <div class="row compact">
+              <span>研究狀態</span>
+              <span class="tag">{{ workbenchVersion.status }}</span>
+            </div>
+            <ResearchFlow
+              v-if="graph !== null"
+              :graph="graph"
+              :selected-id="selectedNodeId"
+              @select="selectNode"
+            />
+            <p class="muted" style="margin-top: 14px;">
+              流程圖只根據研究版本、任務、候選、封存與驗證投影建立；沒有後端資料的節點不補猜。
             </p>
-            <dl v-for="id in selectedVersion.frozen_submission_ids" :key="id" class="evaluation">
-              <template v-if="finalEvaluations[id] !== undefined">
-                <dt class="mono">{{ id }}</dt>
-                <dd>
-                  提交狀態 {{ SUBMISSION_STATUS_LABELS[finalEvaluations[id].status] }}（{{ finalEvaluations[id].status }}）／指標版本
-                  {{ finalEvaluations[id].metricVersion }}
-                </dd>
-                <dt>曝光預算</dt>
-                <dd>
-                  總額 {{ finalEvaluations[id].exposure.budget }}／待評估 {{ finalEvaluations[id].exposure.reserved }}／已完成
-                  {{ finalEvaluations[id].exposure.consumed }}／失敗 {{ finalEvaluations[id].exposure.retired }}
-                </dd>
-                <dt>槽位</dt>
-                <dd v-if="finalEvaluations[id].slots.length === 0" class="muted">沒有槽位。</dd>
-                <dd v-else>
-                  <ul class="remaining">
-                    <li v-for="slot in finalEvaluations[id].slots" :key="slot.slotId">
-                      {{ SLOT_STATUS_LABELS[slot.status] }}（{{ slot.status }}）／候選
-                      <span class="mono">{{ slot.frozenCandidateId }}</span>／驗證結果
-                      <span class="mono">{{ slot.validationRunId ?? '尚未產生' }}</span>
-                    </li>
-                  </ul>
-                </dd>
-              </template>
-              <template v-else>
-                <dt class="mono">{{ id }}</dt>
-                <dd class="muted">此提交的槽位最終評估無法取得或格式不符，未顯示推測內容。</dd>
-              </template>
-            </dl>
           </template>
+        </section>
 
-          <div class="panel-head">
-            <h3>證據</h3>
-            <button type="button" :disabled="qualityLoading" @click="loadQuality">重新載入品質報告</button>
-          </div>
-          <dl class="facts">
-            <dt>正式封存測試</dt>
-            <dd class="mono">
-              {{ selectedVersion.observation_split.sealed_test_id ?? '尚未登記（版本只能停在草稿）' }}
-            </dd>
-            <dt>品質報告產物</dt>
-            <dd class="mono">{{ selectedVersion.quality_report_id ?? '尚未產生' }}</dd>
-            <dt>結構評估產物</dt>
-            <dd class="mono">{{ selectedVersion.structure_assessment_artifact_id ?? '尚未產生（品質未通過時不產生）' }}</dd>
-            <dt>證據包</dt>
-            <dd v-if="selectedVersion.evidence_bundle_ids.length === 0" class="muted">
-              尚未產生（只有完成正式封存的 READY 版本才有）
-            </dd>
-            <dd v-else class="mono">
-              <span v-for="id in selectedVersion.evidence_bundle_ids" :key="id">{{ id }} </span>
-            </dd>
-          </dl>
-          <p v-if="selectedVersion.quality_report_id === null" class="muted">
-            尚未執行 PROFILE，因此沒有品質報告與封存登記。
-          </p>
-          <p v-else-if="qualityLoading" class="muted">讀取品質報告中…</p>
-          <p v-else-if="quality === null" class="muted">品質報告內容無法解析或無法取得。</p>
-          <dl v-else class="facts">
-            <dt>品質</dt>
-            <dd>
-              {{ QUALITY_LABELS[quality.quality] }}（{{ quality.quality }}）
-              <span v-if="quality.blockingCode !== null" class="muted">／代碼 {{ quality.blockingCode }}</span>
-            </dd>
-            <dt>就緒狀態</dt>
-            <dd>{{ READINESS_LABELS[quality.readiness] }}（{{ quality.readiness }}）</dd>
-            <dt>待完成事項</dt>
-            <dd v-if="quality.remaining.length === 0">無</dd>
-            <dd v-else>
-              <ul class="remaining">
-                <li v-for="code in quality.remaining" :key="code">
-                  {{ describeRemaining(code) }}<span class="muted mono">（{{ code }}）</span>
-                </li>
-              </ul>
-            </dd>
-            <dt>fit 摘要</dt>
-            <dd v-if="quality.fitSummary === null" class="muted">後端未提供（品質未通過時不揭露）</dd>
-            <dd v-else>
-              選用 {{ quality.fitSummary.selectedCount }} 列／唯一輸入 {{ quality.fitSummary.uniqueX }} 個／目標範圍
-              {{ quality.fitSummary.targetMin }}～{{ quality.fitSummary.targetMax }}／平均
-              {{ quality.fitSummary.targetMean }}／IQR {{ quality.fitSummary.targetIqr }}
-            </dd>
-          </dl>
-
-          <template v-if="selectedVersion.evidence_bundle_ids.length > 0">
-            <p v-if="bundleLoading" class="muted">讀取證據包中…</p>
-            <p v-else-if="bundle === null" class="muted">證據包內容無法解析或無法取得。</p>
-            <template v-else>
-              <dl class="facts">
-                <dt>證據包狀態</dt>
-                <dd>{{ EVIDENCE_STATUS_LABELS[bundle.status] }}（{{ bundle.status }}）</dd>
-                <dt>控制版本</dt>
-                <dd class="mono">{{ bundle.revision }}</dd>
-                <dt>驗證引用</dt>
-                <dd v-if="bundle.validationIds.length === 0" class="muted">無（本階段尚無驗證執行）</dd>
-                <dd v-else class="mono">
-                  <span v-for="id in bundle.validationIds" :key="id">{{ id }} </span>
-                </dd>
-              </dl>
-
-              <h4>最終評估結果</h4>
-              <p v-if="bundle.validationIds.length === 0" class="muted">沒有驗證引用，因此沒有可顯示的最終評估結果。</p>
-              <p v-else-if="evaluationsLoading" class="muted">讀取最終評估結果中…</p>
-              <p v-else-if="Object.keys(evaluations).length === 0" class="muted">驗證引用都無法取得，未顯示任何推測內容。</p>
-              <dl v-for="id in bundle.validationIds" v-else :key="id" class="evaluation">
-                <template v-if="evaluations[id] !== undefined">
-                  <dt class="mono">{{ id }}</dt>
-                  <dd>
-                    <strong>{{ OUTCOME_LABELS[evaluations[id].outcome] }}</strong>
-                    （{{ evaluations[id].outcome }}）
-                    <span class="muted">{{ OUTCOME_DETAILS[evaluations[id].outcome] }}</span>
-                  </dd>
-                  <dt>誤差量</dt>
-                  <dd>
-                    MAE {{ evaluations[id].mae ?? '不可得' }}／RMSE {{ evaluations[id].rmse ?? '不可得' }}／覆蓋
-                    {{ evaluations[id].validCoverage }}
-                  </dd>
-                  <dt>計數</dt>
-                  <dd>
-                    選用 {{ evaluations[id].selectedCount }}／可評分 {{ evaluations[id].validCount }}／失敗
-                    {{ evaluations[id].failedCount }}
-                  </dd>
-                  <dt>證據等級</dt>
-                  <dd>{{ evaluations[id].empiricalLevel }}／{{ evaluations[id].proofLevel }}／切分 {{ evaluations[id].splitRole }}</dd>
-                  <dt>結果摘要雜湊</dt>
-                  <dd class="mono">{{ evaluations[id].sha256 }}</dd>
-                  <dt>拒答理由</dt>
-                  <dd v-if="refusalReasons(evaluations[id]).length === 0" class="muted">後端未標記任何理由。</dd>
-                  <dd v-else>
-                    <ul class="remaining">
-                      <li v-for="reason in refusalReasons(evaluations[id])" :key="reason">{{ reason }}</li>
-                    </ul>
-                  </dd>
-                </template>
-                <template v-else>
-                  <dt class="mono">{{ id }}</dt>
-                  <dd class="muted">此驗證結果無法取得或格式不符，未顯示推測內容。</dd>
-                </template>
-              </dl>
-
-              <h4>證據檢視</h4>
-              <p v-if="bundle.proofArtifactIds.length === 0" class="muted">證據包沒有引用任何證據產物。</p>
-              <ul v-else class="artifacts">
-                <li v-for="id in bundle.proofArtifactIds" :key="id">
-                  <div class="artifact-head">
-                    <span class="mono">{{ id }}</span>
-                    <button type="button" :disabled="inspecting.includes(id)" @click="toggleInspect(id)">
-                      {{ inspected[id] !== undefined ? '收合' : '檢視內容' }}
-                    </button>
-                  </div>
-                  <p v-if="inspecting.includes(id)" class="muted">讀取產物內容中…</p>
-                  <template v-else-if="inspected[id] !== undefined">
-                    <dl class="facts">
-                      <dt>媒體類型</dt>
-                      <dd class="mono">{{ inspected[id].meta.media_type }}</dd>
-                      <dt>大小</dt>
-                      <dd class="mono">{{ inspected[id].meta.size_bytes }}</dd>
-                      <dt>狀態</dt>
-                      <dd>{{ inspected[id].meta.status }}／存取級別 {{ inspected[id].meta.access_class }}</dd>
-                      <dt>SHA-256</dt>
-                      <dd class="mono">{{ inspected[id].meta.sha256 }}</dd>
-                    </dl>
-                    <pre class="content">{{ inspected[id].text }}</pre>
-                  </template>
-                </li>
-              </ul>
-            </template>
+        <section class="card">
+          <h3>節點詳情</h3>
+          <template v-if="selectedNode === null">
+            <p class="muted">選擇流程圖節點後，這裡會顯示實際紀錄、產物與事件。</p>
           </template>
-
-          <h3>觸發 PROFILE 驗證</h3>
-          <p class="muted">
-            版本為草稿時才能觸發；送出會帶目前控制版本 {{ selectedVersion.revision }}。後端未啟用 PROFILE 時回 503，狀態已變更則回 412。
-          </p>
-          <button type="button" :disabled="!canTrigger" @click="trigger">
-            {{ triggering ? '送出中…' : '觸發 PROFILE 驗證' }}
-          </button>
-
-          <h3>公式搜尋</h3>
-          <button type="button" :disabled="triggering || selectedVersion.status !== 'READY' || runs.some(row => row.type === 'SEARCH' && row.is_root !== false && row.status === 'SUCCEEDED')" @click="triggerSearch">
-            {{ triggering ? '送出中…' : '開始 SEARCH 搜尋' }}
-          </button>
-          <div class="panel-head">
-            <h3>版本任務</h3>
-            <button type="button" @click="reloadRuns">重新載入</button>
-          </div>
-          <p v-if="runs.length === 0" class="muted">此版本尚無任務。</p>
-          <ul v-else class="list">
-            <li v-for="row in runs" :key="row.id">
-              <RouterLink :to="{ name: 'run', params: { id: row.id } }">
-                {{ row.type }}／{{ runStatusLabel[row.status] }}
+          <template v-else>
+            <div class="row compact">
+              <span>節點</span>
+              <span>{{ selectedNode.title }}</span>
+            </div>
+            <div class="row compact">
+              <span>類型</span>
+              <span class="tag">{{ selectedNode.kind }}</span>
+            </div>
+            <div class="row compact">
+              <span>狀態</span>
+              <span class="tag">{{ selectedNode.badge }}</span>
+            </div>
+            <div class="row compact">
+              <span>摘要</span>
+              <span>{{ selectedNode.subtitle }}</span>
+            </div>
+            <div v-if="selectedNode.runId !== null" class="actions" style="margin: 14px 0;">
+              <RouterLink :to="{ name: 'run', params: { id: selectedNode.runId } }">
+                <button type="button">查看任務詳情</button>
               </RouterLink>
-              <span v-if="row.type === 'SEARCH'" class="muted">
-                {{ row.phase === 'SEARCHING' ? '搜尋中（SEARCHING）' : (row.phase ?? '等待開始') }}
-                ／候選 {{ row.budget_usage?.candidates_generated ?? 0 }} 產生、{{ row.budget_usage?.candidates_accepted ?? 0 }} 接受
-              </span>
-              <span class="muted mono">{{ row.id }}</span>
-              <span class="muted mono">{{ row.created_at }}</span>
-            </li>
-          </ul>
+            </div>
 
-          <h3>候選比較</h3>
-          <p v-if="searchRun === null" class="muted">此版本尚無 SEARCH 任務；執行搜尋後才會產生候選。</p>
-          <p v-else-if="candidatesLoading" class="muted">讀取候選中…</p>
-          <CandidateComparison
-            v-else
-            :candidates="candidates"
-            :pinned="pinned"
-            :equations="equations"
-            :fits="fits"
-            :details-loading="detailsLoading"
-            @toggle="togglePin"
-          />
+            <h3 style="margin-top: 18px;">欄位紀錄</h3>
+            <div v-if="selectedNode.records.length === 0" class="muted">此節點目前沒有可呈現的欄位。</div>
+            <div v-else class="record-list">
+              <div v-for="record in selectedNode.records" :key="`${selectedNode.id}:${record.label}`" class="row">
+                <span>{{ record.label }}</span>
+                <span class="record-value">{{ record.value }}</span>
+              </div>
+            </div>
 
-          <h3>研究事件</h3>
-          <p class="muted" aria-live="polite">
-            {{ followLabel }}
-            <template v-if="follow.lastSyncedAt !== null">最後同步 {{ follow.lastSyncedAt }}。</template>
-            <template v-if="researchEvents.length > 0">已收到 {{ researchEvents.length }} 筆。</template>
-          </p>
-          <output v-if="follow.error !== ''" class="alert-inline">{{ follow.error }}</output>
-          <output v-if="follow.gapDetected" class="alert-inline">
-            游標已過期，已依伺服器 snapshot 重新同步；期間的事件可能不完整，畫面不補猜。
-          </output>
-          <p v-if="researchEvents.length === 0" class="muted">尚無研究事件。</p>
-          <ol v-else class="timeline">
-            <li v-for="event in researchEvents" :key="event.event_id">
-              <span class="mono seq">#{{ event.sequence }}</span>
-              <span class="type">{{ event.event_type }}</span>
-              <span class="mono at">{{ event.occurred_at }}</span>
-              <span class="mono detail">{{ summarizeEvent(event.payload) }}</span>
-            </li>
-          </ol>
-        </template>
-      </template>
-    </section>
-  </div>
+            <h3 style="margin-top: 18px;">產物與事件</h3>
+            <div class="row compact">
+              <span>產物數</span>
+              <span class="tag">{{ selectedNode.artifacts.length }}</span>
+            </div>
+            <div class="row compact">
+              <span>事件數</span>
+              <span class="tag">{{ selectedNode.events.length }}</span>
+            </div>
+            <div v-if="selectedNode.artifacts.length !== 0" class="artifact-list">
+              <RouterLink
+                v-for="artifact in selectedNode.artifacts"
+                :key="artifact.id"
+                :to="{ name: 'artifact', params: { id: artifact.id } }"
+                class="artifact-link"
+              >
+                <span>{{ artifact.label }}</span>
+                <span class="mono">{{ artifact.id }}</span>
+              </RouterLink>
+            </div>
+            <ol v-if="selectedNode.events.length !== 0" class="timeline">
+              <li v-for="event in selectedNode.events" :key="event.event_id || `${event.stream_scope}:${event.sequence}`">
+                <span class="mono">#{{ event.sequence }}</span>
+                <span>{{ event.event_type }}</span>
+                <span class="mono">{{ event.occurred_at }}</span>
+              </li>
+            </ol>
+            <p v-else class="muted">此節點目前沒有可讀事件。</p>
 
-  <p v-if="error" class="alert" role="alert">{{ error }}</p>
-  <output v-if="notice" class="notice">{{ notice }}</output>
+            <div class="note" style="margin-top: 16px;">
+              {{ blindEvaluation.detail }}
+            </div>
+          </template>
+        </section>
+      </div>
+    </template>
+
+    <p v-if="error" class="bad" style="margin-top: 16px;">{{ error }}</p>
+    <p v-if="notice" class="good" style="margin-top: 16px;">{{ notice }}</p>
+  </section>
 </template>
 
 <style scoped>
-.grid {
-  display: grid;
-  grid-template-columns: minmax(16rem, 1fr) minmax(20rem, 2fr);
-  gap: 1.25rem;
-  align-items: start;
-}
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-}
-.panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-h2 {
-  margin: 0 0 0.75rem;
-  font-size: 1.15rem;
-}
-h3 {
-  margin: 1.25rem 0 0.5rem;
-  font-size: 1rem;
-}
-h4 {
-  margin: 1.25rem 0 0.5rem;
-  font-size: 0.95rem;
-}
-.create {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-.create label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-.list,
-.versions {
-  list-style: none;
-  margin: 0 0 1rem;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.list button,
-.versions button {
+.branch {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.2rem;
   text-align: left;
-}
-.list button.active,
-.versions button.active {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-.name {
-  font-weight: 600;
-}
-.id {
-  color: var(--text-muted);
-}
-.facts,
-.evaluation {
-  display: grid;
-  grid-template-columns: minmax(8rem, auto) 1fr;
-  gap: 0.35rem 1rem;
-  margin: 0.75rem 0 0;
-}
-.facts dt,
-.evaluation dt {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-.facts dd,
-.evaluation dd {
-  margin: 0;
-  word-break: break-all;
-}
-.artifacts {
-  list-style: none;
-  margin: 0.5rem 0 0;
-  padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.artifact-head {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  align-items: center;
+  margin-top: 12px;
+  background: #0e2036;
 }
-.content {
-  margin: 0.5rem 0 0;
-  padding: 0.6rem 0.75rem;
-  border-radius: 0.4rem;
-  background: var(--surface-muted);
-  font-size: 0.85rem;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-break: break-all;
+
+.branch.active {
+  border-color: #2b6bd0;
+  background: #153255;
 }
-.remaining {
-  margin: 0;
-  padding-left: 1.1rem;
+
+.stage-list {
+  margin-top: 18px;
 }
-.muted {
-  color: var(--text-muted);
-  font-size: 0.9rem;
+
+.compact {
+  padding: 10px 0;
 }
-.alertInline {
-  color: var(--danger);
-}
-.alert-inline {
-  color: var(--danger);
-  font-size: 0.9rem;
-}
-.timeline {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+
+.record-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
 }
-.timeline li {
-  display: grid;
-  grid-template-columns: 4rem minmax(10rem, auto) minmax(12rem, auto) 1fr;
-  gap: 0.75rem;
-  align-items: baseline;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.4rem;
+
+.record-value {
+  max-width: 58%;
+  text-align: right;
+  overflow-wrap: anywhere;
 }
-.seq {
-  color: var(--accent);
+
+.artifact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
 }
-.type {
-  font-weight: 600;
+
+.artifact-link {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid #26405f;
+  border-radius: 10px;
+  padding: 12px;
+  background: #0d1d31;
 }
-.at,
-.detail {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  word-break: break-all;
-}
-.alert {
-  padding: 0.6rem 0.75rem;
-  border-radius: 0.4rem;
-  background: var(--danger-surface);
-  color: var(--danger);
-}
-.notice {
-  display: block;
-  padding: 0.6rem 0.75rem;
-  border-radius: 0.4rem;
-  background: var(--surface-muted);
-}
-@media (max-width: 48rem) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-  .timeline li {
-    grid-template-columns: 1fr;
-  }
+
+.timeline {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 </style>
