@@ -9,6 +9,9 @@ const route = useRoute()
 const readiness = ref<HealthStatus | 'loading'>('loading')
 const primaryNav = [
   { label: '總覽', icon: '◫', route: { name: 'overview' as const } },
+  { label: '活動中心', icon: '◷', route: { name: 'activity' as const } },
+  { label: '待處理事件', icon: '⚑', route: { name: 'pending' as const } },
+  { label: '資源監控', icon: '◔', route: { name: 'resources' as const } },
   { label: '研究', icon: '◈', route: { name: 'researches' as const } },
   { label: '數據', icon: '▦', route: { name: 'datasets' as const } },
   { label: '發現', icon: '◇', route: { name: 'discoveries' as const } },
@@ -21,6 +24,9 @@ const primaryNav = [
 
 const currentSection = computed<string>(() => {
   if (route.name === 'overview') return '總覽'
+  if (route.name === 'activity') return '活動中心'
+  if (route.name === 'pending') return '待處理事件'
+  if (route.name === 'resources') return '資源監控'
   if (route.name === 'datasets') return '數據'
   if (route.name === 'researches') return '研究'
   if (route.name === 'discoveries') return '發現'
@@ -34,6 +40,9 @@ const currentSection = computed<string>(() => {
 
 const crumb = computed<string>(() => {
   if (route.name === 'overview') return 'AXIOM / 總覽 / 系統總覽'
+  if (route.name === 'activity') return 'AXIOM / 總覽 / 研究活動中心'
+  if (route.name === 'pending') return 'AXIOM / 總覽 / 待處理事件'
+  if (route.name === 'resources') return 'AXIOM / 總覽 / 資源監控'
   if (route.name === 'datasets') return 'AXIOM / 數據 / 資料集清單'
   if (route.name === 'discoveries') return 'AXIOM / 發現 / 假設與候選'
   if (route.name === 'verification') return 'AXIOM / 驗證 / 驗證中心'

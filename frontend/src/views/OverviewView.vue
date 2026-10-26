@@ -11,6 +11,9 @@ const { dashboard, loading, error, load } = useModulePage('overview')
 const selected = ref<ModuleListSelection | null>(null)
 
 const quickRoutes = [
+  { label: '研究活動中心', route: { name: 'activity' as const }, tone: 'neutral' },
+  { label: '待處理事件', route: { name: 'pending' as const }, tone: 'warn' },
+  { label: '資源監控', route: { name: 'resources' as const }, tone: 'neutral' },
   { label: '研究工作台', route: { name: 'researches' as const }, tone: 'good' },
   { label: '資料集管理', route: { name: 'datasets' as const }, tone: 'neutral' },
   { label: '發現中心', route: { name: 'discoveries' as const }, tone: 'warn' },
