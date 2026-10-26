@@ -14,6 +14,9 @@ import MemoryExperienceView from './views/MemoryExperienceView.vue'
 import MemoryFailureView from './views/MemoryFailureView.vue'
 import MemoryKnowledgeView from './views/MemoryKnowledgeView.vue'
 import MemoryRecoveryView from './views/MemoryRecoveryView.vue'
+import ModelEvaluationView from './views/ModelEvaluationView.vue'
+import ModelRoutingView from './views/ModelRoutingView.vue'
+import ModelStorageView from './views/ModelStorageView.vue'
 import ModelView from './views/ModelView.vue'
 import OverviewView from './views/OverviewView.vue'
 import PendingEventsView from './views/PendingEventsView.vue'
@@ -70,6 +73,9 @@ const routes: RouteRecordRaw[] = [
   { path: '/memory/recovery', name: 'memory-recovery', component: MemoryRecoveryView },
   { path: '/memory/evolution', name: 'memory-evolution', component: MemoryEvolutionView },
   { path: '/models', name: 'model', component: ModelView },
+  { path: '/models/routing', name: 'model-routing', component: ModelRoutingView },
+  { path: '/models/evaluation', name: 'model-evaluation', component: ModelEvaluationView },
+  { path: '/models/storage', name: 'model-storage', component: ModelStorageView },
   { path: '/training', name: 'training', component: TrainingView },
   { path: '/settings', name: 'settings', component: SettingsView },
   { path: '/runs/:id', name: 'run', component: RunView },

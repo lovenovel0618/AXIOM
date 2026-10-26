@@ -69,7 +69,14 @@ const currentSection = computed<string>(() => {
   ) {
     return '記憶'
   }
-  if (route.name === 'model') return '模型'
+  if (
+    route.name === 'model' ||
+    route.name === 'model-routing' ||
+    route.name === 'model-evaluation' ||
+    route.name === 'model-storage'
+  ) {
+    return '模型'
+  }
   if (route.name === 'training') return '訓練'
   if (route.name === 'settings') return '設定'
   return '總覽'
@@ -101,7 +108,10 @@ const crumb = computed<string>(() => {
   if (route.name === 'memory-failure') return 'AXIOM / 記憶 / 失敗案例'
   if (route.name === 'memory-recovery') return 'AXIOM / 記憶 / 假設恢復'
   if (route.name === 'memory-evolution') return 'AXIOM / 記憶 / 知識演化'
-  if (route.name === 'model') return 'AXIOM / 模型 / 模型管理'
+  if (route.name === 'model') return 'AXIOM / 模型 / Ollama 模型管理'
+  if (route.name === 'model-routing') return 'AXIOM / 模型 / 模型路由'
+  if (route.name === 'model-evaluation') return 'AXIOM / 模型 / 模型能力評估'
+  if (route.name === 'model-storage') return 'AXIOM / 模型 / Token 與儲存'
   if (route.name === 'training') return 'AXIOM / 訓練 / 訓練中心'
   if (route.name === 'settings') return 'AXIOM / 設定 / 系統設定'
   if (route.name === 'run') return 'AXIOM / 驗證 / 任務詳情'
