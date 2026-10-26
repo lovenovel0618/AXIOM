@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { flattenModuleLists, type ModuleListSelection, sameSelection } from '../lib/modulePageUtils'
+import { readQueryString, replaceQueryState, selectionKey } from '../lib/queryState'
 import { useModulePage } from '../lib/useModulePage'
 
+const route = useRoute()
+const router = useRouter()
 const { dashboard, loading, error, load } = useModulePage('overview')
 const selected = ref<ModuleListSelection | null>(null)
 
@@ -19,13 +22,35 @@ const recentActivity = computed<ModuleListSelection[]>(() => {
   return flattenModuleLists(dashboard.value.lists)
 })
 
+function resolveSelected(items: ModuleListSelection[]): ModuleListSelection | null {
+  const focus = readQueryString(route.query, 'focus')
+  const fromQuery = items.find((item) => selectionKey(item.listTitle, item.item.subtitle) === focus) ?? null
+  const current = items.find((item) => sameSelection(item, selected.value)) ?? null
+  return fromQuery ?? current ?? items[0] ?? null
+}
+
 onMounted(load)
 
 watch(recentActivity, (items) => {
-  const next = items[0] ?? null
-  const current = items.find((item) => sameSelection(item, selected.value)) ?? null
-  selected.value = current ?? next
+  selected.value = resolveSelected(items)
 })
+
+watch(
+  selected,
+  async (value) => {
+    await replaceQueryState(router, route, {
+      focus: value === null ? undefined : selectionKey(value.listTitle, value.item.subtitle),
+    })
+  },
+  { deep: true },
+)
+
+watch(
+  () => route.query.focus,
+  () => {
+    selected.value = resolveSelected(recentActivity.value)
+  },
+)
 </script>
 
 <template>

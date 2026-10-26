@@ -1,20 +1,23 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import CandidateComparison from '../components/CandidateComparison.vue'
 import { getEquationVersion, getFitRun } from '../api/candidates'
 import { listResearchVersionRuns, listResearchVersions, listResearches } from '../api/research'
 import { loadCandidateDetails, loadDiscoveriesCenter, type CandidateDetailBundle, type DiscoveriesCenter } from '../lib/discoveries'
 import { describeError } from '../lib/messages'
+import { readQueryList, readQueryString, replaceQueryState } from '../lib/queryState'
 import { client } from '../lib/session'
 import { listRunCandidates } from '../api/candidates'
 
+const route = useRoute()
+const router = useRouter()
 const center = ref<DiscoveriesCenter | null>(null)
 const loading = ref(false)
 const detailsLoading = ref(false)
 const error = ref('')
-const selectedRunId = ref('')
-const pinned = ref<string[]>([])
+const selectedRunId = ref(readQueryString(route.query, 'run'))
+const pinned = ref<string[]>(readQueryList(route.query, 'pins'))
 const details = ref<CandidateDetailBundle>({ equations: {}, fits: {} })
 
 const selectedRun = computed(() => center.value?.searchRuns.find((row) => row.run.id === selectedRunId.value) ?? null)
@@ -53,6 +56,29 @@ onMounted(load)
 watch(selectedRunId, () => {
   pinned.value = []
 })
+
+watch(
+  selectedRunId,
+  async (value) => {
+    await replaceQueryState(router, route, { run: value, pins: undefined })
+  },
+)
+
+watch(
+  pinned,
+  async (value) => {
+    await replaceQueryState(router, route, { pins: value.length === 0 ? undefined : value.join(',') })
+  },
+  { deep: true },
+)
+
+watch(
+  () => route.query,
+  () => {
+    selectedRunId.value = readQueryString(route.query, 'run')
+    pinned.value = readQueryList(route.query, 'pins')
+  },
+)
 
 watch(
   [selectedRun, pinned],

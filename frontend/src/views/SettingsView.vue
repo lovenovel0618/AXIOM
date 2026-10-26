@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { filterModuleList, flattenModuleLists, type ModuleListSelection, sameSelection } from '../lib/modulePageUtils'
+import { readQueryString, replaceQueryState, selectionKey } from '../lib/queryState'
 import { useModulePage } from '../lib/useModulePage'
 
+const route = useRoute()
+const router = useRouter()
 const { dashboard, loading, error, load } = useModulePage('settings')
-const keyword = ref('')
+const keyword = ref(readQueryString(route.query, 'q'))
 const selected = ref<ModuleListSelection | null>(null)
 const systemSignals = computed(() => {
   const list = dashboard.value?.lists[0] ?? null
@@ -18,13 +21,40 @@ const visibleItems = computed(() =>
   flattenModuleLists([...(systemSignals.value === null ? [] : [systemSignals.value]), ...auditLists.value]),
 )
 
+function resolveSelected(items: ModuleListSelection[]): ModuleListSelection | null {
+  const focus = readQueryString(route.query, 'focus')
+  const fromQuery = items.find((item) => selectionKey(item.listTitle, item.item.subtitle) === focus) ?? null
+  const current = items.find((item) => sameSelection(item, selected.value)) ?? null
+  return fromQuery ?? current ?? items[0] ?? null
+}
+
 onMounted(load)
 
 watch(visibleItems, (items) => {
-  const next = items[0] ?? null
-  const current = items.find((item) => sameSelection(item, selected.value)) ?? null
-  selected.value = current ?? next
+  selected.value = resolveSelected(items)
 })
+
+watch(keyword, async (value) => {
+  await replaceQueryState(router, route, { q: value })
+})
+
+watch(
+  selected,
+  async (value) => {
+    await replaceQueryState(router, route, {
+      focus: value === null ? undefined : selectionKey(value.listTitle, value.item.subtitle),
+    })
+  },
+  { deep: true },
+)
+
+watch(
+  () => route.query,
+  () => {
+    keyword.value = readQueryString(route.query, 'q')
+    selected.value = resolveSelected(visibleItems.value)
+  },
+)
 </script>
 
 <template>

@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { getFinalEvaluation, getValidationRun } from '../api/evaluations'
 import { listResearchVersionRuns, listResearchVersions, listResearches } from '../api/research'
 import { parseValidationRun } from '../lib/evaluation'
 import { parseFinalEvaluation } from '../lib/finalEvaluation'
 import { describeError } from '../lib/messages'
+import { readQueryString, replaceQueryState } from '../lib/queryState'
 import { client } from '../lib/session'
 import { loadVerificationCenter, type VerificationCenter } from '../lib/verificationCenter'
 
+const route = useRoute()
+const router = useRouter()
 const center = ref<VerificationCenter | null>(null)
 const loading = ref(false)
 const error = ref('')
-const selectedSubmissionId = ref('')
+const selectedSubmissionId = ref(readQueryString(route.query, 'submission'))
 
 const selectedSubmission = computed(
   () => center.value?.submissionRows.find((row) => row.submissionId === selectedSubmissionId.value) ?? null,
@@ -54,6 +57,20 @@ async function load(): Promise<void> {
 }
 
 onMounted(load)
+
+watch(
+  selectedSubmissionId,
+  async (value) => {
+    await replaceQueryState(router, route, { submission: value })
+  },
+)
+
+watch(
+  () => route.query.submission,
+  () => {
+    selectedSubmissionId.value = readQueryString(route.query, 'submission')
+  },
+)
 </script>
 
 <template>

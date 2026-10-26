@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { filterModuleList } from '../lib/modulePageUtils'
+import { readQueryString, replaceQueryState } from '../lib/queryState'
 import { useModulePage } from '../lib/useModulePage'
 
+const route = useRoute()
+const router = useRouter()
 const { dashboard, loading, error, load } = useModulePage('training')
-const keyword = ref('')
-const sourceFilter = ref<'ALL' | 'READY'>('ALL')
+const keyword = ref(readQueryString(route.query, 'q'))
+const sourceFilter = ref<'ALL' | 'READY'>(readQueryString(route.query, 'filter') === 'READY' ? 'READY' : 'ALL')
 
 const sources = computed(() => {
   const list = dashboard.value?.lists[2] ?? null
@@ -25,6 +28,22 @@ const topLists = computed(() =>
 )
 
 onMounted(load)
+
+watch(keyword, async (value) => {
+  await replaceQueryState(router, route, { q: value })
+})
+
+watch(sourceFilter, async (value) => {
+  await replaceQueryState(router, route, { filter: value === 'ALL' ? undefined : value })
+})
+
+watch(
+  () => route.query,
+  () => {
+    keyword.value = readQueryString(route.query, 'q')
+    sourceFilter.value = readQueryString(route.query, 'filter') === 'READY' ? 'READY' : 'ALL'
+  },
+)
 </script>
 
 <template>
