@@ -31,7 +31,14 @@ const currentSection = computed<string>(() => {
   if (route.name === 'research-list' || route.name === 'research-create' || route.name === 'research-workbench') {
     return '研究'
   }
-  if (route.name === 'discoveries') return '發現'
+  if (
+    route.name === 'discoveries' ||
+    route.name === 'discovery-compare' ||
+    route.name === 'discovery-latent' ||
+    route.name === 'discovery-derivation'
+  ) {
+    return '發現'
+  }
   if (route.name === 'verification' || route.name === 'run' || route.name === 'artifact') return '驗證'
   if (route.name === 'memory') return '記憶'
   if (route.name === 'model') return '模型'
@@ -46,7 +53,10 @@ const crumb = computed<string>(() => {
   if (route.name === 'pending') return 'AXIOM / 總覽 / 待處理事件'
   if (route.name === 'resources') return 'AXIOM / 總覽 / 資源監控'
   if (route.name === 'datasets') return 'AXIOM / 數據 / 資料集清單'
-  if (route.name === 'discoveries') return 'AXIOM / 發現 / 假設與候選'
+  if (route.name === 'discoveries') return 'AXIOM / 發現 / 候選公式庫'
+  if (route.name === 'discovery-compare') return 'AXIOM / 發現 / 公式比較'
+  if (route.name === 'discovery-latent') return 'AXIOM / 發現 / 隱藏變數探索'
+  if (route.name === 'discovery-derivation') return 'AXIOM / 發現 / 研究推演'
   if (route.name === 'verification') return 'AXIOM / 驗證 / 驗證中心'
   if (route.name === 'memory') return 'AXIOM / 記憶 / 知識與記錄'
   if (route.name === 'model') return 'AXIOM / 模型 / 模型管理'

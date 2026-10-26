@@ -4,7 +4,10 @@ import { sessionStatus } from './lib/session'
 import ActivityCenterView from './views/ActivityCenterView.vue'
 import ArtifactView from './views/ArtifactView.vue'
 import CandidateDetailView from './views/CandidateDetailView.vue'
-import DiscoveriesView from './views/DiscoveriesView.vue'
+import DiscoveryCatalogView from './views/DiscoveryCatalogView.vue'
+import DiscoveryCompareView from './views/DiscoveryCompareView.vue'
+import DiscoveryDerivationView from './views/DiscoveryDerivationView.vue'
+import DiscoveryLatentView from './views/DiscoveryLatentView.vue'
 import LoginView from './views/LoginView.vue'
 import MemoryView from './views/MemoryView.vue'
 import ModelView from './views/ModelView.vue'
@@ -33,7 +36,10 @@ const routes: RouteRecordRaw[] = [
   { path: '/researches', name: 'research-list', component: ResearchListView },
   { path: '/researches/new', name: 'research-create', component: ResearchCreateView },
   { path: '/researches/:id', name: 'research-workbench', component: ResearchView },
-  { path: '/discoveries', name: 'discoveries', component: DiscoveriesView },
+  { path: '/discoveries', name: 'discoveries', component: DiscoveryCatalogView },
+  { path: '/discoveries/compare', name: 'discovery-compare', component: DiscoveryCompareView },
+  { path: '/discoveries/latent', name: 'discovery-latent', component: DiscoveryLatentView },
+  { path: '/discoveries/derivation', name: 'discovery-derivation', component: DiscoveryDerivationView },
   { path: '/candidates/:id', name: 'candidate', component: CandidateDetailView },
   { path: '/verification', name: 'verification', component: VerificationView },
   { path: '/memory', name: 'memory', component: MemoryView },
