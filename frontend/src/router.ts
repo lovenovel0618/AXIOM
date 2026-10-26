@@ -32,8 +32,11 @@ import DataUploadView from './views/DataUploadView.vue'
 import ResearchCreateView from './views/ResearchCreateView.vue'
 import ResearchListView from './views/ResearchListView.vue'
 import ResearchView from './views/ResearchView.vue'
-import SettingsView from './views/SettingsView.vue'
-import TrainingView from './views/TrainingView.vue'
+import SettingsResearchView from './views/SettingsResearchView.vue'
+import SettingsSecurityView from './views/SettingsSecurityView.vue'
+import TrainingDatasetView from './views/TrainingDatasetView.vue'
+import TrainingFinetuneView from './views/TrainingFinetuneView.vue'
+import TrainingReleaseView from './views/TrainingReleaseView.vue'
 import VerificationFalsifyView from './views/VerificationFalsifyView.vue'
 import VerificationGraphView from './views/VerificationGraphView.vue'
 import VerificationInverseView from './views/VerificationInverseView.vue'
@@ -76,8 +79,11 @@ const routes: RouteRecordRaw[] = [
   { path: '/models/routing', name: 'model-routing', component: ModelRoutingView },
   { path: '/models/evaluation', name: 'model-evaluation', component: ModelEvaluationView },
   { path: '/models/storage', name: 'model-storage', component: ModelStorageView },
-  { path: '/training', name: 'training', component: TrainingView },
-  { path: '/settings', name: 'settings', component: SettingsView },
+  { path: '/training', name: 'training', component: TrainingDatasetView },
+  { path: '/training/finetune', name: 'training-finetune', component: TrainingFinetuneView },
+  { path: '/training/release', name: 'training-release', component: TrainingReleaseView },
+  { path: '/settings', name: 'settings', component: SettingsSecurityView },
+  { path: '/settings/research', name: 'settings-research', component: SettingsResearchView },
   { path: '/runs/:id', name: 'run', component: RunView },
   { path: '/artifacts/:id', name: 'artifact', component: ArtifactView },
 ]

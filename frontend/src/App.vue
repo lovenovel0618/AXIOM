@@ -77,8 +77,10 @@ const currentSection = computed<string>(() => {
   ) {
     return '模型'
   }
-  if (route.name === 'training') return '訓練'
-  if (route.name === 'settings') return '設定'
+  if (route.name === 'training' || route.name === 'training-finetune' || route.name === 'training-release') {
+    return '訓練'
+  }
+  if (route.name === 'settings' || route.name === 'settings-research') return '設定'
   return '總覽'
 })
 
@@ -112,8 +114,11 @@ const crumb = computed<string>(() => {
   if (route.name === 'model-routing') return 'AXIOM / 模型 / 模型路由'
   if (route.name === 'model-evaluation') return 'AXIOM / 模型 / 模型能力評估'
   if (route.name === 'model-storage') return 'AXIOM / 模型 / Token 與儲存'
-  if (route.name === 'training') return 'AXIOM / 訓練 / 訓練中心'
-  if (route.name === 'settings') return 'AXIOM / 設定 / 系統設定'
+  if (route.name === 'training') return 'AXIOM / 訓練 / 訓練資料集'
+  if (route.name === 'training-finetune') return 'AXIOM / 訓練 / 微調任務'
+  if (route.name === 'training-release') return 'AXIOM / 訓練 / 模型版本發布'
+  if (route.name === 'settings') return 'AXIOM / 設定 / 系統與安全設定'
+  if (route.name === 'settings-research') return 'AXIOM / 設定 / 研究策略設定'
   if (route.name === 'run') return 'AXIOM / 驗證 / 任務詳情'
   if (route.name === 'research-list') return 'AXIOM / 研究 / 研究清單'
   if (route.name === 'research-create') return 'AXIOM / 研究 / 新建研究'
