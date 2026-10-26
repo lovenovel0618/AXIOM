@@ -50,7 +50,15 @@ const currentSection = computed<string>(() => {
   ) {
     return '驗證'
   }
-  if (route.name === 'memory') return '記憶'
+  if (
+    route.name === 'memory' ||
+    route.name === 'memory-experience' ||
+    route.name === 'memory-failure' ||
+    route.name === 'memory-recovery' ||
+    route.name === 'memory-evolution'
+  ) {
+    return '記憶'
+  }
   if (route.name === 'model') return '模型'
   if (route.name === 'training') return '訓練'
   if (route.name === 'settings') return '設定'
@@ -72,7 +80,11 @@ const crumb = computed<string>(() => {
   if (route.name === 'verification-inverse') return 'AXIOM / 驗證 / 逆向推導'
   if (route.name === 'verification-proof') return 'AXIOM / 驗證 / 形式化證明'
   if (route.name === 'verification-graph') return 'AXIOM / 驗證 / 證據關聯圖'
-  if (route.name === 'memory') return 'AXIOM / 記憶 / 知識與記錄'
+  if (route.name === 'memory') return 'AXIOM / 記憶 / 知識庫'
+  if (route.name === 'memory-experience') return 'AXIOM / 記憶 / 研究經驗'
+  if (route.name === 'memory-failure') return 'AXIOM / 記憶 / 失敗案例'
+  if (route.name === 'memory-recovery') return 'AXIOM / 記憶 / 假設恢復'
+  if (route.name === 'memory-evolution') return 'AXIOM / 記憶 / 知識演化'
   if (route.name === 'model') return 'AXIOM / 模型 / 模型管理'
   if (route.name === 'training') return 'AXIOM / 訓練 / 訓練中心'
   if (route.name === 'settings') return 'AXIOM / 設定 / 系統設定'

@@ -9,7 +9,11 @@ import DiscoveryCompareView from './views/DiscoveryCompareView.vue'
 import DiscoveryDerivationView from './views/DiscoveryDerivationView.vue'
 import DiscoveryLatentView from './views/DiscoveryLatentView.vue'
 import LoginView from './views/LoginView.vue'
-import MemoryView from './views/MemoryView.vue'
+import MemoryEvolutionView from './views/MemoryEvolutionView.vue'
+import MemoryExperienceView from './views/MemoryExperienceView.vue'
+import MemoryFailureView from './views/MemoryFailureView.vue'
+import MemoryKnowledgeView from './views/MemoryKnowledgeView.vue'
+import MemoryRecoveryView from './views/MemoryRecoveryView.vue'
 import ModelView from './views/ModelView.vue'
 import OverviewView from './views/OverviewView.vue'
 import PendingEventsView from './views/PendingEventsView.vue'
@@ -50,7 +54,11 @@ const routes: RouteRecordRaw[] = [
   { path: '/verification/inverse', name: 'verification-inverse', component: VerificationInverseView },
   { path: '/verification/proof', name: 'verification-proof', component: VerificationProofView },
   { path: '/verification/graph', name: 'verification-graph', component: VerificationGraphView },
-  { path: '/memory', name: 'memory', component: MemoryView },
+  { path: '/memory', name: 'memory', component: MemoryKnowledgeView },
+  { path: '/memory/experience', name: 'memory-experience', component: MemoryExperienceView },
+  { path: '/memory/failure', name: 'memory-failure', component: MemoryFailureView },
+  { path: '/memory/recovery', name: 'memory-recovery', component: MemoryRecoveryView },
+  { path: '/memory/evolution', name: 'memory-evolution', component: MemoryEvolutionView },
   { path: '/models', name: 'model', component: ModelView },
   { path: '/training', name: 'training', component: TrainingView },
   { path: '/settings', name: 'settings', component: SettingsView },
