@@ -28,7 +28,9 @@ import { readBackRef, withBackRef } from '../lib/navigationState'
 import { readQueryList, readQueryString, replaceQueryState } from '../lib/queryState'
 import { filterFlowGraph, highlightFlowNodes, type FlowFilterState } from '../lib/researchFlowFilters'
 import {
+  buildCandidateFocusSummary,
   buildNodeActionLinks,
+  buildSubmissionFocusSummary,
   collectCandidateCollectionLinks,
   collectSubmissionCollectionLink,
   findNodeIdsByRecordValues,
@@ -150,12 +152,19 @@ const visibleCandidateCollections = computed(() =>
 const visibleSubmissionCollection = computed(() =>
   displayGraph.value === null ? null : collectSubmissionCollectionLink(displayGraph.value.nodes),
 )
+const candidateFocusSummary = computed(() =>
+  displayGraph.value === null ? null : buildCandidateFocusSummary(displayGraph.value.nodes, focusCandidateIds.value),
+)
+const submissionFocusSummary = computed(() =>
+  displayGraph.value === null ? null : buildSubmissionFocusSummary(displayGraph.value.nodes, focusSubmissionIds.value),
+)
 const focusedCandidateNodeIds = computed(() =>
   displayGraph.value === null ? [] : findNodeIdsByRecordValues(displayGraph.value.nodes, '候選識別碼', focusCandidateIds.value),
 )
 const focusedSubmissionNodeIds = computed(() =>
   displayGraph.value === null ? [] : findNodeIdsByRecordValues(displayGraph.value.nodes, '提交識別碼', focusSubmissionIds.value),
 )
+const hasFocusWorkspace = computed(() => candidateFocusSummary.value !== null || submissionFocusSummary.value !== null)
 const flowHighlightIds = computed(() =>
   displayGraph.value === null
     ? []
@@ -404,6 +413,71 @@ function selectNode(id: string): void {
 
 function summarizeNodePayload(payload: Record<string, unknown>): string {
   return summarizeEventPayload(payload)
+}
+
+function summarizeMissingIds(ids: string[]): string {
+  if (ids.length === 0) return ''
+  if (ids.length <= 3) return ids.join('、')
+  return `${ids.slice(0, 3).join('、')} 等 ${ids.length} 筆`
+}
+
+function focusCandidateCollection(): void {
+  const summary = candidateFocusSummary.value
+  if (summary === null || summary.matchedNodeIds.length === 0) return
+  flowKindFilter.value = 'CANDIDATE'
+  flowToneFilter.value = 'ALL'
+  flowQuery.value = ''
+  selectedNodeId.value = summary.matchedNodeIds[0] ?? null
+}
+
+function focusSubmissionCollection(): void {
+  const summary = submissionFocusSummary.value
+  if (summary === null || summary.matchedNodeIds.length === 0) return
+  flowKindFilter.value = 'SUBMISSION'
+  flowToneFilter.value = 'ALL'
+  flowQuery.value = ''
+  selectedNodeId.value = summary.matchedNodeIds[0] ?? null
+}
+
+async function clearFocusScope(scope: 'candidate' | 'submission' | 'all'): Promise<void> {
+  const candidateSummary = candidateFocusSummary.value
+  const submissionSummary = submissionFocusSummary.value
+  let nextKind: 'ALL' | FlowNodeKind = flowKindFilter.value
+  let nextNode = selectedNodeId.value
+  const patch: Record<string, string | undefined> = {}
+
+  if (scope === 'all') {
+    focusCandidateIds.value = []
+    focusSubmissionIds.value = []
+    nextKind = 'ALL'
+    nextNode = null
+    patch.focuscandidates = undefined
+    patch.focussubmissions = undefined
+  } else if (scope === 'candidate') {
+    focusCandidateIds.value = []
+    patch.focuscandidates = undefined
+    if (flowKindFilter.value === 'CANDIDATE') {
+      nextKind = submissionSummary === null ? 'ALL' : 'SUBMISSION'
+    }
+    if (selectedNode.value?.kind === 'CANDIDATE') {
+      nextNode = submissionSummary?.matchedNodeIds[0] ?? null
+    }
+  } else {
+    focusSubmissionIds.value = []
+    patch.focussubmissions = undefined
+    if (flowKindFilter.value === 'SUBMISSION') {
+      nextKind = candidateSummary === null ? 'ALL' : 'CANDIDATE'
+    }
+    if (selectedNode.value?.kind === 'SUBMISSION') {
+      nextNode = candidateSummary?.matchedNodeIds[0] ?? null
+    }
+  }
+
+  flowKindFilter.value = nextKind
+  selectedNodeId.value = nextNode
+  patch.flowkind = nextKind === 'ALL' ? undefined : nextKind
+  patch.node = nextNode ?? undefined
+  await replaceQueryState(router, route, patch)
 }
 
 function resolveSelectedNodeId(next: FlowGraph | null): string | null {
@@ -733,12 +807,129 @@ watch(displayGraph, (next) => {
               </button>
               <span class="tag">{{ displayGraph?.nodes.length ?? 0 }} / {{ graph?.nodes.length ?? 0 }} 節點</span>
             </div>
-            <div v-if="focusCandidateIds.length !== 0" class="note" style="margin-bottom: 12px;">
-              目前高亮從發現頁帶回的 {{ focusedCandidateNodeIds.length }} / {{ focusCandidateIds.length }} 個候選節點。
-            </div>
-            <div v-if="focusSubmissionIds.length !== 0" class="note" style="margin-bottom: 12px;">
-              目前高亮從驗證頁帶回的 {{ focusedSubmissionNodeIds.length }} / {{ focusSubmissionIds.length }} 個提交節點。
-            </div>
+            <section v-if="hasFocusWorkspace" class="focus-workspace">
+              <div class="focus-workspace-head">
+                <div>
+                  <strong>焦點集合工作區</strong>
+                  <p class="muted">整合從發現頁與驗證頁帶回的集合，支援聚焦、清除與成組回跳。</p>
+                </div>
+                <div class="actions wrap">
+                  <button type="button" @click="clearFocusScope('all')">清除全部焦點</button>
+                </div>
+              </div>
+
+              <div class="focus-grid">
+                <section v-if="candidateFocusSummary !== null" class="focus-card">
+                  <div class="row compact">
+                    <span>來源</span>
+                    <span class="tag">發現頁 / 候選集合</span>
+                  </div>
+                  <div class="row compact">
+                    <span>帶回候選</span>
+                    <span class="tag">{{ candidateFocusSummary.requestedIds.length }}</span>
+                  </div>
+                  <div class="row compact">
+                    <span>命中節點</span>
+                    <span class="tag">{{ candidateFocusSummary.matchedValues.length }}</span>
+                  </div>
+                  <div class="row compact">
+                    <span>SEARCH 任務</span>
+                    <span class="tag">{{ candidateFocusSummary.groups.length }}</span>
+                  </div>
+                  <div class="row compact">
+                    <span>未命中</span>
+                    <span class="tag" :class="candidateFocusSummary.missingIds.length === 0 ? 'good' : 'warn'">
+                      {{ candidateFocusSummary.missingIds.length }}
+                    </span>
+                  </div>
+                  <div class="actions wrap" style="margin: 12px 0;">
+                    <button
+                      type="button"
+                      :disabled="candidateFocusSummary.matchedNodeIds.length === 0"
+                      @click="focusCandidateCollection"
+                    >
+                      聚焦候選節點
+                    </button>
+                    <button type="button" @click="clearFocusScope('candidate')">清除此集合</button>
+                  </div>
+                  <div v-if="candidateFocusSummary.groups.length !== 0" class="candidate-actions">
+                    <RouterLink
+                      v-for="group in candidateFocusSummary.groups"
+                      :key="`focus:${group.searchRunId}`"
+                      :to="{
+                        name: 'discoveries',
+                        query: withBackRef(route.fullPath, {
+                          run: group.searchRunId,
+                          pins: group.candidateIds.join(','),
+                        }),
+                      }"
+                      class="candidate-action-link"
+                    >
+                      <strong>回到 {{ group.label }}</strong>
+                      <span class="muted mono">{{ group.searchRunId }}</span>
+                    </RouterLink>
+                  </div>
+                  <p v-else class="muted">目前流程圖中沒有命中的候選節點。</p>
+                  <div v-if="candidateFocusSummary.missingIds.length !== 0" class="note focus-missing">
+                    尚有候選未出現在目前流程圖：{{ summarizeMissingIds(candidateFocusSummary.missingIds) }}
+                  </div>
+                </section>
+
+                <section v-if="submissionFocusSummary !== null" class="focus-card">
+                  <div class="row compact">
+                    <span>來源</span>
+                    <span class="tag">驗證頁 / 提交集合</span>
+                  </div>
+                  <div class="row compact">
+                    <span>帶回提交</span>
+                    <span class="tag">{{ submissionFocusSummary.requestedIds.length }}</span>
+                  </div>
+                  <div class="row compact">
+                    <span>命中節點</span>
+                    <span class="tag">{{ submissionFocusSummary.matchedValues.length }}</span>
+                  </div>
+                  <div class="row compact">
+                    <span>目前可見集合</span>
+                    <span class="tag">{{ submissionFocusSummary.group === null ? 0 : 1 }}</span>
+                  </div>
+                  <div class="row compact">
+                    <span>未命中</span>
+                    <span class="tag" :class="submissionFocusSummary.missingIds.length === 0 ? 'good' : 'warn'">
+                      {{ submissionFocusSummary.missingIds.length }}
+                    </span>
+                  </div>
+                  <div class="actions wrap" style="margin: 12px 0;">
+                    <button
+                      type="button"
+                      :disabled="submissionFocusSummary.matchedNodeIds.length === 0"
+                      @click="focusSubmissionCollection"
+                    >
+                      聚焦提交節點
+                    </button>
+                    <button type="button" @click="clearFocusScope('submission')">清除此集合</button>
+                  </div>
+                  <div v-if="submissionFocusSummary.group !== null" class="candidate-actions">
+                    <RouterLink
+                      :to="{
+                        name: 'verification',
+                        query: withBackRef(route.fullPath, {
+                          submission: submissionFocusSummary.group.submissionIds[0],
+                          submissions: submissionFocusSummary.group.submissionIds.join(','),
+                        }),
+                      }"
+                      class="candidate-action-link"
+                    >
+                      <strong>回到 {{ submissionFocusSummary.group.label }}</strong>
+                      <span class="muted mono">驗證中心</span>
+                    </RouterLink>
+                  </div>
+                  <p v-else class="muted">目前流程圖中沒有命中的提交節點。</p>
+                  <div v-if="submissionFocusSummary.missingIds.length !== 0" class="note focus-missing">
+                    尚有提交未出現在目前流程圖：{{ summarizeMissingIds(submissionFocusSummary.missingIds) }}
+                  </div>
+                </section>
+              </div>
+            </section>
             <div v-if="visibleCandidateCollections.length !== 0" class="candidate-actions">
               <RouterLink
                 v-for="group in visibleCandidateCollections"
@@ -928,6 +1119,39 @@ watch(displayGraph, (next) => {
 }
 
 .flow-filters {
+  margin-top: 12px;
+}
+
+.focus-workspace {
+  border: 1px solid #26405f;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: #0b1829;
+}
+
+.focus-workspace-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.focus-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.focus-card {
+  border: 1px solid #26405f;
+  border-radius: 12px;
+  padding: 12px;
+  background: #0d1d31;
+}
+
+.focus-missing {
   margin-top: 12px;
 }
 

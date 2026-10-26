@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import type { RunEventEnvelope } from '../src/lib/events'
 import type { FlowNode } from '../src/lib/flow'
 import {
+  buildCandidateFocusSummary,
   buildNodeActionLinks,
+  buildSubmissionFocusSummary,
   collectCandidateCollectionLinks,
   collectSubmissionCollectionLink,
   findNodeIdsByRecordValues,
@@ -147,6 +149,51 @@ describe('researchNodeDetails', () => {
       ['cand-1'],
     )
     expect(ids).toEqual(['candidate:cand-1'])
+  })
+
+  it('builds a candidate focus summary with missing ids and grouped links', () => {
+    const summary = buildCandidateFocusSummary(
+      [
+        node(),
+        node({
+          id: 'candidate:cand-2',
+          title: '候選 #2',
+          records: [
+            { label: '候選識別碼', value: 'cand-2' },
+            { label: '所屬搜尋任務', value: 'run-search-1' },
+          ],
+        }),
+      ],
+      ['cand-1', 'cand-2', 'cand-missing', 'cand-1'],
+    )
+
+    expect(summary?.requestedIds).toEqual(['cand-1', 'cand-2', 'cand-missing'])
+    expect(summary?.matchedValues).toEqual(['cand-1', 'cand-2'])
+    expect(summary?.missingIds).toEqual(['cand-missing'])
+    expect(summary?.groups[0]?.candidateIds).toEqual(['cand-1', 'cand-2'])
+  })
+
+  it('builds a submission focus summary with missing ids', () => {
+    const summary = buildSubmissionFocusSummary(
+      [
+        node({
+          id: 'submission:sub-1',
+          kind: 'SUBMISSION',
+          records: [{ label: '提交識別碼', value: 'sub-1' }],
+        }),
+        node({
+          id: 'submission:sub-2',
+          kind: 'SUBMISSION',
+          records: [{ label: '提交識別碼', value: 'sub-2' }],
+        }),
+      ],
+      ['sub-1', 'sub-missing'],
+    )
+
+    expect(summary?.requestedIds).toEqual(['sub-1', 'sub-missing'])
+    expect(summary?.matchedValues).toEqual(['sub-1'])
+    expect(summary?.missingIds).toEqual(['sub-missing'])
+    expect(summary?.group?.submissionIds).toEqual(['sub-1'])
   })
 
   it('summarizes large payloads', () => {

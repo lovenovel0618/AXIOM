@@ -74,6 +74,25 @@ export interface SubmissionCollectionLink {
   label: string
 }
 
+export interface FocusSummaryBase {
+  requestedIds: string[]
+  matchedValues: string[]
+  matchedNodeIds: string[]
+  missingIds: string[]
+}
+
+export interface CandidateFocusSummary extends FocusSummaryBase {
+  groups: CandidateCollectionLink[]
+}
+
+export interface SubmissionFocusSummary extends FocusSummaryBase {
+  group: SubmissionCollectionLink | null
+}
+
+function uniqueValues(values: string[]): string[] {
+  return [...new Set(values.filter((value) => value !== ''))]
+}
+
 export function buildNodeActionLinks(
   node: FlowNode,
   queryFactory: (extra?: Record<string, string | undefined>) => Record<string, string>,
@@ -169,4 +188,54 @@ export function findNodeIdsByRecordValues(nodes: FlowNode[], label: string, valu
       return value !== null && expected.has(value)
     })
     .map((node) => node.id)
+}
+
+export function buildCandidateFocusSummary(nodes: FlowNode[], requestedIds: string[]): CandidateFocusSummary | null {
+  const requested = uniqueValues(requestedIds)
+  if (requested.length === 0) return null
+
+  const expected = new Set(requested)
+  const matchedNodes = nodes.filter((node) => {
+    if (node.kind !== 'CANDIDATE') return false
+    const candidateId = recordValue(node.records, '候選識別碼')
+    return candidateId !== null && expected.has(candidateId)
+  })
+  const matchedValues = uniqueValues(
+    matchedNodes
+      .map((node) => recordValue(node.records, '候選識別碼'))
+      .filter((value): value is string => value !== null),
+  )
+
+  return {
+    requestedIds: requested,
+    matchedValues,
+    matchedNodeIds: matchedNodes.map((node) => node.id),
+    missingIds: requested.filter((candidateId) => !matchedValues.includes(candidateId)),
+    groups: collectCandidateCollectionLinks(matchedNodes),
+  }
+}
+
+export function buildSubmissionFocusSummary(nodes: FlowNode[], requestedIds: string[]): SubmissionFocusSummary | null {
+  const requested = uniqueValues(requestedIds)
+  if (requested.length === 0) return null
+
+  const expected = new Set(requested)
+  const matchedNodes = nodes.filter((node) => {
+    if (node.kind !== 'SUBMISSION') return false
+    const submissionId = recordValue(node.records, '提交識別碼')
+    return submissionId !== null && expected.has(submissionId)
+  })
+  const matchedValues = uniqueValues(
+    matchedNodes
+      .map((node) => recordValue(node.records, '提交識別碼'))
+      .filter((value): value is string => value !== null),
+  )
+
+  return {
+    requestedIds: requested,
+    matchedValues,
+    matchedNodeIds: matchedNodes.map((node) => node.id),
+    missingIds: requested.filter((submissionId) => !matchedValues.includes(submissionId)),
+    group: collectSubmissionCollectionLink(matchedNodes),
+  }
 }
