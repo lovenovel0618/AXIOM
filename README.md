@@ -62,7 +62,7 @@ docker compose run --rm frontend sh -c 'npm run typecheck && npm test && npm run
 
 ## 本機帳號與上傳
 
-沒有預設帳密或公開註冊。依 [帳號與上傳操作說明](infra/README.md#帳號與上傳操作t05) 預先建立帳號，從 <http://127.0.0.1:15173/auth/login> 登入。在 `.env` 設好 `AXIOM_BOOTSTRAP_USER`／`AXIOM_BOOTSTRAP_PASSWORD` 後，資料庫重建（含 `down --volumes`）不需再手動建帳號：
+沒有預設帳密或公開註冊。依 [帳號與上傳操作說明](infra/README.md#帳號與上傳操作t05) 預先建立帳號，從 <http://127.0.0.1:15173/auth/login> 登入。在 `.env` 設好 `AXIOM_BOOTSTRAP_ACCOUNTS`（JSON 陣列，每項含 `user`／`password`：預設 `admin` 給 AI 助理、`dino` 給使用者本人，兩者共用同一租戶）後，資料庫重建（含 `down --volumes`）不需再手動建帳號：
 
 ```sh
 docker compose up --build -d --wait --wait-timeout 120   # migrate 依 .env 自動建立本機帳號

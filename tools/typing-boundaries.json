@@ -307,7 +307,7 @@
   "backend/catalog/management/commands/bootstrap_account.py": {
     "Any": 2,
     "JsonObject": 0,
-    "reason": "重建後帳號 bootstrap 只讀環境變數與具體模型；Any 僅用於 BaseCommand 的 args／options 框架簽章，未新增動態型別通道。"
+    "reason": "重建後帳號 bootstrap 讀環境變數、解析帳號 JSON 清單並寫入具體模型；Any 僅用於 BaseCommand 的 args／options 框架簽章與 json.loads 的相容邊界，解析後即收斂為具體型別。"
   },
   "backend/catalog/management/commands/provision_account.py": {
     "Any": 2,

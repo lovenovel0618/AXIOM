@@ -9,7 +9,12 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
 from catalog.models import Account, Audit, Tenant
-from catalog.management.commands.bootstrap_account import PASSWORD_VARIABLE, TENANT_VARIABLE, USER_VARIABLE
+from catalog.management.commands.bootstrap_account import ACCOUNTS_VARIABLE, TENANT_VARIABLE
+
+
+def accounts(*pairs: tuple[str, str]) -> str:
+    """把 (user, password) 清單編成 AXIOM_BOOTSTRAP_ACCOUNTS 的 JSON 陣列。"""
+    return json.dumps([{"user": user, "password": password} for user, password in pairs])
 
 
 def report(output: StringIO) -> dict[str, object]:
@@ -24,42 +29,63 @@ class BootstrapAccountTests(TestCase):
             call_command("bootstrap_account", stdout=output)
         return report(output)
 
-    def test_blank_user_skips_without_writing(self) -> None:
-        result = self.run_bootstrap({USER_VARIABLE: "", PASSWORD_VARIABLE: "", TENANT_VARIABLE: ""})
+    def account_statuses(self, result: dict[str, object]) -> dict[str, object]:
+        rows = cast(list[dict[str, object]], result["accounts"])
+        return {cast(str, row["username"]): row["status"] for row in rows}
+
+    def test_blank_accounts_skips_without_writing(self) -> None:
+        result = self.run_bootstrap({ACCOUNTS_VARIABLE: "", TENANT_VARIABLE: ""})
         self.assertEqual(result["status"], "SKIPPED")
         self.assertEqual(User.objects.count(), 0)
         self.assertEqual(Tenant.objects.count(), 0)
 
-    def test_missing_or_short_password_is_rejected(self) -> None:
-        for password in ("", "too-short"):
+    def test_malformed_configuration_is_rejected(self) -> None:
+        rejected = [
+            "not-json",
+            '{"user": "bootstrap-user", "password": "Bootstrap-Local-2026"}',
+            "[]",
+            '[{"user": "bootstrap-user", "secret": "Bootstrap-Local-2026"}]',
+            '[{"user": "bootstrap-user", "password": "too-short"}]',
+            accounts(("bootstrap-user", "Bootstrap-Local-2026"), ("bootstrap-user", "Other-Local-Secret-2026")),
+        ]
+        for value in rejected:
             with self.assertRaises(CommandError):
-                self.run_bootstrap({USER_VARIABLE: "bootstrap-user", PASSWORD_VARIABLE: password})
+                self.run_bootstrap({ACCOUNTS_VARIABLE: value})
         self.assertEqual(User.objects.count(), 0)
+        self.assertEqual(Tenant.objects.count(), 0)
 
-    def test_create_is_idempotent_and_keeps_a_changed_password(self) -> None:
-        variables = {USER_VARIABLE: "bootstrap-user", PASSWORD_VARIABLE: "Bootstrap-Local-2026", TENANT_VARIABLE: "bootstrap-local"}
+    def test_all_accounts_share_one_tenant_and_creation_is_idempotent(self) -> None:
+        variables = {
+            ACCOUNTS_VARIABLE: accounts(("admin", "Admin-Local-2026"), ("dino", "Bootstrap-Local-2026")),
+            TENANT_VARIABLE: "bootstrap-local",
+        }
         created = self.run_bootstrap(variables)
-        self.assertEqual(created["status"], "CREATED")
-        user = User.objects.get(username="bootstrap-user")
-        self.assertTrue(user.is_active)
-        self.assertTrue(user.check_password("Bootstrap-Local-2026"))
-        self.assertEqual(Account.objects.get(user=user).enabled, True)
-        self.assertEqual(Tenant.objects.get(name="bootstrap-local").id, Account.objects.get(user=user).tenant_id)
-        self.assertEqual(Audit.objects.filter(action="BOOTSTRAP_ACCOUNT").count(), 1)
-        user.set_password("Changed-On-Host-2026")
-        user.save()
+        self.assertEqual(created["status"], "APPLIED")
+        self.assertEqual(self.account_statuses(created), {"admin": "CREATED", "dino": "CREATED"})
+        tenant = Tenant.objects.get(name="bootstrap-local")
+        self.assertEqual(Account.objects.filter(tenant=tenant).count(), 2)
+        self.assertTrue(User.objects.get(username="admin").check_password("Admin-Local-2026"))
+        self.assertTrue(User.objects.get(username="dino").check_password("Bootstrap-Local-2026"))
+        self.assertEqual(Audit.objects.filter(action="BOOTSTRAP_ACCOUNT").count(), 2)
+
+        dino = User.objects.get(username="dino")
+        dino.set_password("Changed-On-Host-2026")
+        dino.save()
         again = self.run_bootstrap(variables)
-        self.assertEqual(again["status"], "EXISTS")
-        self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(Account.objects.count(), 1)
-        self.assertEqual(Audit.objects.filter(action="BOOTSTRAP_ACCOUNT").count(), 1)
-        self.assertTrue(User.objects.get(username="bootstrap-user").check_password("Changed-On-Host-2026"))
+        self.assertEqual(self.account_statuses(again), {"admin": "EXISTS", "dino": "EXISTS"})
+        self.assertEqual(User.objects.count(), 2)
+        self.assertEqual(Account.objects.count(), 2)
+        self.assertEqual(Audit.objects.filter(action="BOOTSTRAP_ACCOUNT").count(), 2)
+        self.assertTrue(User.objects.get(username="dino").check_password("Changed-On-Host-2026"))
 
     def test_existing_user_without_account_is_repaired(self) -> None:
-        User.objects.create_user(username="bootstrap-user", password="Bootstrap-Local-2026")
-        result = self.run_bootstrap({USER_VARIABLE: "bootstrap-user", PASSWORD_VARIABLE: "Other-Local-Secret-2026", TENANT_VARIABLE: "bootstrap-local"})
-        self.assertEqual(result["status"], "REPAIRED")
-        user = User.objects.get(username="bootstrap-user")
+        User.objects.create_user(username="dino", password="Bootstrap-Local-2026")
+        result = self.run_bootstrap({
+            ACCOUNTS_VARIABLE: accounts(("dino", "Other-Local-Secret-2026")),
+            TENANT_VARIABLE: "bootstrap-local",
+        })
+        self.assertEqual(self.account_statuses(result), {"dino": "REPAIRED"})
+        user = User.objects.get(username="dino")
         self.assertTrue(user.check_password("Bootstrap-Local-2026"))
         self.assertEqual(Account.objects.get(user=user).tenant_id, Tenant.objects.get(name="bootstrap-local").id)
         self.assertEqual(Audit.objects.filter(action="BOOTSTRAP_ACCOUNT").count(), 1)

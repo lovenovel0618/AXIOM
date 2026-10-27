@@ -84,8 +84,7 @@ services:
     <<: *backend
     environment:
       <<: *environment
-      AXIOM_BOOTSTRAP_USER: ${AXIOM_BOOTSTRAP_USER:-}
-      AXIOM_BOOTSTRAP_PASSWORD: ${AXIOM_BOOTSTRAP_PASSWORD:-}
+      AXIOM_BOOTSTRAP_ACCOUNTS: ${AXIOM_BOOTSTRAP_ACCOUNTS:-}
       AXIOM_BOOTSTRAP_TENANT: ${AXIOM_BOOTSTRAP_TENANT:-local}
     command:
       - sh

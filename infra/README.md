@@ -77,7 +77,7 @@ docker compose exec web python manage.py provision_account dino local
 
 每帳號固定一租戶；不要用請求 header 選租戶。命令輸出 actor／tenant UUID，不輸出密碼。後續同租戶帳號使用相同 tenant 名稱；需要不同行政租戶時使用不同名稱。帳號管理是本機受信任管理操作，沒有遠端邀請／註冊／公開分享。
 
-資料庫重建（含 `down --volumes`）後為空，`migrate` 服務會在遷移完成後接著執行 `bootstrap_account`：讀 `AXIOM_BOOTSTRAP_USER`／`AXIOM_BOOTSTRAP_PASSWORD`（選配 `AXIOM_BOOTSTRAP_TENANT`，預設 `local`）建立 User＋租戶＋Account。命令冪等：帳號已存在即不改密碼、不重建，只有 Django user 缺 catalog account 時補建（輸出 `status=CREATED`／`REPAIRED`／`EXISTS`）。未設 `AXIOM_BOOTSTRAP_USER` 或值為空白時輸出 `status=SKIPPED` 且不寫入任何資料，因此 CI 與未配置環境不受影響。密碼不足 12 字元即非零退出（Fail-Closed），migrate 失敗時 web 不會啟動。
+資料庫重建（含 `down --volumes`）後為空，`migrate` 服務會在遷移完成後接著執行 `bootstrap_account`：讀 `AXIOM_BOOTSTRAP_ACCOUNTS`（JSON 陣列，每項恰含 `user`／`password`；選配 `AXIOM_BOOTSTRAP_TENANT`，預設 `local`）建立 User＋租戶＋Account，**全部帳號共用同一租戶**，預設為 `admin`（給 AI 助理）與 `dino`（給使用者本人），兩者資料完全互通。命令冪等：帳號已存在即不改密碼、不重建，只有 Django user 缺 catalog account 時補建（輸出 `status=CREATED`／`REPAIRED`／`EXISTS`）。未設 `AXIOM_BOOTSTRAP_ACCOUNTS` 或值為空白時輸出 `status=SKIPPED` 且不寫入任何資料，因此 CI 與未配置環境不受影響。設定一旦提供即必須完整合法（合法 JSON 陣列、每項恰含 `user`／`password`、使用者名稱不重複、密碼至少 12 字元），否則非零退出（Fail-Closed），migrate 失敗時 web 不會啟動。
 
 ```sh
 # 看 bootstrap 結果（status=CREATED／REPAIRED／EXISTS／SKIPPED）

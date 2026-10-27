@@ -23,7 +23,7 @@
 
 ## T04 已實作的本機切片
 
-根目錄 compose.yaml 已提供 PostgreSQL 16、Redis 7、Python 3.13 的 migration／web／worker／relay，以及 Node 24 Vue 開發頁；映像使用 T02 驗證的 digest。宿主入口為 loopback 18000（web）與 15173（frontend），DB／Redis 不映射宿主埠。實際變數為 AXIOM_SECRET_KEY、AXIOM_DB_PASSWORD，選配 AXIOM_WEB_PORT／AXIOM_FRONTEND_PORT；沒有預設密碼。T05 帳號切片後，migrate 另在遷移完成後執行 bootstrap_account：僅在設定 AXIOM_BOOTSTRAP_USER／AXIOM_BOOTSTRAP_PASSWORD（選配 AXIOM_BOOTSTRAP_TENANT）時建立本機帳號，已存在即不覆寫密碼，未設定則跳過且不建立預設密碼。
+根目錄 compose.yaml 已提供 PostgreSQL 16、Redis 7、Python 3.13 的 migration／web／worker／relay，以及 Node 24 Vue 開發頁；映像使用 T02 驗證的 digest。宿主入口為 loopback 18000（web）與 15173（frontend），DB／Redis 不映射宿主埠。實際變數為 AXIOM_SECRET_KEY、AXIOM_DB_PASSWORD，選配 AXIOM_WEB_PORT／AXIOM_FRONTEND_PORT；沒有預設密碼。T05 帳號切片後，migrate 另在遷移完成後執行 bootstrap_account：僅在設定 AXIOM_BOOTSTRAP_ACCOUNTS（JSON 陣列，每項恰含 user／password；選配 AXIOM_BOOTSTRAP_TENANT，預設 local）時建立本機帳號，全部帳號共用同一租戶，已存在即不覆寫密碼，未設定則跳過且不建立預設密碼。
 
 T07 封存切片另加入三個服務與一個內部通道：Evaluator 專用的 `profile` worker（UID 10002、raw GID 10003、獨立 `sealed-data`／`sealed-keys` volume）、`ingest` worker（object-data 唯讀），以及 UID 10004 的 `journal` authority（`journal-data`／`journal-authority` volume）。`journal` 以 `network_mode: none` 執行、不接任何網路、不映射宿主埠，僅透過 `journal-socket` 具名 volume 上的 Unix domain socket 與 `profile` 交換 append／read 訊息；此通道需額外設定 AXIOM_JOURNAL_TOKEN。三個自建映像（backend、compatibility、benchmark）的 Python 基底一律以 digest 固定，不使用可變 tag。
 
@@ -158,7 +158,7 @@ proof／sandbox 採無網路模式時，不可直接連接 PostgreSQL、Redis �
 | 檢視狀態與健康 | `docker compose ps` |
 | 追蹤日誌 | `docker compose logs -f web worker` |
 | 執行資料庫遷移 | `docker compose exec web python manage.py migrate` |
-| 建立本機帳號 | 於 `.env` 設 `AXIOM_BOOTSTRAP_USER`／`AXIOM_BOOTSTRAP_PASSWORD`，`migrate` 自動建立；或 `docker compose exec web python manage.py provision_account <名稱> <租戶>` |
+| 建立本機帳號 | 於 `.env` 設 `AXIOM_BOOTSTRAP_ACCOUNTS`（JSON 陣列，每項含 `user`／`password`），`migrate` 自動建立（全部帳號共用 `AXIOM_BOOTSTRAP_TENANT`）；或 `docker compose exec web python manage.py provision_account <名稱> <租戶>` |
 | 變更本機帳號密碼 | `docker compose exec web python manage.py changepassword <名稱>`；若 Docker TTY 報 `UnicodeDecodeError`，改用 `docker compose exec -T ... python manage.py shell -c ...` 直接 `set_password()` |
 | 進容器除錯 | `docker compose exec web bash` |
 | 停止並保留資料 | `docker compose down` |
