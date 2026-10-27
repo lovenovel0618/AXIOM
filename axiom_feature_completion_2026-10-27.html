@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AXIOM Feature Completion Audit</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2b;
+      --panel-2: #172033;
+      --text: #e8eefc;
+      --muted: #aeb9d6;
+      --line: #2a3857;
+      --accent: #78a6ff;
+      --good: #46c37b;
+      --warn: #ffb648;
+      --bad: #ff6d6d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Noto Sans TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+    h1, h2, h3 { line-height: 1.25; margin: 0 0 12px; }
+    h1 { font-size: 34px; }
+    h2 {
+      margin-top: 36px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      font-size: 24px;
+    }
+    p, li { color: var(--muted); }
+    .meta, .note {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin: 16px 0;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 12px 0 0;
+    }
+    .chip {
+      display: inline-block;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .card h3 { font-size: 18px; margin-bottom: 8px; }
+    .percent { font-size: 28px; font-weight: 700; color: var(--accent); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      display: block;
+      overflow-x: auto;
+    }
+    thead { background: var(--panel-2); }
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+    th { white-space: nowrap; color: var(--text); }
+    td { color: var(--muted); }
+    tr:last-child td { border-bottom: none; }
+    .status-good { color: var(--good); font-weight: 600; }
+    .status-warn { color: var(--warn); font-weight: 600; }
+    .status-bad { color: var(--bad); font-weight: 600; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.95em;
+      color: var(--text);
+    }
+    ul { margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>AXIOM Feature Completion Audit</h1>
+    <div class="meta">
+      <div>更新日期：2026-10-27</div>
+      <div>這份報告把「規格已定義」和「實作完成度」分開看，避免把 <code>NOT_RUN</code>、<code>BLOCKED</code>、<code>PARTIAL</code>、<code>未開工</code> 混成同一種狀態。</div>
+      <div class="chips">
+        <span class="chip">權威來源：docs/ 為準</span>
+        <span class="chip">完成度是功能實作，不等於產品 Gate 通過</span>
+        <span class="chip">M4~M7 多為 spec 已定義、impl 未啟動</span>
+      </div>
+    </div>
+
+    <h2>判定口徑</h2>
+    <div class="note">
+      <ul>
+        <li><span class="status-good">100%</span>：功能主體已交付，文件未再列缺口</li>
+        <li><span class="status-warn">75%</span>：主體已完成，但仍缺收尾模組、驗收接線或外部阻擋</li>
+        <li><span class="status-warn">50%</span>：已有可用骨架或局部流程，但距離完整功能仍有明顯缺口</li>
+        <li><span class="status-warn">25%</span>：只有前置資料層、基線能力或局部支撐，主功能尚未成立</li>
+        <li><span class="status-bad">0%</span>：文件明示未開工，或只有規格沒有實作跡象</li>
+      </ul>
+    </div>
+
+    <h2>一頁總覽</h2>
+    <div class="grid">
+      <div class="card"><h3>M0</h3><div class="percent">100%</div><div>規格、契約、基線與審查票齊備</div></div>
+      <div class="card"><h3>M1</h3><div class="percent">75%</div><div>可信核心已大量落地，但 M1 未關閉</div></div>
+      <div class="card"><h3>M2</h3><div class="percent">70%</div><div>三策略與凍結多數已交；FIT 與正式 Gate 未完</div></div>
+      <div class="card"><h3>M3</h3><div class="percent">60%</div><div>工作台已成形，E2E/資安/壓測/備份還原未完</div></div>
+      <div class="card"><h3>M4</h3><div class="percent">10%</div><div>只有前置基線，主體未開工</div></div>
+      <div class="card"><h3>M5</h3><div class="percent">5%</div><div>只有證據基線，M5 主功能未開工</div></div>
+      <div class="card"><h3>M6</h3><div class="percent">0%</div><div>尚未開工</div></div>
+      <div class="card"><h3>M7</h3><div class="percent">0%</div><div>尚未開工</div></div>
+    </div>
+
+    <h2>M1：可信數學核心與 T07 前置</h2>
+    <table>
+      <thead>
+        <tr><th>功能</th><th>完成度</th><th>驗收狀態</th><th>目前狀態</th><th>仍缺</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>本機開發骨架、Compose、健康檢查</td><td class="status-good">100%</td><td>未跑</td><td>T04 已交</td><td>正式 Gate 驗收</td></tr>
+        <tr><td>帳號、租戶、不可變上傳</td><td class="status-good">100%</td><td>未跑</td><td>T05 已交</td><td>產品案例尚未跑</td></tr>
+        <tr><td>DSL v1、canonical、受限求值</td><td class="status-good">100%</td><td>未跑</td><td>T06 已交</td><td>產品案例尚未跑</td></tr>
+        <tr><td>建立前 metadata 預覽</td><td class="status-good">100%</td><td>未跑</td><td>AX-49 的 metadata/fit 分工已接入</td><td>AC-49-09~10 未跑</td></tr>
+        <tr><td>語意確認與固定 split</td><td class="status-warn">75%</td><td>部分</td><td>單一輸入、domain、切分與 draft research 已交</td><td>時間 / 群組 / refit 未開放</td></tr>
+        <tr><td>研究帳本與 PROFILE 任務</td><td class="status-good">100%</td><td>未跑</td><td>兩層預算與 PROFILE 已交</td><td>產品案例未跑</td></tr>
+        <tr><td>正式封存與曝光帳本</td><td class="status-good">100%</td><td>未跑</td><td>formal seal 與 authority 已交</td><td>產品案例未跑</td></tr>
+        <tr><td>證據包</td><td class="status-good">100%</td><td>未跑</td><td>READY 同交易證據包已交</td><td>產品案例未跑</td></tr>
+        <tr><td>刪除傳播對外入口與異步收斂</td><td class="status-warn">75%</td><td>部分</td><td>dry-run、宣告、讀回、relay 收斂已交</td><td>outbox、索引/快取清除、備份還原重播</td></tr>
+        <tr><td>最小 Trace / 決策紀錄基線</td><td class="status-warn">50%</td><td>部分</td><td>有最小 trace/journal 基線</td><td>AX-50 分級 trace 鏈、HRR、自動重審</td></tr>
+        <tr><td>M1 端到端展示</td><td class="status-warn">50%</td><td>未跑</td><td>可跑局部示範流程</td><td>文件明示 M1 仍 IN_PROGRESS</td></tr>
+      </tbody>
+    </table>
+
+    <h2>M2：單序列引擎與隔離驗證</h2>
+    <table>
+      <thead>
+        <tr><th>功能</th><th>完成度</th><th>驗收狀態</th><th>目前狀態</th><th>仍缺</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>線性 / 多項式 / 固定頻率諧波三策略</td><td class="status-good">100%</td><td>未跑</td><td>M2-T1~T3 已交</td><td>正式產品驗收</td></tr>
+        <tr><td>SEARCH 派送、投影模式、checkpoint 續跑</td><td class="status-good">100%</td><td>部分</td><td>切片 3 已交</td><td>切口整體仍因 FIT 未完而 PARTIAL</td></tr>
+        <tr><td>root/child 排程、租約、checkpoint</td><td class="status-good">100%</td><td>未跑</td><td>M2-T4 已交</td><td>正式產品驗收</td></tr>
+        <tr><td>候選凍結 API、FrozenSubmission、snapshot_hash</td><td class="status-good">100%</td><td>部分</td><td>M2-T5 已交</td><td>功能缺口已少，驗收未跑</td></tr>
+        <tr><td>FinalEvaluationSlot 與 FINAL_ONLY validate</td><td class="status-good">100%</td><td>部分 / 阻擋</td><td>資料層、派送、結果落庫、對外讀取已交</td><td>D-03 未關，G2 BLOCKED</td></tr>
+        <tr><td>ValidationRun 最終結果引用</td><td class="status-warn">75%</td><td>部分</td><td>物件、證據包引用與身分核對已交</td><td>FINAL_TEST 語意層驗證待補</td></tr>
+        <tr><td>FIT 執行管線</td><td class="status-warn">25%</td><td>部分</td><td>只有少量 runtime 前置修改</td><td>attach、relay、worker、結果 sink、FIT ValidationRun</td></tr>
+        <tr><td>Sonar / coverage 驗證接線</td><td class="status-warn">25%</td><td>未跑</td><td>Sonar 0 診斷已完成</td><td>coverage 報告接線與門檻</td></tr>
+      </tbody>
+    </table>
+
+    <h2>M3：互動 MVP / 工作台</h2>
+    <table>
+      <thead>
+        <tr><th>功能</th><th>完成度</th><th>驗收狀態</th><th>目前狀態</th><th>仍缺</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>真實 Vue 路由外殼與模組化頁面</td><td class="status-good">100%</td><td>未跑</td><td>前台已改回真頁路由</td><td>產品案例未跑</td></tr>
+        <tr><td>研究工作台真實版本 / 任務 / 候選 / 事件流程圖</td><td class="status-good">100%</td><td>未跑</td><td>已接真實資料流程</td><td>完整驗收未跑</td></tr>
+        <tr><td>研究清單 / 新建研究 / 工作台三拆頁</td><td class="status-good">100%</td><td>未跑</td><td>路由已拆出</td><td>產品案例未跑</td></tr>
+        <tr><td>候選比較、SSE 斷線重連、Run 清單、上傳與語意確認 UI</td><td class="status-good">100%</td><td>部分</td><td>功能已交</td><td>整體 M3 驗收未跑</td></tr>
+        <tr><td>證據檢視 UI 與最終評估面板</td><td class="status-good">100%</td><td>部分</td><td>已交</td><td>整體 M3 驗收未跑</td></tr>
+        <tr><td>40 頁 UIUX 重製版整合</td><td class="status-warn">50%</td><td>未跑</td><td>40 頁 SSOT 已大量落地</td><td>逐頁收尾與細部一致性驗收</td></tr>
+        <tr><td>完整跨頁互動</td><td class="status-warn">50%</td><td>未跑</td><td>研究線、資料線、發現線已拆多頁</td><td>全鏈互動與細節整合</td></tr>
+        <tr><td>E2E 測試</td><td class="status-bad">0%</td><td>未跑</td><td>文件明示仍待補</td><td>全量 M3 E2E</td></tr>
+        <tr><td>資安驗證</td><td class="status-bad">0%</td><td>未跑</td><td>文件明示仍待補</td><td>G5 對應驗證</td></tr>
+        <tr><td>壓測</td><td class="status-bad">0%</td><td>未跑</td><td>文件明示仍待補</td><td>G7 壓測與容量上限</td></tr>
+        <tr><td>備份 / 還原驗收</td><td class="status-bad">0%</td><td>未跑 / 阻擋</td><td>文件明示仍待補</td><td>BackupSet、恢復演練、journal 重播</td></tr>
+      </tbody>
+    </table>
+
+    <h2>M4：記憶、AI 與 REQ-011~014 擴充</h2>
+    <table>
+      <thead>
+        <tr><th>功能</th><th>完成度</th><th>驗收狀態</th><th>目前狀態</th><th>仍缺</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>受限單輸入表徵搜尋</td><td class="status-warn">25%</td><td>未跑</td><td>只有 identity 表徵與結構預覽基線</td><td>真正的 representation search、branch、Pareto</td></tr>
+        <tr><td>RepresentationSpec、row 依賴、正逆映射 artifact</td><td class="status-warn">25%</td><td>未跑</td><td>只有前置概念與局部支撐</td><td>完整 spec、信息損失、映射凍結</td></tr>
+        <tr><td>原空間 Pareto 比較與跨表徵核對</td><td class="status-bad">0%</td><td>未跑</td><td>尚無實作證據</td><td>多表徵比較、硬限制、selection bias 披露</td></tr>
+        <tr><td>經驗記憶與檢索索引</td><td class="status-bad">0%</td><td>未跑</td><td>缺口清單明示 M4 未開工</td><td>memory index、隔離、刪除鏈</td></tr>
+        <tr><td>AI Gateway schema / budget / routing</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>routing、budget、fallback、model registry</td></tr>
+        <tr><td>AI runtime record 與 usage capture</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>AIRuntimeRecord、usage_source、PARTIAL/UNKNOWN</td></tr>
+        <tr><td>archive / lossless 壓縮 / manifest</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>ArchiveManifest、校驗、原子切換</td></tr>
+        <tr><td>ExperienceVersion / 摘要與經驗歸納</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>support/oppose case、selection bias、supersedes</td></tr>
+        <tr><td>HRR 假設恢復與自動重審</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>trigger、minimum_change、REASSESS</td></tr>
+        <tr><td>失敗分類與 judgment 強度模型</td><td class="status-warn">25%</td><td>未跑</td><td>只有最小 trace/診斷基線</td><td>完整 failure classes 與故障注入</td></tr>
+        <tr><td>RAG / 記憶 / 規則 / 權重三層晉級</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>三層驗收、隔離、回退</td></tr>
+        <tr><td>本地模型候選驗收與路由基準</td><td class="status-bad">0%</td><td>未跑</td><td>只有文件候選清單</td><td>digest、能力實測、OOM/latency/canary</td></tr>
+      </tbody>
+    </table>
+
+    <h2>M5 / M6 / M7</h2>
+    <table>
+      <thead>
+        <tr><th>階段</th><th>功能</th><th>完成度</th><th>驗收狀態</th><th>目前狀態</th><th>仍缺</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>M5</td><td>多軸 EvidenceAssessment 基線</td><td class="status-warn">25%</td><td>未跑</td><td>只有 M1~M3 最小證據基線</td><td>完整多軸 status 與 artifact 理由模型</td></tr>
+        <tr><td>M5</td><td>MAVE 多路徑驗證計畫</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>method/assumption/implementation groups</td></tr>
+        <tr><td>M5</td><td>形式化 proof / checker 路徑</td><td class="status-bad">0%</td><td>未跑 / 阻擋</td><td>尚未開工</td><td>proof graph、kernel、可重放證書</td></tr>
+        <tr><td>M5</td><td>逆解結果模型與可信充分性判定</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>InverseProblemResult、evidence_sufficient evaluator</td></tr>
+        <tr><td>M6</td><td>雙序列資料模型與 split/lag guard</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>dual-series contract、假相關 guard</td></tr>
+        <tr><td>M6</td><td>時間對齊 / 時滯 / 多尺度輸出</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>alignment、lag、multiscale</td></tr>
+        <tr><td>M6</td><td>二維 / 三維表徵與多維反演</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>2D/3D representations、multidimensional inverse problems</td></tr>
+        <tr><td>M6</td><td>新 major DSL / API 契約</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>新契約與遷移，不能沿用 DSL v1</td></tr>
+        <tr><td>M7</td><td>多序列研究引擎與狀態重建</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>multiseries modeling、state reconstruction</td></tr>
+        <tr><td>M7</td><td>TrainingDatasetManifest 與原觀測隔離</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>partition_assignments、observation_group_id</td></tr>
+        <tr><td>M7</td><td>LearningRelease / canary / rollback</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>baseline、ablation、canary、rollback</td></tr>
+        <tr><td>M7</td><td>策略學習 / 微調 / 校準 / 消融 / 負遷移</td><td class="status-bad">0%</td><td>未跑</td><td>尚未開工</td><td>training jobs、calibration、ablation、negative transfer</td></tr>
+      </tbody>
+    </table>
+
+    <h2>最接近下一步就能做的未完成項</h2>
+    <div class="note">
+      <ul>
+        <li><code>FIT</code> 執行管線</li>
+        <li><code>ValidationRun(split_role="FIT")</code> 與結果落庫收尾</li>
+        <li>M3 的完整 <code>E2E / 資安 / 壓測 / 備份還原</code></li>
+        <li>coverage 報告接線</li>
+        <li>刪除傳播最後一段 outbox + 索引/快取實際清除</li>
+      </ul>
+    </div>
+
+    <h2>結論</h2>
+    <div class="note">
+      <ul>
+        <li><strong>M1~M3</strong>：主幹已經長出來，但驗收與幾個關鍵缺口還在。</li>
+        <li><strong>M4~M7</strong>：規格拆得很完整，但實作幾乎尚未真正展開。</li>
+        <li>若只看功能級完成度：<strong>M1~M3 多落在 50%~100%</strong>；<strong>M4 多為 0%~25%</strong>；<strong>M5~M7 幾乎都是 0%</strong>。</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AXIOM 全功能總表與完成度盤點</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2b;
+      --panel-2: #182338;
+      --text: #e8eefc;
+      --muted: #aec0df;
+      --line: #2a3857;
+      --accent: #7fb0ff;
+      --green: #49c17a;
+      --yellow: #ffbb55;
+      --red: #ff7b7b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Noto Sans TC", sans-serif;
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 1520px;
+      margin: 0 auto;
+      padding: 32px 24px 72px;
+    }
+    h1, h2, h3 { line-height: 1.25; margin: 0 0 12px; }
+    h1 { font-size: 34px; }
+    h2 {
+      margin-top: 38px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      font-size: 24px;
+    }
+    p, li { color: var(--muted); }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin: 14px 0;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .chip {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .big {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      display: block;
+      overflow-x: auto;
+      margin-top: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+    thead { background: var(--panel-2); }
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    td {
+      color: var(--muted);
+      white-space: normal;
+      min-width: 140px;
+    }
+    tr:last-child td { border-bottom: none; }
+    .good { color: var(--green); font-weight: 700; }
+    .warn { color: var(--yellow); font-weight: 700; }
+    .bad { color: var(--red); font-weight: 700; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--text);
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>AXIOM 全功能總表與完成度盤點</h1>
+
+    <div class="panel">
+      <div>更新日期：2026-10-27</div>
+      <div>這份報告覆蓋 REQ / NFR、40 頁 SSOT、研究線、資料線、驗證線、記憶線、Ollama/模型線、訓練線、設定線，以及支援頁面與 Gate/阻擋條件。</div>
+      <div class="chips">
+        <span class="chip">以 docs/ 為權威</span>
+        <span class="chip">有頁面 ≠ 有後端</span>
+        <span class="chip">有後端 ≠ 驗收通過</span>
+        <span class="chip">Ollama 另拆規格 / 頁面 / 後端 / 訓練</span>
+      </div>
+    </div>
+
+    <h2>一頁總覽</h2>
+    <div class="grid">
+      <div class="card"><h3>REQ / NFR</h3><div class="big">21 項</div><div>完整需求與非功能需求均已定義</div></div>
+      <div class="card"><h3>SSOT 真頁</h3><div class="big">40 頁</div><div>Vue route / view 全部存在</div></div>
+      <div class="card"><h3>Ollama / AI</h3><div class="big">規格有</div><div>頁面有，但後端主體尚未完成</div></div>
+      <div class="card"><h3>訓練 / 發布</h3><div class="big">頁面有</div><div>training / finetune / release 後端缺失</div></div>
+      <div class="card"><h3>M1~M3</h3><div class="big">主幹已成形</div><div>仍缺 FIT、E2E、資安、壓測、備份還原</div></div>
+      <div class="card"><h3>M4~M7</h3><div class="big">多未開工</div><div>記憶、AI、proof、多序列、訓練是大缺口</div></div>
+    </div>
+
+    <h2>REQ / NFR 總表</h2>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>功能</th><th>階段</th><th>後端能力</th><th>前端頁面</th><th>驗收</th><th>目前判定</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>REQ-001</td><td>資料匯入與品質報告</td><td>M1</td><td class="good">已交付</td><td class="good">已落地</td><td>NOT_RUN</td><td>MVP 主幹已有</td></tr>
+        <tr><td>REQ-002</td><td>自動公式候選生成</td><td>M2</td><td class="warn">部分</td><td class="good">已落地</td><td>NOT_RUN</td><td>三策略已交，但 FIT 未完</td></tr>
+        <tr><td>REQ-003</td><td>獨立驗證與拒答</td><td>M1~M2</td><td class="warn">部分</td><td class="good">已落地</td><td>NOT_RUN / BLOCKED</td><td>final gate 仍受阻</td></tr>
+        <tr><td>REQ-004</td><td>公式片段與經驗記憶</td><td>M4</td><td class="bad">未開工</td><td class="warn">頁面存在</td><td>NOT_RUN</td><td>記憶主體未做</td></tr>
+        <tr><td>REQ-005</td><td>AI 假說與策略協調</td><td>M4</td><td class="bad">未開工</td><td class="warn">頁面存在</td><td>NOT_RUN</td><td>Ollama / Gateway 未完成</td></tr>
+        <tr><td>REQ-006</td><td>公式推演與證明</td><td>M5</td><td class="bad">未開工</td><td class="warn">頁面存在</td><td>NOT_RUN</td><td>proof / checker 未做</td></tr>
+        <tr><td>REQ-007</td><td>雙序列關係</td><td>M6</td><td class="bad">未開工</td><td class="warn">規格頁有</td><td>NOT_RUN</td><td>尚未開工</td></tr>
+        <tr><td>REQ-008</td><td>多序列研究</td><td>M7</td><td class="bad">未開工</td><td class="warn">規格頁有</td><td>NOT_RUN</td><td>尚未開工</td></tr>
+        <tr><td>REQ-009</td><td>研究工作台</td><td>M3</td><td class="warn">部分</td><td class="good">已落地</td><td>NOT_RUN</td><td>工作台主體已成形</td></tr>
+        <tr><td>REQ-010</td><td>可重現與版本化</td><td>M1</td><td class="good">已交付</td><td class="good">已落地</td><td>NOT_RUN</td><td>版本、Run、Artifact 主幹已有</td></tr>
+        <tr><td>REQ-011</td><td>自主結構與表徵探索</td><td>M1→M4→M6/M7</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>只有 M1 結構確認基線</td></tr>
+        <tr><td>REQ-012</td><td>決策軌跡與錯誤重審</td><td>M1→M4</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>只有最小 trace 基線</td></tr>
+        <tr><td>REQ-013</td><td>多軸正確性 / 正逆 / 多路徑</td><td>M1→M5~M7</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>只有最小證據基線</td></tr>
+        <tr><td>REQ-014</td><td>AI 紀錄封存與模型演化</td><td>M4 / M7</td><td class="bad">未開工</td><td class="warn">頁面存在</td><td>NOT_RUN</td><td>capture / archive / training 未做</td></tr>
+        <tr><td>NFR-001</td><td>效能延遲與吞吐</td><td>M1~M3</td><td class="warn">部分</td><td>-</td><td>NOT_RUN</td><td>壓測與正式數據未完成</td></tr>
+        <tr><td>NFR-002</td><td>可靠度與故障復原</td><td>M1~M3</td><td class="warn">部分</td><td>-</td><td>NOT_RUN</td><td>備份還原與恢復演練未完成</td></tr>
+        <tr><td>NFR-003</td><td>安全與租戶隔離</td><td>M1~M3</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>基線有，資安驗收未完</td></tr>
+        <tr><td>NFR-004</td><td>成本與預算治理</td><td>M2</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>帳本有，正式上限未完</td></tr>
+        <tr><td>NFR-005</td><td>可及性與前端體驗</td><td>M3</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>完整 UX 驗收未跑</td></tr>
+        <tr><td>NFR-006</td><td>環境可重現性</td><td>M0</td><td class="warn">部分</td><td>-</td><td>NOT_RUN</td><td>本機基線有，正式驗收未跑</td></tr>
+        <tr><td>NFR-007</td><td>資料治理與保留</td><td>M1</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN / BLOCKED</td><td>D-05 未關閉</td></tr>
+      </tbody>
+    </table>
+
+    <h2>核心執行功能總表</h2>
+    <table>
+      <thead>
+        <tr><th>模組</th><th>子功能</th><th>前端</th><th>後端</th><th>驗收</th><th>狀態摘要</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>身分與登入</td><td>login / logout / session / CSRF</td><td class="good">已落地</td><td class="good">已交付</td><td>NOT_RUN</td><td>基線完成</td></tr>
+        <tr><td>租戶隔離</td><td>tenant-scoped 404 / access_class</td><td>-</td><td class="good">已交付</td><td>NOT_RUN</td><td>基線完成</td></tr>
+        <tr><td>不可變上傳</td><td>upload session / sha / immutable object</td><td class="good">已落地</td><td class="good">已交付</td><td>NOT_RUN</td><td>主幹完成</td></tr>
+        <tr><td>匯入解析</td><td>CSV / JSON / Parquet</td><td class="good">已落地</td><td class="good">已交付</td><td>NOT_RUN</td><td>主幹完成</td></tr>
+        <tr><td>metadata 預覽</td><td>建立前結構預覽</td><td class="good">已落地</td><td class="good">已交付</td><td>NOT_RUN</td><td>主幹完成</td></tr>
+        <tr><td>語意確認</td><td>domain / split / target / inputs</td><td class="good">已落地</td><td class="warn">部分</td><td>PARTIAL</td><td>時間/群組/refit 未開</td></tr>
+        <tr><td>DSL 求值</td><td>parser / canonical / bounded evaluator</td><td>-</td><td class="good">已交付</td><td>NOT_RUN</td><td>主幹完成</td></tr>
+        <tr><td>PROFILE</td><td>quality / structure assessment / research budget</td><td class="good">已落地</td><td class="good">已交付</td><td>NOT_RUN</td><td>主幹完成</td></tr>
+        <tr><td>SEARCH</td><td>dispatch / projection / checkpoint</td><td class="good">已落地</td><td class="good">已交付</td><td>PARTIAL</td><td>SEARCH 主體完成</td></tr>
+        <tr><td>FIT</td><td>擬合 root / worker / 結果落庫</td><td class="warn">無完整專頁</td><td class="warn">部分</td><td>PARTIAL</td><td>關鍵未完</td></tr>
+        <tr><td>候選凍結</td><td>FrozenCandidate / FrozenSubmission</td><td class="good">已落地</td><td class="good">已交付</td><td>PARTIAL</td><td>主體已交</td></tr>
+        <tr><td>最終驗證</td><td>FinalEvaluationSlot / FINAL_ONLY validate</td><td class="good">已落地</td><td class="good">已交付</td><td>BLOCKED</td><td>D-03 卡住</td></tr>
+        <tr><td>ValidationRun</td><td>final result readback</td><td class="good">已落地</td><td class="warn">部分</td><td>PARTIAL</td><td>FINAL_TEST 語意驗證未完</td></tr>
+        <tr><td>證據包</td><td>evidence bundle / artifact linkage</td><td class="good">已落地</td><td class="good">已交付</td><td>NOT_RUN</td><td>主幹完成</td></tr>
+        <tr><td>刪除傳播</td><td>deletion request / dry-run / relay</td><td>-</td><td class="warn">部分</td><td>PARTIAL</td><td>最後一段清除鏈未完</td></tr>
+        <tr><td>Trace / 決策紀錄</td><td>trace chunk / decision graph / replay</td><td class="warn">記憶頁存在</td><td class="warn">部分</td><td>NOT_RUN</td><td>只有最小基線</td></tr>
+        <tr><td>Backup / Restore</td><td>BackupSet / replay / recovery</td><td>-</td><td class="warn">部分</td><td>NOT_RUN / BLOCKED</td><td>尚未完成</td></tr>
+      </tbody>
+    </table>
+
+    <h2>40 頁 SSOT 畫面總表</h2>
+    <table>
+      <thead>
+        <tr><th>頁碼</th><th>畫面</th><th>路由</th><th>前端頁面</th><th>後端資料完整度</th><th>目前判定</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>01</td><td>系統總覽</td><td>/overview</td><td class="good">已落地</td><td class="warn">部分</td><td>局部快照推導</td></tr>
+        <tr><td>02</td><td>研究活動中心</td><td>/activity</td><td class="good">已落地</td><td class="warn">部分</td><td>沒有全域任務端點</td></tr>
+        <tr><td>03</td><td>待處理事件</td><td>/pending</td><td class="good">已落地</td><td class="warn">部分</td><td>由既有狀態推導</td></tr>
+        <tr><td>04</td><td>資源監控</td><td>/resources</td><td class="good">已落地</td><td class="warn">部分</td><td>無即時硬體觀測端點</td></tr>
+        <tr><td>05</td><td>研究清單</td><td>/researches</td><td class="good">已落地</td><td class="warn">部分</td><td>統計只涵蓋已讀頁</td></tr>
+        <tr><td>06</td><td>新建研究</td><td>/researches/new</td><td class="good">已落地</td><td class="warn">部分</td><td>治理欄位未揭露</td></tr>
+        <tr><td>07</td><td>研究工作台</td><td>/researches/:id</td><td class="good">已落地</td><td class="warn">部分</td><td>真實研究流程已接入</td></tr>
+        <tr><td>08</td><td>研究詳情</td><td>/researches/:id/detail</td><td class="good">已落地</td><td class="warn">部分</td><td>摘要靠推導</td></tr>
+        <tr><td>09</td><td>研究分支圖</td><td>/researches/:id/graph</td><td class="good">已落地</td><td class="warn">部分</td><td>依賴邊靠推導</td></tr>
+        <tr><td>10</td><td>研究任務紀錄</td><td>/researches/:id/timeline</td><td class="good">已落地</td><td class="warn">部分</td><td>事件重播端點不存在</td></tr>
+        <tr><td>11</td><td>資料集清單</td><td>/datasets</td><td class="good">已落地</td><td class="warn">部分</td><td>許多欄位未揭露</td></tr>
+        <tr><td>12</td><td>資料上傳精靈</td><td>/datasets/:id/upload</td><td class="good">已落地</td><td class="warn">部分</td><td>四步精靈有，治理欄位未揭露</td></tr>
+        <tr><td>13</td><td>資料預覽</td><td>/datasets/:id/preview</td><td class="good">已落地</td><td class="warn">部分</td><td>sample / semantic details 不完整</td></tr>
+        <tr><td>14</td><td>資料品質</td><td>/datasets/:id/quality</td><td class="good">已落地</td><td class="warn">部分</td><td>品質面向多數未揭露</td></tr>
+        <tr><td>15</td><td>前處理管線</td><td>/datasets/:id/pipeline</td><td class="good">已落地</td><td class="warn">部分</td><td>無完整 DAG 與參數資料</td></tr>
+        <tr><td>16</td><td>多維探索</td><td>/datasets/:id/explore</td><td class="good">已落地</td><td class="warn">部分</td><td>投影與高維產物未揭露</td></tr>
+        <tr><td>17</td><td>資料版本比較</td><td>/datasets/:id/diff</td><td class="good">已落地</td><td class="warn">部分</td><td>lineage / rollback 未揭露</td></tr>
+        <tr><td>18</td><td>候選公式庫</td><td>/discoveries</td><td class="good">已落地</td><td class="warn">部分</td><td>無全域候選端點</td></tr>
+        <tr><td>19</td><td>公式比較</td><td>/discoveries/compare</td><td class="good">已落地</td><td class="warn">部分</td><td>依現有候選讀取範圍推導</td></tr>
+        <tr><td>20</td><td>隱藏變數探索</td><td>/discoveries/latent</td><td class="good">已落地</td><td class="warn">部分</td><td>intrinsic dimension 未取得</td></tr>
+        <tr><td>21</td><td>研究推演</td><td>/discoveries/derivation</td><td class="good">已落地</td><td class="warn">部分</td><td>由節點/證據推導</td></tr>
+        <tr><td>22</td><td>驗證中心</td><td>/verification</td><td class="good">已落地</td><td class="warn">部分</td><td>多軸矩陣仍多欄未揭露</td></tr>
+        <tr><td>23</td><td>反例搜尋</td><td>/verification/falsify</td><td class="good">已落地</td><td class="warn">部分</td><td>反例空間與邊界條件未揭露</td></tr>
+        <tr><td>24</td><td>逆向推導</td><td>/verification/inverse</td><td class="good">已落地</td><td class="warn">部分</td><td>inverse solver 尚未交付</td></tr>
+        <tr><td>25</td><td>形式化證明</td><td>/verification/proof</td><td class="good">已落地</td><td class="warn">部分</td><td>proof/checker 後端未完成</td></tr>
+        <tr><td>26</td><td>證據關聯圖</td><td>/verification/graph</td><td class="good">已落地</td><td class="warn">部分</td><td>graph 仍多靠推導</td></tr>
+        <tr><td>27</td><td>知識庫</td><td>/memory</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>無專屬知識庫端點</td></tr>
+        <tr><td>28</td><td>研究經驗</td><td>/memory/experience</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>無經驗庫後端</td></tr>
+        <tr><td>29</td><td>失敗案例</td><td>/memory/failure</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>失敗知識主體未做</td></tr>
+        <tr><td>30</td><td>假設恢復</td><td>/memory/recovery</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>HRR 未做</td></tr>
+        <tr><td>31</td><td>知識演化</td><td>/memory/evolution</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>演化主體未做</td></tr>
+        <tr><td>32</td><td>Ollama 模型管理</td><td>/models</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>無模型 registry</td></tr>
+        <tr><td>33</td><td>模型路由</td><td>/models/routing</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>無路由策略端點</td></tr>
+        <tr><td>34</td><td>模型能力評估</td><td>/models/evaluation</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>無 benchmark/score 端點</td></tr>
+        <tr><td>35</td><td>Token 與儲存</td><td>/models/storage</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>無 token/storage 端點</td></tr>
+        <tr><td>36</td><td>訓練資料集</td><td>/training</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>無 training dataset 後端</td></tr>
+        <tr><td>37</td><td>微調任務</td><td>/training/finetune</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>無 finetune / LoRA 後端</td></tr>
+        <tr><td>38</td><td>模型版本發布</td><td>/training/release</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>無 release 後端</td></tr>
+        <tr><td>39</td><td>系統與安全設定</td><td>/settings</td><td class="good">已落地</td><td class="bad">缺端點/缺模組</td><td>無角色/金鑰/MFA/加密治理端點</td></tr>
+        <tr><td>40</td><td>研究策略設定</td><td>/settings/research</td><td class="good">已落地</td><td class="warn">部分</td><td>只投影已有 research version 固定欄位</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Ollama / AI / 記憶 / 訓練 全功能總表</h2>
+    <table>
+      <thead>
+        <tr><th>功能</th><th>前端</th><th>後端</th><th>驗收</th><th>判定</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>LLM Gateway 結構化提案 schema</td><td class="warn">模型頁相關</td><td class="bad">未開工</td><td>NOT_RUN</td><td>規格有，後端沒有</td></tr>
+        <tr><td>Ollama 本地提案</td><td class="good">模型頁存在</td><td class="bad">未開工</td><td>NOT_RUN</td><td>尚未接線</td></tr>
+        <tr><td>ChatGPT / 外部 adapter</td><td class="warn">無專頁</td><td class="bad">未開工</td><td>NOT_RUN / BLOCKED</td><td>D-04 未關前停用</td></tr>
+        <tr><td>模型路由</td><td class="good">/models/routing</td><td class="bad">缺端點/缺模組</td><td>NOT_RUN</td><td>前端有頁，後端無路由器</td></tr>
+        <tr><td>JSON schema 驗證</td><td class="warn">無專頁</td><td class="bad">未開工</td><td>NOT_RUN</td><td>未接線</td></tr>
+        <tr><td>token 預算 / 速率限制 / 退避</td><td class="good">/models/storage</td><td class="bad">缺端點/缺模組</td><td>NOT_RUN</td><td>規格有，後端無</td></tr>
+        <tr><td>本地模型池 capability 篩選</td><td class="good">/models</td><td class="bad">缺端點/缺模組</td><td>NOT_RUN</td><td>無 registry</td></tr>
+        <tr><td>AIRuntimeRecord</td><td class="warn">無專頁</td><td class="bad">未開工</td><td>NOT_RUN</td><td>核心缺失</td></tr>
+        <tr><td>thinking / stream / usage 對帳</td><td class="warn">模型頁只做 budget 推導</td><td class="bad">未開工</td><td>NOT_RUN</td><td>沒有真實 AI runtime capture</td></tr>
+        <tr><td>知識庫索引</td><td class="good">/memory</td><td class="bad">缺端點/缺模組</td><td>NOT_RUN</td><td>頁面存在，後端未做</td></tr>
+        <tr><td>研究經驗庫</td><td class="good">/memory/experience</td><td class="bad">缺端點/缺模組</td><td>NOT_RUN</td><td>頁面存在，後端未做</td></tr>
+        <tr><td>失敗案例庫</td><td class="good">/memory/failure</td><td class="bad">缺端點/缺模組</td><td>NOT_RUN</td><td>頁面存在，後端未做</td></tr>
+        <tr><td>假設恢復 HRR</td><td class="good">/memory/recovery</td><td class="bad">未開工</td><td>NOT_RUN</td><td>核心未做</td></tr>
+        <tr><td>知識演化圖</td><td class="good">/memory/evolution</td><td class="bad">缺端點/缺模組</td><td>NOT_RUN</td><td>主體未做</td></tr>
+        <tr><td>ExperienceVersion</td><td class="warn">無完整專頁</td><td class="bad">未開工</td><td>NOT_RUN</td><td>未做</td></tr>
+        <tr><td>TrainingDatasetManifest</td><td class="good">/training</td><td class="bad">缺端點/缺模組</td><td>NOT_RUN</td><td>未做</td></tr>
+        <tr><td>finetune / LoRA 任務</td><td class="good">/training/finetune</td><td class="bad">缺端點/缺模組</td><td>NOT_RUN</td><td>未做</td></tr>
+        <tr><td>LearningRelease / canary / rollback</td><td class="good">/training/release</td><td class="bad">缺端點/缺模組</td><td>NOT_RUN</td><td>未做</td></tr>
+        <tr><td>paired A/B / negative transfer / calibration</td><td class="warn">無</td><td class="bad">未開工</td><td>NOT_RUN</td><td>未做</td></tr>
+      </tbody>
+    </table>
+
+    <h2>最不完整的區塊</h2>
+    <div class="panel">
+      <ol>
+        <li>M4：記憶、AI Gateway、Ollama、AIRuntimeRecord、archive、HRR</li>
+        <li>M5：proof、checker、多路徑驗證、inverse problem</li>
+        <li>M6：雙序列、多維、時滯、2D/3D、conditional inverse</li>
+        <li>M7：多序列、state reconstruction、training、release、rollback</li>
+        <li>M2 缺口：FIT 執行管線</li>
+        <li>M3 缺口：E2E、資安、壓測、備份還原</li>
+      </ol>
+    </div>
+
+    <h2>關於 Ollama 有沒有做</h2>
+    <div class="panel">
+      <ul>
+        <li><strong>規格有，而且很多</strong></li>
+        <li><strong>前端 32~35 頁真頁都有</strong></li>
+        <li><strong>但後端真正的 Ollama / model registry / routing / runtime capture / training 幾乎都還沒有完成</strong></li>
+      </ul>
+      <p>換句話說，現在是「模型管理畫面存在」，不是「Ollama 後端能力已完整交付」。</p>
+    </div>
+
+    <h2>最終判定</h2>
+    <div class="panel">
+      <ul>
+        <li>這份已經是<strong>全產品功能總表</strong>，不只是階段級摘要。</li>
+        <li>完整產品功能遠多於目前已完成部分，尤其 <strong>M4~M7</strong> 還有大量未實作能力。</li>
+        <li>目前比較準的說法是：<strong>M1~M3 主幹做出來了，但關鍵缺口仍在；M4~M7 規格完整，但實作大多未開始。</strong></li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
