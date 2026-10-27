@@ -7,7 +7,7 @@ local tenant named by AXIOM_BOOTSTRAP_TENANT, so the human and the agent see the
 Without a configured account list the command writes nothing and reports SKIPPED."""
 import json
 import os
-from typing import Any
+from typing import Any, cast
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -37,23 +37,26 @@ def configured_accounts() -> list[tuple[str, str]]:
         raise CommandError(f"{ACCOUNTS_VARIABLE} must be a JSON array") from error
     if not isinstance(decoded, list) or not decoded:
         raise CommandError(f"{ACCOUNTS_VARIABLE} must be a non-empty JSON array")
+    entries = cast(list[object], decoded)
     accounts: list[tuple[str, str]] = []
     seen: set[str] = set()
-    for entry in decoded:
+    for entry in entries:
         if not isinstance(entry, dict):
             raise CommandError("Each bootstrap account must be a JSON object")
-        fields = {str(key): value for key, value in entry.items()}
+        fields = cast(dict[str, object], entry)
         if set(fields) != {"user", "password"}:
             raise CommandError("Each bootstrap account must contain exactly user and password")
-        username, password = fields["user"], fields["password"]
+        username = fields["user"]
+        password = fields["password"]
         if not isinstance(username, str) or not username.strip():
             raise CommandError("Bootstrap username must be a non-empty string")
         if not isinstance(password, str) or len(password) < MINIMUM_PASSWORD_LENGTH:
             raise CommandError(f"Bootstrap password must be at least {MINIMUM_PASSWORD_LENGTH} characters")
-        if username.strip() in seen:
+        normalized_username = username.strip()
+        if normalized_username in seen:
             raise CommandError("Duplicate bootstrap username")
-        seen.add(username.strip())
-        accounts.append((username.strip(), password))
+        seen.add(normalized_username)
+        accounts.append((normalized_username, password))
     return accounts
 
 
