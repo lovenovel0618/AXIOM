@@ -256,6 +256,8 @@ def _start_attempt(run: RuntimeRun, worker_id: str, now: datetime, epoch: int) -
         record["phase"] = "PROFILING"
     elif record["type"] == "SEARCH":
         record["phase"] = "SEARCHING"
+    elif record["type"] == "FIT":
+        record["phase"] = "FITTING"
     record["revision"] += 1
     if run.first_started_at is None:
         run.first_started_at = now

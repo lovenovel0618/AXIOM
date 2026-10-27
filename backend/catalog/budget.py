@@ -128,7 +128,7 @@ def settle_locked(run: RuntimeRun, research: ResearchBudget, root: RootBudget, s
     for resource,counter in CUMULATIVE.items():
         held[resource] = max(0,requested[resource]-usage[counter])
     loan.held = dict(held)
-    if stopped and run.document["type"] == "SEARCH" and run.document["is_root"]:
+    if stopped and run.document["type"] in {"SEARCH", "FIT"} and run.document["is_root"]:
         stopped = run.document["status"] in {"SUCCEEDED", "FAILED", "CANCELLED", "CANCEL_REQUESTED"} and not RuntimeAttempt.objects.filter(run=run).exclude(pk__in=SearchAttemptStop.objects.values("attempt_id")).exists()
     if stopped or loan.state=="RELEASED":
         loan.held = dict.fromkeys(loan.requested,0)
@@ -207,7 +207,7 @@ def release_unstarted(run: RuntimeRun) -> None:
     root = RootBudget.objects.get(run=run)
     research = ResearchBudget.objects.select_for_update().get(pk=root.research_budget_id)
     root = RootBudget.objects.select_for_update().get(pk=root.id)
-    known_stopped = (run.document["type"] == "SEARCH" and run.document["status"] in {"SUCCEEDED", "FAILED", "CANCELLED"}
+    known_stopped = (run.document["type"] in {"SEARCH", "FIT"} and run.document["status"] in {"SUCCEEDED", "FAILED", "CANCELLED"}
         and not RuntimeAttempt.objects.filter(run=run).exclude(pk__in=SearchAttemptStop.objects.values("attempt_id")).exists())
     if run.first_started_at is None or known_stopped:
         settle_locked(run,research,root,True)

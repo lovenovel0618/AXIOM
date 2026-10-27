@@ -21,7 +21,7 @@ def finish(lease: Lease, usage: object, commit: Callable[[], None], failure: Cal
         attempt = validate_lease(run, lease, now)
         limit = read_limit(snapshot_for(run).budget["limit"])
         effective = dict(usage)
-        if run.document["type"] == "SEARCH":
+        if run.document["type"] in {"SEARCH", "FIT"}:
             previous = read_usage(attempt.document["actual_usage"])
             total = read_usage(run.document["budget_usage"])
             effective = {key: max(total[key], usage[key]) if key == "peak_memory_bytes" else total[key] - previous[key] + usage[key] for key in USAGE_KEYS}
@@ -62,7 +62,7 @@ def confirm_business_stopped(lease: Lease, usage: object) -> bool:
         now = db_now()
         attempt.document.update(status="CANCELLED", finished_at=now.isoformat(), actual_usage=usage, usage_sequence=max(1, attempt.document["usage_sequence"]))
         run.document.update(status="CANCELLED", stop_reason="USER_CANCELLED", dispatch_stage="CLOSED",
-            budget_usage=run.document["budget_usage"] if run.document["type"] == "SEARCH" else usage)
+            budget_usage=run.document["budget_usage"] if run.document["type"] in {"SEARCH", "FIT"} else usage)
         run.document["revision"] += 1
         save_attempt(attempt)
         state_event(run, "RunCancelled", now)
