@@ -134,7 +134,7 @@
       <div class="card"><h3>SSOT 真頁</h3><div class="big">40 頁</div><div>Vue route / view 全部存在</div></div>
       <div class="card"><h3>Ollama / AI</h3><div class="big">規格有</div><div>頁面有，但後端主體尚未完成</div></div>
       <div class="card"><h3>訓練 / 發布</h3><div class="big">頁面有</div><div>training / finetune / release 後端缺失</div></div>
-      <div class="card"><h3>M1~M3</h3><div class="big">主幹已成形</div><div>FIT 執行鏈、40 頁逐頁驗收、完整 E2E、資安隔離與壓測量測已補；仍缺備份還原</div></div>
+      <div class="card"><h3>M1~M3</h3><div class="big">主幹已成形</div><div>FIT 執行鏈、40 頁逐頁驗收、完整 E2E、資安隔離、壓測量測與備份／故障復原演練已補；仍缺正式 RPO／RTO 與版面細節人工比對</div></div>
       <div class="card"><h3>M4~M7</h3><div class="big">多未開工</div><div>記憶、AI、proof、多序列、訓練是大缺口</div></div>
     </div>
 
@@ -159,7 +159,7 @@
         <tr><td>REQ-013</td><td>多軸正確性 / 正逆 / 多路徑</td><td>M1→M5~M7</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>只有最小證據基線</td></tr>
         <tr><td>REQ-014</td><td>AI 紀錄封存與模型演化</td><td>M4 / M7</td><td class="bad">未開工</td><td class="warn">頁面存在</td><td>NOT_RUN</td><td>capture / archive / training 未做</td></tr>
         <tr><td>NFR-001</td><td>效能延遲與吞吐</td><td>M1~M3</td><td class="warn">部分</td><td>-</td><td>NOT_RUN</td><td>2026-10-28 已交 <code>manage.py perf_smoke</code>：20 並發閉環 600 單位量測列表查詢／上傳／研究提交與冪等重播延遲、SSE 進度延遲、佇列等待與背景吞吐；協定未達 AX-45（單機、無預熱、僅 1 次）且 D-06 未凍結門檻，產品判定維持 NOT_RUN</td></tr>
-        <tr><td>NFR-002</td><td>可靠度與故障復原</td><td>M1~M3</td><td class="warn">部分</td><td>-</td><td>NOT_RUN</td><td>備份還原與恢復演練未完成</td></tr>
+        <tr><td>NFR-002</td><td>可靠度與故障復原</td><td>M1~M3</td><td class="warn">部分</td><td>-</td><td>NOT_RUN</td><td>2026-10-28 已交 <code>manage.py restore_smoke</code> 與 <code>catalog/backup.py</code>：一致集 BackupSet、物件逐件驗讀回與全 manifest 校驗（362 物件、0 unreadable）、AC-27-01～04 演練（缺件注入、刪除帳本重播、DB 帳本派送重建、凍結重跑）；AC-27-05～07 與正式 RPO／RTO（D-05／D-06）未完成，<code>g7_status</code> 固定 BLOCKED</td></tr>
         <tr><td>NFR-003</td><td>安全與租戶隔離</td><td>M1~M3</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>2026-10-28 已交 <code>manage.py security_smoke</code>：跨租戶／SEALED_DETAIL／cursor／SSE 隔離矩陣（AC-26-01／03 PASS、07 PARTIAL）；AC-26-02／04 屬 M4、05／06 需服務憑證，產品驗收維持 NOT_RUN</td></tr>
         <tr><td>NFR-004</td><td>成本與預算治理</td><td>M2</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>帳本有，正式上限未完</td></tr>
         <tr><td>NFR-005</td><td>可及性與前端體驗</td><td>M3</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>40 頁逐頁驗收已交（含全繁中標籤防線），完整 UX 驗收未跑</td></tr>
@@ -279,7 +279,7 @@
         <li>M6：雙序列、多維、時滯、2D/3D、conditional inverse</li>
         <li>M7：多序列、state reconstruction、training、release、rollback</li>
         <li>M2 缺口：refit policy 與正式產品 Gate（FIT 執行鏈已於 2026-10-28 交付）</li>
-        <li>M3 缺口：備份還原與 40 頁版面細節人工比對（40 頁逐頁驗收、完整端到端 E2E、資安隔離驗收與非功能壓測量測已於 2026-10-28 交付）</li>
+        <li>M3 缺口：40 頁版面細節人工比對（40 頁逐頁驗收、完整端到端 E2E、資安隔離驗收、非功能壓測量測與備份／故障復原演練已於 2026-10-28 交付）</li>
       </ol>
     </div>
 

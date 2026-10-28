@@ -78,7 +78,7 @@
 | REQ-013 | 多軸正確性 / 正逆 / 多路徑 | M1→M5~M7 | 已定義 | 部分 | 部分 | NOT_RUN | 只有最小證據基線 |
 | REQ-014 | AI 紀錄封存與模型演化 | M4 / M7 | 已定義 | 未開工 | 頁面存在但後端無 | NOT_RUN | capture / archive / training 未做 |
 | NFR-001 | 效能延遲與吞吐 | M1~M3 | 已定義 | 部分 | 不適用 | NOT_RUN | 2026-10-28 已交 `manage.py perf_smoke`：20 並發閉環 600 單位量測列表查詢／上傳／研究提交與冪等重播延遲、SSE 進度延遲、佇列等待與背景吞吐（附環境指紋／資料 hash／腳本版本／並發模型，循證見 `docs/技術文件/M0/t07-m3-perf-smoke.json`）；協定未達 AX-45（單機、無預熱、僅 1 次）且 D-06 未凍結錯誤率門檻與量測窗口，產品判定維持 NOT_RUN |
-| NFR-002 | 可靠度與故障復原 | M1~M3 | 已定義 | 部分 | 不適用 | NOT_RUN | 備份還原與恢復演練未完成 |
+| NFR-002 | 可靠度與故障復原 | M1~M3 | 已定義 | 部分 | 不適用 | NOT_RUN | 2026-10-28 已交 `manage.py restore_smoke` 與 `catalog/backup.py`：受控維護窗單一唯讀一致交易的一致集 BackupSet、物件逐件驗讀回與全 manifest 校驗（362 物件、0 unreadable）、AC-27-01 缺件注入、AC-27-02 刪除帳本重播、AC-27-03 DB 帳本派送重建、AC-27-04 凍結 BackupSet 重跑（循證見 `docs/技術文件/M0/t07-m3-restore-smoke.json`）；AC-27-05～07 與正式 RPO／RTO／異地／保留（D-05／D-06）未完成，產品判定維持 NOT_RUN、`g7_status` 固定 BLOCKED |
 | NFR-003 | 安全與租戶隔離 | M1~M3 | 已定義 | 部分 | 部分 | NOT_RUN | 2026-10-28 已交 `manage.py security_smoke`：跨租戶／SEALED_DETAIL／cursor／SSE 隔離矩陣（AC-26-01／03 PASS、07 PARTIAL）；AC-26-02／04 屬 M4、05／06 需服務憑證，產品驗收維持 NOT_RUN |
 | NFR-004 | 成本與預算治理 | M2 | 已定義 | 部分 | 部分 | NOT_RUN | 帳本有，coverage 與正式上限未完 |
 | NFR-005 | 可及性與前端體驗 | M3 | 已定義 | 部分 | 部分 | NOT_RUN | 40 頁逐頁驗收已交（含全繁中標籤防線），完整 UX 驗收未跑 |
@@ -216,7 +216,7 @@
 3. `M6`：雙序列、多維、時滯、2D/3D、conditional inverse
 4. `M7`：多序列、state reconstruction、training、release、rollback
 5. `M2` 剩餘缺口：`refit policy` 與正式產品 Gate（FIT 執行鏈已於 2026-10-28 交付）
-6. `M3` 剩餘缺口：備份還原與 40 頁版面細節人工比對（40 頁逐頁驗收、完整端到端 E2E、資安隔離驗收與非功能壓測量測已於 2026-10-28 交付）
+6. `M3` 剩餘缺口：40 頁版面細節人工比對（40 頁逐頁驗收、完整端到端 E2E、資安隔離驗收、非功能壓測量測與備份／故障復原演練已於 2026-10-28 交付）
 
 ## F. 關於「Ollama 有沒有做」
 

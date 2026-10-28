@@ -1,0 +1,149 @@
+{
+  "scope": "M3_RESTORE_DRILL",
+  "status": "PASS",
+  "via_frontend": false,
+  "command": "docker compose -p axiom-dev exec -T web python manage.py restore_smoke [--frontend]",
+  "spec": "docs/企劃案/09-非功能/27-可觀測性備份與故障復原.md (AX-27, AC-27-01..07)",
+  "backup_set": {
+    "backup_set_id": "9c7d19f3-ea4d-44dc-80f1-610add3f5b5b",
+    "backup_set_version": "1.0",
+    "directory": "/var/lib/axiom/backups/9c7d19f3-ea4d-44dc-80f1-610add3f5b5b",
+    "storage_location": "/var/lib/axiom/backups",
+    "dsl_version": "dsl-v1/1.0",
+    "app_version": "80d06e113ea9d917205d342a43df47c48cb6d62d2a221bcc36cea5ba13e0fbd7",
+    "migration_count": 59,
+    "wal_lsn": "1/56205E10",
+    "secret_key_version": "a78ba2e16c7adf63",
+    "object_count": 362,
+    "object_digest": "7f348533faccbb8b4285ca6bf92934cd3feae5b2439ec7964c9f12333db49d9a",
+    "outbox_high_water": {
+      "digest": "1ff42826db8009fef1a3c0beb0895556f7d5473117bc40d6f25268cf7ec52889",
+      "events": 1327,
+      "runs": 629
+    },
+    "deletion_ledger_high_water": {
+      "digest": "e856ce3ea4507b873f740a2b3c1bfc1854c4e657e34e55f54005a0968bb689d7",
+      "requests": 4,
+      "targets": 32,
+      "tombstones": 32
+    },
+    "exposure_ledger_high_water": {
+      "reason": "web 身分沒有 journal socket 與 token；依 Fail-Closed 不推測曝光高水位",
+      "status": "未取得"
+    },
+    "authoritative_counts": {
+      "artifacts": 1106,
+      "dataset_versions": 77,
+      "deletion_requests": 4,
+      "deletion_targets": 32,
+      "equation_versions": 276,
+      "evidence_bundles": 67,
+      "evidence_bundles_active": 67,
+      "research_versions": 73,
+      "stored_objects": 362,
+      "tombstones": 32,
+      "validation_runs": 268
+    }
+  },
+  "object_verification": {
+    "checked": 362,
+    "unreadable_count": 0,
+    "ok": true,
+    "unreadable": []
+  },
+  "fault_injection": {
+    "detached_version": "854a9709ce5e439fa0fdb7e58130d94c",
+    "detected": true,
+    "degraded": {
+      "checked": 362,
+      "unreadable_count": 1,
+      "ok": false,
+      "unreadable": [
+        "854a9709ce5e439fa0fdb7e58130d94c"
+      ]
+    },
+    "recovered_ok": true,
+    "writes_reopened": false,
+    "writes_reopened_reason": "線上停寫閘門未實作，演練只證明缺件被偵測且未宣告可還原"
+  },
+  "deletion_ledger_replay": {
+    "deletion_request_id": "bb97df87-9ab5-4aa0-80cc-19cda82cba43",
+    "status": "BLOCKED",
+    "policy_status": "BLOCKED",
+    "blocked_code": "FEATURE_DISABLED",
+    "target_count": 8,
+    "tombstones_before": 32,
+    "tombstones_after": 40,
+    "idempotent_replay": true,
+    "artifact_http_after_replay": 409,
+    "evidence_bundle_http_after_replay": 404
+  },
+  "dispatch_reconstruction": {
+    "runs": 629,
+    "terminal": 629,
+    "unfinished": 0,
+    "event_chain_consistent": true,
+    "inconsistent_count": 0,
+    "inconsistent": []
+  },
+  "measurements": {
+    "maintenance_capture_seconds": 0.046,
+    "consistent_set_build_seconds": 0.052,
+    "restore_verification_seconds": 0.015,
+    "objects_verified": 362,
+    "measured_rpo_seconds": null,
+    "measured_rpo_reason": "本機演練未啟用線上停寫閘門，維護窗未實際禁止寫入，依 Fail-Closed 不宣稱 RPO",
+    "measured_rto_seconds": null,
+    "measured_rto_reason": "環境沒有 pg_dump／pg_restore 且不得對執行中環境直接還原，未執行完整 DB 還原"
+  },
+  "retention": {
+    "completed_sets_kept": null,
+    "reason": "保留與敏感資料期限屬 D-06，未凍結前不設定承諾值"
+  },
+  "identity_model": {
+    "drill_tenant": "6424fbef-a0ba-4a18-b62e-4b8ce8dc066c",
+    "source_research_version_id": "69472c8a-9667-4aa7-a101-6cb08b967b7e"
+  },
+  "acceptance_cases": [
+    {
+      "id": "AC-27-01",
+      "status": "PARTIAL",
+      "scope": "DB 引用物件缺失已實測可偵測且不宣告可還原；線上停寫閘門尚未實作，故「保持寫入關閉」只有離線證據"
+    },
+    {
+      "id": "AC-27-02",
+      "status": "PASS",
+      "scope": "較早快照加上重播刪除帳本後，已宣告的來源與衍生產物仍不可查"
+    },
+    {
+      "id": "AC-27-03",
+      "status": "PARTIAL",
+      "scope": "派送狀態可只由 DB 重建、刪除宣告冪等重放不產生第二次副作用；未實際毀損 Redis"
+    },
+    {
+      "id": "AC-27-04",
+      "status": "PARTIAL",
+      "scope": "凍結 BackupSet 重跑的來源 hash 不變；正式 RPO／RTO 未取得（D-06 未凍結）"
+    },
+    {
+      "id": "AC-27-05",
+      "status": "NOT_RUN",
+      "scope": "需獨立曝光帳本對帳與最終標籤消耗；本切片不觸及"
+    },
+    {
+      "id": "AC-27-06",
+      "status": "NOT_RUN",
+      "scope": "需 journal 缺段／水位未知／金鑰缺失的隔離判定；本切片不觸及"
+    },
+    {
+      "id": "AC-27-07",
+      "status": "NOT_RUN",
+      "scope": "需曝光已記但 DB 提交失敗的保守 tombstone；本切片不觸及"
+    }
+  ],
+  "g7_status": "BLOCKED",
+  "nfr_002_status": "NOT_RUN",
+  "g7_reason": "D-05／D-06 未關閉保留政策與 RPO／RTO，G7 維持 BLOCKED，本命令只出量測與演練證據",
+  "account_tenant": "6424fbef-a0ba-4a18-b62e-4b8ce8dc066c",
+  "product_gate_status": "NOT_RUN"
+}

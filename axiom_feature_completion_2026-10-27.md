@@ -46,7 +46,7 @@
 | M0 | 100% | 未跑 | 規格、契約、基線與審查票都已具備 |
 | M1 | 75% | 未跑 | 可信核心與多數 T07 前置已落地，但 M1 仍未關閉 |
 | M2 | 85% | 部分 / 阻擋 | 三策略、checkpoint、凍結 API、FIT 執行鏈與隔離驗證已交；正式產品 Gate 仍受阻 |
-| M3 | 85% | 部分 | 工作台已大量落地，40 頁 SSOT 已逐頁驗收、完整端到端 E2E、資安隔離驗收與非功能壓測量測已交付（2026-10-28）；備份還原仍待完成 |
+| M3 | 90% | 部分 | 工作台已大量落地，40 頁 SSOT 已逐頁驗收、完整端到端 E2E、資安隔離驗收、非功能壓測量測與備份／故障復原演練已交付（2026-10-28）；正式 RPO／RTO／保留（D-06）與 40 頁版面細節人工比對仍待完成 |
 | M4 | 10% | 未跑 | 規格完整，只有少數前置基線，主體未開工 |
 | M5 | 5% | 未跑 | 只有 M1~M3 的最小證據基線，M5 主功能未開工 |
 | M6 | 0% | 未跑 | 尚未開工 |
@@ -74,7 +74,7 @@
 | 研究帳本與 PROFILE 任務 | 100% | 未跑 | 兩層預算、PROFILE、事件與收據已交 | 產品案例未跑 |
 | 正式封存與曝光帳本 | 100% | 未跑 | formal seal 與 authority 已交 | 產品案例未跑 |
 | 證據包 | 100% | 未跑 | READY 同交易證據包已交 | 產品案例未跑 |
-| 刪除傳播對外入口與異步收斂 | 75% | 部分 | dry-run、宣告、讀回、relay 收斂已交 | outbox、索引/快取實際清除、備份還原重播 |
+| 刪除傳播對外入口與異步收斂 | 75% | 部分 | dry-run、宣告、讀回、relay 收斂已交；刪除帳本重播已於 `restore_smoke` 演練驗證 | outbox、索引/快取實際清除 |
 | 最小 Trace / 決策紀錄基線 | 50% | 部分 | M1 起最小 trace chunk 與 journal 基線已規劃並部分落地 | 完整 AX-50 分級 trace 鏈、HRR、自動重審未做 |
 | M1 端到端展示 | 50% | 未跑 | 可跑局部示範：上傳→確認→研究→已知公式求值 | 文件明示 M1 仍 IN_PROGRESS |
 
@@ -112,7 +112,7 @@
 | E2E 測試 | 100% | 部分 | 2026-10-28 已交 `manage.py m3_e2e_smoke`：上傳→語意確認→研究→SEARCH→候選比較→FIT→證據檢視七階段真實鏈路，直連 1 次與 `--frontend` 4 次全 PASS，前端跨頁鏈路測試亦全綠，並附[循證](<docs/技術文件/M0/t07-m3-e2e-smoke.json>) | 僅待正式產品驗收 |
 | 資安驗證 | 65% | 部分 | 2026-10-28 已交 `manage.py security_smoke`（直連與 `--frontend` 各 29 條探針全 PASS）：15 條跨租戶探針全 404、簽章 cursor 跨身分重播 400 `INVALID_CURSOR`、SEALED_DETAIL metadata／content 對 owner／peer／foreign 全 404（同 tenant PROJECT 可讀為對照）、run／research events 每次重驗權、Run 投影不含受限引用，並附[循證](<docs/技術文件/M0/t07-m3-security-smoke.json>) | AC-26-02／04 屬 M4、AC-26-05／06 需 app 層服務憑證，明列 NOT_RUN；G5 仍不宣告通過 |
 | 壓測 | 60% | 部分 | 2026-10-28 已交 `manage.py perf_smoke`（直連與 `--frontend` 各 1 次全 PASS）：20 並發閉環 600 單位（80% 輕查詢／15% 上傳／5% 研究提交），量測列表查詢／上傳／研究提交與冪等重播延遲、SSE 進度延遲、佇列等待、背景吞吐與冷熱分流，並附環境指紋／資料 hash／腳本版本／並發模型，循證見 [t07-m3-perf-smoke](<docs/技術文件/M0/t07-m3-perf-smoke.json>)；`slo_verdict`／`nfr_001_status` 固定 NOT_RUN、`g7_status` 固定 BLOCKED | 協定未達 AX-45（單機、無 5 分鐘預熱、僅 1 次執行）；D-06 未凍結錯誤率門檻與量測窗口，容量上限未定 |
-| 備份 / 還原驗收 | 0% | 未跑 / 阻擋 | 文件明示仍待補，且受 D-06 影響 | BackupSet、恢復演練、journal 重播 |
+| 備份 / 還原驗收 | 70% | 部分 / 阻擋 | 2026-10-28 已交 `manage.py restore_smoke` 與 `catalog/backup.py`：受控維護窗以單一唯讀一致交易建立一致集 BackupSet、物件逐件 `read_verified()` 與全 manifest 校驗（362 物件、0 unreadable）、AC-27-01 缺件注入、AC-27-02 刪除帳本重播（`PROJECT` 200→409、證據包 404、tombstone 32→40）、AC-27-03 Redis 全毀情境 DB 帳本派送重建（629/629/0）、AC-27-04 凍結 BackupSet 重跑，直連與 `--frontend` 各 1 次全 PASS，循證見 [t07-m3-restore-smoke](<docs/技術文件/M0/t07-m3-restore-smoke.json>)；`g7_status` 固定 `BLOCKED`、`nfr_002_status` 固定 `NOT_RUN` | AC-27-05～07（不可逆曝光、journal 對帳與服務身分）與正式 RPO／RTO／異地／保留（D-05／D-06） |
 
 ## M4：記憶、AI 與 REQ-011~014 擴充
 
@@ -180,14 +180,14 @@ M4 在文件中的總狀態是「未開工」，但它包含很多獨立功能�
 | G2 數學 Gate | 0% | 阻擋 | D-03 未關，正式 Gate 不可宣告通過 |
 | G3 AI / 記憶 Gate | 0% | 未跑 | M4 後能力尚未開工 |
 | G5 安全 Gate | 65% | 部分 | 2026-10-28 已交 `manage.py security_smoke` 跨租戶／SEALED_DETAIL／cursor／SSE 隔離驗收（AC-26-01／03 PASS、07 PARTIAL）；AC-26-02／04 屬 M4、05／06 需服務憑證，Gate 仍不宣告通過 |
-| G7 營運 Gate | 40% | 部分 / 阻擋 | 2026-10-28 已交 `manage.py perf_smoke` 非功能壓測量測（`slo_verdict`／`nfr_001_status` 固定 `NOT_RUN`、`g7_status` 固定 `BLOCKED`）；備份還原與 D-06 尚未完成 |
+| G7 營運 Gate | 55% | 部分 / 阻擋 | 2026-10-28 已交 `manage.py perf_smoke` 非功能壓測量測與 `manage.py restore_smoke` 備份／故障復原演練（`slo_verdict`／`nfr_001_status`／`nfr_002_status` 固定 `NOT_RUN`、`g7_status` 固定 `BLOCKED`）；正式 RPO／RTO 與 D-06 尚未完成 |
 | 容量 / 壓測 / SLO | 55% | 部分 | Sonar 已清零、coverage 報告已接線、壓測量測命令已交付並附循證；正式容量上限、SLO 判準與 D-06 量測窗口未定 |
 
 ## 目前最接近「下一步就能做」的未完成功能
 
 這些不是遠期規格，而是文件明示可逆開發、但尚未完成的項目：
 
-1. `M3` 的備份還原 / 40 頁版面細節人工比對（端到端 E2E、資安與壓測量測已於 2026-10-28 交付）
+1. `M3` 的 40 頁版面細節人工比對（端到端 E2E、資安、壓測量測與備份／故障復原演練已於 2026-10-28 交付）
 2. coverage 報告接線與 `tests.test_coverage_reports` 已於 2026-10-28 補上；續驗 Sonar 伺服器匯入與正式 new_coverage 門檻
 3. 刪除傳播最後一段 outbox + 索引/快取實際清除  
 4. `refit policy` 於語意確認的明確拒絕仍未開放  

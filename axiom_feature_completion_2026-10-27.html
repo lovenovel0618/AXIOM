@@ -145,7 +145,7 @@
       <div class="card"><h3>M0</h3><div class="percent">100%</div><div>規格、契約、基線與審查票齊備</div></div>
       <div class="card"><h3>M1</h3><div class="percent">75%</div><div>可信核心已大量落地，但 M1 未關閉</div></div>
       <div class="card"><h3>M2</h3><div class="percent">85%</div><div>三策略、凍結、FIT 執行鏈與隔離驗證已交；正式 Gate 未完</div></div>
-      <div class="card"><h3>M3</h3><div class="percent">85%</div><div>工作台已成形，40 頁 SSOT 已逐頁驗收、完整 E2E、資安隔離與壓測量測已交付；備份還原未完</div></div>
+      <div class="card"><h3>M3</h3><div class="percent">90%</div><div>工作台已成形，40 頁 SSOT 已逐頁驗收、完整 E2E、資安隔離、壓測量測與備份／故障復原演練已交付；正式 RPO／RTO 與版面細節人工比對未完</div></div>
       <div class="card"><h3>M4</h3><div class="percent">10%</div><div>只有前置基線，主體未開工</div></div>
       <div class="card"><h3>M5</h3><div class="percent">5%</div><div>只有證據基線，M5 主功能未開工</div></div>
       <div class="card"><h3>M6</h3><div class="percent">0%</div><div>尚未開工</div></div>
@@ -166,7 +166,7 @@
         <tr><td>研究帳本與 PROFILE 任務</td><td class="status-good">100%</td><td>未跑</td><td>兩層預算與 PROFILE 已交</td><td>產品案例未跑</td></tr>
         <tr><td>正式封存與曝光帳本</td><td class="status-good">100%</td><td>未跑</td><td>formal seal 與 authority 已交</td><td>產品案例未跑</td></tr>
         <tr><td>證據包</td><td class="status-good">100%</td><td>未跑</td><td>READY 同交易證據包已交</td><td>產品案例未跑</td></tr>
-        <tr><td>刪除傳播對外入口與異步收斂</td><td class="status-warn">75%</td><td>部分</td><td>dry-run、宣告、讀回、relay 收斂已交</td><td>outbox、索引/快取清除、備份還原重播</td></tr>
+        <tr><td>刪除傳播對外入口與異步收斂</td><td class="status-warn">75%</td><td>部分</td><td>dry-run、宣告、讀回、relay 收斂已交；刪除帳本重播已於 <code>restore_smoke</code> 演練驗證</td><td>outbox、索引/快取清除</td></tr>
         <tr><td>最小 Trace / 決策紀錄基線</td><td class="status-warn">50%</td><td>部分</td><td>有最小 trace/journal 基線</td><td>AX-50 分級 trace 鏈、HRR、自動重審</td></tr>
         <tr><td>M1 端到端展示</td><td class="status-warn">50%</td><td>未跑</td><td>可跑局部示範流程</td><td>文件明示 M1 仍 IN_PROGRESS</td></tr>
       </tbody>
@@ -205,7 +205,7 @@
         <tr><td>E2E 測試</td><td class="status-good">100%</td><td>部分</td><td>2026-10-28 已交 <code>manage.py m3_e2e_smoke</code>：上傳→語意確認→研究→SEARCH→候選比較→FIT→證據檢視七階段真實鏈路，直連 1 次與 <code>--frontend</code> 4 次全 PASS，前端跨頁鏈路測試亦全綠並附循證</td><td>僅待正式產品驗收</td></tr>
         <tr><td>資安驗證</td><td class="status-warn">65%</td><td>部分</td><td>2026-10-28 已交 <code>manage.py security_smoke</code>（直連與 <code>--frontend</code> 各 29 條探針全 PASS）：15 條跨租戶探針全 404、簽章 cursor 跨身分重播 400 <code>INVALID_CURSOR</code>、SEALED_DETAIL metadata／content 對 owner／peer／foreign 全 404（同 tenant PROJECT 可讀為對照）、run／research events 每次重驗權、Run 投影不含受限引用</td><td>AC-26-02／04 屬 M4、05／06 需服務憑證，明列 NOT_RUN；G5 仍不宣告通過</td></tr>
         <tr><td>壓測</td><td class="status-warn">60%</td><td>部分</td><td>2026-10-28 已交 <code>manage.py perf_smoke</code>（直連與 <code>--frontend</code> 各 1 次全 PASS）：20 並發閉環 600 單位（80% 輕查詢／15% 上傳／5% 研究提交），量測列表查詢／上傳／研究提交與冪等重播延遲、SSE 進度延遲、佇列等待、背景吞吐與冷熱分流，並附環境指紋／資料 hash／腳本版本／並發模型；<code>slo_verdict</code>／<code>nfr_001_status</code> 固定 NOT_RUN、<code>g7_status</code> 固定 BLOCKED</td><td>協定未達 AX-45（單機、無預熱、僅 1 次）；D-06 未凍結錯誤率門檻與量測窗口</td></tr>
-        <tr><td>備份 / 還原驗收</td><td class="status-bad">0%</td><td>未跑 / 阻擋</td><td>文件明示仍待補</td><td>BackupSet、恢復演練、journal 重播</td></tr>
+        <tr><td>備份 / 還原驗收</td><td class="status-warn">70%</td><td>部分 / 阻擋</td><td>2026-10-28 已交 <code>manage.py restore_smoke</code> 與 <code>catalog/backup.py</code>：受控維護窗以單一唯讀一致交易建立一致集 BackupSet、物件逐件 <code>read_verified()</code> 與全 manifest 校驗（362 物件、0 unreadable）、AC-27-01 缺件注入、AC-27-02 刪除帳本重播（<code>PROJECT</code> 200→409、證據包 404、tombstone 32→40）、AC-27-03 Redis 全毀情境 DB 帳本派送重建（629/629/0）、AC-27-04 凍結 BackupSet 重跑，直連與 <code>--frontend</code> 各 1 次全 PASS；<code>g7_status</code> 固定 <code>BLOCKED</code>、<code>nfr_002_status</code> 固定 <code>NOT_RUN</code></td><td>AC-27-05～07 與正式 RPO／RTO／異地／保留（D-05／D-06）</td></tr>
       </tbody>
     </table>
 
@@ -254,7 +254,7 @@
     <h2>最接近下一步就能做的未完成項</h2>
     <div class="note">
       <ul>
-        <li>M3 的 <code>備份還原 / 40 頁版面細節人工比對</code>（完整 <code>E2E</code>、資安隔離驗收與壓測量測已於 2026-10-28 交付）</li>
+        <li>M3 的 <code>40 頁版面細節人工比對</code>（完整 <code>E2E</code>、資安隔離驗收、壓測量測與備份／故障復原演練已於 2026-10-28 交付）</li>
         <li>coverage 報告接線與 <code>tests.test_coverage_reports</code> 已於 2026-10-28 補上；續驗 Sonar 匯入與正式 new_coverage 門檻</li>
         <li>刪除傳播最後一段 outbox + 索引/快取實際清除</li>
         <li><code>refit policy</code> 於語意確認的明確拒絕仍未開放</li>
