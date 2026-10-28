@@ -134,7 +134,7 @@
       <div class="card"><h3>SSOT 真頁</h3><div class="big">40 頁</div><div>Vue route / view 全部存在</div></div>
       <div class="card"><h3>Ollama / AI</h3><div class="big">規格有</div><div>頁面有，但後端主體尚未完成</div></div>
       <div class="card"><h3>訓練 / 發布</h3><div class="big">頁面有</div><div>training / finetune / release 後端缺失</div></div>
-      <div class="card"><h3>M1~M3</h3><div class="big">主幹已成形</div><div>FIT 執行鏈已補；仍缺 E2E、資安、壓測、備份還原</div></div>
+      <div class="card"><h3>M1~M3</h3><div class="big">主幹已成形</div><div>FIT 執行鏈與 40 頁逐頁驗收已補；仍缺 E2E、資安、壓測、備份還原</div></div>
       <div class="card"><h3>M4~M7</h3><div class="big">多未開工</div><div>記憶、AI、proof、多序列、訓練是大缺口</div></div>
     </div>
 
@@ -152,7 +152,7 @@
         <tr><td>REQ-006</td><td>公式推演與證明</td><td>M5</td><td class="bad">未開工</td><td class="warn">頁面存在</td><td>NOT_RUN</td><td>proof / checker 未做</td></tr>
         <tr><td>REQ-007</td><td>雙序列關係</td><td>M6</td><td class="bad">未開工</td><td class="warn">規格頁有</td><td>NOT_RUN</td><td>尚未開工</td></tr>
         <tr><td>REQ-008</td><td>多序列研究</td><td>M7</td><td class="bad">未開工</td><td class="warn">規格頁有</td><td>NOT_RUN</td><td>尚未開工</td></tr>
-        <tr><td>REQ-009</td><td>研究工作台</td><td>M3</td><td class="warn">部分</td><td class="good">已落地</td><td>NOT_RUN</td><td>工作台主體已成形</td></tr>
+        <tr><td>REQ-009</td><td>研究工作台</td><td>M3</td><td class="warn">部分</td><td class="good">已落地</td><td>NOT_RUN</td><td>工作台主體已成形；40 頁 SSOT 已逐頁驗收</td></tr>
         <tr><td>REQ-010</td><td>可重現與版本化</td><td>M1</td><td class="good">已交付</td><td class="good">已落地</td><td>NOT_RUN</td><td>版本、Run、Artifact 主幹已有</td></tr>
         <tr><td>REQ-011</td><td>自主結構與表徵探索</td><td>M1→M4→M6/M7</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>只有 M1 結構確認基線</td></tr>
         <tr><td>REQ-012</td><td>決策軌跡與錯誤重審</td><td>M1→M4</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>只有最小 trace 基線</td></tr>
@@ -162,7 +162,7 @@
         <tr><td>NFR-002</td><td>可靠度與故障復原</td><td>M1~M3</td><td class="warn">部分</td><td>-</td><td>NOT_RUN</td><td>備份還原與恢復演練未完成</td></tr>
         <tr><td>NFR-003</td><td>安全與租戶隔離</td><td>M1~M3</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>基線有，資安驗收未完</td></tr>
         <tr><td>NFR-004</td><td>成本與預算治理</td><td>M2</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>帳本有，正式上限未完</td></tr>
-        <tr><td>NFR-005</td><td>可及性與前端體驗</td><td>M3</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>完整 UX 驗收未跑</td></tr>
+        <tr><td>NFR-005</td><td>可及性與前端體驗</td><td>M3</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN</td><td>40 頁逐頁驗收已交（含全繁中標籤防線），完整 UX 驗收未跑</td></tr>
         <tr><td>NFR-006</td><td>環境可重現性</td><td>M0</td><td class="warn">部分</td><td>-</td><td>NOT_RUN</td><td>本機基線有，正式驗收未跑</td></tr>
         <tr><td>NFR-007</td><td>資料治理與保留</td><td>M1</td><td class="warn">部分</td><td class="warn">部分</td><td>NOT_RUN / BLOCKED</td><td>D-05 未關閉</td></tr>
       </tbody>
@@ -279,7 +279,7 @@
         <li>M6：雙序列、多維、時滯、2D/3D、conditional inverse</li>
         <li>M7：多序列、state reconstruction、training、release、rollback</li>
         <li>M2 缺口：refit policy 與正式產品 Gate（FIT 執行鏈已於 2026-10-28 交付）</li>
-        <li>M3 缺口：E2E、資安、壓測、備份還原</li>
+        <li>M3 缺口：E2E、資安、壓測、備份還原（40 頁逐頁驗收已於 2026-10-28 交付）</li>
       </ol>
     </div>
 
@@ -298,7 +298,7 @@
       <ul>
         <li>這份已經是<strong>全產品功能總表</strong>，不只是階段級摘要。</li>
         <li>完整產品功能遠多於目前已完成部分，尤其 <strong>M4~M7</strong> 還有大量未實作能力。</li>
-        <li>目前比較準的說法是：<strong>M1~M3 主幹做出來了（M2 的 FIT 執行鏈與隔離驗證已於 2026-10-28 補上），但關鍵缺口與驗收仍在；M4~M7 規格完整，但實作大多未開始。</strong></li>
+        <li>目前比較準的說法是：<strong>M1~M3 主幹做出來了（M2 的 FIT 執行鏈與隔離驗證、M3 的 40 頁逐頁驗收已於 2026-10-28 補上），但關鍵缺口與驗收仍在；M4~M7 規格完整，但實作大多未開始。</strong></li>
       </ul>
     </div>
   </div>
