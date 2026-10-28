@@ -64,7 +64,7 @@ class ChainResult:
 
 def synthetic_rows(rows: int) -> bytes:
     """固定合成的觀測序列：x 落在語意域 [0,10] 內，10 列時與既有鏈路資料逐字相同。"""
-    lines = []
+    lines: list[str] = []
     for index in range(rows):
         x = index * 10 / rows
         lines.append(f"{x:g},{2 * x + 1:g}")

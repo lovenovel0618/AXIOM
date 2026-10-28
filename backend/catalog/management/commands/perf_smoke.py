@@ -17,7 +17,7 @@ import platform
 import secrets
 import threading
 import time
-from typing import Any
+from typing import Any, cast
 from uuid import uuid4
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
@@ -341,8 +341,8 @@ class Command(BaseCommand):
         series = report["series"]
         if not isinstance(series, dict):
             raise CommandError("Evidence report malformed")
-        results: dict[str, Any] = series
-        unit_total = sum(int(row["samples"]) for row in results.values() if isinstance(row, dict))
+        results = cast("dict[str, dict[str, Any]]", series)
+        unit_total = sum(int(row["samples"]) for row in results.values())
         self.stdout.write(json.dumps({
             "scope": "M3_PERFORMANCE", "status": "PASS", "via_frontend": bool(options["frontend"]),
             "environment": environment_report(rows, hashlib.sha256(content).hexdigest(), requests, concurrency),
