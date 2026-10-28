@@ -55,6 +55,9 @@ OBJECT_ROOT = Path(os.environ.get("AXIOM_OBJECT_ROOT", "/var/lib/axiom/objects")
 # raw 物件由寫入者擁有、以專用群組對 Evaluator 唯讀開放；目錄 0750、物件 0440。
 RAW_GID = int(os.environ.get("AXIOM_RAW_GID","10003"))
 
+# 備份保管位置與物件本體分開；金鑰只記指紋，永不與備份同放。
+BACKUP_ROOT = Path(os.environ.get("AXIOM_BACKUP_ROOT", "/var/lib/axiom/backups"))
+
 INGEST_ENABLED = os.environ.get("AXIOM_INGEST_ENABLED", "0") == "1"
 INGEST_LIMITS_JSON = os.environ.get("AXIOM_IMPORT_LIMITS", "")
 

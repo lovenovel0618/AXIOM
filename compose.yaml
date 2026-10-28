@@ -101,7 +101,12 @@ services:
   web:
     <<: *backend
     networks: [private, edge]
-    volumes: [object-data:/var/lib/axiom/objects]
+    environment:
+      <<: *environment
+      AXIOM_BACKUP_ROOT: /var/lib/axiom/backups
+    volumes:
+      - object-data:/var/lib/axiom/objects
+      - backup-data:/var/lib/axiom/backups
     ports: ["127.0.0.1:${AXIOM_WEB_PORT:-18000}:8000"]
     depends_on:
       migrate: {condition: service_completed_successfully}
@@ -281,6 +286,7 @@ volumes:
   postgres-data: {}
   redis-data: {}
   object-data: {}
+  backup-data: {}
   sealed-data: {}
   sealed-keys: {}
   journal-data: {}
