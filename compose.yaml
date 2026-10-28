@@ -246,6 +246,8 @@ services:
   relay:
     <<: *backend
     command: [python, manage.py, dispatch_probes]
+    # relay 在派送 FIT 前會驗證不可變來源物件，因此與其他後端服務一樣需要唯讀物件卷。
+    volumes: ["object-data:/var/lib/axiom/objects:ro"]
     depends_on:
       migrate: {condition: service_completed_successfully}
       redis: {condition: service_healthy}

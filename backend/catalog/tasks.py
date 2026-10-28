@@ -8,6 +8,7 @@ from catalog.final_evaluator import validate_tick
 from catalog.search import search_tick, recover_search
 from catalog.fit import attach as attach_fit, fit_tick, recover_fit
 from catalog.validation import ApiError
+from catalog.storage import StorageRejected
 from catalog.deletion import due as deletion_due
 from catalog.deletion import propagate
 from catalog.models import ProfileBinding
@@ -96,8 +97,8 @@ def relay_fit() -> int:
         try:
             if not attach_fit(row.tenant_id, row.id):
                 continue
-        except ApiError:
-            # 不符合來源或尚無剩額的 root 不派送；權威候選與帳本維持原狀。
+        except (ApiError, StorageRejected):
+            # 不符合來源、無剩額或來源已不可驗證的 root 不派送；權威候選與帳本維持原狀。
             continue
         recover_fit(row.tenant_id, row.id)
         row.refresh_from_db()
