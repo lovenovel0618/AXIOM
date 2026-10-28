@@ -1,0 +1,76 @@
+
+> axiom-frontend@0.0.0 typecheck
+> vue-tsc --noEmit
+
+
+> axiom-frontend@0.0.0 test
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/Users/dino/DinoProject/AXIOM/frontend[39m
+
+ [32m✓[39m tests/consoleCenter.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 200[2mms[22m[39m
+ [32m✓[39m tests/researchNodeDetails.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 282[2mms[22m[39m
+ [32m✓[39m tests/health.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 728[2mms[22m[39m
+     [33m[2m✓[22m[39m accepts a successful explicit status [33m 668[2mms[22m[39m
+ [32m✓[39m tests/client.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 943[2mms[22m[39m
+     [33m[2m✓[22m[39m attaches the csrf header to unsafe methods [33m 674[2mms[22m[39m
+ [32m✓[39m tests/candidates.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 866[2mms[22m[39m
+     [33m[2m✓[22m[39m reads the documented candidates path without query parameters by default [33m 796[2mms[22m[39m
+ [32m✓[39m tests/quickResearch.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 157[2mms[22m[39m
+ [32m✓[39m tests/settingsModules.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 176[2mms[22m[39m
+ [32m✓[39m tests/datasets.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 804[2mms[22m[39m
+     [33m[2m✓[22m[39m reads the documented dataset runs path with a limit and no cursor by default [33m 765[2mms[22m[39m
+ [32m✓[39m tests/researchCatalog.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 536[2mms[22m[39m
+     [33m[2m✓[22m[39m sorts by created_at when no activity time is known [33m 322[2mms[22m[39m
+ [32m✓[39m tests/semantics.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 152[2mms[22m[39m
+ [32m✓[39m tests/memoryModules.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 919[2mms[22m[39m
+     [33m[2m✓[22m[39m only lists versions that actually failed [33m 396[2mms[22m[39m
+ [32m✓[39m tests/flow.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 594[2mms[22m[39m
+ [32m✓[39m tests/stream.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 1565[2mms[22m[39m
+     [33m[2m✓[22m[39m publishes delivered events and stops once the resource is terminal [33m 539[2mms[22m[39m
+     [33m[2m✓[22m[39m reports reconnecting with the attempt count and recovers on the next try [33m 355[2mms[22m[39m
+ [32m✓[39m tests/runs.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 2051[2mms[22m[39m
+     [33m[2m✓[22m[39m reads the run projection from the documented path [33m 881[2mms[22m[39m
+     [33m[2m✓[22m[39m sends the current control revision with an idempotency key and CSRF token [33m 424[2mms[22m[39m
+     [33m[2m✓[22m[39m resumes from the supplied RUN cursor [33m 329[2mms[22m[39m
+ [32m✓[39m tests/research.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 2365[2mms[22m[39m
+     [33m[2m✓[22m[39m posts the name with an idempotency key and CSRF token [33m 2199[2mms[22m[39m
+ [32m✓[39m tests/dataModules.test.ts [2m([22m[2m33 tests[22m[2m)[22m[33m 2886[2mms[22m[39m
+     [33m[2m✓[22m[39m maps columns and flags duplicates and missing types [33m 436[2mms[22m[39m
+     [33m[2m✓[22m[39m creates the research, version and PROFILE run in order [33m 1601[2mms[22m[39m
+ [32m✓[39m tests/upload.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 3592[2mms[22m[39m
+     [33m[2m✓[22m[39m maps data.csv to CSV [33m 407[2mms[22m[39m
+     [33m[2m✓[22m[39m walks hashing → session → transfer → complete and returns refreshed versions [33m 2679[2mms[22m[39m
+ [32m✓[39m tests/modelModules.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 907[2mms[22m[39m
+     [33m[2m✓[22m[39m 把任務關聯回研究版本與研究 [33m 363[2mms[22m[39m
+ [32m✓[39m tests/events.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 516[2mms[22m[39m
+ [32m✓[39m tests/evaluation.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 480[2mms[22m[39m
+ [32m✓[39m tests/sha256.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 815[2mms[22m[39m
+     [33m[2m✓[22m[39m matches the known digest of "abc" [33m 692[2mms[22m[39m
+ [32m✓[39m tests/structureAssessment.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 220[2mms[22m[39m
+ [32m✓[39m tests/ssotPages.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 330[2mms[22m[39m
+ [32m✓[39m tests/trainingModules.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 198[2mms[22m[39m
+ [32m✓[39m tests/formula.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m tests/discoveryCatalog.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 286[2mms[22m[39m
+ [32m✓[39m tests/candidateDetail.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 319[2mms[22m[39m
+ [32m✓[39m tests/researchPanels.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 287[2mms[22m[39m
+ [32m✓[39m tests/datasetWorkbench.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 149[2mms[22m[39m
+ [32m✓[39m tests/derivationGraph.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 123[2mms[22m[39m
+ [32m✓[39m tests/discoveries.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m tests/workflowHandoff.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 173[2mms[22m[39m
+ [32m✓[39m tests/verificationCenter.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 83[2mms[22m[39m
+ [32m✓[39m tests/evidence.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m tests/moduleDashboard.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 129[2mms[22m[39m
+ [32m✓[39m tests/finalEvaluation.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m tests/verificationModules.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 144[2mms[22m[39m
+ [32m✓[39m tests/queryState.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m tests/researchFlowFilters.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m tests/artifactPreview.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/navigationState.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m41 passed[39m[22m[90m (41)[39m
+[2m      Tests [22m [1m[32m406 passed[39m[22m[90m (406)[39m
+[2m   Start at [22m 10:49:18
+[2m   Duration [22m 26.74s[2m (transform 74.02s, setup 0ms, import 105.04s, tests 24.21s, environment 264ms)[22m
+

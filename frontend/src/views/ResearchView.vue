@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * 研究工作台（SSOT SCREEN 07）：多面板自主研究進度與假設探索。
+ */
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { getArtifactContent } from '../api/artifacts'

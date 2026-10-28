@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * 系統總覽（SSOT SCREEN 01）：研究健康度、資源負載與異常事件。
+ */
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { flattenModuleLists, type ModuleListSelection, sameSelection } from '../lib/modulePageUtils'

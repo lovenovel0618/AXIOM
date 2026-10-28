@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * 驗證中心（SSOT SCREEN 22）：多面向證據矩陣與驗證任務。
+ */
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import VerificationTabs from '../components/VerificationTabs.vue'

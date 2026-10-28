@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { checkReadiness, type HealthStatus } from './health'
 import { isAuthenticated, logOut } from './lib/session'
+import { pageForRoute } from './lib/ssotPages'
 
 const router = useRouter()
 const route = useRoute()
@@ -22,119 +23,11 @@ const primaryNav = [
   { label: '設定', icon: '⚙', route: { name: 'settings' as const } },
 ]
 
-const currentSection = computed<string>(() => {
-  if (route.name === 'overview') return '總覽'
-  if (route.name === 'activity') return '活動中心'
-  if (route.name === 'pending') return '待處理事件'
-  if (route.name === 'resources') return '資源監控'
-  if (
-    route.name === 'datasets' ||
-    route.name === 'data-upload' ||
-    route.name === 'data-preview' ||
-    route.name === 'data-quality' ||
-    route.name === 'data-pipeline' ||
-    route.name === 'data-explore' ||
-    route.name === 'data-diff'
-  ) {
-    return '數據'
-  }
-  if (
-    route.name === 'research-list' ||
-    route.name === 'research-create' ||
-    route.name === 'research-workbench' ||
-    route.name === 'research-detail' ||
-    route.name === 'research-graph' ||
-    route.name === 'research-timeline'
-  ) {
-    return '研究'
-  }
-  if (
-    route.name === 'discoveries' ||
-    route.name === 'discovery-compare' ||
-    route.name === 'discovery-latent' ||
-    route.name === 'discovery-derivation'
-  ) {
-    return '發現'
-  }
-  if (
-    route.name === 'verification' ||
-    route.name === 'verification-falsify' ||
-    route.name === 'verification-inverse' ||
-    route.name === 'verification-proof' ||
-    route.name === 'verification-graph' ||
-    route.name === 'run' ||
-    route.name === 'artifact'
-  ) {
-    return '驗證'
-  }
-  if (
-    route.name === 'memory' ||
-    route.name === 'memory-experience' ||
-    route.name === 'memory-failure' ||
-    route.name === 'memory-recovery' ||
-    route.name === 'memory-evolution'
-  ) {
-    return '記憶'
-  }
-  if (
-    route.name === 'model' ||
-    route.name === 'model-routing' ||
-    route.name === 'model-evaluation' ||
-    route.name === 'model-storage'
-  ) {
-    return '模型'
-  }
-  if (route.name === 'training' || route.name === 'training-finetune' || route.name === 'training-release') {
-    return '訓練'
-  }
-  if (route.name === 'settings' || route.name === 'settings-research') return '設定'
-  return '總覽'
-})
+const currentSection = computed<string>(() => pageForRoute(route.name)?.navLabel ?? '總覽')
 
 const crumb = computed<string>(() => {
-  if (route.name === 'overview') return 'AXIOM / 總覽 / 系統總覽'
-  if (route.name === 'activity') return 'AXIOM / 總覽 / 研究活動中心'
-  if (route.name === 'pending') return 'AXIOM / 總覽 / 待處理事件'
-  if (route.name === 'resources') return 'AXIOM / 總覽 / 資源監控'
-  if (route.name === 'datasets') return 'AXIOM / 數據 / 資料集清單'
-  if (route.name === 'data-upload') return 'AXIOM / 數據 / 資料上傳精靈'
-  if (route.name === 'data-preview') return 'AXIOM / 數據 / 資料預覽'
-  if (route.name === 'data-quality') return 'AXIOM / 數據 / 資料品質'
-  if (route.name === 'data-pipeline') return 'AXIOM / 數據 / 前處理管線'
-  if (route.name === 'data-explore') return 'AXIOM / 數據 / 多維探索'
-  if (route.name === 'data-diff') return 'AXIOM / 數據 / 資料版本比較'
-  if (route.name === 'discoveries') return 'AXIOM / 發現 / 候選公式庫'
-  if (route.name === 'discovery-compare') return 'AXIOM / 發現 / 公式比較'
-  if (route.name === 'discovery-latent') return 'AXIOM / 發現 / 隱藏變數探索'
-  if (route.name === 'discovery-derivation') return 'AXIOM / 發現 / 研究推演'
-  if (route.name === 'verification') return 'AXIOM / 驗證 / 驗證中心'
-  if (route.name === 'verification-falsify') return 'AXIOM / 驗證 / 反例搜尋'
-  if (route.name === 'verification-inverse') return 'AXIOM / 驗證 / 逆向推導'
-  if (route.name === 'verification-proof') return 'AXIOM / 驗證 / 形式化證明'
-  if (route.name === 'verification-graph') return 'AXIOM / 驗證 / 證據關聯圖'
-  if (route.name === 'memory') return 'AXIOM / 記憶 / 知識庫'
-  if (route.name === 'memory-experience') return 'AXIOM / 記憶 / 研究經驗'
-  if (route.name === 'memory-failure') return 'AXIOM / 記憶 / 失敗案例'
-  if (route.name === 'memory-recovery') return 'AXIOM / 記憶 / 假設恢復'
-  if (route.name === 'memory-evolution') return 'AXIOM / 記憶 / 知識演化'
-  if (route.name === 'model') return 'AXIOM / 模型 / 模型管理'
-  if (route.name === 'model-routing') return 'AXIOM / 模型 / 模型路由'
-  if (route.name === 'model-evaluation') return 'AXIOM / 模型 / 模型能力評估'
-  if (route.name === 'model-storage') return 'AXIOM / 模型 / 用量與儲存'
-  if (route.name === 'training') return 'AXIOM / 訓練 / 訓練資料集'
-  if (route.name === 'training-finetune') return 'AXIOM / 訓練 / 微調任務'
-  if (route.name === 'training-release') return 'AXIOM / 訓練 / 模型版本發布'
-  if (route.name === 'settings') return 'AXIOM / 設定 / 系統與安全設定'
-  if (route.name === 'settings-research') return 'AXIOM / 設定 / 研究策略設定'
-  if (route.name === 'run') return 'AXIOM / 驗證 / 任務詳情'
-  if (route.name === 'research-list') return 'AXIOM / 研究 / 研究清單'
-  if (route.name === 'research-create') return 'AXIOM / 研究 / 新建研究'
-  if (route.name === 'research-workbench') return 'AXIOM / 研究 / 研究工作台'
-  if (route.name === 'research-detail') return 'AXIOM / 研究 / 研究詳情'
-  if (route.name === 'research-graph') return 'AXIOM / 研究 / 研究分支圖'
-  if (route.name === 'research-timeline') return 'AXIOM / 研究 / 研究任務紀錄'
-  if (route.name === 'artifact') return 'AXIOM / 驗證 / 產物詳情'
-  return 'AXIOM'
+  const page = pageForRoute(route.name)
+  return page ? `AXIOM / ${page.category} / ${page.title}` : 'AXIOM'
 })
 
 const crumbText = computed<string>(() => crumb.value.replace(/^AXIOM \/ /, ''))

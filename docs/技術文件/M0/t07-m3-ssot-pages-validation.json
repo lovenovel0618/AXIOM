@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-28",
+  "scope": "M3_SSOT_PAGE_BY_PAGE_ACCEPTANCE",
+  "review_method": "SELF_REVIEW",
+  "base_commit": "e78e0bc",
+  "ticket_t07_status": "IN_PROGRESS",
+  "slice_status": "PARTIAL",
+  "product_gate_status": "NOT_RUN",
+  "delivery_boundary": {
+    "ssot_registry": "IMPLEMENTED（frontend/src/lib/ssotPages.ts 把 docs/AXIOM_UIUX_重製版/assets/pages.json 的 40 頁登記為單一表：SSOT_PAGES 逐頁保存 id／routeName／navLabel／category／title／ssotTitle，另以 SUPPORT_PAGES 登記 4 個前台專屬支援頁（候選公式／任務詳情／產物詳情／登入），並提供 pageForRoute(name: unknown)）",
+    "shell_derives_from_registry": "IMPLEMENTED（frontend/src/App.vue 移除 currentSection 與 crumb 兩段共 44 行 if 串，改為 pageForRoute 查表：導覽高亮取 navLabel、麵包屑取 `AXIOM / category / title`，未知路由維持 '總覽'／'AXIOM' 回退）",
+    "page_markers_completed": "IMPLEMENTED（補齊先前缺漏的三頁標註：OverviewView 系統總覽 SCREEN 01、ResearchView 研究工作台 SCREEN 07、VerificationView 驗證中心 SCREEN 22；40 頁自此一頁一標註）",
+    "acceptance_test": "IMPLEMENTED（frontend/tests/ssotPages.test.ts 以 pages.json 為權威，8 項檢查：頁數與逐字標題、逐頁路由與視圖與標註、標註與路由一對一、路由與註冊表雙向無孤兒、標題與導覽標籤不得含英文、頁面標題與註冊表一致、視圖不得以圖片冒充組件）",
+    "language_rule": "ENFORCED（title／navLabel 逐筆比對不得含 [A-Za-z]；App.vue 12 個導覽標籤必須落在註冊表模組名且不含英文，維持 AX-23／AX-24 的繁中介面要求）",
+    "no_static_placeholder": "ENFORCED（視圖不得出現 <img>、background-image: 或 .png／.jpg／.gif／.webp 引用；此為專案內已否決的『以設計圖當佔位』做法，改列為永久防線）",
+    "not_delivered": "NOT_IMPLEMENTED（完整 M3 E2E、資安、壓測與備份還原；D-09 未關前的對外開放仍維持阻擋）",
+    "measurement_markers": "usage_scope=LOCAL_SSOT_PAGE_ACCEPTANCE、product_status=NOT_RUN、precision_bits=53"
+  },
+  "tests": {
+    "frontend": {
+      "status": "CHANGED_THIS_SLICE",
+      "command": "npm run typecheck && npm run test",
+      "typecheck": "vue-tsc --noEmit 0 error",
+      "vitest": "41 檔 406／406 passed（新增 tests/ssotPages.test.ts 8 項；原 40 檔 398 項全數維持）",
+      "new_tests_breakdown": {
+        "frontend/tests/ssotPages.test.ts": 8
+      },
+      "build": "vite build 成功（259 modules；dist/assets/index-BANCeTFw.js 612.19 kB、index-MpwcmqjZ.css 64.84 kB）"
+    },
+    "backend": {
+      "status": "UNCHANGED_THIS_SLICE",
+      "note": "本切片只動 frontend 與 docs，未新增或修改後端模組；後端全量測試另於品質閘掃尾單獨執行"
+    }
+  },
+  "strict_pyright": {
+    "version": "1.1.414",
+    "configurations": [
+      "pyrightconfig.json",
+      "backend/pyrightconfig.json"
+    ],
+    "errors": 0,
+    "warnings": 0,
+    "informations": 0
+  },
+  "integration": {
+    "ssot_page_coverage": "PASS（pages.json 40 頁與註冊表 40 筆逐字對齊，且每頁都有路由、視圖與 SCREEN 標註）",
+    "marker_owner_unique": "PASS（視圖標註與路由註冊一對一；重複標註或張冠李戴即失敗）",
+    "route_registry_bidirectional": "PASS（router.ts 的 44 條具名路由與註冊表 44 筆雙向一致，無孤兒路由）",
+    "breadcrumb_and_highlight_unchanged": "PASS（改由註冊表推導後，12 個導覽標籤與 44 條路由的麵包屑皆維持原有字串）",
+    "chinese_only_labels": "PASS（title／navLabel／App.vue 標籤皆不含 ASCII 字母；SSOT 原文含 Ollama／Token 的兩頁僅在顯示標題中文化，ssotTitle 仍逐字保存）",
+    "no_static_placeholder_images": "PASS（src/views 全部 .vue 無 <img>、無背景圖片、無圖片檔引用）",
+    "docs_check": "exit 0（markdown 57、chapters 54、links 379、acceptance_cases 391、schemas 6、contract_examples 110、api_operations 33、contract_scenarios 272、review_findings 36、attachment_requirements 32、error_codes 61、capabilities 6、policies 1、public_fixture_oracles 4、manifest_files 86、product_test_status NOT_RUN）",
+    "makemigrations_check": "未涉及後端模型，本切片不需重跑",
+    "product_gate_status": "NOT_RUN",
+    "g2_status": "BLOCKED（D-03 未關）"
+  },
+  "changed_sources": {
+    "frontend/src/App.vue": "a901d13ed5b89e041a7907399909ba1b5ca541b25cd29fc21c4bd05ea4cf595f",
+    "frontend/src/lib/ssotPages.ts": "d810eab5471a1386f6d1405709dcc1f888a923588f91466ec5e2b5ec0420d27c",
+    "frontend/src/views/OverviewView.vue": "7a07c9c590aa5dbe1be947f6eaf0835b46316b4d9f7a2b81d8320688ae6eee75",
+    "frontend/src/views/ResearchView.vue": "53c472321bdde007d7267c406bb04f9bc94a7e7c76bf9d25926ab7db0cbd0184",
+    "frontend/src/views/VerificationView.vue": "de47dc8559639329300e2e45d72945d15209b03a8bd8bbe49f42900ce848b2c2",
+    "frontend/tests/ssotPages.test.ts": "a08eac9ca3108477f6e68dd0e6b2315fc679e50fd74cf6d0ca48ee737b3d407c",
+    "docs/技術文件/M0/t07-m3-ssot-pages-frontend-tests.txt": "e603a30869215c209a8517a295f9abe0dc52418caa3ecce810bde2f3302db2f7"
+  },
+  "known_limits": [
+    "本切片驗證的是頁面存在性、路由／標題／語言的靜態一致性，不是畫面像素級比對；版面細節仍須人工對照 SSOT 設計稿",
+    "測試以來源字串比對 router.ts／App.vue 的宣告，改寫成動態組裝路由時需同步調整測試",
+    "登入頁不套用頁面標題註冊（實作顯示『登入 AXIOM』），僅檢查其去除品牌名後為『登入』",
+    "系統總覽的標題由 moduleDashboard 動態提供，測試以來源含 title: '系統總覽' 的方式守護",
+    "完整 M3 E2E、資安、壓測與備份還原仍未交付；企劃驗收維持 NOT_RUN，T07 仍 IN_PROGRESS"
+  ]
+}
