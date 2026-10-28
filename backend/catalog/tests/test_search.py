@@ -36,7 +36,7 @@ SEARCH_LIMITS = {"max_rows": 100, "max_strategy_seconds": 5, "max_candidates": 8
 
 
 @override_settings(INGEST_ENABLED=True, INGEST_LIMITS_JSON=json.dumps(LIMITS), SEARCH_ENABLED=True, SEARCH_LIMITS_JSON=json.dumps(SEARCH_LIMITS), PROFILE_ENABLED=True, PROFILE_LIMITS_JSON=json.dumps(LIMITS))
-class SearchTests(TransactionTestCase):
+class SearchFixture(TransactionTestCase):
     def setUp(self) -> None:
         directory = TemporaryDirectory()
         self.addCleanup(directory.cleanup)
@@ -99,6 +99,9 @@ class SearchTests(TransactionTestCase):
     def execute(self, identity: UUID, generation: int = 0) -> bool:
         return search_tick(str(self.actor.tenant_id), str(identity), generation)
 
+
+
+class SearchTests(SearchFixture):
     def test_enqueue_tick_one_root_real_snapshots_and_usage(self) -> None:
         identity = self.enqueue()
         self.assertEqual(document_for(self.version)["status"], "QUEUED")
@@ -373,6 +376,12 @@ class SearchTests(TransactionTestCase):
         self.assertEqual(ResearchBudget.objects.get(research_version=self.version).document["status"], "CLOSING")
         candidate = Candidate.objects.filter(search_run_id=identity).order_by("development_rank").first()
         assert candidate is not None
+        from catalog.fit import attach, fit_tick
+        from catalog.models import FitRun
+        fit = FitRun.objects.get(pk=UUID(candidate.document["fit_run_ids"][0]))
+        with self.settings(FIT_ENABLED=True, FIT_LIMITS_JSON=json.dumps(LIMITS)):
+            attach(self.actor.tenant_id, fit.run_id)
+            self.assertTrue(fit_tick(str(self.actor.tenant_id), str(fit.run_id), 0))
         with transaction.atomic():
             source = Provenance.objects.get(pk=self.version.provenance_id)
             plan_id = uuid4()

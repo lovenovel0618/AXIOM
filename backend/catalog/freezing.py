@@ -179,6 +179,11 @@ def _fit_for(candidate: Candidate) -> FitRun:
     row = FitRun.objects.filter(pk=UUID(identities[0]), tenant_id=candidate.tenant_id).first()
     if row is None:
         raise ApiError("FIT_REFERENCE_MISMATCH", 409)
+    from runtime.models import InputSnapshot, ValidationRun
+    if InputSnapshot.objects.filter(run_id=candidate.search_run_id).exists():
+        roles = set(ValidationRun.objects.filter(run_id=row.run_id, tenant_id=candidate.tenant_id).values_list("split_role", flat=True))
+        if row.run.document["status"] != "SUCCEEDED" or not {"FIT", "DEVELOPMENT"}.issubset(roles):
+            raise ApiError("FIT_REFERENCE_MISMATCH", 409)
     return row
 
 

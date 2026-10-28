@@ -40,9 +40,9 @@ def persist(research: ResearchBudget, root: RootBudget) -> None:
     root.save(update_fields=["document"])
 
 
-def capacity(account: ResearchBudget, request: object) -> None:
+def capacity(account: ResearchBudget, request: object, *, allow_closing: bool = False) -> None:
     """將實耗與所有未釋放預留一起檢查；未知成本拒絕新任務，記憶體不再加歷史 peak。"""
-    if account.document["status"]!="OPEN":
+    if account.document["status"] != "OPEN" and not (allow_closing and account.document["status"] == "CLOSING"):
         raise ApiError("RESEARCH_BUDGET_EXHAUSTED",429)
     loans = list(Reservation.objects.filter(root__research_budget=account).exclude(state="RELEASED"))
     if any(row.state=="UNCERTAIN" for row in loans):
@@ -58,11 +58,11 @@ def capacity(account: ResearchBudget, request: object) -> None:
         raise ApiError("RESEARCH_BUDGET_EXHAUSTED",429)
 
 
-def reserve(run: RuntimeRun, root_doc: JsonObject) -> RootBudget:
+def reserve(run: RuntimeRun, root_doc: JsonObject, *, allow_closing: bool = False) -> RootBudget:
     # Caller owns the root row lock; never acquire a run lock while holding these accounts.
     """呼叫端先持 root 鎖，再鎖研究帳本；原子建立 root 帳本及共用預留，額度不足整筆回滾。"""
     research = ResearchBudget.objects.select_for_update().get(pk=UUID(root_doc["research_budget_account_id"]),tenant_id=run.tenant_id)
-    capacity(research,root_doc["limit"])
+    capacity(research,root_doc["limit"], allow_closing=allow_closing)
     root = RootBudget.objects.create(id=UUID(root_doc["id"]),tenant_id=run.tenant_id,run=run,research_budget=research,document=detached(root_doc))
     Reservation.objects.create(root=root,requested=detached(root_doc["limit"]),held=detached(root_doc["limit"]))
     persist(research,root)

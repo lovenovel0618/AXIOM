@@ -8,7 +8,7 @@ from kombu.exceptions import OperationalError
 from foundation.dispatch import relay
 from foundation.tasks import publish_probe
 from runtime.tasks import relay_control
-from catalog.tasks import relay_deletion, relay_ingest, relay_profile, relay_search, relay_validate
+from catalog.tasks import relay_deletion, relay_fit, relay_ingest, relay_profile, relay_search, relay_validate
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +26,7 @@ class Command(BaseCommand):
                 relay_profile()
                 relay_validate()
                 relay_search()
+                relay_fit()
                 relay_deletion()
                 relay_control()
                 relay(publish_probe)

@@ -28,9 +28,9 @@ def cancel_run(request: HttpRequest, actor: Account, identity: UUID) -> JsonResp
         root_id = UUID(run.document["root_run_id"])
         run_for(actor,root_id)
         raise ApiError("CHILD_RUN_NOT_CANCELLABLE",409,[{"field":"root_run_id","reason":str(root_id)}])
-    if run.document["type"] not in {"PROFILE", "SEARCH"}:
+    if run.document["type"] not in {"PROFILE", "SEARCH", "FIT"}:
         raise ApiError("DEPENDENCY_UNAVAILABLE",503)
-    if run.document["type"] == "SEARCH" and not InputSnapshot.objects.filter(run=run).exists():
+    if run.document["type"] in {"SEARCH", "FIT"} and not InputSnapshot.objects.filter(run=run).exists():
         raise ApiError("DEPENDENCY_UNAVAILABLE", 503)
     version = version_for(actor, UUID(run.document["research_version_id"]))
     available_version(actor,version.dataset_version_id)
@@ -43,7 +43,10 @@ def cancel_run(request: HttpRequest, actor: Account, identity: UUID) -> JsonResp
         if row.document["status"] in TERMINAL:
             raise ApiError("INVALID_TRANSITION",409)
         cancel(actor.tenant_id,identity,expected)
-        if run.document["type"] == "SEARCH":
+        if run.document["type"] == "FIT":
+            from catalog.fit import recover_fit
+            recover_fit(actor.tenant_id, identity)
+        elif run.document["type"] == "SEARCH":
             from catalog.search import recover_search
             recover_search(actor.tenant_id, identity)
         else:

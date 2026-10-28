@@ -234,6 +234,13 @@ def authorized_result(actor: Account, identity: UUID) -> ValidationRun:
     row = ValidationRun.objects.filter(pk=identity, tenant_id=actor.tenant_id).first()
     if row is None:
         raise ApiError("NOT_FOUND", 404)
+    if row.split_role in {"FIT", "DEVELOPMENT"}:
+        from catalog.candidates import authorized_fit_run
+        fit = authorized_fit_run(actor, UUID(str(row.document["fit_run_id"])))
+        if fit.run_id != row.run_id or fit.observation_split_id != row.observation_split_id or fit.run.document["status"] != "SUCCEEDED":
+            raise ApiError("NOT_FOUND", 404)
+        validate(row.document, SCHEMA, "ValidationRun")
+        return row
     submission = FrozenSubmission.objects.filter(pk=row.submission_id, tenant_id=actor.tenant_id).first()
     if submission is None:
         raise ApiError("NOT_FOUND", 404)

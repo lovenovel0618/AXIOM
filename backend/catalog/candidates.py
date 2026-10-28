@@ -15,7 +15,7 @@ from catalog.search_run import create as create_root_run
 from catalog.validation import ApiError, validate_api
 from mathematics.compiler import compile_dsl
 from runtime.contracts import JsonObject, canonical_bytes, identity_hash, validate
-from runtime.models import RuntimeRun
+from runtime.models import InputSnapshot, RuntimeRun, ValidationRun
 from runtime.records import db_now
 
 RUNTIME_SCHEMA = "runtime-v2.schema.json"
@@ -181,9 +181,26 @@ def candidates_page(actor: Account, identity: UUID, cursor: str, limit: int) -> 
         last_row = selected[limit - 1]
         next_cursor = signing.dumps({"actor": str(actor.id), "run": str(identity),
             "rank": last_row.development_rank, "id": str(last_row.id)}, salt=CANDIDATES_SALT)
-    result: JsonObject = {"items": [row.document for row in selected[:limit]], "next_cursor": next_cursor}
+    result: JsonObject = {"items": [candidate_dto(row) for row in selected[:limit]], "next_cursor": next_cursor}
     validate_api(result, "CandidatePage")
     return result
+
+
+def candidate_dto(row: Candidate) -> dict[str, object]:
+    """在不可變候選身分旁投影真實 FIT 進度；final_test 結果仍只由提交範圍讀取。"""
+    document: dict[str, object] = dict(row.document)
+    fits = FitRun.objects.filter(tenant_id=row.tenant_id, id__in=row.document["fit_run_ids"]).select_related("run")
+    results = list(ValidationRun.objects.filter(tenant_id=row.tenant_id, run_id__in=fits.values("run_id"),
+        split_role__in=["FIT", "DEVELOPMENT"]).order_by("created_at", "id"))
+    document["validation_run_ids"] = [str(result.id) for result in results]
+    states = [fit.run.document["status"] for fit in fits]
+    if states and all(status == "SUCCEEDED" for status in states) and len(results) == len(states) * 2:
+        document["validation_status"] = "FINISHED"
+    elif any(status in {"FAILED", "CANCELLED"} for status in states):
+        document["validation_status"] = "INVALID"
+    elif InputSnapshot.objects.filter(run_id__in=fits.values("run_id")).exists():
+        document["validation_status"] = "PENDING"
+    return document
 
 
 def authorized_equation(actor: Account, identity: UUID) -> EquationVersion:

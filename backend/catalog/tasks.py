@@ -6,6 +6,8 @@ from catalog.ingest import ingest_tick
 from catalog.profile import profile_tick, recover_profile
 from catalog.final_evaluator import validate_tick
 from catalog.search import search_tick, recover_search
+from catalog.fit import attach as attach_fit, fit_tick, recover_fit
+from catalog.validation import ApiError
 from catalog.deletion import due as deletion_due
 from catalog.deletion import propagate
 from catalog.models import ProfileBinding
@@ -17,6 +19,7 @@ app.task(name="catalog.ingest_tick", ignore_result=True)(ingest_tick)
 app.task(name="catalog.profile_tick", ignore_result=True)(profile_tick)
 app.task(name="catalog.validate_tick", ignore_result=True)(validate_tick)
 app.task(name="catalog.search_tick", ignore_result=True)(search_tick)
+app.task(name="catalog.fit_tick", ignore_result=True)(fit_tick)
 app.task(name="catalog.deletion_tick", ignore_result=True)(propagate)
 
 
@@ -80,3 +83,24 @@ def relay_deletion() -> int:
     for tenant_id, request_id in pairs:
         app.send_task("catalog.deletion_tick", args=[tenant_id, request_id], queue="foundation", retry=False)
     return len(pairs)
+
+
+def relay_fit() -> int:
+    """逐根預留成功 SEARCH 的固定 FIT；容量不足保持待派送，避免並行預留超賣。"""
+    if not settings.FIT_ENABLED:
+        return 0
+    rows = list(RuntimeRun.objects.filter(control_only=False, document__type="FIT", document__is_root=True,
+        document__status__in=["QUEUED", "RUNNING", "CANCEL_REQUESTED"]).order_by(F("last_polled_at").asc(nulls_first=True), "id")[:100])
+    for row in rows:
+        RuntimeRun.objects.filter(pk=row.id).update(last_polled_at=db_now())
+        try:
+            if not attach_fit(row.tenant_id, row.id):
+                continue
+        except ApiError:
+            # 不符合來源或尚無剩額的 root 不派送；權威候選與帳本維持原狀。
+            continue
+        recover_fit(row.tenant_id, row.id)
+        row.refresh_from_db()
+        if row.document["status"] == "QUEUED" and row.available_at <= db_now():
+            app.send_task("catalog.fit_tick", args=[str(row.tenant_id), str(row.id), row.document["lease_generation"]], queue="fit", retry=False)
+    return len(rows)

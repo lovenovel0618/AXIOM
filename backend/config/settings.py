@@ -61,6 +61,10 @@ INGEST_LIMITS_JSON = os.environ.get("AXIOM_IMPORT_LIMITS", "")
 PROFILE_ENABLED = os.environ.get("AXIOM_PROFILE_ENABLED", "0") == "1"
 PROFILE_LIMITS_JSON = os.environ.get("AXIOM_PROFILE_LIMITS", "")
 
+# FIT 僅重放成功 SEARCH 已固定的單輸入 binding，使用專用佇列及明確容量。
+FIT_ENABLED = os.environ.get("AXIOM_FIT_ENABLED", "0") == "1"
+FIT_LIMITS_JSON = os.environ.get("AXIOM_FIT_LIMITS", PROFILE_LIMITS_JSON)
+
 # 隔離 Evaluator 只在專用 validate 佇列與 private 封存通道下啟用；未啟用即不派送。
 VALIDATE_ENABLED = os.environ.get("AXIOM_VALIDATE_ENABLED", "0") == "1"
 
