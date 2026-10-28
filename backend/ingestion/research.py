@@ -17,6 +17,7 @@ from mathematics.evaluator import evaluate
 from mathematics.metrics import metrics, quantile
 from mathematics.syntax import DslError
 from runtime.contracts import canonical_bytes, identity_hash
+from ingestion.dependencies import DependencyGuard
 
 MAX_ROWS = 4096
 POLICY = "local-research-inspection-v1"
@@ -75,12 +76,10 @@ class Inspector:
         self.research = config["research"]
         split = self.research["observation_split"]
         self.members = {row: name for name in PARTITIONS for row in split[name]}
-        count = sum(len(split[name]) for name in PARTITIONS)
-        require(count <= MAX_ROWS and len(self.members) == count)
-        require(set(self.members) == set(range(count)))
+        count = config["metadata"]["row_count"]
+        require(count <= MAX_ROWS)
+        self.dependencies = DependencyGuard(self.research["semantic_profile"], split, count)
         require(split["row_ids_hash"] == identity_hash({name: split[name] for name in HASH_FIELDS}))
-        require(split["kind"] in {"IID_ROWS", "EXPLICIT"} and not self.research["semantic_profile"]["time_ordered"])
-        require(self.research["semantic_profile"]["group_column"] is None)
         self.plan = model_for(config)
         if self.plan is not None:
             require(self.plan.node_count * max(len(split["fit"]), len(split["development"])) <= 262144, "AST_LIMIT_EXCEEDED")
@@ -89,7 +88,10 @@ class Inspector:
         self.selected: dict[str, list[tuple[Fraction, float, float]]] = {"fit": [], "development": []}
 
     def observe(self, row: int, names: list[str], values: Sequence[object]) -> None:
-        require(row in self.members)
+        self.dependencies.observe(row, names, values)
+        if row not in self.members:
+            require(self.research["observation_split"]["kind"] == "TIME_ORDERED")
+            return
         profile = self.research["semantic_profile"]
         source, target = profile["inputs"][0], profile["target"]
         require(source["source_column"] in names and target["source_column"] in names)
@@ -106,6 +108,7 @@ class Inspector:
             self.selected[partition].append((exact_y, x, y))
 
     def result(self) -> dict[str, Any]:
+        self.bad = self.bad or not self.dependencies.valid()
         result: dict[str, Any] = {"policy_version": POLICY, "quality": "BLOCKED" if self.bad else "PASS", "blocking_code": "DATA_QUALITY_BLOCKED" if self.bad else None,
             "precision_bits": 53, "fit_summary": None, "model_evaluation": None}
         if self.bad:
@@ -128,7 +131,7 @@ def inspect_file(path: Path, format_name: str, limits: ImportLimits, config: dic
     try:
         inspector = Inspector(config)
         metadata = parse(path, format_name, limits, inspector.observe, exact_json=True)
-        require(metadata == config["metadata"] and metadata["row_count"] == len(inspector.members))
+        require(metadata == config["metadata"])
         return inspector.result()
     except DslError as error:
         raise ImportRejected(error.code) from error

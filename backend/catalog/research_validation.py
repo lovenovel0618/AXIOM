@@ -82,9 +82,13 @@ def dependencies(profile: JsonObject, split: JsonObject) -> None:
         require(split["time_column"] is None)
     if not grouped:
         require(split["group_assignment_digest"] is None)
-    if grouped or timed:
-        raise ApiError("DEPENDENCY_UNAVAILABLE", 503)
-    require(all(split[name] == 0 for name in ("gap_rows", "lookback_rows", "horizon_rows")))
+    if timed:
+        require(split["time_column"] is not None)
+        require(split["gap_rows"] >= split["lookback_rows"] + split["horizon_rows"])
+    else:
+        require(all(split[name] == 0 for name in ("gap_rows", "lookback_rows", "horizon_rows")))
+    if grouped:
+        require(split["group_assignment_digest"] is not None)
 
 
 def iid_rows(count: int, seed: int) -> JsonObject:
@@ -104,7 +108,7 @@ def split_check(data: JsonObject, count: int) -> JsonObject:
     rows: list[int] = [row for name in PARTITIONS for row in split[name]]
     require(len(rows) == len(set(rows)) and all(row < count for row in rows))
     # Non-temporal drafts have no gap: every source observation must be assigned.
-    if split["kind"] in {"IID_ROWS", "EXPLICIT"}:
+    if split["kind"] in {"IID_ROWS", "EXPLICIT", "GROUPED_ROWS"}:
         require(len(rows) == count)
     for name in PARTITIONS:
         split[name] = sorted(split[name])
@@ -114,6 +118,14 @@ def split_check(data: JsonObject, count: int) -> JsonObject:
         require(all(split[name] == expected[name] for name in PARTITIONS))
     else:
         require(bool(split["splitter_version"].strip()))
+    if split["kind"] == "TIME_ORDERED":
+        previous_end = -split["gap_rows"] - 1
+        for name in PARTITIONS:
+            values = split[name]
+            require(values == list(range(values[0], values[-1] + 1)))
+            require(values[0] == previous_end + split["gap_rows"] + 1)
+            previous_end = values[-1]
+        require(previous_end == count - 1 and len(rows) + 2 * split["gap_rows"] == count)
     split.update(id=str(uuid4()), row_ids_hash=identity_hash({name: split[name] for name in HASH_FIELDS}), sealed_test_id=None, benchmark_partition_id=None, benchmark_case_id=None)
     return split
 
@@ -125,6 +137,8 @@ def confirm(data: JsonObject, metadata: JsonObject) -> JsonObject:
     domain_check(data)
     policy_check(data["evaluation_policy"], profile, split)
     dependencies(profile, split)
+    if split["time_column"] is not None:
+        require(split["time_column"] in {column["name"] for column in metadata["columns"]}, "SOURCE_COLUMN_NOT_FOUND")
     if data.get("refit_policy") is not None:
         raise ApiError("DEPENDENCY_UNAVAILABLE", 503)
     return split_check(data, metadata["row_count"])

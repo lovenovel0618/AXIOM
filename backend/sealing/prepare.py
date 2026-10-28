@@ -10,6 +10,7 @@ from uuid import uuid4
 from ingestion.limits import ImportLimits
 from ingestion.parser import parse
 from ingestion.research import scalar
+from ingestion.dependencies import group_token, time_value
 from ingestion.supervisor import run_sealing_worker
 from runtime.budget_types import integer, object_fields
 from runtime.contracts import canonical_bytes, identity_hash
@@ -59,8 +60,11 @@ def private_payload(path: Path, format_name: str, limits: ImportLimits, config: 
     def observe(index: int, names: list[str], values: Sequence[object]) -> None:
         """每筆原觀測使用固定角色／SI 量綱；不將 row ID 加入 CONTENT payload。"""
         if index in wanted:
+            time_column, group_column = split["time_column"], profile["group_column"]
+            timestamp = None if time_column is None else str(time_value(values[names.index(text(time_column))]))
+            group = None if group_column is None else group_token(values[names.index(text(group_column))])
             selected[index] = {'inputs':[source.normalized(values[names.index(source.column)])], 'target':target.normalized(values[names.index(target.column)]),
-                'input_unit':source.unit,'target_unit':target.unit,'time':None,'group':None}
+                'input_unit':source.unit,'target_unit':target.unit,'time':timestamp,'group':group}
     metadata = parse(path,format_name,limits,observe,exact_json=True)
     if metadata!=config['metadata'] or set(selected)!=wanted:
         raise SealRejected('INVALID_SCHEMA')

@@ -56,6 +56,35 @@ class InspectionTests(TransactionTestCase):
     def inspect(self) -> dict[str, object]:
         return preflight(self.actor.id,self.version.id,LIMITS,self.model)
 
+    def test_isolated_time_and_group_validation_and_masked_final_failures(self) -> None:
+        from catalog.research import research_for
+        from runtime.contracts import identity_hash
+        for kind in ("TIME_ORDERED", "GROUPED_ROWS"):
+            for valid in (True, False):
+                data = draft_data(self.version.dataset_version_id)
+                data["evaluation_policy"]["comparison_method"] = "NONE"
+                if kind == "TIME_ORDERED":
+                    data["semantic_profile"]["time_ordered"] = True
+                    data["observation_split"].update(kind=kind, time_column="x")
+                    if not valid:
+                        data["observation_split"].update(fit=[0,1,2,3,4,6], development=[5,7])
+                        with transaction.atomic(), self.assertRaises(ApiError):
+                            create_version(self.actor, research_for(self.actor, self.version.research_id), data)
+                        continue
+                else:
+                    data["semantic_profile"]["group_column"] = "x"
+                    assignments = [[i, f"s:{i}", "fit" if i < 6 else "development" if i < 8 else "final_test"] for i in range(10)]
+                    data["observation_split"].update(kind=kind, group_column="x",
+                        group_assignment_digest=identity_hash(assignments) if valid else "0" * 64)
+                with transaction.atomic():
+                    document = create_version(self.actor, research_for(self.actor, self.version.research_id), data)
+                result = preflight(self.actor.id, UUID(document["id"]), LIMITS, self.model)
+                row = ResearchInspection.objects.get(pk=result["id"])
+                self.assertEqual(row.document["result"]["quality"], "PASS" if valid else "BLOCKED")
+                if not valid:
+                    self.assertIsNone(row.document["result"]["model_evaluation"])
+                    self.assertEqual(row.document["result"]["blocking_code"], "DATA_QUALITY_BLOCKED")
+
     def raw_path(self) -> Path:
         stored = self.version.dataset_version.raw.object
         assert stored is not None

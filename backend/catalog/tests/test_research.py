@@ -157,24 +157,24 @@ class ResearchTests(TransactionTestCase):
         self.data["evaluation_policy"].update(error_model="UNSPECIFIED", comparison_method="NONE")
         self.assertEqual(self.post()[0], 201)
 
-    def test_time_group_and_refit_fail_closed_without_fallback(self) -> None:
+    def test_time_group_metadata_is_accepted_but_mixed_dependencies_and_unknown_refit_are_rejected(self) -> None:
         data = deepcopy(self.data)
         data["semantic_profile"]["time_ordered"] = True
         data["observation_split"].update(kind="TIME_ORDERED", time_column="x")
         data["evaluation_policy"]["comparison_method"] = "NONE"
-        self.assertEqual(self.post(data)[0], 503)
+        self.assertEqual(self.post(data, key="time")[0], 201)
         data = deepcopy(self.data)
         data["semantic_profile"]["group_column"] = "x"
         data["observation_split"].update(kind="GROUPED_ROWS", group_column="x", group_assignment_digest="a" * 64)
         data["evaluation_policy"]["comparison_method"] = "NONE"
-        self.assertEqual(self.post(data)[0], 503)
+        self.assertEqual(self.post(data, key="group")[0], 201)
         data = deepcopy(self.data)
         data["semantic_profile"]["time_ordered"] = True
         self.assertEqual(self.post(data)[0], 422)
         data = deepcopy(self.data)
         data["refit_policy"] = {"optimizer": "future", "optimizer_parameters": {}, "candidate_selection": "TOP_K_DEVELOPMENT", "top_k": 1}
         self.assertEqual(self.post(data)[0], 503)
-        self.assertFalse(ResearchVersion.objects.exists())
+        self.assertEqual(ResearchVersion.objects.count(), 2)
 
     def test_owner_scope_even_for_same_tenant_account(self) -> None:
         _, value = self.post()
