@@ -18,6 +18,9 @@ dist/
 # Local Sonar scanner working directory
 .scannerwork/
 
+# Local HTML sharing packages
+.trae-html-share-packages/
+
 # Generated coverage evidence
 /reports/
 /frontend/coverage/
