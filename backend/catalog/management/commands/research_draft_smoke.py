@@ -13,14 +13,22 @@ from catalog.validation import validate_api
 from runtime.contracts import JsonObject, identity_hash
 
 
-def configuration(version: str) -> JsonObject:
+def split(rows: int) -> tuple[list[int], list[int], list[int]]:
+    """列序 60／20／20 的 EXPLICIT 切分；10 列時與既有冒煙資料逐列相同。"""
+    fit = rows * 6 // 10
+    development = rows * 2 // 10
+    return list(range(fit)), list(range(fit, fit + development)), list(range(fit + development, rows))
+
+
+def configuration(version: str, rows: int = 10) -> JsonObject:
+    fit, development, final_test = split(rows)
     return {
         "dataset_version_id": version,
         "semantic_profile": {"inputs": [{"name": "x", "source_column": "時間（秒）", "unit": [0,0,1,0,0,0,0], "conversion": {"source_unit": "s", "scale": "1", "offset": "0"}}],
             "target": {"name": "y", "source_column": "位移（公分）", "unit": [1,0,0,0,0,0,0], "conversion": {"source_unit": "cm", "scale": "0.01", "offset": "0"}},
             "units_confirmed": True, "time_ordered": False, "measurement_resolution": "0.001", "resolution_reason": "Synthetic independent positions; names alone do not establish time dependence", "group_column": None},
         "budget": {"cpu_seconds": 30, "gpu_seconds": 0, "wall_seconds": 60, "tokens": 0, "candidate_limit": 10, "memory_bytes": 4294967296}, "purpose": "DESCRIPTION",
-        "observation_split": {"kind": "EXPLICIT", "dataset_version_id": version, "fit": list(range(6)), "development": [6,7], "final_test": [8,9], "gap_rows": 0, "lookback_rows": 0, "horizon_rows": 0, "seed": 7, "time_column": None, "group_column": None, "group_assignment_digest": None, "splitter_version": "synthetic-explicit-v1", "policy_version": "2.0", "sealed_final_test": True},
+        "observation_split": {"kind": "EXPLICIT", "dataset_version_id": version, "fit": fit, "development": development, "final_test": final_test, "gap_rows": 0, "lookback_rows": 0, "horizon_rows": 0, "seed": 7, "time_column": None, "group_column": None, "group_assignment_digest": None, "splitter_version": "synthetic-explicit-v1", "policy_version": "2.0", "sealed_final_test": True},
         "domain": [{"name": "x", "lower": {"numerator": "0", "denominator": "1"}, "upper": {"numerator": "10", "denominator": "1"}, "lower_closed": True, "upper_closed": True}],
         "evaluation_policy": {"policy_version": "1.0", "metric_version": "2.0", "error_model": "UNSPECIFIED", "absolute_error_bound": None, "comparison_method": "NONE", "bootstrap_replicates": 2000, "bootstrap_seed": 7, "block_method": None, "block_length": None, "practical_scale_override": None, "practical_margin_ratio": "0.01", "baseline": "FIT_MEAN", "practical_scale_reason": None},
     }

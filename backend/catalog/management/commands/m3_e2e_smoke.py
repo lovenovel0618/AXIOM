@@ -22,6 +22,20 @@ from runtime.models import ValidationRun
 
 
 @dataclass(frozen=True)
+class PreparedChain:
+    """M3 鏈路前兩階段（上傳落版與封印 PROFILE）完成後的權威識別碼。"""
+    dataset_id: str
+    dataset_version_id: str
+    ingest_run_id: str
+    research_id: str
+    research_version_id: str
+    profile_run_id: str
+    sealed_test_registered: bool
+    evidence_bundle_id: str
+    sealed_bundle_revision: int
+
+
+@dataclass(frozen=True)
 class ChainResult:
     """M3 鏈路一次成功執行後可被重複使用的權威識別碼與觀測值。"""
     dataset_id: str
@@ -48,12 +62,21 @@ class ChainResult:
     remaining_candidates: int
 
 
-def chain_configuration(version_id: str) -> dict[str, object]:
+def synthetic_rows(rows: int) -> bytes:
+    """固定合成的觀測序列：x 落在語意域 [0,10] 內，10 列時與既有鏈路資料逐字相同。"""
+    lines = []
+    for index in range(rows):
+        x = index * 10 / rows
+        lines.append(f"{x:g},{2 * x + 1:g}")
+    return ('時間（秒）,位移（公分）\n' + "\n".join(lines) + "\n").encode()
+
+
+def chain_configuration(version_id: str, rows: int = 10) -> dict[str, object]:
     """M3 鏈路要連續跑 PROFILE、SEARCH 與逐候選 FIT，因此把版本預算放寬到足以承載三段的完整容量。
 
     SEARCH 要求 root 至少保留 `30 + 3 × max_strategy_seconds` 秒 CPU，且 FIT 每個根各預留 2 GiB，
     原 draft 冒煙用的 30 秒額度必然不足；這裡只調整容量，不動語意切分與評估政策。"""
-    data = cast("dict[str, object]", configuration(version_id))
+    data = cast("dict[str, object]", configuration(version_id, rows))
     budget = dict(cast("dict[str, object]", data["budget"]))
     budget.update({"cpu_seconds": 120, "wall_seconds": 300, "memory_bytes": 4 * 1024**3})
     data["budget"] = budget
@@ -111,20 +134,21 @@ def wait_fit(browser: Browser, run_id: str, total: int, seconds: float = 180.0) 
     raise CommandError(f"FIT did not converge for {run_id}: {[row['validation_status'] for row in rows]}")
 
 
-def run_chain(browser: Browser) -> ChainResult:
-    """在已登入的瀏覽器上跑完 M3 七階段；每一站都先觀察權威終態才前進。"""
-    # 1. 上傳：真實 INGEST worker 落成不可變資料版本。
+def prepare_chain(browser: Browser, rows: int = 10) -> PreparedChain:
+    """跑完 M3 前兩階段：真實 INGEST 落成不可變資料版本，再封印 PROFILE 讓版本 READY 並附證據包。
+
+    需要真實資料版本與已封印研究的命令（例如壓測）共用此段，避免各自複製鏈路語意。"""
     status, dataset = browser.post("/api/v2/datasets", {"name": "m3-e2e-chain"})
     check(status == 201, "Dataset rejected")
-    content = ('時間（秒）,位移（公分）\n' + ''.join(f'{index},{2 * index + 1}\n' for index in range(10))).encode()
+    content = synthetic_rows(rows)
     checksum, ingest = upload(browser, dataset["id"], content, "CSV")
     check(ingest["status"] == "SUCCEEDED", "Actual INGEST failed")
     versions = read_json(browser, f'/api/v2/datasets/{dataset["id"]}/versions')
     version = next(row for row in versions["items"] if row["sha256"] == checksum)
-    # 2. 語意確認與研究：draft 只認固定切分，封印 PROFILE 後才 READY 並附證據包。
+    # 語意確認與研究：draft 只認固定切分，封印 PROFILE 後才 READY 並附證據包。
     status, research = browser.post("/api/v2/researches", {"name": "m3-e2e"})
     check(status == 201, "Research rejected")
-    status, draft = browser.post(f'/api/v2/researches/{research["id"]}/versions', chain_configuration(version["id"]))
+    status, draft = browser.post(f'/api/v2/researches/{research["id"]}/versions', chain_configuration(version["id"], rows))
     check(status == 201 and draft["status"] == "DRAFT", "Semantic confirmation draft rejected")
     detail = f'/api/v2/research-versions/{draft["id"]}'
     headers = {"Content-Type": "application/json", "Idempotency-Key": "m3-e2e-profile", "If-Control-Revision": str(draft["revision"])}
@@ -138,10 +162,21 @@ def run_chain(browser: Browser) -> ChainResult:
     bundle_id = ready["evidence_bundle_ids"][0]
     seeded_bundle = read_json(browser, f"/api/v2/evidence-bundles/{bundle_id}")
     check(seeded_bundle["status"] == "ACTIVE", "Evidence bundle not ACTIVE after sealing")
+    return PreparedChain(
+        dataset_id=str(dataset["id"]), dataset_version_id=str(version["id"]), ingest_run_id=str(ingest["id"]),
+        research_id=str(research["id"]), research_version_id=str(draft["id"]), profile_run_id=str(profile_run["id"]),
+        sealed_test_registered=ready["observation_split"]["sealed_test_id"] is not None,
+        evidence_bundle_id=str(bundle_id), sealed_bundle_revision=int(seeded_bundle["revision"]))
+
+
+def run_chain(browser: Browser) -> ChainResult:
+    """在已登入的瀏覽器上跑完 M3 七階段；每一站都先觀察權威終態才前進。"""
+    prepared = prepare_chain(browser)
+    dataset_id, version_id, bundle_id = prepared.dataset_id, prepared.research_version_id, prepared.evidence_bundle_id
     # 3. SEARCH：冪等入列、專用 queue 執行，帳本與預留各自收斂。
-    runs_path = f'/api/v2/research-versions/{draft["id"]}/runs'
+    runs_path = f'/api/v2/research-versions/{version_id}/runs'
     payload = json.dumps({"type": "SEARCH", "seed": 42}).encode()
-    search_headers = {"Content-Type": "application/json", "Idempotency-Key": "m3-e2e-search", "If-Control-Revision": str(version_revision(browser, draft["id"]))}
+    search_headers = {"Content-Type": "application/json", "Idempotency-Key": "m3-e2e-search", "If-Control-Revision": str(version_revision(browser, version_id))}
     status, raw = browser.request(runs_path, "POST", payload, search_headers)
     check(status == 202, f"SEARCH enqueue rejected: {status}")
     queued = json.loads(raw)
@@ -150,7 +185,7 @@ def run_chain(browser: Browser) -> ChainResult:
     search = wait_run(browser, queued["id"])
     check(search["status"] == "SUCCEEDED" and search["phase"] == "SEARCHING", "SEARCH worker failed")
     search_root = RootBudget.objects.get(run_id=UUID(search["id"]))
-    research_account = ResearchBudget.objects.get(research_version_id=UUID(str(draft["id"])))
+    research_account = ResearchBudget.objects.get(research_version_id=UUID(version_id))
     check(search_root.document["status"] == "CLOSED" and research_account.document["status"] == "CLOSING", "Search settlement boundary differs")
     check(Reservation.objects.get(root=search_root).state == "RELEASED", "Reservation retained after SEARCH")
     # 4. 候選比較：簽章游標穩定分頁，候選數與帳本一致，FIT 尚未宣告完成。
@@ -180,16 +215,16 @@ def run_chain(browser: Browser) -> ChainResult:
     second = read_json(browser, f'/api/v2/fit-runs/{fitted[1]["fit_run_ids"][0]}') if len(fitted) > 1 else None
     # 6. 證據檢視：封存證據包與其證明產物在 FIT 完成後仍可讀且未變形。
     final_bundle = read_json(browser, f"/api/v2/evidence-bundles/{bundle_id}")
-    check(final_bundle["status"] == "ACTIVE" and final_bundle["revision"] == seeded_bundle["revision"], "Evidence bundle changed after FIT")
+    check(final_bundle["status"] == "ACTIVE" and final_bundle["revision"] == prepared.sealed_bundle_revision, "Evidence bundle changed after FIT")
     check(len(final_bundle["proof_artifact_ids"]) >= 2, "Evidence bundle lost its sealed proof artifacts")
     for artifact_id in final_bundle["proof_artifact_ids"]:
         read_json(browser, f"/api/v2/artifacts/{artifact_id}")
     research_account.refresh_from_db()
     return ChainResult(
-        dataset_id=str(dataset["id"]), dataset_version_id=str(version["id"]), ingest_run_id=str(ingest["id"]),
-        research_id=str(research["id"]), research_version_id=str(draft["id"]), profile_run_id=str(profile_run["id"]),
-        sealed_test_registered=ready["observation_split"]["sealed_test_id"] is not None,
-        evidence_bundle_id=str(bundle_id), search_run_id=str(search["id"]), fit_run_id=str(first["fit_run_ids"][0]),
+        dataset_id=dataset_id, dataset_version_id=prepared.dataset_version_id, ingest_run_id=prepared.ingest_run_id,
+        research_id=prepared.research_id, research_version_id=version_id, profile_run_id=prepared.profile_run_id,
+        sealed_test_registered=prepared.sealed_test_registered,
+        evidence_bundle_id=bundle_id, search_run_id=str(search["id"]), fit_run_id=str(first["fit_run_ids"][0]),
         equation_version_id=str(first["equation_version_id"]),
         validation_run_ids=tuple(str(value) for value in first["validation_run_ids"]),
         validation_split_roles=tuple(roles), validation_scores=tuple(scores),
