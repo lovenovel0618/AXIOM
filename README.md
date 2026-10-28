@@ -28,6 +28,8 @@ T06 的設計與限制見 [安全 DSL 求值](docs/技術文件/M0/T06-安全DSL
 
 ## 文件檢查
 
+前後端 coverage 報告與 Sonar CI 接線已補上，獨立測試環境的執行指令與範圍限制見 [coverage 說明](tools/coverage/README.md)。正式 new_coverage 門檻與產品 Gate 尚未驗收。
+
 ```sh
 uv venv --python 3.13 .venv-backend
 uv pip sync --python .venv-backend/bin/python --require-hashes backend/requirements-dev.lock

@@ -17,3 +17,9 @@ dist/
 
 # Local Sonar scanner working directory
 .scannerwork/
+
+# Generated coverage evidence
+/reports/
+/frontend/coverage/
+.coverage
+.coverage.*

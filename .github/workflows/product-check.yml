@@ -21,7 +21,15 @@ jobs:
           .venv-backend/bin/python -m pip install --require-hashes -r backend/requirements-dev.lock
       - run: .venv-backend/bin/pyright -p backend
       - run: docker compose -p axiom-ci up --build -d --wait --wait-timeout 120
-      - run: docker compose -p axiom-ci run --rm web python manage.py test foundation.tests runtime.tests catalog.tests mathematics.tests mathematics.test_linalg mathematics.test_search mathematics.test_comparison ingestion.tests -v 2
+      - name: Backend tests with branch coverage
+        run: |
+          mkdir -p reports
+          docker compose -p axiom-ci -f compose.yaml -f tools/coverage/compose.yaml run --build --rm --no-deps --user "$(id -u):$(id -g)" coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: reports/backend-coverage.xml
+          if-no-files-found: error
       - run: docker compose -p axiom-ci run --rm web python -m mathematics.smoke
       - run: docker compose -p axiom-ci run --rm web python manage.py makemigrations --check --dry-run
       - run: docker compose -p axiom-ci run --rm web python manage.py probe_smoke
@@ -74,5 +82,39 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci --ignore-scripts
         working-directory: frontend
-      - run: npm run typecheck && npm test && npm run build
+      - run: npm run typecheck && npm run test:coverage && npm run build
         working-directory: frontend
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/
+          if-no-files-found: error
+  coverage:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage
+          path: reports
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage
+      - name: Verify portable report paths and complete frontend scope
+        run: python tools/check_coverage_reports.py
+      # Existing server-side gates apply. Opt in after configuring SONAR_TOKEN;
+      # Community Edition only receives the main-branch push, not PR analysis.
+      - name: SonarQube coverage import and quality gate
+        if: github.event_name == 'push' && vars.SONAR_ENABLED == 'true'
+        uses: SonarSource/sonarqube-scan-action@v8.3.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >-
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300

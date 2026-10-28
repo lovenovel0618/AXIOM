@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-28",
+  "base_commit": "95f9d2b",
+  "scope": "coverage reports and CI integration",
+  "review_method": "SELF_REVIEW",
+  "status": "LOCAL_VERIFIED",
+  "checks": {
+    "backend_tests": {
+      "passed": 455,
+      "failed": 0,
+      "environment": "Linux / PostgreSQL / Redis, host UID"
+    },
+    "frontend_tests": {
+      "passed": 398,
+      "failed": 0,
+      "environment": "Node 24 container; also host Node 26"
+    },
+    "engineering_tests": {
+      "passed": 85,
+      "failed": 0
+    },
+    "pyright": "PASS (0 errors)",
+    "frontend_typecheck": "PASS",
+    "frontend_build": "PASS",
+    "typing_policy": "PASS",
+    "documentation_check": "PASS",
+    "report_paths": {
+      "backend_files": 93,
+      "frontend_files": 122,
+      "status": "PASS"
+    },
+    "development_http_readiness": {
+      "18000": 200,
+      "15173": 200
+    }
+  },
+  "backend_coverage": {
+    "line-rate": "0.8297",
+    "branch-rate": "0.7559",
+    "lines-covered": "6126",
+    "lines-valid": "7383",
+    "branches-covered": "1282",
+    "branches-valid": "1696"
+  },
+  "frontend_coverage": {
+    "lines": {
+      "total": 5892,
+      "covered": 2378,
+      "skipped": 0,
+      "pct": 40.35
+    },
+    "statements": {
+      "total": 7169,
+      "covered": 2783,
+      "skipped": 0,
+      "pct": 38.81
+    },
+    "functions": {
+      "total": 2187,
+      "covered": 834,
+      "skipped": 0,
+      "pct": 38.13
+    },
+    "branches": {
+      "total": 5428,
+      "covered": 1811,
+      "skipped": 0,
+      "pct": 33.36
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  },
+  "fixed_during_validation": "Host UID could not write runtime-owned object root; test service now creates its own /tmp object root. Full suite rerun passed.",
+  "sonar_import": "NOT_RUN: SONAR_TOKEN unavailable; opt-in workflow configured",
+  "github_actions_execution": "NOT_RUN: locally validated commands; workflow not pushed",
+  "formal_new_coverage_threshold": "NOT_RUN",
+  "product_gate_status": "NOT_RUN",
+  "limitations": [
+    "Isolated python -I subprocesses are not instrumented; their source remains in the denominator.",
+    "Coverage is not browser E2E or product acceptance evidence."
+  ]
+}

@@ -1,6 +1,8 @@
 # AXIOM Feature Completion Audit
 
-更新日期：2026-10-27
+更新日期：2026-10-28
+
+2026-10-28 接續實作：已新增前後端 coverage 報告、CI artifact／路徑完整性檢查與可選的 Sonar 匯入（見 [執行與限制](tools/coverage/README.md)）。下表的 coverage 項已更新；其他項目仍沿用原盤點，未宣告產品 Gate 通過。
 
 這份盤點把「規格已定義」與「實作完成度」分開看，避免把 `NOT_RUN`、`BLOCKED`、`PARTIAL`、`未開工` 混成同一種狀態。
 
@@ -83,7 +85,7 @@
 | ValidationRun 最終結果引用 | 75% | 部分 | 物件、證據包引用與身分核對已交 | FINAL_TEST 語意層驗證仍待補 |
 | FIT 執行管線 | 25% | 部分 | runtime 有少量前置修改，文件仍明示未交付 | root attach、relay、worker、結果 sink、ValidationRun(split_role=FIT) |
 | 正式產品 Gate（G2） | 0% | 阻擋 | 文件明示 D-03 未關 | 需正式門檻決策與正式基準 |
-| Sonar / coverage 驗證接線 | 25% | 未跑 | Sonar 0 診斷已完成 | coverage 報告接線與 new_coverage 門檻仍未通 |
+| Sonar / coverage 驗證接線 | 75% | 部分 | 前後端報告、CI artifact、報告路徑檢查與可選 Sonar 匯入已接線 | Sonar 實際匯入與正式 new_coverage 門檻驗收 |
 
 ## M3：互動 MVP / 工作台
 
@@ -181,7 +183,7 @@ M4 在文件中的總狀態是「未開工」，但它包含很多獨立功能�
 1. `FIT` 執行管線  
 2. `ValidationRun(FIT)` 與結果落庫完整收尾  
 3. `M3` 的完整 E2E / 資安 / 壓測 / 備份還原  
-4. coverage 報告接線  
+4. coverage 報告接線已於 2026-10-28 補上；續驗 Sonar 匯入與正式 new_coverage 門檻
 5. 刪除傳播最後一段 outbox + 索引/快取實際清除  
 
 ## 結論

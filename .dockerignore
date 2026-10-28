@@ -5,3 +5,5 @@
 **/__pycache__
 .env
 storage
+reports
+frontend/coverage

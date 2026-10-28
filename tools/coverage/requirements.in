@@ -1,0 +1,2 @@
+# Test instrumentation only; never installed in the runtime image.
+coverage>=7.10,<8

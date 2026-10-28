@@ -112,7 +112,8 @@
   <div class="wrap">
     <h1>AXIOM Feature Completion Audit</h1>
     <div class="meta">
-      <div>更新日期：2026-10-27</div>
+      <div>更新日期：2026-10-28</div>
+      <p>2026-10-28 接續實作：已新增前後端 coverage 報告、CI artifact／路徑完整性檢查與可選的 Sonar 匯入（見 <a href="tools/coverage/README.md">執行與限制</a>）。下表的 coverage 項已更新；其他項目仍沿用原盤點，未宣告產品 Gate 通過。</p>
       <div>這份報告把「規格已定義」和「實作完成度」分開看，避免把 <code>NOT_RUN</code>、<code>BLOCKED</code>、<code>PARTIAL</code>、<code>未開工</code> 混成同一種狀態。</div>
       <div class="chips">
         <span class="chip">權威來源：docs/ 為準</span>
@@ -177,7 +178,7 @@
         <tr><td>FinalEvaluationSlot 與 FINAL_ONLY validate</td><td class="status-good">100%</td><td>部分 / 阻擋</td><td>資料層、派送、結果落庫、對外讀取已交</td><td>D-03 未關，G2 BLOCKED</td></tr>
         <tr><td>ValidationRun 最終結果引用</td><td class="status-warn">75%</td><td>部分</td><td>物件、證據包引用與身分核對已交</td><td>FINAL_TEST 語意層驗證待補</td></tr>
         <tr><td>FIT 執行管線</td><td class="status-warn">25%</td><td>部分</td><td>只有少量 runtime 前置修改</td><td>attach、relay、worker、結果 sink、FIT ValidationRun</td></tr>
-        <tr><td>Sonar / coverage 驗證接線</td><td class="status-warn">25%</td><td>未跑</td><td>Sonar 0 診斷已完成</td><td>coverage 報告接線與門檻</td></tr>
+        <tr><td>Sonar / coverage 驗證接線</td><td class="status-warn">75%</td><td>部分</td><td>前後端報告、CI artifact、報告路徑檢查與可選 Sonar 匯入已接線</td><td>Sonar 實際匯入與正式 new_coverage 門檻驗收</td></tr>
       </tbody>
     </table>
 
@@ -249,7 +250,7 @@
         <li><code>FIT</code> 執行管線</li>
         <li><code>ValidationRun(split_role="FIT")</code> 與結果落庫收尾</li>
         <li>M3 的完整 <code>E2E / 資安 / 壓測 / 備份還原</code></li>
-        <li>coverage 報告接線</li>
+        <li>coverage 報告接線已於 2026-10-28 補上；續驗 Sonar 匯入與正式 new_coverage 門檻</li>
         <li>刪除傳播最後一段 outbox + 索引/快取實際清除</li>
       </ul>
     </div>
