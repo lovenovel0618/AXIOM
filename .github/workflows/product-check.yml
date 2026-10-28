@@ -65,7 +65,7 @@ jobs:
           docker compose -p axiom-ci exec -T journal python -c "import json,os,socket,struct; assert os.getuid()==10004; s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); s.settimeout(5); s.connect('/var/lib/axiom/socket/journal.sock'); b=json.dumps({'op':'health','token':os.environ['AXIOM_JOURNAL_TOKEN']}).encode(); s.sendall(struct.pack('!I',len(b))+b); h=s.recv(4); assert json.loads(s.recv(struct.unpack('!I',h)[0]))['status']=='ok'"
           docker compose -p axiom-ci exec -T web python manage.py profile_smoke
           docker compose -p axiom-ci exec -T web python manage.py research_draft_smoke
-      - name: Real opt-in M3 end-to-end chain and security isolation
+      - name: Real opt-in M3 end-to-end chain, security isolation and load measurement
         env:
           AXIOM_INGEST_ENABLED: "1"
           AXIOM_IMPORT_LIMITS: '{"max_rows":100,"max_columns":8,"max_cell_utf8_bytes":4096,"max_decoded_bytes":65536,"max_parse_seconds":10}'
@@ -82,6 +82,8 @@ jobs:
           docker compose -p axiom-ci exec -T web python manage.py m3_e2e_smoke --frontend
           docker compose -p axiom-ci exec -T web python manage.py security_smoke
           docker compose -p axiom-ci exec -T web python manage.py security_smoke --frontend
+          docker compose -p axiom-ci exec -T web python manage.py perf_smoke --requests 200 --concurrency 10
+          docker compose -p axiom-ci exec -T web python manage.py perf_smoke --frontend --requests 200 --concurrency 10
       - name: Logs and cleanup
         if: always()
         run: |
