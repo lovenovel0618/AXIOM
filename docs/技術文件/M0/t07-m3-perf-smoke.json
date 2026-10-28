@@ -1,0 +1,447 @@
+{
+  "scope": "M3_PERFORMANCE",
+  "status": "PASS",
+  "command": "docker compose -p axiom-dev exec -T web python manage.py perf_smoke [--frontend]",
+  "spec_under_test": "docs/企劃案/13-專題深化/45-非功能SLO與壓測方案.md (AX-45, AC-45-01..04)；docs/企劃案/09-非功能/25-效能與成本治理.md (AX-25)",
+  "measurement_contract": {
+    "what_this_proves": "真實迴環 HTTP 下，列表查詢、上傳工作階段、研究提交（含冪等重播）、SSE 進度延遲、佇列等待與背景吞吐的量測值，並附環境指紋／資料 hash／負載腳本版本／並發模型。",
+    "what_this_does_not_prove": "不構成容量規劃結論，也不代表 NFR-001 或 G7 通過。",
+    "load_mix": "20 單位一循環＝80% 輕查詢（GET /api/v2/datasets）、15% 上傳（POST uploads + PUT /storage/uploads/{id}）、5% 研究提交（以同一 Idempotency-Key 冪等重播已建立之 SEARCH run）",
+    "arrival_model": "CLOSED_LOOP；in_flight_requests=20、total_units=600",
+    "latency_definition": "成功樣本（2xx）的單次 HTTP 往返牆鐘時間；最近秩法取分位數、不做插值；逾時與非 2xx 另計並計入 error_rate。",
+    "progress_latency_definition": "SSE 事件 occurred_at 到客戶端收到為止的延遲（單機同源時鐘）；另計未收事件、重複事件、截斷影格與重連次數。",
+    "cold_warm_split": "同一路徑首次出現記為 COLD、其後記為 WARM，分開統計，避免冷啟動一開始就被當成穩態。"
+  },
+  "results": [
+    {
+      "via_frontend": false,
+      "raw": {
+        "scope": "M3_PERFORMANCE",
+        "status": "PASS",
+        "via_frontend": false,
+        "environment": {
+          "os": "Linux 7.0.12-linuxkit",
+          "machine": "aarch64",
+          "python": "3.13.16",
+          "cpu_count": 18,
+          "memory_bytes": 32541364224,
+          "gpu": "未取得",
+          "gpu_reason": "執行環境未提供 GPU 探測能力，依 Fail-Closed 不推測",
+          "container_image_digest": "未取得",
+          "container_image_reason": "未注入映像 digest，改以 environment_digest 作為可比較指紋",
+          "environment_digest": "dc3b9183de15b04290513b9620a2526f79a7d40da30c5e9f89b593dda4c53b05",
+          "data_rows": 100,
+          "data_sha256": "266e86d30dce924d616217122b1df751c58251bf80c117916beeec9d3eff029b",
+          "load_script": "perf-smoke-v1",
+          "arrival_model": {
+            "kind": "CLOSED_LOOP",
+            "in_flight_requests": 20,
+            "total_units": 600,
+            "mix": {
+              "query": 0.8,
+              "upload": 0.15,
+              "submit": 0.05
+            }
+          },
+          "clock_model": "SINGLE_HOST_WALL_CLOCK"
+        },
+        "measurements": {
+          "GET /api/v2/datasets": {
+            "samples": 480,
+            "outcomes": {
+              "OK": 480
+            },
+            "error_rate": 0.0,
+            "timeout_count": 0,
+            "p50_ms": 389.859,
+            "p95_ms": 746.527,
+            "p99_ms": 1014.7,
+            "max_ms": 1288.433,
+            "cold_samples": 1,
+            "cold_p95_ms": 328.873,
+            "warm_samples": 479,
+            "warm_p95_ms": 746.725
+          },
+          "POST /api/v2/datasets/{id}/uploads": {
+            "samples": 90,
+            "outcomes": {
+              "OK": 90
+            },
+            "error_rate": 0.0,
+            "timeout_count": 0,
+            "p50_ms": 438.172,
+            "p95_ms": 757.616,
+            "p99_ms": 847.66,
+            "max_ms": 847.66,
+            "cold_samples": 1,
+            "cold_p95_ms": 72.892,
+            "warm_samples": 89,
+            "warm_p95_ms": 757.616
+          },
+          "POST /api/v2/research-versions/{id}/runs [CREATE]": {
+            "samples": 1,
+            "outcomes": {
+              "OK": 1
+            },
+            "error_rate": 0.0,
+            "timeout_count": 0,
+            "p50_ms": 941.163,
+            "p95_ms": 941.163,
+            "p99_ms": 941.163,
+            "max_ms": 941.163,
+            "cold_samples": 1,
+            "cold_p95_ms": 941.163,
+            "warm_samples": 0,
+            "warm_p95_ms": null
+          },
+          "POST /api/v2/research-versions/{id}/runs [REPLAY]": {
+            "samples": 30,
+            "outcomes": {
+              "OK": 30
+            },
+            "error_rate": 0.0,
+            "timeout_count": 0,
+            "p50_ms": 425.223,
+            "p95_ms": 624.761,
+            "p99_ms": 636.002,
+            "max_ms": 636.002,
+            "cold_samples": 0,
+            "cold_p95_ms": null,
+            "warm_samples": 30,
+            "warm_p95_ms": 624.761
+          },
+          "PUT /storage/uploads/{id}": {
+            "samples": 90,
+            "outcomes": {
+              "OK": 90
+            },
+            "error_rate": 0.0,
+            "timeout_count": 0,
+            "p50_ms": 457.112,
+            "p95_ms": 761.639,
+            "p99_ms": 882.222,
+            "max_ms": 882.222,
+            "cold_samples": 90,
+            "cold_p95_ms": 761.639,
+            "warm_samples": 0,
+            "warm_p95_ms": null
+          }
+        },
+        "units_completed": 691,
+        "wall_seconds": 24.917,
+        "achieved_rps": 27.733,
+        "progress_latency": {
+          "events_seen": 3,
+          "p50_ms": 5801.092,
+          "p95_ms": 7493.507,
+          "p99_ms": 7493.507,
+          "lost_events": 0,
+          "duplicate_events": 0,
+          "malformed_frames": 0,
+          "reconnects": 3,
+          "server_retry_ms": 2000
+        },
+        "run_timing": {
+          "queue_wait_ms": 1692.415,
+          "run_wall_ms": 9453.222,
+          "background_tasks_per_minute": 6.347
+        },
+        "submitted_run_id": "321e0e65-fdfe-447d-be6a-5500850092ef",
+        "submitted_run_status": "SUCCEEDED",
+        "resubmit_created_one_run": true,
+        "worker_failures": [],
+        "protocol": {
+          "spec": "AX-45 執行程序：預熱 5 分鐘／量測 15 分鐘／至少 3 次獨立執行",
+          "warmup_seconds": 0,
+          "measure_seconds": 24.917,
+          "independent_runs": 1,
+          "compliant": false,
+          "reason": "單機開發環境；以 100 列確認腳本正確，容量規劃需另在目標硬體重跑"
+        },
+        "error_rate_threshold": null,
+        "slo_verdict": "NOT_RUN",
+        "slo_reason": "D-06 尚未凍結錯誤率／量測窗口／error budget，且協定未達規格要求，只報測量值",
+        "g7_status": "BLOCKED",
+        "nfr_001_status": "NOT_RUN",
+        "account_tenant": "39ddb6b3-a24b-4de7-bd3b-37df9872f0a4",
+        "product_gate_status": "NOT_RUN"
+      }
+    },
+    {
+      "via_frontend": true,
+      "raw": {
+        "scope": "M3_PERFORMANCE",
+        "status": "PASS",
+        "via_frontend": true,
+        "environment": {
+          "os": "Linux 7.0.12-linuxkit",
+          "machine": "aarch64",
+          "python": "3.13.16",
+          "cpu_count": 18,
+          "memory_bytes": 32541364224,
+          "gpu": "未取得",
+          "gpu_reason": "執行環境未提供 GPU 探測能力，依 Fail-Closed 不推測",
+          "container_image_digest": "未取得",
+          "container_image_reason": "未注入映像 digest，改以 environment_digest 作為可比較指紋",
+          "environment_digest": "dc3b9183de15b04290513b9620a2526f79a7d40da30c5e9f89b593dda4c53b05",
+          "data_rows": 100,
+          "data_sha256": "266e86d30dce924d616217122b1df751c58251bf80c117916beeec9d3eff029b",
+          "load_script": "perf-smoke-v1",
+          "arrival_model": {
+            "kind": "CLOSED_LOOP",
+            "in_flight_requests": 20,
+            "total_units": 600,
+            "mix": {
+              "query": 0.8,
+              "upload": 0.15,
+              "submit": 0.05
+            }
+          },
+          "clock_model": "SINGLE_HOST_WALL_CLOCK"
+        },
+        "measurements": {
+          "GET /api/v2/datasets": {
+            "samples": 480,
+            "outcomes": {
+              "OK": 480
+            },
+            "error_rate": 0.0,
+            "timeout_count": 0,
+            "p50_ms": 423.807,
+            "p95_ms": 755.264,
+            "p99_ms": 920.037,
+            "max_ms": 1346.289,
+            "cold_samples": 1,
+            "cold_p95_ms": 135.889,
+            "warm_samples": 479,
+            "warm_p95_ms": 755.587
+          },
+          "POST /api/v2/datasets/{id}/uploads": {
+            "samples": 90,
+            "outcomes": {
+              "OK": 90
+            },
+            "error_rate": 0.0,
+            "timeout_count": 0,
+            "p50_ms": 539.643,
+            "p95_ms": 821.756,
+            "p99_ms": 899.418,
+            "max_ms": 899.418,
+            "cold_samples": 1,
+            "cold_p95_ms": 352.388,
+            "warm_samples": 89,
+            "warm_p95_ms": 821.756
+          },
+          "POST /api/v2/research-versions/{id}/runs [CREATE]": {
+            "samples": 1,
+            "outcomes": {
+              "OK": 1
+            },
+            "error_rate": 0.0,
+            "timeout_count": 0,
+            "p50_ms": 191.598,
+            "p95_ms": 191.598,
+            "p99_ms": 191.598,
+            "max_ms": 191.598,
+            "cold_samples": 1,
+            "cold_p95_ms": 191.598,
+            "warm_samples": 0,
+            "warm_p95_ms": null
+          },
+          "POST /api/v2/research-versions/{id}/runs [REPLAY]": {
+            "samples": 30,
+            "outcomes": {
+              "OK": 30
+            },
+            "error_rate": 0.0,
+            "timeout_count": 0,
+            "p50_ms": 519.616,
+            "p95_ms": 758.701,
+            "p99_ms": 830.54,
+            "max_ms": 830.54,
+            "cold_samples": 0,
+            "cold_p95_ms": null,
+            "warm_samples": 30,
+            "warm_p95_ms": 758.701
+          },
+          "PUT /storage/uploads/{id}": {
+            "samples": 90,
+            "outcomes": {
+              "OK": 90
+            },
+            "error_rate": 0.0,
+            "timeout_count": 0,
+            "p50_ms": 585.995,
+            "p95_ms": 760.145,
+            "p99_ms": 795.557,
+            "max_ms": 795.557,
+            "cold_samples": 90,
+            "cold_p95_ms": 760.145,
+            "warm_samples": 0,
+            "warm_p95_ms": null
+          }
+        },
+        "units_completed": 691,
+        "wall_seconds": 24.014,
+        "achieved_rps": 28.774,
+        "progress_latency": {
+          "events_seen": 3,
+          "p50_ms": 2410.221,
+          "p95_ms": 4309.3,
+          "p99_ms": 4309.3,
+          "lost_events": 0,
+          "duplicate_events": 0,
+          "malformed_frames": 0,
+          "reconnects": 3,
+          "server_retry_ms": 2000
+        },
+        "run_timing": {
+          "queue_wait_ms": 1899.079,
+          "run_wall_ms": 6297.495,
+          "background_tasks_per_minute": 9.528
+        },
+        "submitted_run_id": "cc23fcdd-6ba0-402e-8d57-44ec6b143986",
+        "submitted_run_status": "SUCCEEDED",
+        "resubmit_created_one_run": true,
+        "worker_failures": [],
+        "protocol": {
+          "spec": "AX-45 執行程序：預熱 5 分鐘／量測 15 分鐘／至少 3 次獨立執行",
+          "warmup_seconds": 0,
+          "measure_seconds": 24.014,
+          "independent_runs": 1,
+          "compliant": false,
+          "reason": "單機開發環境；以 100 列確認腳本正確，容量規劃需另在目標硬體重跑"
+        },
+        "error_rate_threshold": null,
+        "slo_verdict": "NOT_RUN",
+        "slo_reason": "D-06 尚未凍結錯誤率／量測窗口／error budget，且協定未達規格要求，只報測量值",
+        "g7_status": "BLOCKED",
+        "nfr_001_status": "NOT_RUN",
+        "account_tenant": "390d7da0-5c21-433d-aca9-9704226f1d9e",
+        "product_gate_status": "NOT_RUN"
+      }
+    }
+  ],
+  "measured_matrices": {
+    "list_latency_p95_ms": {
+      "direct": 746.527,
+      "frontend": 755.264
+    },
+    "submit_create_ms": {
+      "direct": 941.163,
+      "frontend": 191.598
+    },
+    "submit_replay_p95_ms": {
+      "direct": 624.761,
+      "frontend": 758.701
+    },
+    "sse_progress_p95_ms": {
+      "direct": 7493.507,
+      "frontend": 4309.3
+    },
+    "queue_wait_ms": {
+      "direct": 1692.415,
+      "frontend": 1899.079
+    },
+    "background_tasks_per_minute": {
+      "direct": 6.347,
+      "frontend": 9.528
+    },
+    "error_rate": {
+      "direct": 0.0,
+      "frontend": 0.0
+    },
+    "achieved_rps": {
+      "direct": 27.733,
+      "frontend": 28.774
+    },
+    "idempotent_submit_root_count": {
+      "direct": true,
+      "frontend": true
+    },
+    "sse_stream_integrity": {
+      "direct": {
+        "lost_events": 0,
+        "duplicate_events": 0,
+        "malformed_frames": 0,
+        "reconnects": 3,
+        "server_retry_ms": 2000
+      },
+      "frontend": {
+        "lost_events": 0,
+        "duplicate_events": 0,
+        "malformed_frames": 0,
+        "reconnects": 3,
+        "server_retry_ms": 2000
+      }
+    }
+  },
+  "protocol_compliance": {
+    "spec": "AX-45 執行程序：每階段預熱 5 分鐘、量測 15 分鐘、至少 3 次獨立執行；100 並發以同時在途請求計。",
+    "measured": {
+      "warmup_seconds": 0,
+      "measure_seconds": 24.917,
+      "independent_runs": 1,
+      "in_flight_requests": 20
+    },
+    "compliant": false,
+    "note": "本切片是單機開發環境下的腳本正確性驗證，未達規格要求的預熱、量測窗口與重複次數，因此不得作為容量或 SLO 結論。"
+  },
+  "acceptance_cases": [
+    {
+      "id": "AC-45-01",
+      "status": "PARTIAL",
+      "scope": "場景延遲量測（列表／提交／進度）",
+      "evidence": "四個端點序列與 SSE 進度延遲皆已量測並附分位數；未依規格預熱與重複執行，故非結論性。"
+    },
+    {
+      "id": "AC-45-02",
+      "status": "NOT_RUN",
+      "scope": "10 萬點圖形互動",
+      "evidence": "本切片資料規模為 100 列，未涵蓋 10 萬點前端互動。"
+    },
+    {
+      "id": "AC-45-03",
+      "status": "NOT_RUN",
+      "scope": "工作池復原與單研究算力上限",
+      "evidence": "未量測工作池故障復原與單研究算力上限。"
+    },
+    {
+      "id": "AC-45-04",
+      "status": "NOT_RUN",
+      "scope": "SLO 判定",
+      "evidence": "D-06 未凍結錯誤率門檻／量測窗口／error budget，只報量測值。"
+    },
+    {
+      "id": "AC-25-01",
+      "status": "NOT_RUN",
+      "scope": "查詢 p95 < 300ms 之正式判定",
+      "evidence": "已取得量測值，但環境未達規格且未凍結門檻，不宣告通過。"
+    },
+    {
+      "id": "AC-25-02",
+      "status": "NOT_RUN",
+      "scope": "研究提交 p95 < 1s 之正式判定",
+      "evidence": "同上。"
+    },
+    {
+      "id": "AC-25-03",
+      "status": "NOT_RUN",
+      "scope": "預算治理與成本上限",
+      "evidence": "屬 M4／AI Gateway 範圍。"
+    },
+    {
+      "id": "AC-25-04",
+      "status": "NOT_RUN",
+      "scope": "最佳化策略覆蓋",
+      "evidence": "未涵蓋。"
+    }
+  ],
+  "gates": {
+    "nfr_001_status": "NOT_RUN",
+    "g7_status": "BLOCKED",
+    "blocker": "D-06 未凍結錯誤率／量測窗口／error budget；且本切片協議未達 AX-45 要求。",
+    "product_gate_status": "NOT_RUN"
+  },
+  "product_gate_status": "NOT_RUN"
+}
