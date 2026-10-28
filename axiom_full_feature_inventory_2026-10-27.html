@@ -118,7 +118,7 @@
 
     <div class="panel">
       <div>更新日期：2026-10-28</div>
-      <p>2026-10-28 接續實作：已補上前後端 coverage 報告、CI 保存與路徑檢查、可選的 Sonar 匯入，操作見 <a href="tools/coverage/README.md">coverage 說明</a>。原盤點其餘功能狀態維持；正式 new_coverage 門檻及產品 Gate 尚未驗收。</p>
+      <p>2026-10-28 接續實作：已補上前後端 coverage 報告、CI 保存與路徑檢查、可選的 Sonar 匯入（見 <a href="tools/coverage/README.md">coverage 說明</a>）；同一輪並落地 <strong>FIT 執行鏈</strong>（既有 FIT root 補上真實 <code>InputSnapshot</code>／<code>RootBudget</code>／<code>Reservation</code>、隔離重算與兩筆 <code>ValidationRun(split_role=FIT/DEVELOPMENT)</code>，並接 <code>relay_fit</code>／<code>catalog.fit_tick</code> 專用 <code>fit</code> queue）、<strong>時間與群組切分防線</strong>（<code>TIME_ORDERED</code>／<code>GROUPED_ROWS</code> 於隔離程序驗真實值）、<strong>驗證結果數值語意硬化</strong>。實測：<code>test_fit</code>／<code>test_dependencies</code>／<code>test_final_evaluation</code> 44 項、<code>test_search</code>／<code>test_inspection</code>／<code>test_research</code> 48 項、<code>tests.test_coverage_reports</code> 5 項全綠。M4~M7 主體未開工、正式 new_coverage 門檻與產品 Gate 仍未驗收。</p>
       <div>這份報告覆蓋 REQ / NFR、40 頁 SSOT、研究線、資料線、驗證線、記憶線、Ollama/模型線、訓練線、設定線，以及支援頁面與 Gate/阻擋條件。</div>
       <div class="chips">
         <span class="chip">以 docs/ 為權威</span>
@@ -134,7 +134,7 @@
       <div class="card"><h3>SSOT 真頁</h3><div class="big">40 頁</div><div>Vue route / view 全部存在</div></div>
       <div class="card"><h3>Ollama / AI</h3><div class="big">規格有</div><div>頁面有，但後端主體尚未完成</div></div>
       <div class="card"><h3>訓練 / 發布</h3><div class="big">頁面有</div><div>training / finetune / release 後端缺失</div></div>
-      <div class="card"><h3>M1~M3</h3><div class="big">主幹已成形</div><div>仍缺 FIT、E2E、資安、壓測、備份還原</div></div>
+      <div class="card"><h3>M1~M3</h3><div class="big">主幹已成形</div><div>FIT 執行鏈已補；仍缺 E2E、資安、壓測、備份還原</div></div>
       <div class="card"><h3>M4~M7</h3><div class="big">多未開工</div><div>記憶、AI、proof、多序列、訓練是大缺口</div></div>
     </div>
 
@@ -145,8 +145,8 @@
       </thead>
       <tbody>
         <tr><td>REQ-001</td><td>資料匯入與品質報告</td><td>M1</td><td class="good">已交付</td><td class="good">已落地</td><td>NOT_RUN</td><td>MVP 主幹已有</td></tr>
-        <tr><td>REQ-002</td><td>自動公式候選生成</td><td>M2</td><td class="warn">部分</td><td class="good">已落地</td><td>NOT_RUN</td><td>三策略已交，但 FIT 未完</td></tr>
-        <tr><td>REQ-003</td><td>獨立驗證與拒答</td><td>M1~M2</td><td class="warn">部分</td><td class="good">已落地</td><td>NOT_RUN / BLOCKED</td><td>final gate 仍受阻</td></tr>
+        <tr><td>REQ-002</td><td>自動公式候選生成</td><td>M2</td><td class="good">已交付</td><td class="good">已落地</td><td>NOT_RUN</td><td>三策略與 FIT 執行鏈已交</td></tr>
+        <tr><td>REQ-003</td><td>獨立驗證與拒答</td><td>M1~M2</td><td class="warn">部分</td><td class="good">已落地</td><td>NOT_RUN / BLOCKED</td><td>FIT／development 隔離驗證已交，final gate 仍受阻</td></tr>
         <tr><td>REQ-004</td><td>公式片段與經驗記憶</td><td>M4</td><td class="bad">未開工</td><td class="warn">頁面存在</td><td>NOT_RUN</td><td>記憶主體未做</td></tr>
         <tr><td>REQ-005</td><td>AI 假說與策略協調</td><td>M4</td><td class="bad">未開工</td><td class="warn">頁面存在</td><td>NOT_RUN</td><td>Ollama / Gateway 未完成</td></tr>
         <tr><td>REQ-006</td><td>公式推演與證明</td><td>M5</td><td class="bad">未開工</td><td class="warn">頁面存在</td><td>NOT_RUN</td><td>proof / checker 未做</td></tr>
@@ -179,14 +179,14 @@
         <tr><td>不可變上傳</td><td>upload session / sha / immutable object</td><td class="good">已落地</td><td class="good">已交付</td><td>NOT_RUN</td><td>主幹完成</td></tr>
         <tr><td>匯入解析</td><td>CSV / JSON / Parquet</td><td class="good">已落地</td><td class="good">已交付</td><td>NOT_RUN</td><td>主幹完成</td></tr>
         <tr><td>metadata 預覽</td><td>建立前結構預覽</td><td class="good">已落地</td><td class="good">已交付</td><td>NOT_RUN</td><td>主幹完成</td></tr>
-        <tr><td>語意確認</td><td>domain / split / target / inputs</td><td class="good">已落地</td><td class="warn">部分</td><td>PARTIAL</td><td>時間/群組/refit 未開</td></tr>
+        <tr><td>語意確認</td><td>domain / split / target / inputs</td><td class="good">已落地</td><td class="good">已交付</td><td>PARTIAL</td><td>時間序／群組切分已開；refit policy 仍明確拒絕</td></tr>
         <tr><td>DSL 求值</td><td>parser / canonical / bounded evaluator</td><td>-</td><td class="good">已交付</td><td>NOT_RUN</td><td>主幹完成</td></tr>
         <tr><td>PROFILE</td><td>quality / structure assessment / research budget</td><td class="good">已落地</td><td class="good">已交付</td><td>NOT_RUN</td><td>主幹完成</td></tr>
         <tr><td>SEARCH</td><td>dispatch / projection / checkpoint</td><td class="good">已落地</td><td class="good">已交付</td><td>PARTIAL</td><td>SEARCH 主體完成</td></tr>
-        <tr><td>FIT</td><td>擬合 root / worker / 結果落庫</td><td class="warn">無完整專頁</td><td class="warn">部分</td><td>PARTIAL</td><td>關鍵未完</td></tr>
+        <tr><td>FIT</td><td>擬合 root / worker / 結果落庫</td><td class="warn">無完整專頁</td><td class="good">已交付</td><td>PARTIAL</td><td>隔離重算與雙 split ValidationRun 已交，待產品驗收</td></tr>
         <tr><td>候選凍結</td><td>FrozenCandidate / FrozenSubmission</td><td class="good">已落地</td><td class="good">已交付</td><td>PARTIAL</td><td>主體已交</td></tr>
         <tr><td>最終驗證</td><td>FinalEvaluationSlot / FINAL_ONLY validate</td><td class="good">已落地</td><td class="good">已交付</td><td>BLOCKED</td><td>D-03 卡住</td></tr>
-        <tr><td>ValidationRun</td><td>final result readback</td><td class="good">已落地</td><td class="warn">部分</td><td>PARTIAL</td><td>FINAL_TEST 語意驗證未完</td></tr>
+        <tr><td>ValidationRun</td><td>final result readback</td><td class="good">已落地</td><td class="good">已交付</td><td>PARTIAL</td><td>數值語意硬化已補，產品案例未跑</td></tr>
         <tr><td>證據包</td><td>evidence bundle / artifact linkage</td><td class="good">已落地</td><td class="good">已交付</td><td>NOT_RUN</td><td>主幹完成</td></tr>
         <tr><td>刪除傳播</td><td>deletion request / dry-run / relay</td><td>-</td><td class="warn">部分</td><td>PARTIAL</td><td>最後一段清除鏈未完</td></tr>
         <tr><td>Trace / 決策紀錄</td><td>trace chunk / decision graph / replay</td><td class="warn">記憶頁存在</td><td class="warn">部分</td><td>NOT_RUN</td><td>只有最小基線</td></tr>
@@ -278,7 +278,7 @@
         <li>M5：proof、checker、多路徑驗證、inverse problem</li>
         <li>M6：雙序列、多維、時滯、2D/3D、conditional inverse</li>
         <li>M7：多序列、state reconstruction、training、release、rollback</li>
-        <li>M2 缺口：FIT 執行管線</li>
+        <li>M2 缺口：refit policy 與正式產品 Gate（FIT 執行鏈已於 2026-10-28 交付）</li>
         <li>M3 缺口：E2E、資安、壓測、備份還原</li>
       </ol>
     </div>
@@ -298,7 +298,7 @@
       <ul>
         <li>這份已經是<strong>全產品功能總表</strong>，不只是階段級摘要。</li>
         <li>完整產品功能遠多於目前已完成部分，尤其 <strong>M4~M7</strong> 還有大量未實作能力。</li>
-        <li>目前比較準的說法是：<strong>M1~M3 主幹做出來了，但關鍵缺口仍在；M4~M7 規格完整，但實作大多未開始。</strong></li>
+        <li>目前比較準的說法是：<strong>M1~M3 主幹做出來了（M2 的 FIT 執行鏈與隔離驗證已於 2026-10-28 補上），但關鍵缺口與驗收仍在；M4~M7 規格完整，但實作大多未開始。</strong></li>
       </ul>
     </div>
   </div>

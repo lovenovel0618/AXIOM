@@ -2,7 +2,14 @@
 
 更新日期：2026-10-28
 
-2026-10-28 接續實作：已新增前後端 coverage 報告、CI artifact／路徑完整性檢查與可選的 Sonar 匯入（見 [執行與限制](tools/coverage/README.md)）。下表的 coverage 項已更新；其他項目仍沿用原盤點，未宣告產品 Gate 通過。
+2026-10-28 接續實作（皆以 `docs/` 為權威，程式與文件同步修正）：
+
+- **FIT 執行鏈**：對既有最小 FIT root 補上真實 `InputSnapshot`、`RootBudget`／`Reservation`、隔離重算與兩筆 `ValidationRun`（`split_role` 分別為 `FIT`／`DEVELOPMENT`，`metric_version="2.0"`，鍵齊但 `submission_id`／`frozen_candidate_id` 為 null），並接上 `relay_fit`／`catalog.fit_tick` 專用 `fit` queue（見 [T07-FIT執行鏈設計](docs/技術文件/M0/T07-FIT執行鏈設計.md)）。
+- **時間與群組切分防線**：`TIME_ORDERED`（嚴格遞增時間與邊界 gap 覆蓋 lookback+horizon）與 `GROUPED_ROWS`（整組分派與 `group_assignment_digest`）已開放；版本建立只驗 metadata，真實值於隔離程序驗證後才 READY（見 [T07-時間與群組切分設計](docs/技術文件/M0/T07-時間與群組切分設計.md)）。
+- **驗證結果數值語意硬化**：`catalog/result_semantics.py::verify` 固定分母、覆蓋率與可比較性，非 `INSUFFICIENT_EVIDENCE` 時不得缺 `mae`／`rmse`。
+- **coverage 接線**：前後端 coverage 報告、CI artifact／路徑完整性檢查與可選的 Sonar 匯入（見 [執行與限制](tools/coverage/README.md)）。
+
+實測佐證（dev 映像重建後於真實 PostgreSQL 執行）：`catalog.tests.test_fit`／`test_dependencies`／`test_final_evaluation` 44 項、`catalog.tests.test_search`／`test_inspection`／`test_research` 48 項、`tests.test_coverage_reports` 5 項全數通過。正式產品 Gate 與 `AX-46` 的 `NOT_RUN` 產品案例仍未跑。
 
 這份盤點把「規格已定義」與「實作完成度」分開看，避免把 `NOT_RUN`、`BLOCKED`、`PARTIAL`、`未開工` 混成同一種狀態。
 
@@ -38,7 +45,7 @@
 |---|---:|---|---|
 | M0 | 100% | 未跑 | 規格、契約、基線與審查票都已具備 |
 | M1 | 75% | 未跑 | 可信核心與多數 T07 前置已落地，但 M1 仍未關閉 |
-| M2 | 70% | 部分 / 阻擋 | 三策略、checkpoint、凍結 API 多數已交；FIT 與正式 Gate 未完 |
+| M2 | 85% | 部分 / 阻擋 | 三策略、checkpoint、凍結 API、FIT 執行鏈與隔離驗證已交；正式產品 Gate 仍受阻 |
 | M3 | 60% | 未跑 | 工作台已大量落地，但 E2E、資安、壓測、備份還原未完成 |
 | M4 | 10% | 未跑 | 規格完整，只有少數前置基線，主體未開工 |
 | M5 | 5% | 未跑 | 只有 M1~M3 的最小證據基線，M5 主功能未開工 |
@@ -62,7 +69,7 @@
 | DSL v1、canonical、受限求值 | 100% | 未跑 | T06 已交 | 產品案例尚未跑 |
 | 有界匯入解析（CSV/JSON/Parquet） | 100% | 未跑 | T07 已交 | 產品案例尚未跑 |
 | 建立前 metadata 預覽 | 100% | 未跑 | AX-49 的 metadata/f it 分工已接入 | 產品案例 AC-49-09~10 未跑 |
-| 語意確認與固定 split | 75% | 部分 | 單一輸入、domain、切分與 draft research 已交 | 時間 / 群組 / refit 仍未開放 |
+| 語意確認與固定 split | 75% | 部分 | 單一輸入、domain、切分、draft research，以及時間序與群組切分防線（`TIME_ORDERED`／`GROUPED_ROWS`）已交 | refit policy 仍維持明確拒絕、產品案例未跑 |
 | 已知公式整合與 fit/development 評分 | 100% | 未跑 | 已有本機研究預檢與已知公式整合 | 產品案例未跑 |
 | 研究帳本與 PROFILE 任務 | 100% | 未跑 | 兩層預算、PROFILE、事件與收據已交 | 產品案例未跑 |
 | 正式封存與曝光帳本 | 100% | 未跑 | formal seal 與 authority 已交 | 產品案例未跑 |
@@ -78,14 +85,14 @@
 | 線性策略共用介面收斂 | 100% | 未跑 | M2-T1 已交 | 正式產品驗收未跑 |
 | 多項式策略接入 | 100% | 未跑 | M2-T2 已交 | 正式產品驗收未跑 |
 | 固定頻率諧波策略接入 | 100% | 未跑 | M2-T3 已交 | 正式產品驗收未跑 |
-| SEARCH 派送、投影模式、逐策略 checkpoint 續跑 | 100% | 部分 | 切片 3 已交 | 該切口整體仍 PARTIAL，因 FIT 未完 |
+| SEARCH 派送、投影模式、逐策略 checkpoint 續跑 | 100% | 部分 | 切片 3 已交，SEARCH 完成後自動接上既有 FIT root | 切口僅待產品驗收，FIT 已補 |
 | root/child 排程、租約、checkpoint | 100% | 未跑 | M2-T4 已交 | 正式產品驗收未跑 |
 | 候選凍結 API、FrozenSubmission、snapshot_hash | 100% | 部分 | M2-T5 已交 | 該切口整體已無功能缺口，但驗收未跑 |
 | FinalEvaluationSlot 資料層與 FINAL_ONLY validate | 100% | 部分 / 阻擋 | 槽位、派送、結果落庫、對外讀取已交 | D-03 未關，G2 仍 BLOCKED |
-| ValidationRun 最終結果引用 | 75% | 部分 | 物件、證據包引用與身分核對已交 | FINAL_TEST 語意層驗證仍待補 |
-| FIT 執行管線 | 25% | 部分 | runtime 有少量前置修改，文件仍明示未交付 | root attach、relay、worker、結果 sink、ValidationRun(split_role=FIT) |
+| ValidationRun 最終結果引用 | 100% | 部分 | 物件、證據包引用、身分核對與結果數值語意硬化（`result_semantics.verify`）已交 | 產品案例未跑 |
+| FIT 執行管線 | 100% | 部分 | FIT 根任務管線落地：`attach`／`relay_fit`／`catalog.fit_tick`／`fit` 專用 queue／隔離重算／兩筆 ValidationRun，並附測試 | 正式產品驗收未跑 |
 | 正式產品 Gate（G2） | 0% | 阻擋 | 文件明示 D-03 未關 | 需正式門檻決策與正式基準 |
-| Sonar / coverage 驗證接線 | 75% | 部分 | 前後端報告、CI artifact、報告路徑檢查與可選 Sonar 匯入已接線 | Sonar 實際匯入與正式 new_coverage 門檻驗收 |
+| Sonar / coverage 驗證接線 | 75% | 部分 | 前後端報告、CI artifact、報告路徑檢查與可選 Sonar 匯入已接線，並附 `tests.test_coverage_reports` 反例測試 | Sonar 伺服器實際匯入與正式 new_coverage 門檻驗收 |
 
 ## M3：互動 MVP / 工作台
 
@@ -97,7 +104,7 @@
 | 候選比較 UI | 100% | 部分 | 候選比較與多候選並排已交 | 切口整體仍 PARTIAL |
 | SSE 斷線重連與 snapshot 還原 | 100% | 部分 | 已交 | 完整 M3 驗收未跑 |
 | Run 清單與重開研究 | 100% | 部分 | 已交 | 完整 M3 驗收未跑 |
-| 上傳與語意確認 UI | 100% | 部分 | 已交 | 時間/群組/refit 深化仍未開放 |
+| 上傳與語意確認 UI | 100% | 部分 | 已交 | refit policy 深化仍未開放 |
 | 證據檢視 UI 與最終評估面板 | 100% | 部分 | 已交 | 完整 M3 驗收未跑 |
 | SEARCHING 與候選進度顯示 | 100% | 部分 | 切片 3 已交 | 完整 M3 驗收未跑 |
 | 40 頁 UIUX 重製版整合 | 50% | 未跑 | 40 頁 SSOT 已大量落地，但 docs 未宣告完成 | 跨頁互動、全頁逐頁驗收 |
@@ -180,18 +187,18 @@ M4 在文件中的總狀態是「未開工」，但它包含很多獨立功能�
 
 這些不是遠期規格，而是文件明示可逆開發、但尚未完成的項目：
 
-1. `FIT` 執行管線  
-2. `ValidationRun(FIT)` 與結果落庫完整收尾  
-3. `M3` 的完整 E2E / 資安 / 壓測 / 備份還原  
-4. coverage 報告接線已於 2026-10-28 補上；續驗 Sonar 匯入與正式 new_coverage 門檻
-5. 刪除傳播最後一段 outbox + 索引/快取實際清除  
+1. `M3` 的完整 E2E / 資安 / 壓測 / 備份還原  
+2. coverage 報告接線與 `tests.test_coverage_reports` 已於 2026-10-28 補上；續驗 Sonar 伺服器匯入與正式 new_coverage 門檻
+3. 刪除傳播最後一段 outbox + 索引/快取實際清除  
+4. `refit policy` 於語意確認的明確拒絕仍未開放  
+5. `FIT` 執行鏈已於 2026-10-28 交付；續驗正式產品案例與循證文件
 
 ## 結論
 
-- **已經做很多，但還不是「大部分都收尾」的狀態。**
-- `M1~M3` 屬於「主幹已長出來，但驗收與幾個關鍵功能缺口還在」。
+- **主幹（含 FIT 執行鏈）已收斂，但還不是「大部分都收尾」的狀態。**
+- `M1~M3` 屬於「主幹已長出來，但驗收與少數關鍵功能缺口還在」；本輪已補上 `M2` 的 FIT 執行鏈、時間／群組切分與結果語意硬化。
 - `M4~M7` 屬於「規格很完整，但實作基本還沒展開」。
 - 如果只看功能級完成度：
-  - `M1~M3` 大多落在 `50%~100%`
+  - `M1~M3` 大多落在 `75%~100%`
   - `M4` 大多落在 `0%~25%`
   - `M5~M7` 幾乎都還是 `0%`

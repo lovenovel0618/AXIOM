@@ -2,7 +2,7 @@
 
 更新日期：2026-10-28
 
-2026-10-28 接續實作：已補上前後端 coverage 報告、CI 保存與路徑檢查、可選的 Sonar 匯入，操作見 [coverage 說明](tools/coverage/README.md)。原盤點其餘功能狀態維持；正式 new_coverage 門檻及產品 Gate 尚未驗收。
+2026-10-28 接續實作：已補上前後端 coverage 報告、CI 保存與路徑檢查、可選的 Sonar 匯入（見 [coverage 說明](tools/coverage/README.md)）；同一輪並落地 **FIT 執行鏈**（既有 FIT root 補上真實 `InputSnapshot`、`RootBudget`／`Reservation`、隔離重算與兩筆 `ValidationRun(split_role=FIT/DEVELOPMENT)`，並接 `relay_fit`／`catalog.fit_tick` 專用 `fit` queue）、**時間與群組切分防線**（`TIME_ORDERED`／`GROUPED_ROWS` 於隔離程序驗真實值）、**驗證結果數值語意硬化**（`catalog/result_semantics.py::verify`）。實測：`test_fit`／`test_dependencies`／`test_final_evaluation` 44 項、`test_search`／`test_inspection`／`test_research` 48 項、`tests.test_coverage_reports` 5 項全綠。M4~M7 主體未開工、正式 new_coverage 門檻與產品 Gate 仍未驗收。
 
 這份文件的目標不是只回答「哪個階段做完沒」，而是把 **AXIOM 完整產品規格中的全部功能** 拆出來，包含：
 
@@ -64,8 +64,8 @@
 | ID | 功能 | 階段 | 規格狀態 | 後端能力 | 前端頁面 | 驗收 | 目前判定 |
 |---|---|---|---|---|---|---|---|
 | REQ-001 | 資料匯入與品質報告 | M1 | 已定義 | 已交付 | 已落地 | NOT_RUN | MVP 主幹已有 |
-| REQ-002 | 自動公式候選生成 | M2 | 已定義 | 部分 | 已落地 | NOT_RUN | 三策略已交，但 FIT 未完 |
-| REQ-003 | 獨立驗證與拒答 | M1~M2 | 已定義 | 部分 | 已落地 | NOT_RUN / BLOCKED | final gate 仍受阻 |
+| REQ-002 | 自動公式候選生成 | M2 | 已定義 | 已交付 | 已落地 | NOT_RUN | 三策略與 FIT 執行鏈已交 |
+| REQ-003 | 獨立驗證與拒答 | M1~M2 | 已定義 | 部分 | 已落地 | NOT_RUN / BLOCKED | FIT／development 隔離驗證已交，final gate 仍受阻 |
 | REQ-004 | 公式片段與經驗記憶 | M4 | 已定義 | 未開工 | 頁面存在但多為推導/占位 | NOT_RUN | 記憶主體未做 |
 | REQ-005 | AI 假說與策略協調 | M4 | 已定義 | 未開工 | 頁面存在但無後端接線 | NOT_RUN | Ollama / Gateway 未完成 |
 | REQ-006 | 公式推演與證明 | M5 | 已定義 | 未開工 | 頁面存在 | NOT_RUN | proof / checker 未做 |
@@ -94,14 +94,14 @@
 | 不可變上傳 | upload session / sha / immutable object | 已落地 | 已交付 | NOT_RUN | 主幹完成 |
 | 匯入解析 | CSV / JSON / Parquet bounded parsing | 已落地 | 已交付 | NOT_RUN | 主幹完成 |
 | metadata 預覽 | 建立前結構預覽 | 已落地 | 已交付 | NOT_RUN | 主幹完成 |
-| 語意確認 | domain / split / target / inputs | 已落地 | 部分 | PARTIAL | 時間/群組/refit 未開 |
+| 語意確認 | domain / split / target / inputs | 已落地 | 已交付 | PARTIAL | 時間序／群組切分已開；refit policy 仍明確拒絕 |
 | DSL 求值 | parser / canonical / bounded evaluator | 無專頁 | 已交付 | NOT_RUN | 主幹完成 |
 | PROFILE | quality / structure assessment / research budget | 已落地 | 已交付 | NOT_RUN | 主幹完成 |
 | SEARCH | strategy dispatch / projection / checkpoint | 已落地 | 已交付 | PARTIAL | SEARCH 主體完成 |
-| FIT | SEARCH 後擬合 root / worker / 結果落庫 | 無完整專頁 | 部分 | PARTIAL | 關鍵未完 |
+| FIT | SEARCH 後擬合 root / worker / 結果落庫 | 無完整專頁 | 已交付 | PARTIAL | 隔離重算與雙 split ValidationRun 已交，待產品驗收 |
 | 候選凍結 | FrozenCandidate / FrozenSubmission | 已落地 | 已交付 | PARTIAL | 主體已交 |
 | 最終驗證 | FinalEvaluationSlot / FINAL_ONLY validate | 已落地 | 已交付 | BLOCKED | D-03 卡住 |
-| ValidationRun | final result readback | 已落地 | 部分 | PARTIAL | FINAL_TEST 語意驗證未完 |
+| ValidationRun | final result readback | 已落地 | 已交付 | PARTIAL | 數值語意硬化已補，產品案例未跑 |
 | 證據包 | evidence bundle / artifact linkage | 已落地 | 已交付 | NOT_RUN | 主幹完成 |
 | 刪除傳播 | deletion request / dry-run / relay | 無專頁 | 部分 | PARTIAL | 最後一段清除鏈未完 |
 | Trace / 決策紀錄 | trace chunk / decision graph / replay | 記憶頁面存在 | 部分 | NOT_RUN | 只有最小基線 |
@@ -215,7 +215,7 @@
 2. `M5`：proof、checker、多路徑驗證、inverse problem
 3. `M6`：雙序列、多維、時滯、2D/3D、conditional inverse
 4. `M7`：多序列、state reconstruction、training、release、rollback
-5. `M2` 剩餘缺口：`FIT` 執行管線
+5. `M2` 剩餘缺口：`refit policy` 與正式產品 Gate（FIT 執行鏈已於 2026-10-28 交付）
 6. `M3` 剩餘缺口：E2E、資安、壓測、備份還原
 
 ## F. 關於「Ollama 有沒有做」
@@ -253,7 +253,7 @@
 不算。  
 目前比較像：
 
-- `M1~M3`：主幹做出來了，但還有關鍵缺口
+- `M1~M3`：主幹做出來了（`M2` 的 FIT 執行鏈與隔離驗證已於 2026-10-28 補上），但仍有關鍵缺口與驗收未跑
 - `M4~M7`：規格完整，但實作大多未開始
 
 ### 3. 「Ollama 相關有做嗎？」
