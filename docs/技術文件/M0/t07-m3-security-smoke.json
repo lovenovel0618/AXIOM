@@ -1,0 +1,108 @@
+{
+  "scope": "M3_SECURITY",
+  "status": "PASS",
+  "command": "docker compose -p axiom-dev exec -T web python manage.py security_smoke [--frontend]",
+  "policy_under_test": "docs/企劃案/09-非功能/26-安全隱私與可信執行.md (AX-26, AC-26-01..07)",
+  "identity_model": {
+    "owner": "建立 M3 權威資源的帳號（dataset／research／run／evidence 全部歸其所有）",
+    "peer": "同一租戶、非 owner 的一般身分",
+    "foreign": "不同租戶的一般身分",
+    "access_class": ["PROJECT", "SEALED_DETAIL"]
+  },
+  "results": [
+    {
+      "via_frontend": false,
+      "dataset_id": "9ba85ce6-67fb-4c10-a4aa-fd63dfd38ac7",
+      "research_version_id": "8ef2731d-32ab-4284-b2b7-195fa5595785",
+      "search_run_id": "490b78b7-2f74-467f-92c1-b1bdeb50d344",
+      "fit_run_id": "41cc09c4-683f-49b1-b78c-ea7d2068c5aa",
+      "evidence_bundle_id": "46e80ae4-91e6-4cdd-b889-c377d9ea7c7e",
+      "shared_tenant": "7ad17c19-2aca-459f-b47f-85d4d1534b4b",
+      "foreign_tenant": "626022f8-55d9-44b2-9b7d-ce1a6beb9f34",
+      "cross_tenant_denials": 15,
+      "sealed_detail_artifact_id": "4a684512-ec8e-48a2-9f01-e766f1e05282",
+      "sealed_detail_tenant_classified": true,
+      "sealed_detail_count": 37,
+      "project_artifact_id": "61ede276-62c4-415b-a5f2-0b24e0db5361",
+      "cursor_replay_rejected": true,
+      "run_projection_excludes_sealed_artifacts": true,
+      "development_projection_readable": true,
+      "probe_count": 29,
+      "product_gate_status": "NOT_RUN"
+    },
+    {
+      "via_frontend": true,
+      "dataset_id": "0c5d7a94-e759-4a6d-82d2-58b1e6877738",
+      "research_version_id": "c15c2ceb-c0f6-473f-baec-62f70bd5c4f4",
+      "search_run_id": "f3e339b6-d059-4ce8-841b-4040e1525b34",
+      "fit_run_id": "09a857ca-e2ce-439f-a6ec-9a27542e7ea9",
+      "evidence_bundle_id": "c530216d-c5e3-48e2-a3df-7b92225777be",
+      "shared_tenant": "24023941-617b-486b-a5d2-290db4f0a8c9",
+      "foreign_tenant": "61d4842e-1208-4333-9608-665e21496d2d",
+      "cross_tenant_denials": 15,
+      "sealed_detail_artifact_id": "28e0fd68-228a-47eb-b89a-c1c2c968bfc4",
+      "sealed_detail_tenant_classified": true,
+      "sealed_detail_count": 37,
+      "project_artifact_id": "d0f29e2e-d14e-4ac5-9c12-9d159a117f7c",
+      "cursor_replay_rejected": true,
+      "run_projection_excludes_sealed_artifacts": true,
+      "development_projection_readable": true,
+      "probe_count": 29,
+      "product_gate_status": "NOT_RUN"
+    }
+  ],
+  "measured_matrices": {
+    "cross_tenant_404": [
+      "dataset_versions", "dataset_runs", "run_detail", "run_candidates", "run_events",
+      "research_detail", "research_version", "research_events", "evidence_bundle",
+      "artifact_metadata", "artifact_content", "fit_run", "equation_version",
+      "validation_run", "upload_write(POST)"
+    ],
+    "cursor_replay": "owner 簽章 cursor 由 peer 與 foreign 重播，皆 400 INVALID_CURSOR",
+    "sealed_detail_reads": "owner／peer／foreign 讀 SEALED_DETAIL metadata 與 content 皆 404",
+    "project_reads": "owner 讀 PROJECT 產物 metadata 200（對照組，證明遮罩非全面封鎖）",
+    "sse_reauthorization": "run events／research events：owner 200、peer 404（每次請求重驗）",
+    "ac_26_07": "development_projection 逐筆可讀；Run 公開投影不含受限 artifact 引用"
+  },
+  "acceptance_cases": [
+    {
+      "id": "AC-26-01",
+      "status": "PASS",
+      "scope": "跨租戶 API／SSE／下載／cursor 一律 404 或拒絕，且不洩漏存在性",
+      "evidence": "15 個跨租戶探針全 404；2 個 cursor 重播全 400 INVALID_CURSOR"
+    },
+    {
+      "id": "AC-26-02",
+      "status": "NOT_RUN",
+      "scope": "外送政策在 Gateway 實際發送前執行，屬 M4；本切片不觸及"
+    },
+    {
+      "id": "AC-26-03",
+      "status": "PASS",
+      "scope": "同租戶一般身分與作者自身讀 SEALED_DETAIL 產物一律 404",
+      "evidence": "sealed_metadata_owner／sealed_content_owner／sealed_metadata_peer／sealed_content_peer／sealed_metadata_foreign 全 404"
+    },
+    {
+      "id": "AC-26-04",
+      "status": "NOT_RUN",
+      "scope": "向量／模型 lineage 隔離與 QUARANTINED 屬 M4；本切片只涵蓋 tombstone 讀取"
+    },
+    {
+      "id": "AC-26-05",
+      "status": "NOT_RUN",
+      "scope": "需 Solver 服務身分與任務 scope；本切片無 app 層服務憑證"
+    },
+    {
+      "id": "AC-26-06",
+      "status": "NOT_RUN",
+      "scope": "需 Evaluator 服務身分與 submission 綁定；本切片無 app 層服務憑證"
+    },
+    {
+      "id": "AC-26-07",
+      "status": "PARTIAL",
+      "scope": "開發投影可讀且 Run 投影不含受限引用；null 遮罩判讀屬前端",
+      "evidence": "run_projection_excludes_sealed_artifacts=true；development_projection_readable=true"
+    }
+  ],
+  "product_gate_status": "NOT_RUN"
+}

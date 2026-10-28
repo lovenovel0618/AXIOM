@@ -145,7 +145,7 @@
       <div class="card"><h3>M0</h3><div class="percent">100%</div><div>規格、契約、基線與審查票齊備</div></div>
       <div class="card"><h3>M1</h3><div class="percent">75%</div><div>可信核心已大量落地，但 M1 未關閉</div></div>
       <div class="card"><h3>M2</h3><div class="percent">85%</div><div>三策略、凍結、FIT 執行鏈與隔離驗證已交；正式 Gate 未完</div></div>
-      <div class="card"><h3>M3</h3><div class="percent">75%</div><div>工作台已成形，40 頁 SSOT 已逐頁驗收、完整 E2E 已交付；資安/壓測/備份還原未完</div></div>
+      <div class="card"><h3>M3</h3><div class="percent">80%</div><div>工作台已成形，40 頁 SSOT 已逐頁驗收、完整 E2E 與資安隔離驗收已交付；壓測/備份還原未完</div></div>
       <div class="card"><h3>M4</h3><div class="percent">10%</div><div>只有前置基線，主體未開工</div></div>
       <div class="card"><h3>M5</h3><div class="percent">5%</div><div>只有證據基線，M5 主功能未開工</div></div>
       <div class="card"><h3>M6</h3><div class="percent">0%</div><div>尚未開工</div></div>
@@ -203,7 +203,7 @@
         <tr><td>40 頁 UIUX 重製版整合</td><td class="status-warn">70%</td><td>部分</td><td><code>ssotPages.ts</code> 以 pages.json 建單一註冊表，<code>App.vue</code> 導覽與麵包屑由此推導，<code>ssotPages.test.ts</code> 8 項檢查擋住漏做／張冠李戴／孤兒路由／英文標籤／圖片冒充組件</td><td>跨頁互動、40 頁版面細節人工比對</td></tr>
         <tr><td>完整跨頁互動</td><td class="status-warn">50%</td><td>未跑</td><td>研究線、資料線、發現線已拆多頁</td><td>全鏈互動與細節整合</td></tr>
         <tr><td>E2E 測試</td><td class="status-good">100%</td><td>部分</td><td>2026-10-28 已交 <code>manage.py m3_e2e_smoke</code>：上傳→語意確認→研究→SEARCH→候選比較→FIT→證據檢視七階段真實鏈路，直連 1 次與 <code>--frontend</code> 4 次全 PASS，前端跨頁鏈路測試亦全綠並附循證</td><td>僅待正式產品驗收</td></tr>
-        <tr><td>資安驗證</td><td class="status-bad">0%</td><td>未跑</td><td>文件明示仍待補</td><td>G5 對應驗證</td></tr>
+        <tr><td>資安驗證</td><td class="status-warn">65%</td><td>部分</td><td>2026-10-28 已交 <code>manage.py security_smoke</code>（直連與 <code>--frontend</code> 各 29 條探針全 PASS）：15 條跨租戶探針全 404、簽章 cursor 跨身分重播 400 <code>INVALID_CURSOR</code>、SEALED_DETAIL metadata／content 對 owner／peer／foreign 全 404（同 tenant PROJECT 可讀為對照）、run／research events 每次重驗權、Run 投影不含受限引用</td><td>AC-26-02／04 屬 M4、05／06 需服務憑證，明列 NOT_RUN；G5 仍不宣告通過</td></tr>
         <tr><td>壓測</td><td class="status-bad">0%</td><td>未跑</td><td>文件明示仍待補</td><td>G7 壓測與容量上限</td></tr>
         <tr><td>備份 / 還原驗收</td><td class="status-bad">0%</td><td>未跑 / 阻擋</td><td>文件明示仍待補</td><td>BackupSet、恢復演練、journal 重播</td></tr>
       </tbody>
@@ -254,7 +254,7 @@
     <h2>最接近下一步就能做的未完成項</h2>
     <div class="note">
       <ul>
-        <li>M3 的 <code>資安 / 壓測 / 備份還原</code>（完整 <code>E2E</code> 已於 2026-10-28 交付）</li>
+        <li>M3 的 <code>壓測 / 備份還原 / 40 頁版面細節人工比對</code>（完整 <code>E2E</code> 與資安隔離驗收已於 2026-10-28 交付）</li>
         <li>coverage 報告接線與 <code>tests.test_coverage_reports</code> 已於 2026-10-28 補上；續驗 Sonar 匯入與正式 new_coverage 門檻</li>
         <li>刪除傳播最後一段 outbox + 索引/快取實際清除</li>
         <li><code>refit policy</code> 於語意確認的明確拒絕仍未開放</li>

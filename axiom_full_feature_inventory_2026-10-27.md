@@ -79,7 +79,7 @@
 | REQ-014 | AI 紀錄封存與模型演化 | M4 / M7 | 已定義 | 未開工 | 頁面存在但後端無 | NOT_RUN | capture / archive / training 未做 |
 | NFR-001 | 效能延遲與吞吐 | M1~M3 | 已定義 | 部分 | 不適用 | NOT_RUN | 壓測與正式數據未完成 |
 | NFR-002 | 可靠度與故障復原 | M1~M3 | 已定義 | 部分 | 不適用 | NOT_RUN | 備份還原與恢復演練未完成 |
-| NFR-003 | 安全與租戶隔離 | M1~M3 | 已定義 | 部分 | 部分 | NOT_RUN | 基線有，資安驗收未完 |
+| NFR-003 | 安全與租戶隔離 | M1~M3 | 已定義 | 部分 | 部分 | NOT_RUN | 2026-10-28 已交 `manage.py security_smoke`：跨租戶／SEALED_DETAIL／cursor／SSE 隔離矩陣（AC-26-01／03 PASS、07 PARTIAL）；AC-26-02／04 屬 M4、05／06 需服務憑證，產品驗收維持 NOT_RUN |
 | NFR-004 | 成本與預算治理 | M2 | 已定義 | 部分 | 部分 | NOT_RUN | 帳本有，coverage 與正式上限未完 |
 | NFR-005 | 可及性與前端體驗 | M3 | 已定義 | 部分 | 部分 | NOT_RUN | 40 頁逐頁驗收已交（含全繁中標籤防線），完整 UX 驗收未跑 |
 | NFR-006 | 環境可重現性 | M0 | 已定義 | 部分 | 不適用 | NOT_RUN | 本機基線有，正式驗收未跑 |
@@ -216,7 +216,7 @@
 3. `M6`：雙序列、多維、時滯、2D/3D、conditional inverse
 4. `M7`：多序列、state reconstruction、training、release、rollback
 5. `M2` 剩餘缺口：`refit policy` 與正式產品 Gate（FIT 執行鏈已於 2026-10-28 交付）
-6. `M3` 剩餘缺口：資安、壓測、備份還原（40 頁逐頁驗收與完整端到端 E2E 已於 2026-10-28 交付）
+6. `M3` 剩餘缺口：壓測、備份還原與 40 頁版面細節人工比對（40 頁逐頁驗收、完整端到端 E2E 與資安隔離驗收已於 2026-10-28 交付）
 
 ## F. 關於「Ollama 有沒有做」
 
