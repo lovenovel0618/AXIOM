@@ -148,6 +148,8 @@ def _verified(actor: Account, slot: FinalEvaluationSlot, submission: FrozenSubmi
         "verification_plan_hash": payload["verification_plan_hash"]}
     if any(result[key] != value for key, value in expected.items()):
         raise ApiError("INVALID_SCHEMA", 422)
+    from catalog.result_semantics import verify
+    verify(result, len(submission.research_version.document["observation_split"]["final_test"]), submission.research_version.document["evaluation_policy"])
     return result
 
 

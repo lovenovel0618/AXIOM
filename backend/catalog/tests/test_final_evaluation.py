@@ -162,7 +162,7 @@ class FinalEvaluationTests(TransactionTestCase):
             "metric_reasons": {}, "artifact_id": str(uuid4()), "observation_split_id": str(payload["observation_split_id"]),
             "split_role": "FINAL_TEST", "frozen_candidate_id": str(slot.frozen_candidate_id),
             "submission_id": str(slot.submission_id), "evaluation_policy_hash": payload["evaluation_policy_hash"],
-            "selected_count": 4, "valid_count": 4, "failed_count": 0,
+            "selected_count": 2, "valid_count": 2, "failed_count": 0,
             "verification_plan_artifact_id": str(payload["verification_plan_artifact_id"]),
             "verification_plan_hash": payload["verification_plan_hash"]}
         document.update(overrides)
@@ -178,6 +178,15 @@ class FinalEvaluationTests(TransactionTestCase):
         validate(FinalEvaluationSlot.objects.get(pk=slot.id).document, "runtime-v2.schema.json", "FinalEvaluationSlot")
         stored = FrozenSubmission.objects.get(pk=self.submission.id)
         self.assertEqual((stored.status, stored.document["status"]), ("EVALUATING", "EVALUATING"))
+
+    def test_result_semantics_reject_wrong_denominator_coverage_and_nonfinite_metrics_before_consuming(self) -> None:
+        slot, _created = acquire(self.actor, self.submission, self.frozen)
+        for overrides in ({"selected_count": 3, "valid_count": 3}, {"valid_coverage": 0.5},
+                {"valid_count": 1, "failed_count": 1}, {"metrics": {"mae": float("nan"), "rmse": 0.7}},
+                {"metrics": {"mae": float("inf"), "rmse": 0.7}}):
+            with self.subTest(overrides=overrides), self.assertRaises(ApiError):
+                settle(self.actor, slot, "COMPLETED", self.result(slot, **overrides))
+            self.assertEqual(FinalEvaluationSlot.objects.get(pk=slot.id).status, "PENDING")
 
     def test_dispatch_reserves_the_sealed_test_for_this_submission_only(self) -> None:
         """派送在同一權威提交內預留封存包：因已綁定本提交而冪等，別的提交或快照一律重疊。"""
