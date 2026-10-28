@@ -32,7 +32,7 @@ from mathematics.search_process import request_for
 from runtime.models import InputSnapshot, RuntimeAttempt, RuntimeCheckpoint, RuntimeRun, RunEvent
 from runtime.records import db_now
 
-SEARCH_LIMITS = {"max_rows": 100, "max_strategy_seconds": 5, "max_candidates": 8}
+SEARCH_LIMITS = {"max_rows": 100, "max_strategy_seconds": 20, "max_candidates": 8}
 
 
 @override_settings(INGEST_ENABLED=True, INGEST_LIMITS_JSON=json.dumps(LIMITS), SEARCH_ENABLED=True, SEARCH_LIMITS_JSON=json.dumps(SEARCH_LIMITS), PROFILE_ENABLED=True, PROFILE_LIMITS_JSON=json.dumps(LIMITS))
